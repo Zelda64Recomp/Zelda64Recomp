@@ -1,0 +1,52 @@
+# VSCode file settings
+.vscode/settings.json
+
+# Input elf and rom files
+*.elf
+*.z64
+
+# Output C files
+RecompiledFuncs/
+
+# Linux build output
+build/
+*.o
+
+# Windows build output
+*.exe
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+# Libraries (binaries that aren't in the repo)
+Lib
+
+# RT64 (since it's not public yet)
+RT64
+
+# Runtime files
+imgui.ini
+rt64.log
