@@ -42,10 +42,7 @@ bld/
 .vs/
 
 # Libraries (binaries that aren't in the repo)
-Lib
-
-# RT64 (since it's not public yet)
-RT64
+lib/
 
 # Runtime files
 imgui.ini
