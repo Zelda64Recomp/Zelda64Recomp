@@ -41,6 +41,8 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
 #define run_thread_function(func, sp, arg) func(arg)
 #endif
 
+struct thread_terminated : std::exception {};
+
 static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg) {
     OSThread *self = TO_PTR(OSThread, self_);
     debug_printf("[Thread] Thread created: %d\n", self->id);
@@ -72,8 +74,12 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
 
     debug_printf("[Thread] Thread started: %d\n", self->id);
 
-    // Run the thread's function with the provided argument.
-    run_thread_function(PASS_RDRAM entrypoint, self->sp, arg);
+    try {
+        // Run the thread's function with the provided argument.
+        run_thread_function(PASS_RDRAM entrypoint, self->sp, arg);
+    } catch (thread_terminated& terminated) {
+
+    }
 
     // Dispose of this thread after it completes.
     Multilibultra::cleanup_thread(self);
@@ -110,6 +116,7 @@ extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_f
     t->id = id;
     t->state = OSThreadState::PAUSED;
     t->sp = sp - 0x10; // Set up the first stack frame
+    t->destroyed = false;
 
     // Spawn a new thread, which will immediately pause itself and wait until it's been started.
     t->context = new UltraThreadContext{};
@@ -124,7 +131,16 @@ extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
 }
 
 extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {
-    assert(false);
+    // Check if the thread is destroying itself (arg is null or thread_self)
+    if (t_ == NULLPTR || t_ == thread_self) {
+        throw thread_terminated{};
+    }
+    // Otherwise, mark the target thread as destroyed. Next time it reaches a stopping point,
+    // it'll check this and terminate itself instead of pausing.
+    else {
+        OSThread* t = TO_PTR(OSThread, t_);
+        t->destroyed = true;
+    }
 }
 
 extern "C" void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri) {
@@ -168,8 +184,16 @@ void Multilibultra::set_self_paused(RDRAM_ARG1) {
     TO_PTR(OSThread, thread_self)->context->running.notify_all();
 }
 
+void check_destroyed(OSThread* t) {
+    if (t->destroyed) {
+        throw thread_terminated{};
+    }
+}
+
 void Multilibultra::wait_for_resumed(RDRAM_ARG1) {
+    check_destroyed(TO_PTR(OSThread, thread_self));
     TO_PTR(OSThread, thread_self)->context->running.wait(false);
+    check_destroyed(TO_PTR(OSThread, thread_self));
 }
 
 void Multilibultra::pause_thread_impl(OSThread* t) {

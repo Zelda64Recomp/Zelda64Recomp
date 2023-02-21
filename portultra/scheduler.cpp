@@ -73,7 +73,7 @@ void handle_thread_stopping(thread_queue_t& running_thread_queue) {
     }
 }
 
-void handle_thread_cleanup(thread_queue_t& running_thread_queue) {
+void handle_thread_cleanup(thread_queue_t& running_thread_queue, OSThread*& cur_running_thread) {
     std::lock_guard lock{scheduler_context.mutex};
 
     while (!scheduler_context.to_cleanup.empty()) {
@@ -83,8 +83,20 @@ void handle_thread_cleanup(thread_queue_t& running_thread_queue) {
         
         debug_printf("[Scheduler] Destroying thread %d\n", to_cleanup->id);
         running_thread_queue.remove(to_cleanup);
+        // If the cleaned up thread was the running thread, schedule a new one to run.
+        if (to_cleanup == cur_running_thread) {
+            // If there's a thread queued to run, set it as the new running thread.
+            if (!running_thread_queue.empty()) {
+                cur_running_thread = running_thread_queue.top();
+            }
+            // Otherwise, set the running thread to null so the next thread that can be run gets started.
+            else {
+                cur_running_thread = nullptr;
+            }
+        }
         to_cleanup->context->host_thread.join();
         delete to_cleanup->context;
+        to_cleanup->context = nullptr;
     }
 }
 
@@ -153,7 +165,7 @@ void scheduler_func() {
         handle_thread_stopping(running_thread_queue);
 
         // Handle cleaning up threads
-        handle_thread_cleanup(running_thread_queue);
+        handle_thread_cleanup(running_thread_queue, cur_running_thread);
 
         // Handle queueing threads to run
         handle_thread_queueing(running_thread_queue);

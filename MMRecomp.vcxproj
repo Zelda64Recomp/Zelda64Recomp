@@ -167,7 +167,12 @@ XCOPY "$(ProjectDir)lib\SDL2-2.24.0\lib\$(Platform)\SDL2.dll" "$(TargetDir)" /S 
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="portultra\audio.cpp" />
+    <ClCompile Include="portultra\audio.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MaxSpeed</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</BasicRuntimeChecks>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+    </ClCompile>
     <ClCompile Include="portultra\events.cpp" />
     <ClCompile Include="portultra\mesgqueue.cpp" />
     <ClCompile Include="portultra\misc_ultra.cpp" />

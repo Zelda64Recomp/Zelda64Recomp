@@ -163,11 +163,6 @@ extern "C" OSTime osGetTime() {
 extern "C" int osSetTimer(RDRAM_ARG PTR(OSTimer) t_, OSTime countdown, OSTime interval, PTR(OSMesgQueue) mq, OSMesg msg) {
     OSTimer* t = TO_PTR(OSTimer, t_);
 
-    // HACK: Skip the RCP timeout detection
-    if ((countdown == 140625000 || countdown == 1500000) && (uintptr_t)msg == 666) {
-        return 0;
-    }
-
     // Determine the time when this timer will trigger off
     if (countdown == 0) {
         // Set the timestamp based on the interval

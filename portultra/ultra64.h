@@ -93,6 +93,7 @@ typedef struct OSThread_t {
     int32_t pad3;
     UltraThreadContext* context; // An actual pointer regardless of platform
     int32_t sp;
+    bool destroyed;
 } OSThread;
 
 typedef u32 OSEvent;

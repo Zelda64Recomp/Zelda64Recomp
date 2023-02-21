@@ -31,8 +31,9 @@ extern "C" void osFlashReadId_recomp(uint8_t * rdram, recomp_context * ctx) {
 	PTR(u32) flash_type = ctx->r4;
 	PTR(u32) flash_maker = ctx->r5;
 
-	MEM_B(0, flash_type) = 0;
-	MEM_B(0, flash_maker) = 0;
+	// Mimic a real flash chip's type and maker, as some games actually check if one is present.
+	MEM_W(0, flash_type) = 0x11118001;
+	MEM_W(0, flash_maker) = 0x00C2001E;
 }
 
 extern "C" void osFlashClearStatus_recomp(uint8_t * rdram, recomp_context * ctx) {
