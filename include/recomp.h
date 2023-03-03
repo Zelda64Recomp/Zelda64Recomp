@@ -137,12 +137,43 @@ static inline gpr do_lwl(uint8_t* rdram, gpr offset, gpr reg) {
 #define TRUNC_L_D(val) \
     ((int64_t)(val))
 
-// TODO rounding mode
+#define DEFAULT_ROUNDING_MODE 0
+
+static inline int32_t do_cvt_w_s(float val, unsigned int rounding_mode) {
+    switch (rounding_mode) {
+        case 0: // round to nearest value
+            return (int32_t)lroundf(val);
+        case 1: // round to zero (truncate)
+            return (int32_t)val;
+        case 2: // round to positive infinity (ceil)
+            return (int32_t)ceilf(val);
+        case 3: // round to negative infinity (floor)
+            return (int32_t)floorf(val);
+    }
+    assert(0);
+    return 0;
+}
+
 #define CVT_W_S(val) \
-    ((int32_t)(val))
+    do_cvt_w_s(val, rounding_mode)
+
+static inline int32_t do_cvt_w_d(double val, unsigned int rounding_mode) {
+    switch (rounding_mode) {
+        case 0: // round to nearest value
+            return (int32_t)lround(val);
+        case 1: // round to zero (truncate)
+            return (int32_t)val;
+        case 2: // round to positive infinity (ceil)
+            return (int32_t)ceil(val);
+        case 3: // round to negative infinity (floor)
+            return (int32_t)floor(val);
+    }
+    assert(0);
+    return 0;
+}
 
 #define CVT_W_D(val) \
-    ((int32_t)(val))
+    do_cvt_w_d(val, rounding_mode)
 
 #define NAN_CHECK(val) \
     assert(val == val)
