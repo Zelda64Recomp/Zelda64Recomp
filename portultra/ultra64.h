@@ -176,6 +176,33 @@ struct OSPiHandle {
     u32                  transferInfo[18];  /* for disk only */
 };
 
+typedef struct {
+    u32	ctrl;
+    u32	width;
+    u32	burst;
+    u32	vSync;
+    u32	hSync;
+    u32	leap;
+    u32	hStart;
+    u32	xScale;
+    u32	vCurrent;
+} OSViCommonRegs;
+
+typedef struct {
+    u32	origin;
+    u32	yScale;
+    u32	vStart;
+    u32	vBurst;
+    u32	vIntr;
+} OSViFieldRegs;
+
+typedef struct {
+    u8 padding[3];
+    u8 type;
+    OSViCommonRegs comRegs;
+    OSViFieldRegs  fldRegs[2];
+} OSViMode;
+
 ///////////////
 // Functions //
 ///////////////
@@ -207,6 +234,7 @@ s32 osRecvMesg(RDRAM_ARG PTR(OSMesgQueue), PTR(OSMesg), s32);
 void osSetEventMesg(RDRAM_ARG OSEvent, PTR(OSMesgQueue), OSMesg);
 void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue), OSMesg, u32);
 void osViSwapBuffer(RDRAM_ARG PTR(void) frameBufPtr);
+void osViSetMode(RDRAM_ARG PTR(OSViMode));
 PTR(void) osViGetNextFramebuffer();
 PTR(void) osViGetCurrentFramebuffer();
 u32 osGetCount();

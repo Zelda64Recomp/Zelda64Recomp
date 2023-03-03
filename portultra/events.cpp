@@ -193,8 +193,8 @@ int sdl_event_filter(void* userdata, SDL_Event* event) {
 
             button = new_button;
 
-            stick_x = 127 * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
-            stick_y = 127 * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
+            stick_x = 85 * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
+            stick_y = 85 * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
         }
         break;
     case SDL_EventType::SDL_QUIT:
@@ -304,9 +304,46 @@ void event_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* events_th
     }
 }
 
+extern unsigned int VI_STATUS_REG;
+extern unsigned int VI_ORIGIN_REG;
+extern unsigned int VI_WIDTH_REG;
+extern unsigned int VI_INTR_REG;
+extern unsigned int VI_V_CURRENT_LINE_REG;
+extern unsigned int VI_TIMING_REG;
+extern unsigned int VI_V_SYNC_REG;
+extern unsigned int VI_H_SYNC_REG;
+extern unsigned int VI_LEAP_REG;
+extern unsigned int VI_H_START_REG;
+extern unsigned int VI_V_START_REG;
+extern unsigned int VI_V_BURST_REG;
+extern unsigned int VI_X_SCALE_REG;
+extern unsigned int VI_Y_SCALE_REG;
+
+uint32_t vi_origin_offset = 320 * sizeof(uint16_t);
+
 extern "C" void osViSwapBuffer(RDRAM_ARG PTR(void) frameBufPtr) {
     events_context.vi.next_buffer = frameBufPtr;
-    events_context.action_queue.enqueue(SwapBuffersAction{ osVirtualToPhysical(frameBufPtr) + 640 });
+    events_context.action_queue.enqueue(SwapBuffersAction{ osVirtualToPhysical(frameBufPtr) + vi_origin_offset });
+}
+
+extern "C" void osViSetMode(RDRAM_ARG PTR(OSViMode) mode_) {
+    OSViMode* mode = TO_PTR(OSViMode, mode_);
+    VI_STATUS_REG = mode->comRegs.ctrl;
+    VI_WIDTH_REG = mode->comRegs.width;
+    // burst
+    VI_V_SYNC_REG = mode->comRegs.vSync;
+    VI_H_SYNC_REG = mode->comRegs.hSync;
+    VI_LEAP_REG = mode->comRegs.leap;
+    VI_H_START_REG = mode->comRegs.hStart;
+    VI_X_SCALE_REG = mode->comRegs.xScale;
+    VI_V_CURRENT_LINE_REG = mode->comRegs.vCurrent;
+
+    // TODO swap these every VI to account for fields changing
+    vi_origin_offset = mode->fldRegs[0].origin;
+    VI_Y_SCALE_REG = mode->fldRegs[0].yScale;
+    VI_V_START_REG = mode->fldRegs[0].vStart;
+    VI_V_BURST_REG = mode->fldRegs[0].vBurst;
+    VI_INTR_REG = mode->fldRegs[0].vIntr;
 }
 
 extern "C" PTR(void) osViGetNextFramebuffer() {

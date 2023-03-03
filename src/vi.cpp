@@ -34,5 +34,5 @@ extern "C" void osViSwapBuffer_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osViSetMode_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    osViSetMode(rdram, (int32_t)ctx->r4);
 }
