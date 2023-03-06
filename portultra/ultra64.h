@@ -235,6 +235,8 @@ void osSetEventMesg(RDRAM_ARG OSEvent, PTR(OSMesgQueue), OSMesg);
 void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue), OSMesg, u32);
 void osViSwapBuffer(RDRAM_ARG PTR(void) frameBufPtr);
 void osViSetMode(RDRAM_ARG PTR(OSViMode));
+void osViSetSpecialFeatures(uint32_t func);
+void osViBlack(uint8_t active);
 PTR(void) osViGetNextFramebuffer();
 PTR(void) osViGetCurrentFramebuffer();
 u32 osGetCount();

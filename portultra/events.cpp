@@ -37,7 +37,8 @@ static struct {
         int retrace_count = 1;
     } vi;
     struct {
-        std::thread thread;
+        std::thread gfx_thread;
+        std::thread task_thread;
         PTR(OSMesgQueue) mq = NULLPTR;
         OSMesg msg = (OSMesg)0;
     } sp;
@@ -60,6 +61,7 @@ static struct {
     std::mutex message_mutex;
     uint8_t* rdram;
     moodycamel::BlockingConcurrentQueue<Action> action_queue{};
+    std::atomic<OSTask*> sp_task = nullptr;
 } events_context{};
 
 extern "C" void osSetEventMesg(RDRAM_ARG OSEvent event_id, PTR(OSMesgQueue) mq_, OSMesg msg) {
@@ -243,7 +245,39 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
     sp_complete();
 }
 
-void event_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* events_thread_ready) {
+
+void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
+    // Notify the caller thread that this thread is ready.
+    thread_ready->test_and_set();
+    thread_ready->notify_all();
+
+    while (1) {
+        // Wait until an RSP task has been sent
+        events_context.sp_task.wait(nullptr);
+
+        // Retrieve the task pointer and clear the pending RSP task
+        OSTask* task = events_context.sp_task;
+        events_context.sp_task.store(nullptr);
+
+        // Run the correct function based on the task type
+        if (task->t.type == M_AUDTASK) {
+            run_rsp_microcode(rdram, task, aspMain);
+        }
+        else if (task->t.type == M_NJPEGTASK) {
+            run_rsp_microcode(rdram, task, njpgdspMain);
+        }
+        else {
+            fprintf(stderr, "Unknown task type: %" PRIu32 "\n", task->t.type);
+            assert(false);
+            std::quick_exit(EXIT_FAILURE);
+        }
+
+        // Tell the game that the RSP has completed
+        sp_complete();
+    }
+}
+
+void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
     using namespace std::chrono_literals;
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
         fprintf(stderr, "Failed to initialize SDL2: %s\n", SDL_GetError());
@@ -259,8 +293,8 @@ void event_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* events_th
     rsp_constants_init();
 
     // Notify the caller thread that this thread is ready.
-    events_thread_ready->test_and_set();
-    events_thread_ready->notify_all();
+    thread_ready->test_and_set();
+    thread_ready->notify_all();
 
     while (true) {
         // Try to pull an action from the queue
@@ -268,20 +302,13 @@ void event_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* events_th
         if (events_context.action_queue.wait_dequeue_timed(action, 1ms)) {
             // Determine the action type and act on it
             if (const auto* task_action = std::get_if<SpTaskAction>(&action)) {
-                if (task_action->task.t.type == M_GFXTASK) {
-                    // (TODO let RT64 do this) Tell the game that the RSP and RDP tasks are complete
-                    RT64SendDL(rdram, &task_action->task);
-                    sp_complete();
-                    dp_complete();
-                } else if (task_action->task.t.type == M_AUDTASK) {
-                    run_rsp_microcode(rdram, &task_action->task, aspMain);
-                } else if (task_action->task.t.type == M_NJPEGTASK) {
-                    run_rsp_microcode(rdram, &task_action->task, njpgdspMain);
-                } else {
-                    fprintf(stderr, "Unknown task type: %" PRIu32 "\n", task_action->task.t.type);
-                    assert(false);
-                    std::quick_exit(EXIT_FAILURE);
-                }
+                // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
+                // start another graphics task until the RDP is also complete. Games usually preserve the RSP inputs until the RDP
+                // is finished as well, so sending this early shouldn't be an issue in most cases.
+                // If this causes issues then the logic can be replaced with responding to yield requests.
+                sp_complete();
+                RT64SendDL(rdram, &task_action->task);
+                dp_complete();
             } else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
                 static volatile int i = 0;
                 if (i >= 100) {
@@ -319,9 +346,16 @@ extern unsigned int VI_V_BURST_REG;
 extern unsigned int VI_X_SCALE_REG;
 extern unsigned int VI_Y_SCALE_REG;
 
+uint32_t hstart = 0;
 uint32_t vi_origin_offset = 320 * sizeof(uint16_t);
+bool vi_black = false;
 
 extern "C" void osViSwapBuffer(RDRAM_ARG PTR(void) frameBufPtr) {
+    if (vi_black) {
+        VI_H_START_REG = 0;
+    } else {
+        VI_H_START_REG = hstart;
+    }
     events_context.vi.next_buffer = frameBufPtr;
     events_context.action_queue.enqueue(SwapBuffersAction{ osVirtualToPhysical(frameBufPtr) + vi_origin_offset });
 }
@@ -334,7 +368,7 @@ extern "C" void osViSetMode(RDRAM_ARG PTR(OSViMode) mode_) {
     VI_V_SYNC_REG = mode->comRegs.vSync;
     VI_H_SYNC_REG = mode->comRegs.hSync;
     VI_LEAP_REG = mode->comRegs.leap;
-    VI_H_START_REG = mode->comRegs.hStart;
+    hstart = mode->comRegs.hStart;
     VI_X_SCALE_REG = mode->comRegs.xScale;
     VI_V_CURRENT_LINE_REG = mode->comRegs.vCurrent;
 
@@ -344,6 +378,71 @@ extern "C" void osViSetMode(RDRAM_ARG PTR(OSViMode) mode_) {
     VI_V_START_REG = mode->fldRegs[0].vStart;
     VI_V_BURST_REG = mode->fldRegs[0].vBurst;
     VI_INTR_REG = mode->fldRegs[0].vIntr;
+}
+
+#define VI_CTRL_TYPE_16             0x00002
+#define VI_CTRL_TYPE_32             0x00003
+#define VI_CTRL_GAMMA_DITHER_ON     0x00004
+#define VI_CTRL_GAMMA_ON            0x00008
+#define VI_CTRL_DIVOT_ON            0x00010
+#define VI_CTRL_SERRATE_ON          0x00040
+#define VI_CTRL_ANTIALIAS_MASK      0x00300
+#define VI_CTRL_ANTIALIAS_MODE_1    0x00100
+#define VI_CTRL_ANTIALIAS_MODE_2    0x00200
+#define VI_CTRL_ANTIALIAS_MODE_3    0x00300
+#define VI_CTRL_PIXEL_ADV_MASK      0x01000
+#define VI_CTRL_PIXEL_ADV_1         0x01000
+#define VI_CTRL_PIXEL_ADV_2         0x02000
+#define VI_CTRL_PIXEL_ADV_3         0x03000
+#define VI_CTRL_DITHER_FILTER_ON    0x10000
+
+#define	OS_VI_GAMMA_ON          0x0001
+#define	OS_VI_GAMMA_OFF         0x0002
+#define	OS_VI_GAMMA_DITHER_ON   0x0004
+#define	OS_VI_GAMMA_DITHER_OFF  0x0008
+#define	OS_VI_DIVOT_ON          0x0010
+#define	OS_VI_DIVOT_OFF         0x0020
+#define	OS_VI_DITHER_FILTER_ON  0x0040
+#define	OS_VI_DITHER_FILTER_OFF 0x0080
+
+extern "C" void osViSetSpecialFeatures(uint32_t func) {
+    if ((func & OS_VI_GAMMA_ON) != 0) {
+        VI_STATUS_REG |= VI_CTRL_GAMMA_ON;
+    }
+
+    if ((func & OS_VI_GAMMA_OFF) != 0) {
+        VI_STATUS_REG &= ~VI_CTRL_GAMMA_ON;
+    }
+
+    if ((func & OS_VI_GAMMA_DITHER_ON) != 0) {
+        VI_STATUS_REG |= VI_CTRL_GAMMA_DITHER_ON;
+    }
+
+    if ((func & OS_VI_GAMMA_DITHER_OFF) != 0) {
+        VI_STATUS_REG &= ~VI_CTRL_GAMMA_DITHER_ON;
+    }
+
+    if ((func & OS_VI_DIVOT_ON) != 0) {
+        VI_STATUS_REG |= VI_CTRL_DIVOT_ON;
+    }
+
+    if ((func & OS_VI_DIVOT_OFF) != 0) {
+        VI_STATUS_REG &= ~VI_CTRL_DIVOT_ON;
+    }
+
+    if ((func & OS_VI_DITHER_FILTER_ON) != 0) {
+        VI_STATUS_REG |= VI_CTRL_DITHER_FILTER_ON;
+        VI_STATUS_REG &= ~VI_CTRL_ANTIALIAS_MASK;
+    }
+
+    if ((func & OS_VI_DITHER_FILTER_OFF) != 0) {
+        VI_STATUS_REG &= ~VI_CTRL_DITHER_FILTER_ON;
+        //VI_STATUS_REG |= __osViNext->modep->comRegs.ctrl & VI_CTRL_ANTIALIAS_MASK;
+    }
+}
+
+extern "C" void osViBlack(uint8_t active) {
+    vi_black = active;
 }
 
 extern "C" PTR(void) osViGetNextFramebuffer() {
@@ -356,7 +455,16 @@ extern "C" PTR(void) osViGetCurrentFramebuffer() {
 
 void Multilibultra::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
     OSTask* task = TO_PTR(OSTask, task_);
-    events_context.action_queue.enqueue(SpTaskAction{ *task });
+
+    // Send gfx tasks to the graphics action queue
+    if (task->t.type == M_GFXTASK) {
+        events_context.action_queue.enqueue(SpTaskAction{ *task });
+    }
+    // Set all other tasks as the RSP task
+    else {
+        events_context.sp_task.store(task);
+        events_context.sp_task.notify_all();
+    }
 }
 
 void Multilibultra::send_si_message() {
@@ -365,13 +473,16 @@ void Multilibultra::send_si_message() {
 }
 
 void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom) {
-    std::atomic_flag events_thread_ready;
+    std::atomic_flag gfx_thread_ready;
+    std::atomic_flag task_thread_ready;
     events_context.rdram = rdram;
-    events_context.sp.thread = std::thread{ event_thread_func, rdram, rom, &events_thread_ready };
+    events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, rom, &gfx_thread_ready };
+    events_context.sp.task_thread = std::thread{ task_thread_func, rdram, rom, &task_thread_ready };
     
-    // Wait for the event thread to be ready before continuing to prevent the game from
+    // Wait for the two sp threads to be ready before continuing to prevent the game from
     // running before we're able to handle RSP tasks.
-    events_thread_ready.wait(false);
+    gfx_thread_ready.wait(false);
+    task_thread_ready.wait(false);
 
     events_context.vi.thread = std::thread{ vi_thread_func };
 }

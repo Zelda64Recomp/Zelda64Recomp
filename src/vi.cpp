@@ -2,11 +2,11 @@
 #include "recomp.h"
 
 extern "C" void osViSetYScale_recomp(uint8_t* rdram, recomp_context * ctx) {
-    ;
+    assert(false);
 }
 
 extern "C" void osViSetXScale_recomp(uint8_t* rdram, recomp_context * ctx) {
-    ;
+    assert(false);
 }
 
 extern "C" void osCreateViManager_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -14,11 +14,11 @@ extern "C" void osCreateViManager_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osViBlack_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    osViBlack((uint32_t)ctx->r4);
 }
 
 extern "C" void osViSetSpecialFeatures_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    osViSetSpecialFeatures((uint32_t)ctx->r4);
 }
 
 extern "C" void osViGetCurrentFramebuffer_recomp(uint8_t* rdram, recomp_context* ctx) {
