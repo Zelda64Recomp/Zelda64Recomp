@@ -67,6 +67,8 @@ void Multilibultra::queue_audio_buffer(RDRAM_ARG PTR(s16) audio_data_, uint32_t 
 	SDL_QueueAudio(audio_device, swap_buffer.data(), byte_count);
 }
 
+uint32_t buffer_offset_frames = 1;
+
 // If there's ever any audio popping, check here first. Some games are very sensitive to
 // the remaining sample count and reporting a number that's too high here can lead to issues.
 // Reporting a number that's too low can lead to audio lag in some games.
@@ -74,13 +76,13 @@ uint32_t Multilibultra::get_remaining_audio_bytes() {
 	// Get the number of remaining buffered audio bytes.
 	uint32_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
 	
-	// Adjust the reported count to be four refreshes in the future, which helps ensure that
-	// there are enough samples even if the game experiences a small amount of lag. This prevents
+	// Adjust the reported count to be some number of refreshes in the future, which helps ensure that
+	// there are enough samples even if the audio thread experiences a small amount of lag. This prevents
 	// audio popping on games that use the buffered audio byte count to determine how many samples
 	// to generate.
 	uint32_t samples_per_vi = (sample_rate / 60);
-	if (buffered_byte_count > (4u * samples_per_vi)) {
-		buffered_byte_count -= (4u * samples_per_vi);
+	if (buffered_byte_count > (buffer_offset_frames * sizeof(int16_t) * samples_per_vi)) {
+		buffered_byte_count -= (buffer_offset_frames * sizeof(int16_t) * samples_per_vi);
 	} else {
 		buffered_byte_count = 0;
 	}
