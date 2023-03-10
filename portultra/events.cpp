@@ -445,6 +445,18 @@ extern "C" void osViBlack(uint8_t active) {
     vi_black = active;
 }
 
+extern "C" void osViSetXScale(float scale) {
+    if (scale != 1.0f) {
+        assert(false);
+    }
+}
+
+extern "C" void osViSetYScale(float scale) {
+    if (scale != 1.0f) {
+        assert(false);
+    }
+}
+
 extern "C" PTR(void) osViGetNextFramebuffer() {
     return events_context.vi.next_buffer;
 }
