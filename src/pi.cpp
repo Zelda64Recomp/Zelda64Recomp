@@ -76,8 +76,8 @@ void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t coun
     }
 }
 
-void save_clear(uint32_t start, uint32_t size) {
-    std::fill_n(save_buffer.begin() + start, size, 0);
+void save_clear(uint32_t start, uint32_t size, char value) {
+    std::fill_n(save_buffer.begin() + start, size, value);
     std::ofstream save_file{ save_filename, std::ios_base::binary };
 
     if (save_file.good()) {

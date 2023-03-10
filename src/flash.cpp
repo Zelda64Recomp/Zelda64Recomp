@@ -7,13 +7,14 @@
 constexpr uint32_t flash_size = 1024 * 1024 / 8; // 1Mbit
 constexpr uint32_t page_size = 128;
 constexpr uint32_t pages_per_sector = 128;
+constexpr uint32_t page_count = flash_size / page_size;
 constexpr uint32_t sector_size = page_size * pages_per_sector;
 constexpr uint32_t sector_count = flash_size / sector_size;
 
 void save_write_ptr(const void* in, uint32_t offset, uint32_t count);
 void save_write(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
 void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
-void save_clear(uint32_t start, uint32_t size);
+void save_clear(uint32_t start, uint32_t size, char value);
 
 std::array<char, page_size> write_buffer;
 
@@ -41,43 +42,43 @@ extern "C" void osFlashClearStatus_recomp(uint8_t * rdram, recomp_context * ctx)
 }
 
 extern "C" void osFlashAllErase_recomp(uint8_t * rdram, recomp_context * ctx) {
-	save_clear(0, Multilibultra::save_size);
+	save_clear(0, Multilibultra::save_size, 0xFF);
 
 	ctx->r2 = 0;
 }
 
 extern "C" void osFlashAllEraseThrough_recomp(uint8_t * rdram, recomp_context * ctx) {
-	save_clear(0, Multilibultra::save_size);
+	save_clear(0, Multilibultra::save_size, 0xFF);
 
 	ctx->r2 = 0;
 }
 
+// This function is named sector but really means page.
 extern "C" void osFlashSectorErase_recomp(uint8_t * rdram, recomp_context * ctx) {
 	uint32_t page_num = (uint32_t)ctx->r4;
-	uint32_t sector_num = page_num / sector_size;
 
 	// Prevent out of bounds erase
-	if (sector_num >= sector_size) {
+	if (page_num >= page_count) {
 		ctx->r2 = -1;
 		return;
 	}
 
-	save_clear(sector_num * sector_size, sector_size);
+	save_clear(page_num * page_size, page_size, 0xFF);
 
 	ctx->r2 = 0;
 }
 
+// Same naming issue as above.
 extern "C" void osFlashSectorEraseThrough_recomp(uint8_t * rdram, recomp_context * ctx) {
 	uint32_t page_num = (uint32_t)ctx->r4;
-	uint32_t sector_num = page_num / sector_size;
 
 	// Prevent out of bounds erase
-	if (sector_num >= sector_size) {
+	if (page_num >= page_count) {
 		ctx->r2 = -1;
 		return;
 	}
 
-	save_clear(sector_num * sector_size, sector_size);
+	save_clear(page_num * page_size, page_size, 0xFF);
 
 	ctx->r2 = 0;
 }
