@@ -242,7 +242,6 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
     RspExitReason exit_reason = ucode_func(rdram);
     // Ensure that the ucode exited correctly
     assert(exit_reason == RspExitReason::Broke);
-    sp_complete();
 }
 
 

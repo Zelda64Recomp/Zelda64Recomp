@@ -178,7 +178,6 @@ XCOPY "$(ProjectDir)lib\SDL2-2.24.0\lib\$(Platform)\SDL2.dll" "$(TargetDir)" /S 
     <ClCompile Include="portultra\misc_ultra.cpp" />
     <ClCompile Include="portultra\port_main.c" />
     <ClCompile Include="portultra\scheduler.cpp" />
-    <ClCompile Include="portultra\task_pthreads.cpp" />
     <ClCompile Include="portultra\task_win32.cpp" />
     <ClCompile Include="portultra\threads.cpp" />
     <ClCompile Include="portultra\timer.cpp" />
@@ -223,7 +222,6 @@ XCOPY "$(ProjectDir)lib\SDL2-2.24.0\lib\$(Platform)\SDL2.dll" "$(TargetDir)" /S 
     <ClInclude Include="include\rt64_layer.h" />
     <ClInclude Include="include\sections.h" />
     <ClInclude Include="portultra\multilibultra.hpp" />
-    <ClInclude Include="portultra\platform_specific.h" />
     <ClInclude Include="portultra\ultra64.h" />
     <ClInclude Include="src\euc-jp.h" />
   </ItemGroup>

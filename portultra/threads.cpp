@@ -59,9 +59,6 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     );
 #endif
 
-    // Perform any necessary native thread initialization.
-    Multilibultra::native_thread_init(self);
-
     // Set initialized to false to indicate that this thread can be started.
     self->context->initialized.store(true);
     self->context->initialized.notify_all();
@@ -200,12 +197,11 @@ void Multilibultra::pause_thread_impl(OSThread* t) {
     t->state = OSThreadState::PREEMPTED;
     t->context->running.store(false);
     t->context->running.notify_all();
-    Multilibultra::pause_thread_native_impl(t);
 }
 
 void Multilibultra::resume_thread_impl(OSThread *t) {
     if (t->state == OSThreadState::PREEMPTED) {
-        Multilibultra::resume_thread_native_impl(t);
+        // Nothing to do here
     }
     t->state = OSThreadState::RUNNING;
     t->context->running.store(true);

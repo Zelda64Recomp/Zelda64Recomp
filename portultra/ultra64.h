@@ -2,7 +2,6 @@
 #define __ULTRA64_MULTILIBULTRA_H__
 
 #include <stdint.h>
-#include "platform_specific.h"
 
 #ifdef __cplusplus
 #include <queue>

@@ -75,9 +75,6 @@
     <ClCompile Include="portultra\scheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="portultra\task_pthreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="portultra\task_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -129,9 +126,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="portultra\multilibultra.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="portultra\platform_specific.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="portultra\ultra64.h">

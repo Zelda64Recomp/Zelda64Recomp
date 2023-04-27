@@ -11,5 +11,5 @@ void Multilibultra::preinit(uint8_t* rdram, uint8_t* rom) {
 
 extern "C" void osInitialize() {
     Multilibultra::init_scheduler();
-    Multilibultra::native_init();
+    //Multilibultra::native_init();
 }

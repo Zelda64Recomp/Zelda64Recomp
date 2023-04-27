@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ultra64.h"
-#include "platform_specific.h"
 
 struct UltraThreadContext {
     std::thread host_thread;
@@ -24,20 +23,15 @@ constexpr uint32_t save_size = 1024 * 1024 / 8; // Maximum save size, 1Mbit for 
 
 void preinit(uint8_t* rdram, uint8_t* rom);
 void save_init();
-void native_init();
 void init_scheduler();
 void init_events(uint8_t* rdram, uint8_t* rom);
 void init_timers(RDRAM_ARG1);
-void native_thread_init(OSThread *t);
 void set_self_paused(RDRAM_ARG1);
 void wait_for_resumed(RDRAM_ARG1);
 void swap_to_thread(RDRAM_ARG OSThread *to);
 void pause_thread_impl(OSThread *t);
-void pause_thread_native_impl(OSThread *t);
 void resume_thread_impl(OSThread *t);
-void resume_thread_native_impl(OSThread *t);
 void schedule_running_thread(OSThread *t);
-void stop_thread(OSThread *t);
 void pause_self(RDRAM_ARG1);
 void cleanup_thread(OSThread *t);
 PTR(OSThread) this_thread();

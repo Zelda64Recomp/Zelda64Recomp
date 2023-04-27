@@ -131,10 +131,6 @@ void swap_running_thread(thread_queue_t& running_thread_queue, OSThread*& cur_ru
             if (cur_running_thread && cur_running_thread->state == OSThreadState::RUNNING) {
                 debug_printf("[Scheduler] Need to wait for thread %d to pause itself\n", cur_running_thread->id);
                 return;
-                //debug_printf("[Scheduler] Switching execution from thread %d (%d) to thread %d (%d)\n",
-                //    cur_running_thread->id, cur_running_thread->priority,
-                //    new_running_thread->id, new_running_thread->priority);
-                //Multilibultra::pause_thread_impl(cur_running_thread);
             } else {
                 debug_printf("[Scheduler] Switching execution to thread %d (%d)\n", new_running_thread->id, new_running_thread->priority);
             }
@@ -236,17 +232,6 @@ void pause_self(RDRAM_ARG1) {
         scheduler_context.action_count.notify_all();
     }
     Multilibultra::wait_for_resumed(PASS_RDRAM1);
-}
-
-void stop_thread(OSThread *t) {
-    debug_printf("[Scheduler] Queuing Thread %d to be stopped\n", t->id);
-    {
-        std::lock_guard lock{scheduler_context.mutex};
-        scheduler_context.to_stop.push_back(t);
-        scheduler_context.action_count.fetch_add(1);
-        scheduler_context.action_count.notify_all();
-    }
-    Multilibultra::pause_thread_impl(t);
 }
 
 void cleanup_thread(OSThread *t) {
