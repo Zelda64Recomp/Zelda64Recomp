@@ -69,30 +69,10 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
 #include <Windows.h>
 #endif
 
-int main(int argc, char **argv) {
-    //if (argc != 2) {
-    //    printf("Usage: %s [baserom]\n", argv[0]);
-    //    exit(EXIT_SUCCESS);
-    //}
+std::unique_ptr<uint8_t[]> rdram_buffer;
+recomp_context context{};
 
-#ifdef _WIN32
-    // Set up console output to accept UTF-8 on windows
-    SetConsoleOutputCP(CP_UTF8);
-
-    // Change to a font that supports Japanese characters
-    CONSOLE_FONT_INFOEX cfi;
-    cfi.cbSize = sizeof cfi;
-    cfi.nFont = 0;
-    cfi.dwFontSize.X = 0;
-    cfi.dwFontSize.Y = 16;
-    cfi.FontFamily = FF_DONTCARE;
-    cfi.FontWeight = FW_NORMAL;
-    wcscpy_s(cfi.FaceName, L"NSimSun");
-    SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-#else
-    std::setlocale(LC_ALL, "en_US.UTF-8");
-#endif
-
+__declspec(dllexport) extern "C" void init() {
     {
         std::basic_ifstream<uint8_t> rom_file{ get_rom_name(), std::ios::binary };
 
@@ -128,9 +108,8 @@ int main(int argc, char **argv) {
     load_overlays(0x1000, (int32_t)entrypoint, 1024 * 1024);
 
     // Allocate rdram_buffer (16MB to give room for any extra addressable data used by recomp)
-    std::unique_ptr<uint8_t[]> rdram_buffer = std::make_unique<uint8_t[]>(16 * 1024 * 1024);
+    rdram_buffer = std::make_unique<uint8_t[]>(16 * 1024 * 1024);
     std::memset(rdram_buffer.get(), 0, 8 * 1024 * 1024);
-    recomp_context context{};
 
     // Initial 1MB DMA (rom address 0x1000 = physical address 0x10001000)
     do_rom_read(rdram_buffer.get(), entrypoint, 0x10001000, 0x100000);
@@ -152,14 +131,46 @@ int main(int argc, char **argv) {
     MEM_W(osRomBase, 0) = 0xB0000000u; // standard rom base
     MEM_W(osResetType, 0) = 0; // cold reset
     MEM_W(osMemSize, 0) = 8 * 1024 * 1024; // 8MB
+}
 
-    debug_printf("[Recomp] Starting\n");
+__declspec(dllexport) extern "C" void start(void* window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
+    Multilibultra::set_audio_callbacks(audio_callbacks);
+    Multilibultra::set_input_callbacks(input_callbacks);
+    std::thread game_thread{[](void* window_handle) {
+        debug_printf("[Recomp] Starting\n");
 
-    Multilibultra::preinit(rdram_buffer.get(), rom.get());
+        Multilibultra::preinit(rdram_buffer.get(), rom.get(), window_handle);
 
-    recomp_entrypoint(rdram_buffer.get(), &context);
+        recomp_entrypoint(rdram_buffer.get(), &context);
+        
+        debug_printf("[Recomp] Quitting\n");
+    }, window_handle};
 
-    debug_printf("[Recomp] Quitting\n");
+    game_thread.detach();
+}
+
+int main(int argc, char **argv) {
+
+#ifdef _WIN32
+    // Set up console output to accept UTF-8 on windows
+    SetConsoleOutputCP(CP_UTF8);
+
+    // Change to a font that supports Japanese characters
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof cfi;
+    cfi.nFont = 0;
+    cfi.dwFontSize.X = 0;
+    cfi.dwFontSize.Y = 16;
+    cfi.FontFamily = FF_DONTCARE;
+    cfi.FontWeight = FW_NORMAL;
+    wcscpy_s(cfi.FaceName, L"NSimSun");
+    SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
+#else
+    std::setlocale(LC_ALL, "en_US.UTF-8");
+#endif
+
+    init();
+    start(nullptr, nullptr, nullptr);
 
     return EXIT_SUCCESS;
 }

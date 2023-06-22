@@ -1,0 +1,84 @@
+# Config file for Majora's Mask NTSC 1.0 Recompilation.
+
+[input]
+entrypoint = 0x80080000
+# Paths are relative to the location of this config file.
+elf_path = "mm.us.rev1.elf"
+output_func_path = "RecompiledFuncs"
+relocatable_sections_path = "overlays.us.rev1.txt"
+
+[patches]
+stubs = [
+    # Stub out unused functions that directly manipulate RCP status.
+    "func_80084940",
+    "func_80084968",
+    # Stub out an unnecessary function that accesses kseg1 addresses.
+    "func_800818F4"
+]
+
+# Hooks
+
+# Function definition for the overlay loading function.
+[[patches.func]]
+name = "load_overlays"
+args = ["u32", "u32", "u32"]
+
+# Function hooks for overlay loading.
+[[patches.hook]]
+func = "Idle_InitCodeAndMemory"
+calls = "load_overlays"
+args = ["a2", "a1", "a3"]
+after_vram = 0x800802A4
+
+[[patches.hook]]
+func = "Load2_LoadOverlay"
+calls = "load_overlays"
+# args = [
+#     "a0", # $a0 contains rom start
+#     {operation = "load", type = "u32", base = "sp", offset = 0x10}, # sp + 10 contains the ram address
+#     {operation = "subtract", arguments = ["a1", "a0"]} # Calculate size from rom end - rom start
+# ]
+args = ["a1", "a0", "a2"]
+# This vram address is an instruction in a delay slot. In that case, the recompiler will emit the
+# hook call after this instruction is run and before the function is called.
+after_vram = 0x80085048
+
+# Single-instruction patches
+
+# Write audio dlists to kseg0 (cached, 0x80...) addresses instead of kseg1 (uncached, 0xA0...) ones.
+# This saves the recompiler from needing to handle checking for kseg1 addresses on every memory operation.
+[[patches.instruction]]
+func = "AudioHeap_WritebackDCache"
+vram = 0x8018B510
+value = 0x3C010000 # lui $at, 0x2000 -> lui $at, 0x0000
+
+# These two may not be needed with RCP timeout detection disabled
+# # Pretend the RSP has already halted so that the game doesn't attempt to directly manipulate RSP registers.
+# [[patches.instruction]]
+# func = "Sched_HandleAudioCancel"
+# vram = 0x801763D8
+# value = 0x240F0001 # lw	$t7, 0x0($s1) -> li $t7, 1
+
+# # Ditto.
+# [[patches.instruction]]
+# func = "Sched_HandleGfxCancel"
+# vram = 0x80176534
+# value = 0x240F0001 # lw	$t7, 0x0($s1) -> li $t7, 1
+
+# Disable RCP timeout detection (sometimes throws false positives, not needed)
+[[patches.instruction]]
+func = "AudioMgr_HandleRetrace"
+vram = 0x80172DBC
+value = 0x00000000 # jal osSetTimer -> nop
+
+# Ditto.
+[[patches.instruction]]
+func = "Graph_TaskSet00"
+vram = 0x80174218
+value = 0x00000000 # jal osSetTimer -> nop
+
+# Prevent the minimap from drawing at a point where it can cause a crash when pausing.
+[[patches.instruction]]
+func = "func_80106644"
+vram = 0x80106684
+value = 0x29E10003 # slti $at, $t7, 0x4 -> slti $at, $t7, 0x3

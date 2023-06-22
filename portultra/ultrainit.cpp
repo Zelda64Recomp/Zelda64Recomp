@@ -1,9 +1,9 @@
 #include "ultra64.h"
 #include "multilibultra.hpp"
 
-void Multilibultra::preinit(uint8_t* rdram, uint8_t* rom) {
+void Multilibultra::preinit(uint8_t* rdram, uint8_t* rom, void* window_handle) {
     Multilibultra::set_main_thread();
-    Multilibultra::init_events(rdram, rom);
+    Multilibultra::init_events(rdram, rom, window_handle);
     Multilibultra::init_timers(rdram);
     Multilibultra::init_audio();
     Multilibultra::save_init();
@@ -11,5 +11,4 @@ void Multilibultra::preinit(uint8_t* rdram, uint8_t* rom) {
 
 extern "C" void osInitialize() {
     Multilibultra::init_scheduler();
-    //Multilibultra::native_init();
 }

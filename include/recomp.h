@@ -66,27 +66,68 @@ static inline uint64_t load_doubleword(uint8_t* rdram, gpr reg, gpr offset) {
 #define LD(offset, reg) \
     load_doubleword(rdram, offset, reg)
 
-// TODO proper lwl/lwr/swl/swr
-static inline void do_swl(uint8_t* rdram, gpr offset, gpr reg, gpr val) {
-    uint8_t byte0 = (uint8_t)(val >> 24);
-    uint8_t byte1 = (uint8_t)(val >> 16);
-    uint8_t byte2 = (uint8_t)(val >> 8);
-    uint8_t byte3 = (uint8_t)(val >> 0);
+static inline gpr do_lwl(uint8_t* rdram, gpr initial_value, gpr offset, gpr reg) {
+    // Calculate the overall address
+    gpr address = (offset + reg);
 
-    MEM_B(offset + 0, reg) = byte0;
-    MEM_B(offset + 1, reg) = byte1;
-    MEM_B(offset + 2, reg) = byte2;
-    MEM_B(offset + 3, reg) = byte3;
-}
+    // Load the aligned word
+    gpr word_address = address & ~0x3;
+    uint32_t loaded_value = MEM_W(0, word_address);
 
-static inline gpr do_lwl(uint8_t* rdram, gpr offset, gpr reg) {
-    uint8_t byte0 = MEM_B(offset + 0, reg);
-    uint8_t byte1 = MEM_B(offset + 1, reg);
-    uint8_t byte2 = MEM_B(offset + 2, reg);
-    uint8_t byte3 = MEM_B(offset + 3, reg);
+    // Mask the existing value and shift the loaded value appropriately
+    gpr misalignment = address & 0x3;
+    gpr masked_value = initial_value & ~(0xFFFFFFFFu << (misalignment * 8));
+    loaded_value <<= (misalignment * 8);
 
     // Cast to int32_t to sign extend first
-    return (gpr)(int32_t)((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | (byte3 << 0));
+    return (gpr)(int32_t)(masked_value | loaded_value);
+}
+
+static inline gpr do_lwr(uint8_t* rdram, gpr initial_value, gpr offset, gpr reg) {
+    // Calculate the overall address
+    gpr address = (offset + reg);
+    
+    // Load the aligned word
+    gpr word_address = address & ~0x3;
+    uint32_t loaded_value = MEM_W(0, word_address);
+
+    // Mask the existing value and shift the loaded value appropriately
+    gpr misalignment = address & 0x3;
+    gpr masked_value = initial_value & ~(0xFFFFFFFFu >> (24 - misalignment * 8));
+    loaded_value >>= (24 - misalignment * 8);
+
+    // Cast to int32_t to sign extend first
+    return (gpr)(int32_t)(masked_value | loaded_value);
+}
+
+static inline void do_swl(uint8_t* rdram, gpr offset, gpr reg, gpr val) {
+    // Calculate the overall address
+    gpr address = (offset + reg);
+
+    // Get the initial value of the aligned word
+    gpr word_address = address & ~0x3;
+    uint32_t initial_value = MEM_W(0, word_address);
+
+    // Mask the initial value and shift the input value appropriately
+    gpr misalignment = address & 0x3;
+    uint32_t masked_initial_value = initial_value & ~(0xFFFFFFFFu >> (misalignment * 8));
+    uint32_t shifted_input_value = ((uint32_t)val) >> (misalignment * 8);
+    MEM_W(0, word_address) = masked_initial_value | shifted_input_value;
+}
+
+static inline void do_swr(uint8_t* rdram, gpr offset, gpr reg, gpr val) {
+    // Calculate the overall address
+    gpr address = (offset + reg);
+
+    // Get the initial value of the aligned word
+    gpr word_address = address & ~0x3;
+    uint32_t initial_value = MEM_W(0, word_address);
+
+    // Mask the initial value and shift the input value appropriately
+    gpr misalignment = address & 0x3;
+    uint32_t masked_initial_value = initial_value & ~(0xFFFFFFFFu << (24 - misalignment * 8));
+    uint32_t shifted_input_value = ((uint32_t)val) << (24 - misalignment * 8);
+    MEM_W(0, word_address) = masked_initial_value | shifted_input_value;
 }
 
 #define S32(val) \

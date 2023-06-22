@@ -2,6 +2,11 @@
 #define __RT64_LAYER_H__
 
 typedef struct {
+    void* hWnd;
+    void* hStatusBar;
+
+    int Reserved;
+
     unsigned char* HEADER;  /* This is the rom header (first 40h bytes of the rom) */
     unsigned char* RDRAM;
     unsigned char* DMEM;
@@ -35,9 +40,9 @@ typedef struct {
 
     void (*CheckInterrupts)(void);
 
-    unsigned int version;
-    unsigned int* SP_STATUS_REG;
-    const unsigned int* RDRAM_SIZE;
+    // unsigned int version;
+    // unsigned int* SP_STATUS_REG;
+    // const unsigned int* RDRAM_SIZE;
 } GFX_INFO;
 
 #define DLLEXPORT extern "C" __declspec(dllexport)  
@@ -56,6 +61,7 @@ DLLIMPORT void ProcessRDPList(void);
 DLLIMPORT void ProcessDList(void);
 DLLIMPORT void UpdateScreen(void);
 DLLIMPORT void PumpEvents(void);
+DLLIMPORT void ChangeWindow(void);
 
 #endif
 

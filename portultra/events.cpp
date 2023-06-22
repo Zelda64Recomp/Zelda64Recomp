@@ -9,7 +9,6 @@
 #include <queue>
 
 #include <Windows.h>
-#include "SDL.h"
 #include "blockingconcurrentqueue.h"
 
 #include "ultra64.h"
@@ -154,57 +153,10 @@ void dp_complete() {
     osSendMesg(PASS_RDRAM events_context.dp.mq, events_context.dp.msg, OS_MESG_NOBLOCK);
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram);
+void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle);
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
-
-std::unordered_map<SDL_Scancode, int> button_map{
-    { SDL_Scancode::SDL_SCANCODE_LEFT,   0x0002 }, // c left
-    { SDL_Scancode::SDL_SCANCODE_RIGHT,  0x0001 }, // c right
-    { SDL_Scancode::SDL_SCANCODE_UP,     0x0008 }, // c up
-    { SDL_Scancode::SDL_SCANCODE_DOWN,   0x0004 }, // c down
-    { SDL_Scancode::SDL_SCANCODE_RETURN, 0x1000 }, // start
-    { SDL_Scancode::SDL_SCANCODE_SPACE,  0x8000 }, // a
-    { SDL_Scancode::SDL_SCANCODE_LSHIFT, 0x4000 }, // b
-    { SDL_Scancode::SDL_SCANCODE_Q,      0x2000 }, // z
-    { SDL_Scancode::SDL_SCANCODE_E,      0x0020 }, // l
-    { SDL_Scancode::SDL_SCANCODE_R,      0x0010 }, // r
-    { SDL_Scancode::SDL_SCANCODE_J,      0x0200 }, // dpad left
-    { SDL_Scancode::SDL_SCANCODE_L,      0x0100 }, // dpad right
-    { SDL_Scancode::SDL_SCANCODE_I,      0x0800 }, // dpad up
-    { SDL_Scancode::SDL_SCANCODE_K,      0x0400 }, // dpad down
-};
-
-extern int button;
-extern int stick_x;
-extern int stick_y;
-
-int sdl_event_filter(void* userdata, SDL_Event* event) {
-    switch (event->type) {
-    case SDL_EventType::SDL_KEYUP:
-    case SDL_EventType::SDL_KEYDOWN:
-        {
-            const Uint8* key_states = SDL_GetKeyboardState(nullptr);
-            int new_button = 0;
-
-            for (const auto& mapping : button_map) {
-                if (key_states[mapping.first]) {
-                    new_button |= mapping.second;
-                }
-            }
-
-            button = new_button;
-
-            stick_x = 85 * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
-            stick_y = 85 * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
-        }
-        break;
-    case SDL_EventType::SDL_QUIT:
-        std::quick_exit(ERROR_SUCCESS);
-        break;
-    }
-    return 1;
-}
+void RT64ChangeWindow();
 
 uint8_t dmem[0x1000];
 uint16_t rspReciprocals[512];
@@ -276,19 +228,10 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
-void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
+void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, void* window_handle) {
     using namespace std::chrono_literals;
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
-        fprintf(stderr, "Failed to initialize SDL2: %s\n", SDL_GetError());
-        std::quick_exit(EXIT_FAILURE);
-    }
-    RT64Init(rom, rdram);
-    SDL_Window* window = SDL_GetWindowFromID(1);
-    // TODO set this window title in RT64, create the window here and send it to RT64, or something else entirely
-    // as the current window name visibly changes as RT64 is initialized
-    SDL_SetWindowTitle(window, "Recomp");
-    //SDL_SetEventFilter(sdl_event_filter, nullptr);
-
+    RT64Init(rom, rdram, window_handle);
+    
     rsp_constants_init();
 
     // Notify the caller thread that this thread is ready.
@@ -318,15 +261,6 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
                 RT64UpdateScreen(swap_action->origin);
             }
         }
-
-        // Handle events
-        constexpr int max_events_per_frame = 16;
-        SDL_Event cur_event;
-        int i = 0;
-        while (i++ < max_events_per_frame && SDL_PollEvent(&cur_event)) {
-            sdl_event_filter(nullptr, &cur_event);
-        }
-        //SDL_PumpEvents();
     }
 }
 
@@ -483,11 +417,11 @@ void Multilibultra::send_si_message() {
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
-void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom) {
+void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, void* window_handle) {
     std::atomic_flag gfx_thread_ready;
     std::atomic_flag task_thread_ready;
     events_context.rdram = rdram;
-    events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, rom, &gfx_thread_ready };
+    events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, rom, &gfx_thread_ready, window_handle };
     events_context.sp.task_thread = std::thread{ task_thread_func, rdram, rom, &task_thread_ready };
     
     // Wait for the two sp threads to be ready before continuing to prevent the game from

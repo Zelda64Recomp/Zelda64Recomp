@@ -1,6 +1,14 @@
 #include "../portultra/multilibultra.hpp"
 #include "recomp.h"
 
+static Multilibultra::input_callbacks_t input_callbacks;
+
+void Multilibultra::set_input_callbacks(const input_callbacks_t* callbacks) {
+    if (callbacks != nullptr) {
+        input_callbacks = *callbacks;
+    }
+}
+
 static int max_controllers = 0;
 
 extern "C" void osContInit_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -37,28 +45,24 @@ struct OSContPad {
     u8 errno_;
 };
 
-int button = 0;
-int stick_x = 0;
-int stick_y = 0;
-
-void press_button(int button) {
-
-}
-
-void release_button(int button) {
-
-}
-
 extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
     int32_t pad = (int32_t)ctx->r4;
 
+    uint16_t buttons = 0;
+    float x = 0.0f;
+    float y = 0.0f;
+
+    if (input_callbacks.get_input) {
+        input_callbacks.get_input(&buttons, &x, &y);
+    }
+
     if (max_controllers > 0) {
         // button
-        MEM_H(0, pad) = button;
+        MEM_H(0, pad) = buttons;
         // stick_x
-        MEM_B(2, pad) = stick_x;
+        MEM_B(2, pad) = (int8_t)(127 * x);
         // stick_y
-        MEM_B(3, pad) = stick_y;
+        MEM_B(3, pad) = (int8_t)(127 * y);
         // errno
         MEM_B(4, pad) = 0;
     }

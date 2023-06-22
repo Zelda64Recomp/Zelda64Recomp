@@ -3,7 +3,6 @@
 
 #include "../portultra/multilibultra.hpp"
 #include "rt64_layer.h"
-#include "SDL.h"
 
 static uint8_t DMEM[0x1000];
 static uint8_t IMEM[0x1000];
@@ -44,7 +43,7 @@ void dummy_check_interrupts() {
 
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram) {
+void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle) {
     // Dynamic loading
     //auto RT64 = LoadLibrary("RT64.dll");
     //if (RT64 == 0) {
@@ -57,6 +56,9 @@ void RT64Init(uint8_t* rom, uint8_t* rdram) {
     //GET_FUNC(RT64, UpdateScreen);
 
     GFX_INFO gfx_info{};
+    gfx_info.hWnd = window_handle;
+    gfx_info.hStatusBar = nullptr;
+
     gfx_info.HEADER = rom;
     gfx_info.RDRAM = rdram;
     gfx_info.DMEM = DMEM;
@@ -89,9 +91,6 @@ void RT64Init(uint8_t* rom, uint8_t* rdram) {
     gfx_info.VI_Y_SCALE_REG = &VI_Y_SCALE_REG;
 
     gfx_info.CheckInterrupts = dummy_check_interrupts;
-    gfx_info.version = 2;
-    gfx_info.SP_STATUS_REG = &SP_STATUS_REG;
-    gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
 	InitiateGFX(gfx_info);
 }
@@ -111,4 +110,8 @@ void RT64UpdateScreen(uint32_t vi_origin) {
     VI_ORIGIN_REG = vi_origin;
 
     UpdateScreen();
+}
+
+void RT64ChangeWindow() {
+    ChangeWindow();
 }

@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -78,9 +78,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <NMakeBuildCommandLine>make TARGET=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make TARGET=$(Configuration) clean</NMakeCleanCommandLine>
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <NMakeBuildCommandLine>make TARGET=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make TARGET=$(Configuration) clean</NMakeCleanCommandLine>
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -224,11 +230,6 @@ XCOPY "$(ProjectDir)lib\SDL2-2.24.0\lib\$(Platform)\SDL2.dll" "$(TargetDir)" /S 
     <ClInclude Include="portultra\multilibultra.hpp" />
     <ClInclude Include="portultra\ultra64.h" />
     <ClInclude Include="src\euc-jp.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="RecompiledFuncs.vcxproj">
-      <Project>{7bf5e3f9-c49f-4c84-ab64-7681f028cac2}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
