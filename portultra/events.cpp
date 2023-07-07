@@ -94,6 +94,10 @@ extern "C" void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, u32 ret
 }
 
 void vi_thread_func() {
+    Multilibultra::set_native_thread_name("VI Thread");
+    // This thread should be prioritized over every other thread in the application, as it's what allows
+    // the game to generate new audio and gfx lists.
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Critical);
     using namespace std::chrono_literals;
     
     uint64_t total_vis = 0;
@@ -198,6 +202,9 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
 
 
 void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
+    Multilibultra::set_native_thread_name("SP Task Thread");
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
+
     // Notify the caller thread that this thread is ready.
     thread_ready->test_and_set();
     thread_ready->notify_all();
@@ -230,6 +237,10 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
 
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, void* window_handle) {
     using namespace std::chrono_literals;
+
+    Multilibultra::set_native_thread_name("Gfx Thread");
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
+
     RT64Init(rom, rdram, window_handle);
     
     rsp_constants_init();

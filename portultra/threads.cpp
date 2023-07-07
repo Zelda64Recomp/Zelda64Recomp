@@ -43,6 +43,45 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
 
 struct thread_terminated : std::exception {};
 
+#ifdef _WIN32
+void Multilibultra::set_native_thread_name(const std::string& name) {
+    std::wstring wname{name.begin(), name.end()};
+
+    HRESULT r;
+    r = SetThreadDescription(
+        GetCurrentThread(),
+        wname.c_str()
+    );
+}
+
+void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
+    int nPriority = THREAD_PRIORITY_NORMAL;
+
+    // Convert ThreadPriority to Win32 priority
+    switch (pri) {
+        case ThreadPriority::Low:
+            nPriority = THREAD_PRIORITY_BELOW_NORMAL;
+            break;
+        case ThreadPriority::Normal:
+            nPriority = THREAD_PRIORITY_NORMAL;
+            break;
+        case ThreadPriority::High:
+            nPriority = THREAD_PRIORITY_ABOVE_NORMAL;
+            break;
+        case ThreadPriority::VeryHigh:
+            nPriority = THREAD_PRIORITY_HIGHEST;
+            break;
+        case ThreadPriority::Critical:
+            nPriority = THREAD_PRIORITY_TIME_CRITICAL;
+            break;
+        default:
+            throw std::runtime_error("Invalid thread priority!");
+            break;
+    }
+    // SetThreadPriority(GetCurrentThread(), nPriority);
+}
+#endif
+
 static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg) {
     OSThread *self = TO_PTR(OSThread, self_);
     debug_printf("[Thread] Thread created: %d\n", self->id);
@@ -50,23 +89,17 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     is_game_thread = true;
 
     // Set the thread name
-#ifdef _WIN32
-    std::wstring thread_name = L"Game Thread " + std::to_wstring(self->id);
-    HRESULT r;
-    r = SetThreadDescription(
-        GetCurrentThread(),
-        thread_name.c_str()
-    );
-#endif
+    Multilibultra::set_native_thread_name("Game Thread " + std::to_string(self->id));
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::High);
 
     // Set initialized to false to indicate that this thread can be started.
+    Multilibultra::set_self_paused(PASS_RDRAM1);
     self->context->initialized.store(true);
     self->context->initialized.notify_all();
 
     debug_printf("[Thread] Thread waiting to be started: %d\n", self->id);
 
     // Wait until the thread is marked as running.
-    Multilibultra::set_self_paused(PASS_RDRAM1);
     Multilibultra::wait_for_resumed(PASS_RDRAM1);
 
     debug_printf("[Thread] Thread started: %d\n", self->id);

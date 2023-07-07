@@ -34,6 +34,17 @@ void resume_thread_impl(OSThread *t);
 void schedule_running_thread(OSThread *t);
 void pause_self(RDRAM_ARG1);
 void cleanup_thread(OSThread *t);
+
+enum class ThreadPriority {
+    Low,
+    Normal,
+    High,
+    VeryHigh,
+    Critical
+};
+
+void set_native_thread_name(const std::string& name);
+void set_native_thread_priority(ThreadPriority pri);
 PTR(OSThread) this_thread();
 void disable_preemption();
 void enable_preemption();

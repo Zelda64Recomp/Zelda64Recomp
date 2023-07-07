@@ -61,6 +61,9 @@ uint64_t time_now() {
 }
 
 void timer_thread(RDRAM_ARG1) {
+    Multilibultra::set_native_thread_name("Timer Thread");
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::VeryHigh);
+
     // Lambda comparator function to keep the set ordered
     auto timer_sort = [PASS_RDRAM1](PTR(OSTimer) a_, PTR(OSTimer) b_) {
         OSTimer* a = TO_PTR(OSTimer, a_);

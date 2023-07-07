@@ -56,8 +56,8 @@ UCRT_DIR      ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x6
 SDK_DIR       ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
 
 WARNFLAGS := -Wall -Wextra -Wpedantic -Wno-gnu-anonymous-struct
-CFLAGS    := -ffunction-sections -fdata-sections $(OPTFLAGS) $(WARNFLAGS) -c
-CXXFLAGS  := -ffunction-sections -fdata-sections $(OPTFLAGS) $(WARNFLAGS) -std=c++20 -c
+CFLAGS    := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WARNFLAGS) -c
+CXXFLAGS  := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WARNFLAGS) -std=c++20 -c
 CPPFLAGS  := -Iinclude -Ithirdparty
 LDFLAGS   := -v -Wl,/OPT:REF $(OPTFLAGS) $(LIBS) -L"$(LIB_DIR:;=)" -L"$(UCRT_DIR:;=)" -L"$(SDK_DIR:;=)" lib/RT64/$(CONFIG)/RT64.lib
 

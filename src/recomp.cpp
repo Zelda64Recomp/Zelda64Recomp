@@ -138,6 +138,8 @@ __declspec(dllexport) extern "C" void start(void* window_handle, const Multilibu
     Multilibultra::set_input_callbacks(input_callbacks);
     std::thread game_thread{[](void* window_handle) {
         debug_printf("[Recomp] Starting\n");
+        
+        Multilibultra::set_native_thread_name("Game Start Thread");
 
         Multilibultra::preinit(rdram_buffer.get(), rom.get(), window_handle);
 

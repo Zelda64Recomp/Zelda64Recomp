@@ -2,7 +2,9 @@
 #include <queue>
 #include <atomic>
 #include <vector>
+#include <variant>
 
+#include "blockingconcurrentqueue.h"
 #include "multilibultra.hpp"
 
 class OSThreadComparator {
@@ -35,93 +37,78 @@ public:
     }
 };
 
+struct NotifySchedulerAction {
+
+};
+
+struct ScheduleThreadAction {
+    OSThread* t;
+};
+
+struct StopThreadAction {
+    OSThread* t;
+};
+
+struct CleanupThreadAction {
+    OSThread* t;
+};
+
+struct ReprioritizeThreadAction {
+    OSThread* t;
+    OSPri pri;
+};
+
+using ThreadAction = std::variant<NotifySchedulerAction, ScheduleThreadAction, StopThreadAction, CleanupThreadAction, ReprioritizeThreadAction>;
+
 static struct {
-    std::vector<OSThread*> to_schedule;
-    std::vector<OSThread*> to_stop;
-    std::vector<OSThread*> to_cleanup;
-    std::vector<std::pair<OSThread*, OSPri>> to_reprioritize;
-    std::mutex mutex;
-    // OSThread* running_thread;
-    std::atomic_int notify_count;
-    std::atomic_int action_count;
+    moodycamel::BlockingConcurrentQueue<ThreadAction> action_queue{};
+    OSThread* running_thread;
 
     bool can_preempt;
     std::mutex premption_mutex;
 } scheduler_context{};
 
-void handle_thread_queueing(thread_queue_t& running_thread_queue) {
-    std::lock_guard lock{scheduler_context.mutex};
-
-    if (!scheduler_context.to_schedule.empty()) {
-        OSThread* to_schedule = scheduler_context.to_schedule.back();
-        scheduler_context.to_schedule.pop_back();
-        scheduler_context.action_count.fetch_sub(1);
-        debug_printf("[Scheduler] Scheduling thread %d\n", to_schedule->id);
-        running_thread_queue.push(to_schedule);
-    }
+void handle_thread_queueing(thread_queue_t& running_thread_queue, const ScheduleThreadAction& action) {
+    OSThread* to_schedule = action.t;
+    debug_printf("[Scheduler] Scheduling thread %d\n", to_schedule->id);
+    running_thread_queue.push(to_schedule);
 }
 
-void handle_thread_stopping(thread_queue_t& running_thread_queue) {
-    std::lock_guard lock{scheduler_context.mutex};
-
-    while (!scheduler_context.to_stop.empty()) {
-        OSThread* to_stop = scheduler_context.to_stop.back();
-        scheduler_context.to_stop.pop_back();
-        scheduler_context.action_count.fetch_sub(1);
-        debug_printf("[Scheduler] Stopping thread %d\n", to_stop->id);
-        running_thread_queue.remove(to_stop);
-    }
+void handle_thread_stopping(thread_queue_t& running_thread_queue, const StopThreadAction& action) {
+    OSThread* to_stop = action.t;
+    debug_printf("[Scheduler] Stopping thread %d\n", to_stop->id);
+    running_thread_queue.remove(to_stop);
 }
 
-void handle_thread_cleanup(thread_queue_t& running_thread_queue, OSThread*& cur_running_thread) {
-    std::lock_guard lock{scheduler_context.mutex};
-
-    while (!scheduler_context.to_cleanup.empty()) {
-        OSThread* to_cleanup = scheduler_context.to_cleanup.back();
-        scheduler_context.to_cleanup.pop_back();
-        scheduler_context.action_count.fetch_sub(1);
-        
-        debug_printf("[Scheduler] Destroying thread %d\n", to_cleanup->id);
-        running_thread_queue.remove(to_cleanup);
-        // If the cleaned up thread was the running thread, schedule a new one to run.
-        if (to_cleanup == cur_running_thread) {
-            // If there's a thread queued to run, set it as the new running thread.
-            if (!running_thread_queue.empty()) {
-                cur_running_thread = running_thread_queue.top();
-            }
-            // Otherwise, set the running thread to null so the next thread that can be run gets started.
-            else {
-                cur_running_thread = nullptr;
-            }
+void handle_thread_cleanup(thread_queue_t& running_thread_queue, OSThread*& cur_running_thread, const CleanupThreadAction& action) {
+    OSThread* to_cleanup = action.t;
+    
+    debug_printf("[Scheduler] Destroying thread %d\n", to_cleanup->id);
+    running_thread_queue.remove(to_cleanup);
+    // If the cleaned up thread was the running thread, schedule a new one to run.
+    if (to_cleanup == cur_running_thread) {
+        // If there's a thread queued to run, set it as the new running thread.
+        if (!running_thread_queue.empty()) {
+            cur_running_thread = running_thread_queue.top();
         }
-        to_cleanup->context->host_thread.join();
-        delete to_cleanup->context;
-        to_cleanup->context = nullptr;
+        // Otherwise, set the running thread to null so the next thread that can be run gets started.
+        else {
+            cur_running_thread = nullptr;
+        }
     }
+    to_cleanup->context->host_thread.join();
+    delete to_cleanup->context;
+    to_cleanup->context = nullptr;
 }
 
-void handle_thread_reprioritization(thread_queue_t& running_thread_queue) {
-    std::lock_guard lock{scheduler_context.mutex};
-
-    while (!scheduler_context.to_reprioritize.empty()) {
-        const std::pair<OSThread*, OSPri> to_reprioritize = scheduler_context.to_reprioritize.back();
-        scheduler_context.to_reprioritize.pop_back();
-        scheduler_context.action_count.fetch_sub(1);
-        
-        debug_printf("[Scheduler] Reprioritizing thread %d to %d\n", to_reprioritize.first->id, to_reprioritize.second);
-        running_thread_queue.remove(to_reprioritize.first);
-        to_reprioritize.first->priority = to_reprioritize.second;
-        running_thread_queue.push(to_reprioritize.first);
-    }
-}
-
-void handle_scheduler_notifications() {
-    std::lock_guard lock{scheduler_context.mutex};
-    int32_t notify_count = scheduler_context.notify_count.exchange(0);
-    if (notify_count) {
-        debug_printf("Received %d notifications\n", notify_count);
-        scheduler_context.action_count.fetch_sub(notify_count);
-    }
+void handle_thread_reprioritization(thread_queue_t& running_thread_queue, const ReprioritizeThreadAction& action) {
+    OSThread* to_reprioritize = action.t;
+    OSPri pri = action.pri;
+    
+    debug_printf("[Scheduler] Reprioritizing thread %d to %d\n", to_reprioritize->id, pri);
+    running_thread_queue.remove(to_reprioritize);
+    to_reprioritize->priority = pri;
+    running_thread_queue.push(to_reprioritize);
 }
 
 void swap_running_thread(thread_queue_t& running_thread_queue, OSThread*& cur_running_thread) {
@@ -148,26 +135,32 @@ void scheduler_func() {
     thread_queue_t running_thread_queue{};
     OSThread* cur_running_thread = nullptr;
 
+    Multilibultra::set_native_thread_name("Scheduler Thread");
+    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::VeryHigh);
+
     while (true) {
+        ThreadAction action;
         OSThread* old_running_thread = cur_running_thread;
-        scheduler_context.action_count.wait(0);
+        scheduler_context.action_queue.wait_dequeue(action);
 
         std::lock_guard lock{scheduler_context.premption_mutex};
-        
-        // Handle notifications
-        handle_scheduler_notifications();
 
-        // Handle stopping threads
-        handle_thread_stopping(running_thread_queue);
-
-        // Handle cleaning up threads
-        handle_thread_cleanup(running_thread_queue, cur_running_thread);
-
-        // Handle queueing threads to run
-        handle_thread_queueing(running_thread_queue);
-
-        // Handle threads that have changed priority
-        handle_thread_reprioritization(running_thread_queue);
+        // Determine the action type and act on it
+        if (const auto* cleanup_action = std::get_if<NotifySchedulerAction>(&action)) {
+            // Nothing to do
+        }
+        else if (const auto* stop_action = std::get_if<StopThreadAction>(&action)) {
+            handle_thread_stopping(running_thread_queue, *stop_action);
+        }
+        else if (const auto* cleanup_action = std::get_if<CleanupThreadAction>(&action)) {
+            handle_thread_cleanup(running_thread_queue, cur_running_thread, *cleanup_action);
+        }
+        else if (const auto* schedule_action = std::get_if<ScheduleThreadAction>(&action)) {
+            handle_thread_queueing(running_thread_queue, *schedule_action);
+        }
+        else if (const auto* reprioritize_action = std::get_if<ReprioritizeThreadAction>(&action)) {
+            handle_thread_reprioritization(running_thread_queue, *reprioritize_action);
+        }
 
         // Determine which thread to run, stopping the current running thread if necessary
         swap_running_thread(running_thread_queue, cur_running_thread);
@@ -194,51 +187,35 @@ void init_scheduler() {
 
 void schedule_running_thread(OSThread *t) {
     debug_printf("[Scheduler] Queuing Thread %d to be scheduled\n", t->id);
-    std::lock_guard lock{scheduler_context.mutex};
-    scheduler_context.to_schedule.push_back(t);
-    scheduler_context.action_count.fetch_add(1);
-    scheduler_context.action_count.notify_all();
+    scheduler_context.action_queue.enqueue(ScheduleThreadAction{t});
 }
 
 void swap_to_thread(RDRAM_ARG OSThread *to) {
     OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
     debug_printf("[Scheduler] Scheduling swap from thread %d to %d\n", self->id, to->id);
-    {
-        std::lock_guard lock{scheduler_context.mutex};
-        scheduler_context.to_schedule.push_back(to);
-        Multilibultra::set_self_paused(PASS_RDRAM1);
-        scheduler_context.action_count.fetch_add(1);
-        scheduler_context.action_count.notify_all();
-    }
+    
+    Multilibultra::set_self_paused(PASS_RDRAM1);
+    scheduler_context.action_queue.enqueue(ScheduleThreadAction{to});
     Multilibultra::wait_for_resumed(PASS_RDRAM1);
 }
 
 void reprioritize_thread(OSThread *t, OSPri pri) {
     debug_printf("[Scheduler] Adjusting Thread %d priority to %d\n", t->id, pri);
-    std::lock_guard lock{scheduler_context.mutex};
-    scheduler_context.to_reprioritize.emplace_back(t, pri);
-    scheduler_context.action_count.fetch_add(1);
-    scheduler_context.action_count.notify_all();
+
+    scheduler_context.action_queue.enqueue(ReprioritizeThreadAction{t, pri});
 }
 
 void pause_self(RDRAM_ARG1) {
     OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
     debug_printf("[Scheduler] Thread %d pausing itself\n", self->id);
-    {
-        std::lock_guard lock{scheduler_context.mutex};
-        Multilibultra::set_self_paused(PASS_RDRAM1);
-        scheduler_context.to_stop.push_back(self);
-        scheduler_context.action_count.fetch_add(1);
-        scheduler_context.action_count.notify_all();
-    }
+
+    Multilibultra::set_self_paused(PASS_RDRAM1);
+    scheduler_context.action_queue.enqueue(StopThreadAction{self});
     Multilibultra::wait_for_resumed(PASS_RDRAM1);
 }
 
 void cleanup_thread(OSThread *t) {
-    std::lock_guard lock{scheduler_context.mutex};
-    scheduler_context.to_cleanup.push_back(t);
-    scheduler_context.action_count.fetch_add(1);
-    scheduler_context.action_count.notify_all();
+    scheduler_context.action_queue.enqueue(CleanupThreadAction{t});
 }
 
 void disable_preemption() {
@@ -269,10 +246,7 @@ preemption_guard::~preemption_guard() {
 }
 
 void notify_scheduler() {
-    std::lock_guard lock{scheduler_context.mutex};
-    scheduler_context.notify_count.fetch_add(1);
-    scheduler_context.action_count.fetch_add(1);
-    scheduler_context.action_count.notify_all();
+    scheduler_context.action_queue.enqueue(NotifySchedulerAction{});
 }
 
 }

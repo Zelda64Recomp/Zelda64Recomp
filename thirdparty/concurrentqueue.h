@@ -378,7 +378,7 @@ struct ConcurrentQueueDefaultTraits
 	// Recommended values are on the order of 1000-10000 unless the number of
 	// consumer threads exceeds the number of idle cores (in which case try 0-100).
 	// Only affects instances of the BlockingConcurrentQueue.
-	static const int MAX_SEMA_SPINS = 10000;
+	static const int MAX_SEMA_SPINS = 100;
 
 	// Whether to recycle dynamically-allocated blocks into an internal free list or
 	// not. If false, only pre-allocated blocks (controlled by the constructor
