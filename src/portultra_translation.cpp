@@ -29,7 +29,8 @@ extern "C" void osDestroyThread_recomp(uint8_t * rdram, recomp_context * ctx) {
 }
 
 extern "C" void osYieldThread_recomp(uint8_t * rdram, recomp_context * ctx) {
-    osYieldThread(rdram);
+    assert(false);
+    // osYieldThread(rdram);
 }
 
 extern "C" void osSetThreadPri_recomp(uint8_t* rdram, recomp_context* ctx) {

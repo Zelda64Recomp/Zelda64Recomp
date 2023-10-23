@@ -23,8 +23,7 @@
 
 struct UltraThreadContext {
     std::thread host_thread;
-    std::atomic_bool scheduled;
-    std::atomic_bool descheduled;
+    std::atomic_bool running;
     std::atomic_bool initialized;
 };
 
@@ -52,13 +51,16 @@ void save_init();
 void init_scheduler();
 void init_events(uint8_t* rdram, uint8_t* rom, WindowHandle window_handle);
 void init_timers(RDRAM_ARG1);
+void set_self_paused(RDRAM_ARG1);
 void yield_self(RDRAM_ARG1);
 void block_self(RDRAM_ARG1);
 void unblock_thread(OSThread* t);
 void wait_for_resumed(RDRAM_ARG1);
 void swap_to_thread(RDRAM_ARG OSThread *to);
+void pause_thread_impl(OSThread *t);
 void resume_thread_impl(OSThread* t);
 void schedule_running_thread(OSThread *t);
+void pause_self(RDRAM_ARG1);
 void halt_self(RDRAM_ARG1);
 void stop_thread(OSThread *t);
 void cleanup_thread(OSThread *t);
@@ -74,6 +76,8 @@ enum class ThreadPriority {
 void set_native_thread_name(const std::string& name);
 void set_native_thread_priority(ThreadPriority pri);
 PTR(OSThread) this_thread();
+void disable_preemption();
+void enable_preemption();
 void notify_scheduler();
 void reprioritize_thread(OSThread *t, OSPri pri);
 void set_main_thread();
@@ -118,11 +122,19 @@ struct gfx_callbacks_t {
 };
 void set_gfx_callbacks(const gfx_callbacks_t* callbacks);
 
+class preemption_guard {
+public:
+    preemption_guard();
+    ~preemption_guard();
+private:
+    std::lock_guard<std::mutex> lock;
+};
+
 } // namespace Multilibultra
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-//#define debug_printf(...)
-#define debug_printf(...) printf(__VA_ARGS__);
+#define debug_printf(...)
+//#define debug_printf(...) printf(__VA_ARGS__);
 
 #endif

@@ -131,6 +131,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     debug_printf("[Thread] Thread waiting to be started: %d\n", self->id);
 
     // Wait until the thread is marked as running.
+    Multilibultra::set_self_paused(PASS_RDRAM1);
     Multilibultra::wait_for_resumed(PASS_RDRAM1);
 
     debug_printf("[Thread] Thread started: %d\n", self->id);
@@ -150,7 +151,7 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
     OSThread* t = TO_PTR(OSThread, t_);
     debug_printf("[os] Start Thread %d\n", t->id);
 
-    // Wait until the thread is initialized to indicate that it's queued to be started.
+    // Wait until the thread is initialized to indicate that it's action_queued to be started.
     t->context->initialized.wait(false);
 
     debug_printf("[os] Thread %d is ready to be started\n", t->id);
@@ -175,33 +176,20 @@ extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_f
     t->next = NULLPTR;
     t->priority = pri;
     t->id = id;
-    t->state = OSThreadState::STOPPED;
+    t->state = OSThreadState::PAUSED;
     t->sp = sp - 0x10; // Set up the first stack frame
     t->destroyed = false;
 
     // Spawn a new thread, which will immediately pause itself and wait until it's been started.
     t->context = new UltraThreadContext{};
     t->context->initialized.store(false);
-    t->context->scheduled.store(false);
-    t->context->descheduled.store(true);
+    t->context->running.store(false);
 
     t->context->host_thread = std::thread{_thread_func, PASS_RDRAM t_, entrypoint, arg};
 }
 
 extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
-    // If null is passed in as the thread then the calling thread is stopping itself.
-    if (t_ == NULLPTR) {
-        t_ = Multilibultra::this_thread();
-    }
-
-    // Remove the thread in question from the scheduler so it doesn't get scheduled again.
-    OSThread* t = TO_PTR(OSThread, t_);
-    Multilibultra::stop_thread(t);
-
-    // If a thread is stopping itself, tell the scheduler that it has yielded.
-    if (t_ == Multilibultra::this_thread()) {
-        Multilibultra::yield_self(PASS_RDRAM1);
-    }
+    assert(false);
 }
 
 extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {
@@ -217,12 +205,6 @@ extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {
     }
 }
 
-// TODO make the thread queue stable to ensure correct yielding behavior
-extern "C" void osYieldThread(RDRAM_ARG1) {
-    Multilibultra::yield_self(PASS_RDRAM1);
-    Multilibultra::wait_for_resumed(PASS_RDRAM1);
-}
-
 extern "C" void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri) {
     if (t == NULLPTR) {
         t = thread_self;
@@ -230,12 +212,13 @@ extern "C" void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri) {
     bool pause_self = false;
     if (pri > TO_PTR(OSThread, thread_self)->priority) {
         pause_self = true;
+        Multilibultra::set_self_paused(PASS_RDRAM1);
     } else if (t == thread_self && pri < TO_PTR(OSThread, thread_self)->priority) {
         pause_self = true;
+        Multilibultra::set_self_paused(PASS_RDRAM1);
     }
     Multilibultra::reprioritize_thread(TO_PTR(OSThread, t), pri);
     if (pause_self) {
-        Multilibultra::yield_self(PASS_RDRAM1);
         Multilibultra::wait_for_resumed(PASS_RDRAM1);
     }
 }
@@ -254,6 +237,15 @@ extern "C" OSId osGetThreadId(RDRAM_ARG PTR(OSThread) t) {
     return TO_PTR(OSThread, t)->id;
 }
 
+// TODO yield thread, need a stable priority queue in the scheduler
+
+void Multilibultra::set_self_paused(RDRAM_ARG1) {
+    debug_printf("[Thread] Thread pausing itself: %d\n", TO_PTR(OSThread, thread_self)->id);
+    TO_PTR(OSThread, thread_self)->state = OSThreadState::PAUSED;
+    TO_PTR(OSThread, thread_self)->context->running.store(false);
+    TO_PTR(OSThread, thread_self)->context->running.notify_all();
+}
+
 void check_destroyed(OSThread* t) {
     if (t->destroyed) {
         throw thread_terminated{};
@@ -262,11 +254,23 @@ void check_destroyed(OSThread* t) {
 
 void Multilibultra::wait_for_resumed(RDRAM_ARG1) {
     check_destroyed(TO_PTR(OSThread, thread_self));
-    //TO_PTR(OSThread, thread_self)->context->descheduled.wait(false);
-    //TO_PTR(OSThread, thread_self)->context->descheduled.store(false);
-    TO_PTR(OSThread, thread_self)->context->scheduled.wait(false);
-    TO_PTR(OSThread, thread_self)->context->scheduled.store(false);
+    TO_PTR(OSThread, thread_self)->context->running.wait(false);
     check_destroyed(TO_PTR(OSThread, thread_self));
+}
+
+void Multilibultra::pause_thread_impl(OSThread* t) {
+    t->state = OSThreadState::PREEMPTED;
+    t->context->running.store(false);
+    t->context->running.notify_all();
+}
+
+void Multilibultra::resume_thread_impl(OSThread *t) {
+    if (t->state == OSThreadState::PREEMPTED) {
+        // Nothing to do here
+    }
+    t->state = OSThreadState::RUNNING;
+    t->context->running.store(true);
+    t->context->running.notify_all();
 }
 
 PTR(OSThread) Multilibultra::this_thread() {
