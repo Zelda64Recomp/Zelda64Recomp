@@ -5,7 +5,6 @@
 
 #include "ultra64.h"
 #include "multilibultra.hpp"
-#include "recomp.h"
 
 // Start time for the program
 static std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
@@ -24,7 +23,7 @@ struct OSTimer {
 };
 
 struct AddTimerAction {
-    PTR(OSTask) timer;
+    PTR(OSTimer) timer;
 };
 
 struct RemoveTimerAction {

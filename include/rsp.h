@@ -8,7 +8,8 @@ enum class RspExitReason {
     Invalid,
     Broke,
     ImemOverrun,
-    UnhandledJumpTarget
+    UnhandledJumpTarget,
+    Unsupported
 };
 
 extern uint8_t dmem[];
@@ -16,19 +17,19 @@ extern uint16_t rspReciprocals[512];
 extern uint16_t rspInverseSquareRoots[512];
 
 #define RSP_MEM_W(offset, addr) \
-    (*reinterpret_cast<uint32_t*>(dmem + (offset) + (addr)))
+    (*reinterpret_cast<uint32_t*>(dmem + (0xFFF & ((offset) + (addr)))))
 
 #define RSP_MEM_H(offset, addr) \
-    (*reinterpret_cast<int16_t*>(dmem + (((offset) + (addr)) ^ 2)))
+    (*reinterpret_cast<int16_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 2))))
 
 #define RSP_MEM_HU(offset, addr) \
-    (*reinterpret_cast<uint16_t*>(dmem + (((offset) + (addr)) ^ 2)))
+    (*reinterpret_cast<uint16_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 2))))
 
 #define RSP_MEM_B(offset, addr) \
-    (*reinterpret_cast<int8_t*>(dmem + (((offset) + (addr)) ^ 3)))
+    (*reinterpret_cast<int8_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 3))))
 
 #define RSP_MEM_BU(offset, addr) \
-    (*reinterpret_cast<uint8_t*>(dmem + (((offset) + (addr)) ^ 3)))
+    (*reinterpret_cast<uint8_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 3))))
     
 #define RSP_ADD32(a, b) \
     ((int32_t)((a) + (b)))

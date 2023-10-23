@@ -1,4 +1,4 @@
-﻿#ifdef _WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 #include <cstdio>
@@ -41,13 +41,58 @@ extern "C" void osGetMemSize_recomp(uint8_t * rdram, recomp_context * ctx) {
     ctx->r2 = 8 * 1024 * 1024;
 }
 
+enum class StatusReg {
+    FR = 0x04000000,
+};
+
+extern "C" void cop0_status_write(recomp_context* ctx, gpr value) {
+    uint32_t old_sr = ctx->status_reg;
+    uint32_t new_sr = (uint32_t)value;
+    uint32_t changed = old_sr ^ new_sr;
+
+    // Check if the FR bit changed
+    if (changed & (uint32_t)StatusReg::FR) {
+        // Check if the FR bit was set
+        if (new_sr & (uint32_t)StatusReg::FR) {
+            // FR = 1, odd single floats point to their own registers
+            ctx->f_odd = &ctx->f1.u32l;
+            ctx->mips3_float_mode = true;
+        }
+        // Otherwise, it was cleared
+        else {
+            // FR = 0, odd single floats point to the upper half of the previous register
+            ctx->f_odd = &ctx->f0.u32h;
+            ctx->mips3_float_mode = false;
+        }
+
+        // Remove the FR bit from the changed bits as it's been handled
+        changed &= ~(uint32_t)StatusReg::FR;
+    }
+
+    // If any other bits were changed, assert false as they're not handled currently
+    if (changed) {
+        printf("Unhandled status register bits changed: 0x%08X\n", changed);
+        assert(false);
+        exit(EXIT_FAILURE);
+    }
+    
+    // Update the status register in the context
+    ctx->status_reg = new_sr;
+}
+
+extern "C" gpr cop0_status_read(recomp_context* ctx) {
+    return (gpr)(int32_t)ctx->status_reg;
+}
+
 extern "C" void switch_error(const char* func, uint32_t vram, uint32_t jtbl) {
     printf("Switch-case out of bounds in %s at 0x%08X for jump table at 0x%08X\n", func, vram, jtbl);
+    assert(false);
     exit(EXIT_FAILURE);
 }
 
 extern "C" void do_break(uint32_t vram) {
     printf("Encountered break at original vram 0x%08X\n", vram);
+    assert(false);
     exit(EXIT_FAILURE);
 }
 
@@ -55,6 +100,8 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
     recomp_context ctx{};
     ctx.r29 = sp;
     ctx.r4 = arg;
+    ctx.mips3_float_mode = 0;
+    ctx.f_odd = &ctx.f0.u32h;
     recomp_func_t* func = get_function(addr);
     func(rdram, &ctx);
 }
@@ -71,10 +118,6 @@ const char* get_rom_name();
 void init_overlays();
 extern "C" void load_overlays(uint32_t rom, int32_t ram_addr, uint32_t size);
 extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 
 std::unique_ptr<uint8_t[]> rdram_buffer;
 recomp_context context{};
@@ -124,6 +167,10 @@ EXPORT extern "C" void init() {
     // Set up stack pointer
     context.r29 = 0xFFFFFFFF803FFFF0u;
 
+    // Set up context floats
+    context.f_odd = &context.f0.u32h;
+    context.mips3_float_mode = false;
+
     // Initialize variables normally set by IPL3
     constexpr int32_t osTvType = 0x80000300;
     constexpr int32_t osRomType = 0x80000304;
@@ -140,10 +187,37 @@ EXPORT extern "C" void init() {
     MEM_W(osMemSize, 0) = 8 * 1024 * 1024; // 8MB
 }
 
-EXPORT extern "C" void start(void* window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
+// LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+//     return DefWindowProc(hwnd, uMsg, wParam, lParam);
+// }
+
+/*EXPORT extern "C"*/ void start(Multilibultra::WindowHandle window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
     Multilibultra::set_audio_callbacks(audio_callbacks);
     Multilibultra::set_input_callbacks(input_callbacks);
-    std::thread game_thread{[](void* window_handle) {
+
+    //// Register window class.
+    //WNDCLASS wc;
+    //memset(&wc, 0, sizeof(WNDCLASS));
+    //wc.lpfnWndProc = WindowProc;
+    //wc.hInstance = GetModuleHandle(0);
+    //wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
+    //wc.lpszClassName = "RT64Sample";
+    //RegisterClass(&wc);
+
+    //// Create window.
+    //const int Width = 1280;
+    //const int Height = 720;
+    //RECT rect;
+    //UINT dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+    //rect.left = (GetSystemMetrics(SM_CXSCREEN) - Width) / 2;
+    //rect.top = (GetSystemMetrics(SM_CYSCREEN) - Height) / 2;
+    //rect.right = rect.left + Width;
+    //rect.bottom = rect.top + Height;
+    //AdjustWindowRectEx(&rect, dwStyle, 0, 0);
+
+    //HWND hwnd = CreateWindow(wc.lpszClassName, "Recomp", dwStyle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 0, 0, wc.hInstance, NULL);
+
+    std::thread game_thread{[](Multilibultra::WindowHandle window_handle) {
         debug_printf("[Recomp] Starting\n");
         
         Multilibultra::set_native_thread_name("Game Start Thread");
@@ -156,30 +230,4 @@ EXPORT extern "C" void start(void* window_handle, const Multilibultra::audio_cal
     }, window_handle};
 
     game_thread.detach();
-}
-
-int main(int argc, char **argv) {
-
-#ifdef _WIN32
-    // Set up console output to accept UTF-8 on windows
-    SetConsoleOutputCP(CP_UTF8);
-
-    // Change to a font that supports Japanese characters
-    CONSOLE_FONT_INFOEX cfi;
-    cfi.cbSize = sizeof cfi;
-    cfi.nFont = 0;
-    cfi.dwFontSize.X = 0;
-    cfi.dwFontSize.Y = 16;
-    cfi.FontFamily = FF_DONTCARE;
-    cfi.FontWeight = FW_NORMAL;
-    wcscpy_s(cfi.FaceName, L"NSimSun");
-    SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-#else
-    std::setlocale(LC_ALL, "en_US.UTF-8");
-#endif
-
-    init();
-    start(nullptr, nullptr, nullptr);
-
-    return EXIT_SUCCESS;
 }

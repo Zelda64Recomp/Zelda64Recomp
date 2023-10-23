@@ -44,7 +44,7 @@ void dummy_check_interrupts() {
 
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle) {
+void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_handle) {
     // Dynamic loading
     //auto RT64 = LoadLibrary("RT64.dll");
     //if (RT64 == 0) {
@@ -57,8 +57,8 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle) {
     //GET_FUNC(RT64, UpdateScreen);
 
     GFX_INFO gfx_info{};
-    gfx_info.hWnd = window_handle;
-    gfx_info.hStatusBar = nullptr;
+    // gfx_info.hWnd = window_handle;
+    // gfx_info.hStatusBar = nullptr;
 
     gfx_info.HEADER = rom;
     gfx_info.RDRAM = rdram;
@@ -93,7 +93,11 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle) {
 
     gfx_info.CheckInterrupts = dummy_check_interrupts;
 
-	InitiateGFX(gfx_info);
+    gfx_info.version = 2;
+    gfx_info.SP_STATUS_REG = &SP_STATUS_REG;
+    gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
+
+	InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
 }
 
 void RT64SendDL(uint8_t* rdram, const OSTask* task) {

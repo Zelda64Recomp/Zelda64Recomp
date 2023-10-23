@@ -78,6 +78,9 @@ typedef struct UltraThreadContext UltraThreadContext;
 typedef enum {
     RUNNING,
     PAUSED,
+    STOPPED,
+    BLOCKED_PAUSED,
+    BLOCKED_STOPPED,
     PREEMPTED
 } OSThreadState;
 
@@ -101,9 +104,11 @@ typedef PTR(void) OSMesg;
 typedef struct OSMesgQueue {
     PTR(OSThread) blocked_on_recv; /* Linked list of threads blocked on receiving from this queue */
     PTR(OSThread) blocked_on_send; /* Linked list of threads blocked on sending to this queue */ 
-    s32 validCount;            /* Number of messages in the queue */
-    s32 first;                 /* Index of the first message in the ring buffer */
-    s32 msgCount;              /* Size of message buffer */
+    s32 validCount;                /* Number of messages in the queue */
+    s32 first;                     /* Index of the first message in the ring buffer */
+    uint8_t lock;                  /* Lock flag used to implement a spinlock */
+    uint8_t pad;                   /* Explicit padding (would be compiler-inserted otherwise) */
+    s16 msgCount;                  /* Size of message buffer (s32 in the original libultra, but s16 here to make room for the lock flag) */
     PTR(OSMesg) msg;               /* Pointer to circular buffer to store messages */
 } OSMesgQueue;
 
@@ -218,6 +223,7 @@ void osCreateThread(RDRAM_ARG PTR(OSThread) t, OSId id, PTR(thread_func_t) entry
 void osStartThread(RDRAM_ARG PTR(OSThread) t);
 void osStopThread(RDRAM_ARG PTR(OSThread) t);
 void osDestroyThread(RDRAM_ARG PTR(OSThread) t);
+void osYieldThread(RDRAM_ARG1);
 void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri);
 OSPri osGetThreadPri(RDRAM_ARG PTR(OSThread) thread);
 OSId osGetThreadId(RDRAM_ARG PTR(OSThread) t);

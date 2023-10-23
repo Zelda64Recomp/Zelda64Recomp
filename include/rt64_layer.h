@@ -1,11 +1,13 @@
 #ifndef __RT64_LAYER_H__
 #define __RT64_LAYER_H__
 
-typedef struct {
-    void* hWnd;
-    void* hStatusBar;
+#include "../portultra/multilibultra.hpp"
 
-    int Reserved;
+typedef struct {
+    // void* hWnd;
+    // void* hStatusBar;
+
+    // int Reserved;
 
     unsigned char* HEADER;  /* This is the rom header (first 40h bytes of the rom) */
     unsigned char* RDRAM;
@@ -40,9 +42,9 @@ typedef struct {
 
     void (*CheckInterrupts)(void);
 
-    // unsigned int version;
-    // unsigned int* SP_STATUS_REG;
-    // const unsigned int* RDRAM_SIZE;
+    unsigned int version;
+    unsigned int* SP_STATUS_REG;
+    const unsigned int* RDRAM_SIZE;
 } GFX_INFO;
 
 #ifdef _WIN32
@@ -61,7 +63,7 @@ typedef struct {
 //DLLEXPORT void (CALL *UpdateScreen)(void) = nullptr;
 //DLLEXPORT void (CALL *PumpEvents)(void) = nullptr;
 
-DLLIMPORT int InitiateGFX(GFX_INFO Gfx_Info);
+extern "C" int InitiateGFXLinux(GFX_INFO Gfx_Info, Window window, Display *display);
 DLLIMPORT void ProcessRDPList(void);
 DLLIMPORT void ProcessDList(void);
 DLLIMPORT void UpdateScreen(void);

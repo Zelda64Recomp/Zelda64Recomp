@@ -59,6 +59,42 @@ extern "C" void load_overlays(uint32_t rom, int32_t ram_addr, uint32_t size) {
     }
 }
 
+extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
+
+extern "C" void unload_overlay_by_id(uint32_t id) {
+    uint32_t section_table_index = overlay_sections_by_index[id];
+    const SectionTableEntry& section = section_table[section_table_index];
+
+    auto find_it = std::find_if(loaded_sections.begin(), loaded_sections.end(), [section_table_index](const LoadedSection& s) { return s.section_table_index == section_table_index; });
+
+    if (find_it != loaded_sections.end()) {
+        // Determine where each function was loaded to and remove that entry from the function map
+        for (size_t func_index = 0; func_index < section.num_funcs; func_index++) {
+            const auto& func = section.funcs[func_index];
+            uint32_t func_address = func.offset + find_it->loaded_ram_addr;
+            func_map.erase(func_address);
+        }
+        // Reset the section's address in the address table
+        section_addresses[section.index] = section.ram_addr;
+        // Remove the section from the loaded section map
+        loaded_sections.erase(find_it);
+    }
+}
+
+extern "C" void load_overlay_by_id(uint32_t id, uint32_t ram_addr) {
+    uint32_t section_table_index = overlay_sections_by_index[id];
+    const SectionTableEntry& section = section_table[section_table_index];
+    int32_t prev_address = section_addresses[section.index];
+    if (/*ram_addr >= 0x80000000 && ram_addr < 0x81000000) {*/ prev_address == section.ram_addr) {
+        load_overlay(section_table_index, ram_addr);
+    }
+    else {
+        int32_t new_address = prev_address + ram_addr;
+        unload_overlay_by_id(id);
+        load_overlay(section_table_index, new_address);
+    }
+}
+
 extern "C" void unload_overlays(int32_t ram_addr, uint32_t size) {
     for (auto it = loaded_sections.begin(); it != loaded_sections.end();) {
         const auto& section = section_table[it->section_table_index];
@@ -72,6 +108,7 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size) {
                     "  rom: 0x%08X size: 0x%08X loaded_addr: 0x%08X\n"
                     "  unloaded_ram: 0x%08X unloaded_size : 0x%08X\n",
                         section.rom_addr, section.size, it->loaded_ram_addr, ram_addr, size);
+                assert(false);
                 std::exit(EXIT_FAILURE);
             }
             // Determine where each function was loaded to and remove that entry from the function map
@@ -81,7 +118,7 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size) {
                 func_map.erase(func_address);
             }
             // Reset the section's address in the address table
-            section_addresses[section.index] = 0;
+            section_addresses[section.index] = section.ram_addr;
             // Remove the section from the loaded section map
             it = loaded_sections.erase(it);
             // Skip incrementing the iterator
@@ -108,6 +145,7 @@ extern "C" recomp_func_t * get_function(int32_t addr) {
     auto func_find = func_map.find(addr);
     if (func_find == func_map.end()) {
         fprintf(stderr, "Failed to find function at 0x%08X\n", addr);
+        assert(false);
         std::exit(EXIT_FAILURE);
     }
     return func_find->second;

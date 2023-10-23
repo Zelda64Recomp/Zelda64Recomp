@@ -28,6 +28,10 @@ extern "C" void osDestroyThread_recomp(uint8_t * rdram, recomp_context * ctx) {
     osDestroyThread(rdram, (int32_t)ctx->r4);
 }
 
+extern "C" void osYieldThread_recomp(uint8_t * rdram, recomp_context * ctx) {
+    osYieldThread(rdram);
+}
+
 extern "C" void osSetThreadPri_recomp(uint8_t* rdram, recomp_context* ctx) {
     osSetThreadPri(rdram, (int32_t)ctx->r4, (OSPri)ctx->r5);
 }
@@ -85,7 +89,7 @@ extern "C" void osStopTimer_recomp(uint8_t * rdram, recomp_context * ctx) {
 }
 
 extern "C" void osVirtualToPhysical_recomp(uint8_t * rdram, recomp_context * ctx) {
-    ctx->r2 = osVirtualToPhysical((int32_t)ctx->r2);
+    ctx->r2 = osVirtualToPhysical((int32_t)ctx->r4);
 }
 
 extern "C" void osInvalDCache_recomp(uint8_t * rdram, recomp_context * ctx) {

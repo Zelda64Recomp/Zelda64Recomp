@@ -93,6 +93,8 @@ extern "C" void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, u32 ret
     events_context.vi.retrace_count = retrace_count;
 }
 
+uint64_t total_vis = 0;
+
 void vi_thread_func() {
     Multilibultra::set_native_thread_name("VI Thread");
     // This thread should be prioritized over every other thread in the application, as it's what allows
@@ -100,7 +102,6 @@ void vi_thread_func() {
     Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Critical);
     using namespace std::chrono_literals;
     
-    uint64_t total_vis = 0;
     int remaining_retraces = events_context.vi.retrace_count;
 
     while (true) {
@@ -157,7 +158,7 @@ void dp_complete() {
     osSendMesg(PASS_RDRAM events_context.dp.mq, events_context.dp.msg, OS_MESG_NOBLOCK);
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, void* window_handle);
+void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_handle);
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();
@@ -235,11 +236,28 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
-void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, void* window_handle) {
+static Multilibultra::gfx_callbacks_t gfx_callbacks;
+
+void Multilibultra::set_gfx_callbacks(const gfx_callbacks_t* callbacks) {
+    if (callbacks != nullptr) {
+        gfx_callbacks = *callbacks;
+    }
+}
+
+void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, Multilibultra::WindowHandle window_handle) {
     using namespace std::chrono_literals;
+    Multilibultra::gfx_callbacks_t::gfx_data_t gfx_data{};
 
     Multilibultra::set_native_thread_name("Gfx Thread");
     Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
+
+    if (gfx_callbacks.create_gfx != nullptr) {
+        gfx_data = gfx_callbacks.create_gfx();
+    }
+
+    if (gfx_callbacks.create_window != nullptr) {
+        window_handle = gfx_callbacks.create_window(gfx_data);
+    }
 
     RT64Init(rom, rdram, window_handle);
     
@@ -263,14 +281,12 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
                 RT64SendDL(rdram, &task_action->task);
                 dp_complete();
             } else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
-                static volatile int i = 0;
-                if (i >= 100) {
-                    i = 0;
-                }
-                i++;
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
                 RT64UpdateScreen(swap_action->origin);
             }
+        }
+        if (gfx_callbacks.update_gfx != nullptr) {
+            gfx_callbacks.update_gfx(nullptr);
         }
     }
 }
@@ -428,7 +444,7 @@ void Multilibultra::send_si_message() {
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
-void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, void* window_handle) {
+void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, Multilibultra::WindowHandle window_handle) {
     std::atomic_flag gfx_thread_ready;
     std::atomic_flag task_thread_ready;
     events_context.rdram = rdram;

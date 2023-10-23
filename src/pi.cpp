@@ -138,7 +138,7 @@ extern "C" void osPiStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
     uint32_t mb = ctx->r4;
     uint32_t pri = ctx->r5;
     uint32_t direction = ctx->r6;
-    uint32_t devAddr = ctx->r7;
+    uint32_t devAddr = ctx->r7 | rom_base;
     gpr dramAddr = MEM_W(0x10, ctx->r29);
     uint32_t size = MEM_W(0x14, ctx->r29);
     PTR(OSMesgQueue) mq = MEM_W(0x18, ctx->r29);

@@ -64,8 +64,8 @@ float buffer_offset_frames = 0.5f;
 uint32_t Multilibultra::get_remaining_audio_bytes() {
 	// Get the number of remaining buffered audio bytes.
 	uint32_t buffered_byte_count;
-	if (audio_callbacks.get_samples_remaining()) {
-		buffered_byte_count = audio_callbacks.get_samples_remaining() * sizeof(int16_t);
+	if (audio_callbacks.get_frames_remaining != nullptr) {
+		buffered_byte_count = audio_callbacks.get_frames_remaining() * 2 * sizeof(int16_t);
 	}
 	else {
 		buffered_byte_count = 100;
