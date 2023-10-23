@@ -7,8 +7,8 @@
 #include <utility>
 #include <mutex>
 #include <queue>
+#include <cstring>
 
-#include <Windows.h>
 #include "blockingconcurrentqueue.h"
 
 #include "ultra64.h"

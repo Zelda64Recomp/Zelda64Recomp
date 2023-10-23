@@ -1,6 +1,7 @@
 #include <memory>
 #include <fstream>
 #include <array>
+#include <cstring>
 #include "recomp.h"
 #include "../portultra/ultra64.h"
 #include "../portultra/multilibultra.hpp"

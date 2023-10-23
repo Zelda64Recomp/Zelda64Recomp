@@ -12,6 +12,11 @@ struct LoadedSection {
     int32_t loaded_ram_addr;
     size_t section_table_index;
 
+    LoadedSection(int32_t loaded_ram_addr_, size_t section_table_index_) {
+        loaded_ram_addr = loaded_ram_addr_;
+        section_table_index = section_table_index_;
+    }
+
     bool operator<(const LoadedSection& rhs) {
         return loaded_ram_addr < rhs.loaded_ram_addr;
     }

@@ -3,6 +3,7 @@
 #endif
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <cmath>
 #include <unordered_map>
@@ -10,6 +11,12 @@
 #include <iostream>
 #include "recomp.h"
 #include "../portultra/multilibultra.hpp"
+
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __attribute__((visibility("default")))
+#endif
 
 #ifdef _MSC_VER
 inline uint32_t byteswap(uint32_t val) {
@@ -72,7 +79,7 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
 std::unique_ptr<uint8_t[]> rdram_buffer;
 recomp_context context{};
 
-__declspec(dllexport) extern "C" void init() {
+EXPORT extern "C" void init() {
     {
         std::basic_ifstream<uint8_t> rom_file{ get_rom_name(), std::ios::binary };
 
@@ -133,7 +140,7 @@ __declspec(dllexport) extern "C" void init() {
     MEM_W(osMemSize, 0) = 8 * 1024 * 1024; // 8MB
 }
 
-__declspec(dllexport) extern "C" void start(void* window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
+EXPORT extern "C" void start(void* window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
     Multilibultra::set_audio_callbacks(audio_callbacks);
     Multilibultra::set_input_callbacks(input_callbacks);
     std::thread game_thread{[](void* window_handle) {

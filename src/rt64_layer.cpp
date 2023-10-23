@@ -1,5 +1,6 @@
 #include <memory>
-#include <Windows.h>
+#include <cstring>
+// #include <Windows.h>
 
 #include "../portultra/multilibultra.hpp"
 #include "rt64_layer.h"

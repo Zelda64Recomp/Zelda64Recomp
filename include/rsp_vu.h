@@ -58,6 +58,11 @@ template<u32 bits> inline auto sclamp(s64 x) -> s64 {
   return (x > m) ? m : (x < -b) ? -b : x;
 }
 
+template<u32 bits> inline auto sclip(s64 x) -> s64 {
+  enum : u64 { b = 1ull << (bits - 1), m = b * 2 - 1 };
+  return ((x & m) ^ b) - b;
+}
+
 struct RSP {
     using r32 = uint32_t;
     using cr32 = const r32;

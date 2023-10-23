@@ -45,9 +45,14 @@ typedef struct {
     // const unsigned int* RDRAM_SIZE;
 } GFX_INFO;
 
+#ifdef _WIN32
 #define DLLEXPORT extern "C" __declspec(dllexport)  
 #define DLLIMPORT extern "C" __declspec(dllimport)
 #define CALL   __cdecl
+#else
+#define DLLEXPORT extern "C" __attribute__((visibility("default")))
+#define DLLIMPORT extern "C"
+#endif
 
 // Dynamic loading
 //DLLEXPORT int (CALL *InitiateGFX)(GFX_INFO Gfx_Info) = nullptr;

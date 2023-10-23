@@ -7,8 +7,10 @@
 #include "multilibultra.hpp"
 
 // Native APIs only used to set thread names for easier debugging
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <Windows.h>
+#elif defined(__linux__)
+#include <pthread.h>
 #endif
 
 extern "C" void bootproc();
@@ -43,7 +45,7 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
 
 struct thread_terminated : std::exception {};
 
-#ifdef _WIN32
+#if defined(_WIN32)
 void Multilibultra::set_native_thread_name(const std::string& name) {
     std::wstring wname{name.begin(), name.end()};
 
@@ -79,6 +81,38 @@ void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
             break;
     }
     // SetThreadPriority(GetCurrentThread(), nPriority);
+}
+#elif defined(__linux__)
+void Multilibultra::set_native_thread_name(const std::string& name) {
+    pthread_setname_np(pthread_self(), name.c_str());
+}
+
+void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
+    // TODO linux thread priority
+    printf("set_native_thread_priority unimplemented\n");
+    // int nPriority = THREAD_PRIORITY_NORMAL;
+
+    // // Convert ThreadPriority to Win32 priority
+    // switch (pri) {
+    //     case ThreadPriority::Low:
+    //         nPriority = THREAD_PRIORITY_BELOW_NORMAL;
+    //         break;
+    //     case ThreadPriority::Normal:
+    //         nPriority = THREAD_PRIORITY_NORMAL;
+    //         break;
+    //     case ThreadPriority::High:
+    //         nPriority = THREAD_PRIORITY_ABOVE_NORMAL;
+    //         break;
+    //     case ThreadPriority::VeryHigh:
+    //         nPriority = THREAD_PRIORITY_HIGHEST;
+    //         break;
+    //     case ThreadPriority::Critical:
+    //         nPriority = THREAD_PRIORITY_TIME_CRITICAL;
+    //         break;
+    //     default:
+    //         throw std::runtime_error("Invalid thread priority!");
+    //         break;
+    // }
 }
 #endif
 

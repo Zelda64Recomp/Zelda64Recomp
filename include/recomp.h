@@ -304,6 +304,8 @@ extern int32_t section_addresses[];
 //    ctx->r2 = setjmp(buf->storage->buffer); \
 //}
 
+void pause_self(uint8_t *rdram);
+
 #ifdef __cplusplus
 }
 #endif

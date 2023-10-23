@@ -2,7 +2,7 @@ CONFIG ?= Debug
 LIB ?= 0
 
 ifeq ($(CONFIG),Debug)
-BUILD_DIR     := build/debug
+BUILD_DIR     := build/Debug
 FUNC_OPTFLAGS := -Og -g -fno-strict-aliasing
 OPTFLAGS      := -Og -g -fno-strict-aliasing
 # Static C runtime linking
@@ -10,21 +10,56 @@ LIBS          := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultl
 # Dynamic
 # LIBS          := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -lmsvcrtd -lvcruntimed -lucrtd
 else ifeq ($(CONFIG),Release)
-BUILD_DIR     := build/release
+BUILD_DIR     := build/Release
 FUNC_OPTFLAGS := -O2 -g -fno-strict-aliasing
 OPTFLAGS      := -O2 -g -fno-strict-aliasing
-# Static C runtime linking
-LIBS          := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -llibcmt -llibvcruntime -llibucrt
-# Dynamic
-# LIBS          := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -lmsvcrt -lvcruntime -lucrt
 else
 $(error "Invalid build configuration: $(CONFIG)")
 endif
 
+ifeq ($(OS),Windows_NT)
+DYN_EXT  := .dll
+LIB_EXT  := .lib
+EXE_EXT  := .exe
+AR       := clang++
+ARFLAGS  := $(OPTFLAGS) -fuse-ld=llvm-lib -o
+# Static C runtime linking
+LIBS     := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -llibcmt -llibvcruntime -llibucrt
+# Dynamic
+# LIBS   := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -lmsvcrt -lvcruntime -lucrt
+LIB_DIR  ?= C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64
+UCRT_DIR ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x64;
+SDK_DIR  ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
+    define mkdir
+        mkdir $(subst /,\\,$(1))
+    endef
+    define rmdir
+        rmdir /S /Q $(subst /,\\,$(1))
+    endef
+else
+DYN_EXT := .so
+LIB_EXT := .a
+EXE_EXT := 
+LIB_PRE := lib
+AR      := ar
+ARFLAGS := rcs
+    define mkdir
+        mkdir -p $(1)
+    endef
+    define rmdir
+        rm -rf $(1)
+    endef
+endif
+
 SRC_DIRS := portultra src rsp
 
+# Add the main folder if not building a library
+ifneq ($(LIB),1)
+SRC_DIRS += src/main
+endif
+
 FUNCS_DIR := RecompiledFuncs
-FUNCS_LIB := $(BUILD_DIR)/RecompiledFuncs.lib
+FUNCS_LIB := $(BUILD_DIR)/$(LIB_PRE)RecompiledFuncs$(LIB_EXT)
 FUNCS_C_SRCS   := $(wildcard $(FUNCS_DIR)/*.c)
 FUNCS_CXX_SRCS := $(wildcard $(FUNCS_DIR)/*.cpp)
 
@@ -44,34 +79,37 @@ ALL_OBJS := $(C_OBJS) $(CXX_OBJS)
 
 CC  := clang
 CXX := clang++
-LIB := clang++
 LD  := clang++
 
 FUNC_CFLAGS   := $(FUNC_OPTFLAGS) -c -Wno-unused-but-set-variable
 FUNC_CXXFLAGS := $(FUNC_OPTFLAGS) -std=c++20 -c
 FUNC_CPPFLAGS := -Iinclude
-LIBFLAGS      := $(OPTFLAGS) -fuse-ld=llvm-lib
-LIB_DIR       ?= C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64
-UCRT_DIR      ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x64;
-SDK_DIR       ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
 
 WARNFLAGS := -Wall -Wextra -Wpedantic -Wno-gnu-anonymous-struct
 CFLAGS    := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WARNFLAGS) -c
 CXXFLAGS  := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WARNFLAGS) -std=c++20 -c
 CPPFLAGS  := -Iinclude -Ithirdparty
-LDFLAGS   := -v -Wl,/OPT:REF $(OPTFLAGS) $(LIBS) -L"$(LIB_DIR:;=)" -L"$(UCRT_DIR:;=)" -L"$(SDK_DIR:;=)" lib/RT64/$(CONFIG)/RT64.lib
+
+ifeq ($(OS),Windows_NT)
+LDFLAGS := -v -Wl,/OPT:REF $(OPTFLAGS) $(LIBS) -L"$(LIB_DIR:;=)" -L"$(UCRT_DIR:;=)" -L"$(SDK_DIR:;=)" lib/RT64/$(CONFIG)/RT64.lib
+else
+LDFLAGS := $(OPTFLAGS) -L$(BUILD_DIR) -lRecompiledFuncs -L. -lrt64 -lSDL2 -lX11 -Wl,--gc-sections
+FUNC_CFLAGS   += -ffunction-sections -fdata-sections
+FUNC_CXXFLAGS += -ffunction-sections -fdata-sections
+EXTRA_DEPS := librt64.a
+endif
 
 ifeq ($(LIB),1)
-TARGET := $(BUILD_DIR)/MMRecomp.dll
+TARGET := $(BUILD_DIR)/MMRecomp$(DYN_EXT)
 LDFLAGS += -shared
 else
-TARGET := $(BUILD_DIR)/MMRecomp.exe
+TARGET := $(BUILD_DIR)/MMRecomp$(EXE_EXT)
 endif
 
 default: $(TARGET)
 
-clean: 
-	rmdir /S /Q $(subst /,\\,$(BUILD_DIR))
+clean:
+	$(call rmdir,$(BUILD_DIR))
 
 cleanfuncs:
 
@@ -83,7 +121,7 @@ $(FUNCS_C_OBJS) : $(BUILD_DIR)/%.o : %.c | $(FUNC_BUILD_DIR)
 	@$(CC) $(FUNC_CFLAGS) $(FUNC_CPPFLAGS) $^ -o $@
 
 $(FUNCS_LIB): $(ALL_FUNC_OBJS) | $(BUILD_DIR)
-	$(LIB) $(LIBFLAGS) $(FUNC_BUILD_DIR)/*.o -o $@
+	$(AR) $(ARFLAGS) $@ $(FUNC_BUILD_DIR)/*.o
 
 
 
@@ -93,11 +131,11 @@ $(CXX_OBJS) : $(BUILD_DIR)/%.o : %.cpp | $(BUILD_SRC_DIRS)
 $(C_OBJS) : $(BUILD_DIR)/%.o : %.c | $(BUILD_SRC_DIRS)
 	$(CC) -MMD -MF $(@:.o=.d) $(CFLAGS) $(CPPFLAGS) $< -o $@
 
-$(TARGET): $(FUNCS_LIB) $(ALL_OBJS) | $(BUILD_SRC_DIRS)
-	$(LD) $(LDFLAGS) -o $@ $^
+$(TARGET): $(FUNCS_LIB) $(ALL_OBJS) $(EXTRA_DEPS) | $(BUILD_SRC_DIRS)
+	$(LD) -o $@ $^ $(LDFLAGS)
 
 $(BUILD_SRC_DIRS) $(FUNC_BUILD_DIR) $(BUILD_DIR):
-	mkdir $(subst /,\\,$@)
+	$(call mkdir,$@)
 
 -include $(ALL_OBJS:.o=.d)
 
