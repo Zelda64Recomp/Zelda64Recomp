@@ -78,14 +78,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <NMakeBuildCommandLine>make TARGET=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
-    <NMakeCleanCommandLine>make TARGET=$(Configuration) clean</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>make CONFIG=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make CONFIG=$(Configuration) clean</NMakeCleanCommandLine>
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <NMakeBuildCommandLine>make TARGET=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
-    <NMakeCleanCommandLine>make TARGET=$(Configuration) clean</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>make CONFIG=$(Configuration) LIB_DIR="$(VC_LibraryPath_VC_x64_Desktop)" UCRT_DIR="$(UniversalCRT_LibraryPath_x64)" SDK_DIR="$(WindowsSDK_LibraryPath)\x64" -j$(NUMBER_OF_PROCESSORS)</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make CONFIG=$(Configuration) clean</NMakeCleanCommandLine>
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -207,6 +207,7 @@ XCOPY "$(ProjectDir)lib\SDL2-2.24.0\lib\$(Platform)\SDL2.dll" "$(TargetDir)" /S 
     <ClCompile Include="src\eep.cpp" />
     <ClCompile Include="src\euc-jp.cpp" />
     <ClCompile Include="src\flash.cpp" />
+    <ClCompile Include="src\main\main.cpp" />
     <ClCompile Include="src\math_routines.cpp" />
     <ClCompile Include="src\overlays.cpp" />
     <ClCompile Include="src\pak.cpp" />

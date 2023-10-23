@@ -18,18 +18,18 @@ $(error "Invalid build configuration: $(CONFIG)")
 endif
 
 ifeq ($(OS),Windows_NT)
-DYN_EXT  := .dll
-LIB_EXT  := .lib
-EXE_EXT  := .exe
-AR       := clang++
-ARFLAGS  := $(OPTFLAGS) -fuse-ld=llvm-lib -o
-# Static C runtime linking
-LIBS     := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -llibcmt -llibvcruntime -llibucrt
-# Dynamic
-# LIBS   := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -lmsvcrt -lvcruntime -lucrt
-LIB_DIR  ?= C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64
-UCRT_DIR ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x64;
-SDK_DIR  ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
+    DYN_EXT  := .dll
+    LIB_EXT  := .lib
+    EXE_EXT  := .exe
+    AR       := clang++
+    ARFLAGS  := $(OPTFLAGS) -fuse-ld=llvm-lib -o
+    # Static C runtime linking
+    LIBS     := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -llibcmt -llibvcruntime -llibucrt
+    # Dynamic
+    # LIBS   := -Wl,/nodefaultlib:libcmt -Wl,/nodefaultlib:ucrt -Wl,/nodefaultlib:libucrt -lmsvcrt -lvcruntime -lucrt
+    LIB_DIR  ?= C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\lib\x64
+    UCRT_DIR ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\ucrt\x64;
+    SDK_DIR  ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
     define mkdir
         mkdir $(subst /,\\,$(1))
     endef
@@ -37,12 +37,12 @@ SDK_DIR  ?= C:\Program Files (x86)\Windows Kits\10\lib\10.0.22000.0\um\x64
         rmdir /S /Q $(subst /,\\,$(1))
     endef
 else
-DYN_EXT := .so
-LIB_EXT := .a
-EXE_EXT := 
-LIB_PRE := lib
-AR      := ar
-ARFLAGS := rcs
+    DYN_EXT := .so
+    LIB_EXT := .a
+    EXE_EXT := 
+    LIB_PRE := lib
+    AR      := ar
+    ARFLAGS := rcs
     define mkdir
         mkdir -p $(1)
     endef
@@ -90,20 +90,21 @@ CFLAGS    := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WA
 CXXFLAGS  := -ffunction-sections -fdata-sections -march=nehalem $(OPTFLAGS) $(WARNFLAGS) -std=c++20 -c
 CPPFLAGS  := -Iinclude -Ithirdparty
 
-ifeq ($(OS),Windows_NT)
-LDFLAGS := -v -Wl,/OPT:REF $(OPTFLAGS) $(LIBS) -L"$(LIB_DIR:;=)" -L"$(UCRT_DIR:;=)" -L"$(SDK_DIR:;=)" lib/RT64/$(CONFIG)/RT64.lib
-else
-LDFLAGS := $(OPTFLAGS) -L$(BUILD_DIR) -lRecompiledFuncs -L. -lrt64 -lSDL2 -lX11 -Wl,--gc-sections
-FUNC_CFLAGS   += -ffunction-sections -fdata-sections
-FUNC_CXXFLAGS += -ffunction-sections -fdata-sections
-EXTRA_DEPS := librt64.a
-endif
-
 ifeq ($(LIB),1)
 TARGET := $(BUILD_DIR)/MMRecomp$(DYN_EXT)
 LDFLAGS += -shared
 else
 TARGET := $(BUILD_DIR)/MMRecomp$(EXE_EXT)
+endif
+
+ifeq ($(OS),Windows_NT)
+LDFLAGS := -v -Wl,/OPT:REF $(OPTFLAGS) $(LIBS) -L"$(LIB_DIR:;=)" -L"$(UCRT_DIR:;=)" -L"$(SDK_DIR:;=)" lib/RT64/$(CONFIG)/mupen64plus-video-rt64.lib lib/SDL2-2.24.0/lib/x64/SDL2.lib
+CPPFLAGS += -Ilib/SDL2-2.24.0/include
+else
+LDFLAGS := $(OPTFLAGS) -L$(BUILD_DIR) -lRecompiledFuncs -L. -lrt64 -lSDL2 -lX11 -Wl,--gc-sections
+FUNC_CFLAGS   += -ffunction-sections -fdata-sections
+FUNC_CXXFLAGS += -ffunction-sections -fdata-sections
+EXTRA_DEPS := librt64.a
 endif
 
 default: $(TARGET)

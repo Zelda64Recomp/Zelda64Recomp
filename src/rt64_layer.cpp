@@ -97,7 +97,15 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_h
     gfx_info.SP_STATUS_REG = &SP_STATUS_REG;
     gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
+#if defined(_WIN32)
+    InitiateGFXWindows(gfx_info, window_handle);
+#elif defined(__ANDROID__)
+    static_assert(false && "Unimplemented");
+#elif defined(__linux__)
 	InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
+#else
+    static_assert(false && "Unimplemented");
+#endif
 }
 
 void RT64SendDL(uint8_t* rdram, const OSTask* task) {

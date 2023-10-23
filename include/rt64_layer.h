@@ -63,11 +63,18 @@ typedef struct {
 //DLLEXPORT void (CALL *UpdateScreen)(void) = nullptr;
 //DLLEXPORT void (CALL *PumpEvents)(void) = nullptr;
 
+#if defined(_WIN32)
+extern "C" int InitiateGFXWindows(GFX_INFO Gfx_Info, HWND hwnd);
+#elif defined(__ANDROID__)
+static_assert(false && "Unimplemented");
+#elif defined(__linux__)
 extern "C" int InitiateGFXLinux(GFX_INFO Gfx_Info, Window window, Display *display);
+#else
+static_assert(false && "Unimplemented");
+#endif
 DLLIMPORT void ProcessRDPList(void);
 DLLIMPORT void ProcessDList(void);
 DLLIMPORT void UpdateScreen(void);
-DLLIMPORT void PumpEvents(void);
 DLLIMPORT void ChangeWindow(void);
 
 #endif
