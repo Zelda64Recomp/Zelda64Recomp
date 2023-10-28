@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <cassert>
 #include <unordered_map>
+#include <vector>
+#include <filesystem>
 
 #include "../../portultra/ultra64.h"
 #include "../../portultra/multilibultra.hpp"
@@ -131,7 +133,7 @@ int sdl_event_filter(void* userdata, SDL_Event* event) {
         {
             SDL_ControllerDeviceEvent* controller_event = (SDL_ControllerDeviceEvent*)event;
             printf("Controller removed: %d\n", controller_event->which);
-            std::remove(controllers.begin(), controllers.end(), controller_event->which);
+            std::erase(controllers, controller_event->which);
         }
         break;
     case SDL_EventType::SDL_QUIT:
@@ -324,6 +326,8 @@ int main(int argc, char** argv) {
 #else
     std::setlocale(LC_ALL, "en_US.UTF-8");
 #endif
+
+    printf("Current dir: %ls\n", std::filesystem::current_path().c_str());
 
     // Initialize SDL audio.
     SDL_InitSubSystem(SDL_INIT_AUDIO);
