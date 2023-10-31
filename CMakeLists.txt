@@ -62,6 +62,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/vi.cpp
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui.cpp
     
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
@@ -73,6 +74,10 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/thirdparty
     ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-win32-deps/SDL2-2.26.3/include
+    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src
+    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/rhi
+    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/render
+    ${CMAKE_BINARY_DIR}/shaders
 )
 
 target_compile_options(MMRecomp PRIVATE
@@ -90,6 +95,27 @@ target_link_libraries(MMRecomp PRIVATE
     SDL2
     rt64
 )
+
+# TODO fix the RT64 CMake script so that this doesn't need to be duplicated here
+# For DXC
+set (DXC_COMMON_OPTS "-I${PROJECT_SOURCE_DIR}/src")
+set (DXC_DXIL_OPTS "-Wno-ignored-attributes")
+set (DXC_SPV_OPTS "-spirv" "-fspv-target-env=vulkan1.0" "-fvk-use-dx-layout")
+set (DXC_PS_OPTS "${DXC_COMMON_OPTS}" "-E" "PSMain" "-T ps_6_0" "-D DYNAMIC_RENDER_PARAMS")
+set (DXC_VS_OPTS "${DXC_COMMON_OPTS}" "-E" "VSMain" "-T vs_6_0" "-D DYNAMIC_RENDER_PARAMS" "-fvk-invert-y")
+set (DXC_CS_OPTS "${DXC_COMMON_OPTS}" "-E" "CSMain" "-T cs_6_0")
+set (DXC_GS_OPTS "${DXC_COMMON_OPTS}" "-E" "GSMain" "-T gs_6_0")
+set (DXC_RT_OPTS "${DXC_COMMON_OPTS}" "-D" "RT_SHADER" "-T" "lib_6_3" "-fspv-target-env=vulkan1.1spirv1.4" "-fspv-extension=SPV_KHR_ray_tracing" "-fspv-extension=SPV_EXT_descriptor_indexing")
+
+if (${WIN32})
+    set (DXC "${PROJECT_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/contrib/dxc/bin/x64/dxc.exe")
+    add_compile_definitions(NOMINMAX)
+else()
+    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
+endif()
+
+build_vertex_shader(MMRecomp "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
+build_pixel_shader (MMRecomp "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
 
 target_sources(MMRecomp PRIVATE ${SOURCES})
 

@@ -127,7 +127,7 @@ EXPORT extern "C" void init() {
         std::ifstream rom_file{ get_rom_name(), std::ios::binary };
 
         size_t iobuf_size = 0x100000;
-        std::unique_ptr<char> iobuf = std::make_unique<char>(iobuf_size);
+        std::unique_ptr<char[]> iobuf = std::make_unique<char[]>(iobuf_size);
         rom_file.rdbuf()->pubsetbuf(iobuf.get(), iobuf_size);
 
         if (!rom_file) {
@@ -142,10 +142,6 @@ EXPORT extern "C" void init() {
         rom = std::make_unique<uint8_t[]>(rom_size);
 
         rom_file.read(reinterpret_cast<char*>(rom.get()), rom_size);
-
-        // TODO remove this
-        // Modify the name in the rom header so RT64 doesn't find it
-        rom[0x2F] = 'O';
     }
 
     // Initialize the overlays

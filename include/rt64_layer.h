@@ -77,5 +77,7 @@ DLLIMPORT void ProcessDList(void);
 DLLIMPORT void UpdateScreen(void);
 DLLIMPORT void ChangeWindow(void);
 
+void set_rt64_hooks();
+
 #endif
 
