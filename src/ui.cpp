@@ -48,15 +48,17 @@ void CalculateTextureRowWidthPadding(uint32_t rowPitch, uint32_t &rowWidth, uint
     rowWidth += rowPadding;
 }
 
-struct RmlRenderInterfaceHeap : public RT64::RenderDescriptorHeapBase {
+struct RmlRenderInterfaceHeapBase : public RT64::RenderDescriptorHeapBase {
     uint32_t gSampler;
+    uint32_t gTexture;
 
-    RmlRenderInterfaceHeap(const RT64::RenderSampler* linear_sampler) {
+    RmlRenderInterfaceHeapBase(const RT64::RenderSampler* linear_sampler) {
         assert(linear_sampler != nullptr);
 
         builder.begin();
         builder.beginSet();
         gSampler = builder.addImmutableSampler(1, linear_sampler);
+        gTexture = builder.addTexture(2);
         builder.endSet();
         builder.end();
     }
@@ -123,8 +125,7 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     std::unique_ptr<RT64::RenderSampler> linearSampler_{};
     std::unique_ptr<RT64::RenderShader> vertex_shader_{};
     std::unique_ptr<RT64::RenderShader> pixel_shader_{};
-    std::unique_ptr<RmlRenderInterfaceHeap> heap_{};
-    std::unique_ptr<RT64::RenderDescriptorHeapBuilder> texture_heap_builder_{};
+    std::unique_ptr<RmlRenderInterfaceHeapBase> heap_base_{};
     std::unique_ptr<RT64::RenderPipelineLayout> layout_{};
     std::unique_ptr<RT64::RenderPipeline> pipeline_{};
     uint32_t upload_buffer_size_ = 0;
@@ -172,24 +173,14 @@ public:
 
 
         // Create the descriptor heap
-        heap_ = std::make_unique<RmlRenderInterfaceHeap>(linearSampler_.get());
-        heap_->create(render_context->device);
-
-        texture_heap_builder_ = std::make_unique<RT64::RenderDescriptorHeapBuilder>();
-        texture_heap_builder_->begin();
-        texture_heap_builder_->beginSet();
-        texture_heap_builder_->addTexture(0);
-        texture_heap_builder_->endSet();
-        texture_heap_builder_->end();
+        heap_base_ = std::make_unique<RmlRenderInterfaceHeapBase>(linearSampler_.get());
 
         // Create the pipeline layout
         RT64::RenderPipelineLayoutBuilder layout_builder{};
         layout_builder.begin(false, true);
         layout_builder.addPushConstant(0, 0, sizeof(RmlPushConstants), RT64::RenderShaderStageFlag::VERTEX);
         // Add the descriptor set for descriptors changed once per frame.
-        layout_builder.addDescriptorSetsFromHeap(heap_->builder);
-        // Add the descriptor set for descriptors changed once per draw.
-        layout_builder.addDescriptorSetsFromHeap(*texture_heap_builder_);
+        layout_builder.addDescriptorSetsFromHeap(heap_base_->builder);
         layout_builder.end();
         layout_ = layout_builder.create(render_context->device);
 
@@ -341,7 +332,7 @@ public:
         list_->setIndexBuffer(&index_view);
         RT64::RenderVertexBufferView vertex_view{vertex_buffer_->at(0), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
-        list_->setGraphicsDescriptorHeap(textures_[texture].heap.get(), 0, per_draw_descriptor_set);
+        list_->setGraphicsDescriptorHeap(textures_[texture].heap.get());
 
         RmlPushConstants constants{
             .transform = mvp_,
@@ -500,8 +491,9 @@ public:
             list_->barriers(RT64::RenderTextureBarrier::Transition(texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS));
 
             // Create a descriptor heap with this texture in it.
-            std::unique_ptr<RT64::RenderDescriptorHeap> heap = texture_heap_builder_->create(render_context_->device);
-            heap->setTexture(0, 0, texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS);
+            std::unique_ptr<RT64::RenderDescriptorHeap> heap = heap_base_->builder.create(render_context_->device);
+
+            heap->setTexture(heap_base_->gTexture, 0, texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS);
 
             textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(heap) });
 
@@ -528,7 +520,6 @@ public:
         list_ = list;
         list_->setPipeline(pipeline_.get());
         list_->setGraphicsPipelineLayout(layout_.get());
-        list_->setGraphicsDescriptorHeap(heap_->get(), 0, per_frame_descriptor_set);
 
         projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, static_cast<float>(image_width), static_cast<float>(image_height), 0.0f, -10000, 10000);
         recalculate_mvp();
