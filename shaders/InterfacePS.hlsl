@@ -1,6 +1,11 @@
+SamplerState gSampler : register(s1, space0);
+Texture2D<float4> gTexture : register(t0, space1);
+
 void PSMain(
-    out float4 resultColor : SV_TARGET
+    in float4 iColor : COLOR,
+    in float2 iUV : TEXCOORD,
+    out float4 oColor : SV_TARGET
 )
 {
-    resultColor = float4(1,0,0,1);
+    oColor = gTexture.SampleLevel(gSampler, iUV, 0) * iColor;
 }

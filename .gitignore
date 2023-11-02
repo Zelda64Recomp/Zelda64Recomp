@@ -44,9 +44,6 @@ bld/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
-# Libraries (binaries that aren't in the repo)
-lib/
-
 # Runtime files
 imgui.ini
 rt64.log

@@ -15,7 +15,6 @@
 #endif
 
 #ifdef _WIN32
-#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "SDL_syswm.h"
@@ -151,8 +150,10 @@ Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
     return {};
 }
 
+SDL_Window* window;
+
 Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_data_t) {
-    SDL_Window* window = SDL_CreateWindow("Majora's Mask", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Majora's Mask", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());

@@ -1,0 +1,703 @@
+@spritesheet theme
+{
+	src: invader.tga;
+
+	/* For high dpi screens, designates the scaling it is intended to be shown at. */
+	resolution: 1x;
+
+	/**
+		The following specifies a list of sprite names and associated rectangles into the image given above.
+		Any sprite given here can be specified in a decorator. Their names must be globally unique.
+		Rectangles are specified as: x y width height. With the origin assumed to be at the top left corner.
+	*/
+	title-bar-l: 147px 0px 82px 85px;
+	title-bar-c: 229px 0px  1px 85px;
+	title-bar-r: 231px 0px 15px 85px;
+
+	/* huditems are vertically flipped titlebars */
+	huditem-l: 147px 55px 82px -55px;
+	huditem-c: 229px 55px  1px -55px;
+	huditem-r: 231px 55px 15px -55px;
+
+	icon-help:    128px 152px 51px 39px;
+	icon-invader: 179px 152px 51px 39px;
+	icon-game:    230px 152px 51px 39px;
+	icon-hiscore: 281px 152px 51px 39px;
+	icon-waves:   332px 152px 51px 39px;
+	icon-flag:    336px 191px 51px 39px;
+	icon-lives:   383px 152px 51px 39px;
+	icon-score:   434px 152px 51px 39px;
+
+	window-tl: 0px 0px 133px 140px;
+	window-t:  134px 0px 1px 140px;
+	window-tr: 136px 0px 10px 140px;
+	window-l:  0px 139px 10px 1px;
+	window-c:  11px 139px 1px 1px;
+	window-r:  10px 139px -10px 1px; /* mirrored left */
+	window-bl: 0px 140px 11px 11px;
+	window-b:  11px 140px 1px 11px;
+	window-br: 136px 140px 10px 11px;
+
+	button: 247px 0px 159px 45px;
+	button-hover:  247px 45px 159px 45px;
+	button-active: 247px 90px 159px 45px;
+
+	button-inner: 259px 19px 135px 1px;
+	button-inner-hover:  259px 64px 135px 1px;
+	button-inner-active: 259px 109px 135px 1px;
+
+	text-l: 162px 192px 14px 31px;
+	text-c: 176px 192px 1px 31px;
+	textarea: 162px 193px 145px 31px;
+	textarea-inner: 173px 206px 127px 10px;
+
+	selectbox-tl: 281px 275px 11px 9px;
+	selectbox-t:  292px 275px 1px 9px;
+	selectbox-tr: 294px 275px 11px 9px;
+	selectbox-l:  281px 283px 11px 1px;
+	selectbox-c:  292px 283px 1px 1px;
+	selectbox-bl: 281px 285px 11px 11px;
+	selectbox-b:  292px 285px 1px 11px;
+	selectbox-br: 294px 285px 11px 11px;
+
+	selectvalue: 162px 192px 145px 37px;
+	selectvalue-hover: 162px 230px 145px 37px;
+	selectarrow: 307px 192px 30px 37px;
+	selectarrow-hover: 307px 230px 30px 37px;
+	selectarrow-active: 307px 268px 30px 37px;
+
+	radio: 407px 0px 30px 30px;
+	radio-hover: 437px 0px 30px 30px;
+	radio-active: 467px 0px 30px 30px;
+	radio-checked: 407px 30px 30px 30px;
+	radio-checked-hover: 437px 30px 30px 30px;
+	radio-checked-active: 467px 30px 30px 30px;
+
+	checkbox: 407px 60px 30px 30px;
+	checkbox-hover: 437px 60px 30px 30px;
+	checkbox-active: 467px 60px 30px 30px;
+	checkbox-checked: 407px 90px 30px 30px;
+	checkbox-checked-hover: 437px 90px 30px 30px;
+	checkbox-checked-active: 467px 90px 30px 30px;
+
+	tableheader-l: 127px 192px 16px 31px;
+	tableheader-c: 143px 192px 2px 31px;
+	tableheader-r: 145px 192px 15px 31px;
+
+	expand: 3px 232px 17px 17px;
+	expand-hover: 21px 232px 17px 17px;
+	expand-active: 39px 232px 17px 17px;
+	expand-collapsed: 3px 250px 17px 17px;
+	expand-collapsed-hover: 21px 250px 17px 17px;
+	expand-collapsed-active: 39px 250px 17px 17px;
+
+	slidertrack-t: 70px 199px 27px 2px;
+	slidertrack-c: 70px 201px 27px 1px;
+	slidertrack-b: 70px 202px 27px 2px;
+
+	sliderbar-t:         56px 152px 23px 23px;
+	sliderbar-c:         56px 175px 23px 1px;
+	sliderbar-b:         56px 176px 23px 22px;
+	sliderbar-hover-t:   80px 152px 23px 23px;
+	sliderbar-hover-c:   80px 175px 23px 1px;
+	sliderbar-hover-b:   80px 176px 23px 22px;
+	sliderbar-active-t: 104px 152px 23px 23px;
+	sliderbar-active-c: 104px 175px 23px 1px;
+	sliderbar-active-b: 104px 176px 23px 22px;
+
+	sliderarrowdec: 0px 152px 27px 24px;
+	sliderarrowdec-hover: 0px 177px 27px 24px;
+	sliderarrowdec-active: 0px 202px 27px 24px;
+
+	sliderarrowinc: 28px 152px 27px 24px;
+	sliderarrowinc-hover: 28px 177px 27px 24px;
+	sliderarrowinc-active: 28px 202px 27px 24px;
+
+	range-track:       219px 194px  3px 32px;
+	range-track-inner: 220px 204px  1px 14px;
+	range-bar:         127px 191px 34px 32px;
+	range-dec:           3px 232px 17px 17px;
+	range-dec-hover:    21px 232px 17px 17px;
+	range-dec-active:   39px 232px 17px 17px;
+	range-inc:           3px 250px 17px 17px;
+	range-inc-hover:    21px 250px 17px 17px;
+	range-inc-active:   39px 250px 17px 17px;
+
+	progress-l:      103px 267px 13px 34px;
+	progress-c:      116px 267px 54px 34px;
+	progress-r:      170px 267px 13px 34px;
+	progress-fill-l: 110px 302px  6px 34px;
+	progress-fill-c: 140px 302px  6px 34px;
+	progress-fill-r: 170px 302px  6px 34px;
+	gauge:      0px 271px 100px 86px;
+	gauge-fill: 0px 356px 100px 86px;
+}
+
+body
+{
+	font-family: LatoLatin;
+	font-weight: normal;
+	font-style: normal;
+	font-size: 15dp;
+	color: white;
+}
+
+body.window
+{
+	padding-top: 43dp;
+	padding-bottom: 20dp;
+
+	min-width: 250dp;
+	max-width: 800dp;
+
+	min-height: 135dp;
+	max-height: 700dp;
+}
+
+div#title_bar
+{
+	z-index: 1;
+
+	position: absolute;
+	top: 7dp;
+	left: 0;
+
+	text-align: left;
+	vertical-align: bottom;
+}
+
+div#title_bar div#icon
+{
+	position: absolute;
+	left: 15dp;
+	top: -4dp;
+
+	width: 51dp;
+	height: 39dp;
+}
+
+
+div#title_bar span
+{
+	padding-left: 85dp;
+	padding-right: 25dp;
+	padding-top: 18dp;
+	padding-bottom: 43dp;
+
+	vertical-align: top;
+
+	line-height: 24dp;
+	font-size: 20dp;
+	font-weight: bold;
+
+	font-effect: glow(1dp black);
+	decorator: tiled-horizontal( title-bar-l, title-bar-c, title-bar-r );
+}
+
+div#window
+{
+	width: auto;
+	height: 100%;
+	padding: 10dp 15dp;
+
+	decorator: tiled-box(
+		window-tl, window-t, window-tr,
+		window-l, window-c, window-r,
+		window-bl, window-b, window-br
+	);
+}
+
+div#content
+{
+	z-index: 2;
+
+	width: auto;
+	height: 100%;
+
+	overflow: hidden auto;
+
+	text-align: center;
+}
+
+
+
+p
+{
+	text-align: left;
+	margin-bottom: 1em;
+}
+
+h1
+{
+	margin-left: 0.4em;
+	margin-bottom: 0.4em;
+
+	text-align: left;
+	font-size: 16dp;
+	font-weight: bold;
+
+	font-effect: glow(1dp 1dp 1dp 1dp #1117);
+}
+
+
+
+input,
+select
+{
+	margin-left: 20dp;
+}
+
+input.submit
+{
+	margin-left: 0;
+}
+
+
+
+button,
+input.submit
+{
+	display: inline-block;
+
+	width: 159dp;
+	height: 33dp;
+	padding-top: 12dp;
+
+	font-size: 16dp;
+	text-align: center;
+	tab-index: auto;
+
+	decorator: image(button);
+}
+
+button:focus,
+input.submit:focus
+{
+	font-effect: blur(3dp #fff);
+}
+
+button:hover,
+input.submit:hover
+{
+	decorator: image(button-hover);
+}
+
+button:active,
+input.submit:active
+{
+	decorator: image(button-active);
+}
+
+input.submit:disabled
+{
+	decorator: image(button);
+	image-color: rgba(50, 150, 150, 120);
+	cursor: unavailable;
+}
+
+input.text, input.password
+{
+	box-sizing: border-box;
+	height: 31dp;
+	padding: 11dp 10dp 0;
+	decorator: tiled-horizontal( text-l, text-c, auto ); /* Right becomes mirrored left */
+	cursor: text;
+	text-align: left;
+}
+
+textarea
+{
+	padding: 14dp 12dp 10dp;
+	decorator: ninepatch( textarea, textarea-inner, 1.0 );
+	cursor: text;
+	text-align: left;
+}
+
+input.text,
+input.password,
+select,
+textarea
+{
+	color: #333;
+	font-size: 13dp;
+}
+
+table input.text
+{
+	box-sizing: border-box;
+	width: 100%;
+	height: 18dp;
+	margin: 0;
+	padding: 0 5dp;
+	line-height: 1.0;
+
+	border-width: 1dp;
+	border-color: black;
+	background-color: white;
+
+	font-size: 15dp;
+
+	decorator: none;
+}
+
+
+
+select
+{
+	width: 175dp;
+	height: 37dp;
+}
+
+select selectvalue
+{
+	width: auto;
+	margin-right: 30dp;
+
+	height: 25dp;
+	padding: 12dp 10dp 0dp 10dp;
+
+	decorator: image( selectvalue  );
+}
+
+select selectarrow
+{
+	width: 30dp;
+	height: 37dp;
+
+	decorator: image( selectarrow );
+}
+
+select:hover selectarrow
+{
+	decorator: image( selectarrow-hover );
+}
+
+select:active selectarrow,
+select selectarrow:checked
+{
+	decorator: image( selectarrow-active );
+}
+
+select selectbox
+{
+	margin-left: 1dp;
+	margin-top: -7dp;
+	margin-bottom: -10dp;
+	width: 162dp;
+	padding: 1dp 4dp 4dp 4dp;
+}
+
+select selectbox,
+tbody
+{
+	decorator: tiled-box(
+		selectbox-tl, selectbox-t, selectbox-tr,
+		selectbox-l, selectbox-c, auto,  /* auto mirrors left */
+		selectbox-bl, selectbox-b, selectbox-br
+	);
+}
+
+select selectbox option
+{
+	width: auto;
+	padding: 3dp 0 3dp 6dp;
+	background: #DDDD;
+}
+
+select selectbox option:nth-child(even),
+tr:nth-child(even)
+{
+	background: #FFFFFFA0;
+}
+select selectbox option:checked
+{
+	font-weight: bold;
+}
+select selectbox option:hover
+{
+	background: #FF5D5D;
+}
+
+
+
+input.radio,
+input.checkbox
+{
+	width: 30dp;
+	height: 30dp;
+
+	vertical-align: -11dp;
+}
+
+input.radio
+{
+	decorator: image(radio);
+}
+
+input.radio:hover
+{
+	decorator: image(radio-hover);
+}
+
+input.radio:active
+{
+	decorator: image(radio-active);
+}
+
+input.radio:checked
+{
+	decorator: image(radio-checked);
+}
+
+input.radio:checked:hover
+{
+	decorator: image(radio-checked-hover);
+}
+
+input.radio:checked:active
+{
+	decorator: image(radio-checked-active);
+}
+
+input.checkbox
+{
+	decorator: image(checkbox);
+}
+
+input.checkbox:hover
+{
+	decorator: image(checkbox-hover);
+}
+
+input.checkbox:active
+{
+	decorator: image(checkbox-active);
+}
+
+input.checkbox:checked
+{
+	decorator: image(checkbox-checked);
+}
+
+input.checkbox:checked:hover
+{
+	decorator: image(checkbox-checked-hover);
+}
+
+input.checkbox:checked:active
+{
+	decorator: image(checkbox-checked-active);
+}
+
+input.range {
+	width: 200dp;
+	height: 32dp;
+	vertical-align: -12dp;
+}
+input.range slidertrack {
+	margin-top: 3dp;
+	height: 22dp;
+	image-color: #ecc;
+	decorator: ninepatch( range-track, range-track-inner, 1.0 );
+}
+input.range sliderbar {
+	margin-left: -8dp;
+	margin-right: -7dp;
+	margin-top: -3dp;
+	width: 34dp;
+	height: 23dp;
+	decorator: image( range-bar );
+}
+input.range sliderbar:hover, input.range slidertrack:hover + sliderbar  {
+	image-color: #cc0;
+}
+input.range sliderbar:active, input.range slidertrack:active + sliderbar  {
+	image-color: #c80;
+}
+input.range sliderarrowdec, input.range sliderarrowinc {
+	width: 17dp;
+	height: 17dp;
+	margin-top: 6dp;
+}
+input.range sliderarrowdec        { decorator: image( range-dec        ); }
+input.range sliderarrowinc        { decorator: image( range-inc        ); }
+input.range sliderarrowdec:hover  { decorator: image( range-dec-hover  ); }
+input.range sliderarrowinc:hover  { decorator: image( range-inc-hover  ); }
+input.range sliderarrowdec:active { decorator: image( range-dec-active ); }
+input.range sliderarrowinc:active { decorator: image( range-inc-active ); }
+
+thead tr {
+	height: 35dp;
+	decorator: tiled-horizontal( tableheader-l, tableheader-c, tableheader-r );
+}
+thead td {
+	padding-top: 11dp;
+}
+
+tbody {
+	/* Margin left/right only affects the background positioning for the decorator, not the cell placement */
+	margin-left: 5dp;
+	margin-right: 4dp;
+	/* Padding top/bottom adds extra spacing between the header row and the body, and between the body and table bottom */
+	padding-top: 4dp;
+	padding-bottom: 4dp;
+}
+tbody tr {
+	margin-left: 9dp;
+	margin-right: 8dp;
+	color: black;
+}
+
+
+expand
+{
+	display: block;
+
+	margin: 1dp 0 1dp 5dp;
+	height: 17dp;
+	width: 17dp;
+
+	decorator: image( expand );
+}
+
+expand:hover
+{
+	decorator: image( expand-hover );
+}
+
+expand:active
+{
+	decorator: image( expand-active  );
+}
+
+expand.collapsed
+{
+	decorator: image( expand-collapsed );
+}
+
+expand.collapsed:hover
+{
+	decorator: image( expand-collapsed-hover );
+}
+
+expand.collapsed:active
+{
+	decorator: image( expand-collapsed-active  );
+}
+
+
+scrollbarvertical
+{
+	margin-top: -6dp;
+	margin-bottom: -6dp;
+	margin-right: -11dp;
+	width: 27dp;
+}
+
+scrollbarvertical slidertrack
+{
+	decorator: tiled-vertical( slidertrack-t, slidertrack-c, slidertrack-b );
+}
+scrollbarvertical slidertrack:active
+{
+	image-color: #aaa;
+}
+
+scrollbarvertical sliderbar
+{
+	margin-left: 4dp;
+	width: 23dp;
+	min-height: 46dp;
+
+	decorator: tiled-vertical( sliderbar-t, sliderbar-c, sliderbar-b );
+}
+scrollbarvertical sliderbar:hover
+{
+	decorator: tiled-vertical( sliderbar-hover-t, sliderbar-hover-c, sliderbar-hover-b );
+}
+scrollbarvertical sliderbar:active
+{
+	decorator: tiled-vertical( sliderbar-active-t, sliderbar-active-c, sliderbar-active-b );
+}
+
+scrollbarvertical sliderarrowdec,
+scrollbarvertical sliderarrowinc
+{
+	width: 27dp;
+	height: 24dp;
+}
+scrollbarvertical sliderarrowdec
+{
+	decorator: image( sliderarrowdec );
+}
+scrollbarvertical sliderarrowdec:hover
+{
+	decorator: image( sliderarrowdec-hover );
+}
+scrollbarvertical sliderarrowdec:active
+{
+	decorator: image( sliderarrowdec-active );
+}
+
+scrollbarvertical sliderarrowinc
+{
+	decorator: image( sliderarrowinc );
+}
+scrollbarvertical sliderarrowinc:hover
+{
+	decorator: image( sliderarrowinc-hover );
+}
+scrollbarvertical sliderarrowinc:active
+{
+	decorator: image( sliderarrowinc-active );
+}
+
+scrollbarhorizontal
+{
+	width: 0;
+	height: 0;
+}
+
+textarea scrollbarvertical
+{
+	cursor: arrow;
+	margin: 10dp 0 4dp 0;
+	width: 12dp;
+}
+textarea scrollbarvertical slidertrack
+{
+	decorator: none;
+}
+textarea scrollbarvertical sliderbar
+{
+	margin-left: 2dp;
+	width: 10dp;
+	min-height: 16dp;
+}
+textarea scrollbarvertical sliderarrowdec,
+textarea scrollbarvertical sliderarrowinc
+{
+	width: 0;
+	height: 0;
+}
+
+textarea scrollbarhorizontal
+{
+	cursor: arrow;
+	margin-left: 7dp;
+	height: 12dp;
+}
+textarea scrollbarhorizontal sliderbar
+{
+	background-color: #BC0000CC;
+	height: 8dp;
+	min-width: 10dp;
+}
+textarea scrollbarhorizontal sliderbar:hover
+{
+	background-color: #B82500CC;
+}
+textarea scrollbarhorizontal sliderbar:active
+{
+	background-color: #770000CC;
+}

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(MMRecomp)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+# set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
@@ -10,7 +12,10 @@ endif()
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+find_package(Freetype REQUIRED)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64 ${CMAKE_BINARY_DIR}/rt64)
+add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/RmlUi)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
 get_target_property(RT64_BASENAME rt64 OUTPUT_NAME)
@@ -66,6 +71,8 @@ set (SOURCES
     
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
+
+    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
 
 add_executable(MMRecomp)
@@ -73,6 +80,8 @@ add_executable(MMRecomp)
 target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/thirdparty
+    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Include
+    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Backends
     ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-win32-deps/SDL2-2.26.3/include
     ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src
     ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/rhi
@@ -94,6 +103,9 @@ target_link_libraries(MMRecomp PRIVATE
     RecompiledFuncs
     SDL2
     rt64
+    Freetype::Freetype
+    RmlCore
+    RmlDebugger
 )
 
 # TODO fix the RT64 CMake script so that this doesn't need to be duplicated here
