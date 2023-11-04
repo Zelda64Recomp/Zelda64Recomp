@@ -7,7 +7,7 @@
 #include "multilibultra.hpp"
 
 // Start time for the program
-static std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+static std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
 // Game speed multiplier (1 means no speedup)
 constexpr uint32_t speed_multiplier = 1;
 // N64 CPU counter ticks per millisecond
@@ -52,11 +52,11 @@ std::chrono::microseconds ticks_to_duration(uint64_t ticks) {
 }
 
 std::chrono::system_clock::time_point ticks_to_timepoint(uint64_t ticks) {
-    return start + ticks_to_duration(ticks);
+    return start_time + ticks_to_duration(ticks);
 }
 
 uint64_t time_now() {
-    return duration_to_ticks(std::chrono::system_clock::now() - start);
+    return duration_to_ticks(std::chrono::system_clock::now() - start_time);
 }
 
 void timer_thread(RDRAM_ARG1) {
@@ -142,11 +142,11 @@ uint32_t Multilibultra::get_speed_multiplier() {
 }
 
 std::chrono::system_clock::time_point Multilibultra::get_start() {
-    return start;
+    return start_time;
 }
 
 std::chrono::system_clock::duration Multilibultra::time_since_start() {
-    return std::chrono::system_clock::now() - start;
+    return std::chrono::system_clock::now() - start_time;
 }
 
 extern "C" u32 osGetCount() {

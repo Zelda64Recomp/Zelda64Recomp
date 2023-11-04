@@ -100,7 +100,7 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_h
     gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
 #if defined(_WIN32)
-    InitiateGFXWindows(gfx_info, window_handle);
+    InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)

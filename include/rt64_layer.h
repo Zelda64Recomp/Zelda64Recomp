@@ -64,7 +64,7 @@ typedef struct {
 //DLLEXPORT void (CALL *PumpEvents)(void) = nullptr;
 
 #if defined(_WIN32)
-extern "C" int InitiateGFXWindows(GFX_INFO Gfx_Info, HWND hwnd);
+extern "C" int InitiateGFXWindows(GFX_INFO Gfx_Info, HWND hwnd, DWORD threadId);
 #elif defined(__ANDROID__)
 static_assert(false && "Unimplemented");
 #elif defined(__linux__)

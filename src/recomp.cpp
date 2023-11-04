@@ -187,31 +187,31 @@ EXPORT extern "C" void init() {
 //     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 // }
 
-/*EXPORT extern "C"*/ void start(Multilibultra::WindowHandle window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks) {
-    Multilibultra::set_audio_callbacks(audio_callbacks);
-    Multilibultra::set_input_callbacks(input_callbacks);
+static Multilibultra::gfx_callbacks_t gfx_callbacks;
 
-    //// Register window class.
-    //WNDCLASS wc;
-    //memset(&wc, 0, sizeof(WNDCLASS));
-    //wc.lpfnWndProc = WindowProc;
-    //wc.hInstance = GetModuleHandle(0);
-    //wc.hbrBackground = (HBRUSH)(COLOR_BACKGROUND);
-    //wc.lpszClassName = "RT64Sample";
-    //RegisterClass(&wc);
+void set_audio_callbacks(const Multilibultra::audio_callbacks_t& callbacks);
+void set_input_callbacks(const Multilibultra::input_callbacks_t& callback);
 
-    //// Create window.
-    //const int Width = 1280;
-    //const int Height = 720;
-    //RECT rect;
-    //UINT dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-    //rect.left = (GetSystemMetrics(SM_CXSCREEN) - Width) / 2;
-    //rect.top = (GetSystemMetrics(SM_CYSCREEN) - Height) / 2;
-    //rect.right = rect.left + Width;
-    //rect.bottom = rect.top + Height;
-    //AdjustWindowRectEx(&rect, dwStyle, 0, 0);
+void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks_) {
+    set_audio_callbacks(audio_callbacks);
+    set_input_callbacks(input_callbacks);
 
-    //HWND hwnd = CreateWindow(wc.lpszClassName, "Recomp", dwStyle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 0, 0, wc.hInstance, NULL);
+    gfx_callbacks_t gfx_callbacks = gfx_callbacks_;
+
+    gfx_callbacks_t::gfx_data_t gfx_data{};
+
+    if (gfx_callbacks.create_gfx) {
+        gfx_data = gfx_callbacks.create_gfx();
+    }
+
+    if (window_handle == WindowHandle{}) {
+        if (gfx_callbacks.create_window) {
+            window_handle = gfx_callbacks.create_window(gfx_data);
+        }
+        else {
+            assert(false && "No create_window callback provided");
+        }
+    }
 
     std::thread game_thread{[](Multilibultra::WindowHandle window_handle) {
         debug_printf("[Recomp] Starting\n");
@@ -225,5 +225,11 @@ EXPORT extern "C" void init() {
         debug_printf("[Recomp] Quitting\n");
     }, window_handle};
 
-    game_thread.detach();
+    while (true) {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1ms);
+        if (gfx_callbacks.update_gfx != nullptr) {
+            gfx_callbacks.update_gfx(nullptr);
+        }
+    }
 }

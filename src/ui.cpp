@@ -38,6 +38,7 @@
 struct UIRenderContext {
     RT64::RenderInterface* interface;
     RT64::RenderDevice* device;
+    Rml::ElementDocument* document;
 };
 
 // TODO deduplicate from rt64_common.h
@@ -98,6 +99,8 @@ template <typename T>
 T from_bytes_le(const char* input) {
     return *reinterpret_cast<const T*>(input);
 }
+
+void load_document();
 
 class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     static constexpr uint32_t per_frame_descriptor_set = 0;
@@ -516,7 +519,7 @@ public:
         mvp_ = projection_mtx_ * transform_;
     }
 
-    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height) {
+    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height, bool reload_style) {
         list_ = list;
         list_->setPipeline(pipeline_.get());
         list_->setGraphicsPipelineLayout(layout_.get());
@@ -527,6 +530,10 @@ public:
         // The following code assumes command lists aren't double buffered.
         // Clear out any stale buffers from the last command list.
         stale_buffers_.clear();
+
+        if (reload_style) {
+            load_document();
+        }
 
         // Reset and map the upload buffer.
         upload_buffer_bytes_used_ = 0;
@@ -555,6 +562,18 @@ struct {
 
 // TODO make this not be global
 extern SDL_Window* window;
+
+void load_document() {
+    if (UIContext.render.document) {
+        UIContext.render.document->Close();
+        // Documents are owned by RmlUi, so we don't have anything to free here.
+        UIContext.render.document = nullptr;
+    }
+    UIContext.render.document = UIContext.rml.context->LoadDocument("assets/demo.rml");
+    if (UIContext.render.document) {
+        UIContext.render.document->Show();
+    }
+}
 
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     printf("RT64 hook init\n");
@@ -598,10 +617,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         }
     }
 
-    if (Rml::ElementDocument* document = UIContext.rml.context->LoadDocument("assets/demo.rml")) {
-        document->Show();
-    }
-
+    load_document();
 }
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
@@ -613,13 +629,41 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
 
     // TODO process SDL events
 
-    int width, height;
-    SDL_GetWindowSizeInPixels(window, &width, &height);
+    int num_keys;
+    const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
 
-    UIContext.rml.render_interface->start(command_list, width, height);
-    UIContext.rml.context->Update();
-    UIContext.rml.context->Render();
-    UIContext.rml.render_interface->end(command_list);    
+    static bool was_reload_held = false;
+    bool is_reload_held = key_state[SDL_SCANCODE_F11] != 0;
+    bool reload_sheets = is_reload_held && !was_reload_held;
+    was_reload_held = is_reload_held;
+    
+    static bool menu_open = false;
+    static bool was_toggle_menu_held = false;
+    bool is_toggle_menu_held = key_state[SDL_SCANCODE_M] != 0;
+    if (is_toggle_menu_held && !was_toggle_menu_held) {
+        menu_open = !menu_open;
+    }
+    was_toggle_menu_held = is_toggle_menu_held;
+
+    if (menu_open) {
+        int width, height;
+        SDL_GetWindowSizeInPixels(window, &width, &height);
+
+        UIContext.rml.render_interface->start(command_list, width, height, reload_sheets);
+
+        static int prev_width = 0;
+        static int prev_height = 0;
+
+        if (prev_width != width || prev_height != height) {
+            UIContext.rml.context->SetDimensions({ width, height });
+        }
+        prev_width = width;
+        prev_height = height;
+
+        UIContext.rml.context->Update();
+        UIContext.rml.context->Render();
+        UIContext.rml.render_interface->end(command_list);
+    }
 }
 
 void deinit_hook() {

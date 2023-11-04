@@ -30,13 +30,18 @@ namespace Multilibultra {
 
 #if defined(_WIN32)
     // Native HWND handle to the target window.
-    using WindowHandle = HWND;
+    struct WindowHandle {
+        HWND window;
+        DWORD thread_id = (DWORD)-1;
+        auto operator<=>(const WindowHandle&) const = default;
+    };
 #elif defined(__ANDROID__)
     using WindowHandle = ANativeWindow*;
 #elif defined(__linux__)
     struct WindowHandle {
         Display* display;
         Window window;
+        auto operator<=>(const WindowHandle&) const = default;
     };
 #endif
 
@@ -101,14 +106,12 @@ struct audio_callbacks_t {
     get_samples_remaining_t* get_frames_remaining;
     set_frequency_t* set_frequency;
 };
-void set_audio_callbacks(const audio_callbacks_t* callbacks);
 
 // Input
 struct input_callbacks_t {
     using get_input_t = void(uint16_t*, float*, float*);
     get_input_t* get_input;
 };
-void set_input_callbacks(const input_callbacks_t* callback);
 
 struct gfx_callbacks_t {
     using gfx_data_t = void*;
@@ -119,7 +122,7 @@ struct gfx_callbacks_t {
     create_window_t* create_window;
     update_gfx_t* update_gfx;
 };
-void set_gfx_callbacks(const gfx_callbacks_t* callbacks);
+void start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks);
 
 class preemption_guard {
 public:

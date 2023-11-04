@@ -6,10 +6,8 @@ static uint32_t sample_rate = 48000;
 
 static Multilibultra::audio_callbacks_t audio_callbacks;
 
-void Multilibultra::set_audio_callbacks(const audio_callbacks_t* callbacks) {
-	if (callbacks != nullptr) {
-		audio_callbacks = *callbacks;
-	}
+void set_audio_callbacks(const Multilibultra::audio_callbacks_t& callbacks) {
+	audio_callbacks = callbacks;
 }
 
 void Multilibultra::init_audio() {

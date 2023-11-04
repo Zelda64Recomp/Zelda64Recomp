@@ -3,10 +3,8 @@
 
 static Multilibultra::input_callbacks_t input_callbacks;
 
-void Multilibultra::set_input_callbacks(const input_callbacks_t* callbacks) {
-    if (callbacks != nullptr) {
-        input_callbacks = *callbacks;
-    }
+void set_input_callbacks(const Multilibultra::input_callbacks_t& callbacks) {
+    input_callbacks = callbacks;
 }
 
 static int max_controllers = 0;

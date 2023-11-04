@@ -236,28 +236,12 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
-static Multilibultra::gfx_callbacks_t gfx_callbacks;
-
-void Multilibultra::set_gfx_callbacks(const gfx_callbacks_t* callbacks) {
-    if (callbacks != nullptr) {
-        gfx_callbacks = *callbacks;
-    }
-}
-
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, Multilibultra::WindowHandle window_handle) {
     using namespace std::chrono_literals;
     Multilibultra::gfx_callbacks_t::gfx_data_t gfx_data{};
 
     Multilibultra::set_native_thread_name("Gfx Thread");
     Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
-
-    if (gfx_callbacks.create_gfx != nullptr) {
-        gfx_data = gfx_callbacks.create_gfx();
-    }
-
-    if (gfx_callbacks.create_window != nullptr) {
-        window_handle = gfx_callbacks.create_window(gfx_data);
-    }
 
     RT64Init(rom, rdram, window_handle);
     
@@ -284,9 +268,6 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
                 RT64UpdateScreen(swap_action->origin);
             }
-        }
-        if (gfx_callbacks.update_gfx != nullptr) {
-            gfx_callbacks.update_gfx(nullptr);
         }
     }
 }

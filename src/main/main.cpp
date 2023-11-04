@@ -164,7 +164,7 @@ Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_da
     SDL_GetWindowWMInfo(window, &wmInfo);
 
 #if defined(_WIN32)
-    return wmInfo.info.win.window;
+    return Multilibultra::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
@@ -353,19 +353,7 @@ int main(int argc, char** argv) {
         .get_input = get_input,
     };
 
-    //create_gfx();
-    //void* window_handle = create_window(nullptr);
-
-    Multilibultra::set_gfx_callbacks(&gfx_callbacks);
-    start(Multilibultra::WindowHandle{}, &audio_callbacks, &input_callbacks);
-
-    // Do nothing forever
-    while (1) {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(10ms);
-        //update_gfx(nullptr);
-        //std::this_thread::sleep_for(1ms);
-    }
+    Multilibultra::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
 
     return EXIT_SUCCESS;
 }
