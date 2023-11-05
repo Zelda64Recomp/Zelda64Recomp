@@ -258,16 +258,6 @@ void enable_preemption() {
 #pragma warning( pop ) 
 }
 
-// lock's constructor is called first, so can_preempt is set after locking
-preemption_guard::preemption_guard() : lock{scheduler_context.premption_mutex} {
-    scheduler_context.can_preempt = false;
-}
-
-// lock's destructor is called last, so can_preempt is set before unlocking
-preemption_guard::~preemption_guard() {
-    scheduler_context.can_preempt = true;
-}
-
 void notify_scheduler() {
     std::lock_guard lock{scheduler_context.mutex};
     scheduler_context.notify_count.fetch_add(1);

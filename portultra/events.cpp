@@ -95,6 +95,8 @@ extern "C" void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, u32 ret
 
 uint64_t total_vis = 0;
 
+void set_dummy_vi();
+
 void vi_thread_func() {
     Multilibultra::set_native_thread_name("VI Thread");
     // This thread should be prioritized over every other thread in the application, as it's what allows
@@ -131,10 +133,23 @@ void vi_thread_func() {
             if (remaining_retraces == 0) {
                 remaining_retraces = events_context.vi.retrace_count;
 
-                if (events_context.vi.mq != NULLPTR) {
-                    if (osSendMesg(PASS_RDRAM events_context.vi.mq, events_context.vi.msg, OS_MESG_NOBLOCK) == -1) {
-                        //printf("Game skipped a VI frame!\n");
+                if (Multilibultra::is_game_started()) {
+                    if (events_context.vi.mq != NULLPTR) {
+                        if (osSendMesg(PASS_RDRAM events_context.vi.mq, events_context.vi.msg, OS_MESG_NOBLOCK) == -1) {
+                            //printf("Game skipped a VI frame!\n");
+                        }
                     }
+                }
+                else {
+                    set_dummy_vi();
+                    static bool swap = false;
+                    uint32_t vi_origin = 0x400 + 0x280; // Skip initial RDRAM contents and add the usual origin offset
+                    // Offset by one FB every other frame so RT64 continues drawing
+                    if (swap) {
+                        vi_origin += 0x25800;
+                    }
+                    osViSwapBuffer(rdram, vi_origin);
+                    swap = !swap;
                 }
             }
             if (events_context.ai.mq != NULLPTR) {
@@ -238,7 +253,6 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
 
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, Multilibultra::WindowHandle window_handle) {
     using namespace std::chrono_literals;
-    Multilibultra::gfx_callbacks_t::gfx_data_t gfx_data{};
 
     Multilibultra::set_native_thread_name("Gfx Thread");
     Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
@@ -290,6 +304,22 @@ extern unsigned int VI_Y_SCALE_REG;
 uint32_t hstart = 0;
 uint32_t vi_origin_offset = 320 * sizeof(uint16_t);
 bool vi_black = false;
+
+void set_dummy_vi() {
+    VI_STATUS_REG = 0x311E;
+    VI_WIDTH_REG = 0x140;
+    VI_V_SYNC_REG = 0x20D;
+    VI_H_SYNC_REG = 0xC15;
+    VI_LEAP_REG = 0x0C150C15;
+    hstart = 0x006C02EC;
+    VI_X_SCALE_REG = 0x200;
+    VI_V_CURRENT_LINE_REG = 0x0;
+    vi_origin_offset = 0x280;
+    VI_Y_SCALE_REG = 0x400;
+    VI_V_START_REG = 0x2501FF;
+    VI_V_BURST_REG = 0xE0204;
+    VI_INTR_REG = 0x2;
+}
 
 extern "C" void osViSwapBuffer(RDRAM_ARG PTR(void) frameBufPtr) {
     if (vi_black) {

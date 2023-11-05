@@ -183,11 +183,16 @@ EXPORT extern "C" void init() {
     MEM_W(osMemSize, 0) = 8 * 1024 * 1024; // 8MB
 }
 
-// LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-//     return DefWindowProc(hwnd, uMsg, wParam, lParam);
-// }
+std::atomic_int game_started = -1;
 
-static Multilibultra::gfx_callbacks_t gfx_callbacks;
+void Multilibultra::start_game(int game) {
+    game_started.store(game);
+    game_started.notify_all();
+}
+
+bool Multilibultra::is_game_started() {
+    return game_started.load() != -1;
+}
 
 void set_audio_callbacks(const Multilibultra::audio_callbacks_t& callbacks);
 void set_input_callbacks(const Multilibultra::input_callbacks_t& callback);
@@ -220,7 +225,13 @@ void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& a
 
         Multilibultra::preinit(rdram_buffer.get(), rom.get(), window_handle);
 
-        recomp_entrypoint(rdram_buffer.get(), &context);
+        game_started.wait(-1);
+
+        switch (game_started.load()) {
+            case 0:
+                recomp_entrypoint(rdram_buffer.get(), &context);
+                break;
+        }
         
         debug_printf("[Recomp] Quitting\n");
     }, window_handle};
@@ -229,7 +240,7 @@ void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& a
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1ms);
         if (gfx_callbacks.update_gfx != nullptr) {
-            gfx_callbacks.update_gfx(nullptr);
+            gfx_callbacks.update_gfx(gfx_data);
         }
     }
 }

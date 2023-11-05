@@ -123,14 +123,8 @@ struct gfx_callbacks_t {
     update_gfx_t* update_gfx;
 };
 void start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks);
-
-class preemption_guard {
-public:
-    preemption_guard();
-    ~preemption_guard();
-private:
-    std::lock_guard<std::mutex> lock;
-};
+void start_game(int game);
+bool is_game_started();
 
 } // namespace Multilibultra
 

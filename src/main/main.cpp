@@ -14,6 +14,8 @@
 #include "SDL2/SDL_syswm.h"
 #endif
 
+#include "recomp_ui.h"
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -138,6 +140,9 @@ int sdl_event_filter(void* userdata, SDL_Event* event) {
     case SDL_EventType::SDL_QUIT:
         std::quick_exit(EXIT_SUCCESS);
         break;
+    default:
+        queue_event(*event);
+        break;
     }
     return 1;
 }
@@ -153,7 +158,7 @@ Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
 SDL_Window* window;
 
 Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_data_t) {
-    window = SDL_CreateWindow("Majora's Mask", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Recomp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());

@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
+#include "concurrentqueue.h"
+
 #include "rt64_layer.h"
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
@@ -116,6 +118,8 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     int scissor_y_ = 0;
     int scissor_width_ = 0;
     int scissor_height_ = 0;
+    int window_width_ = 0;
+    int window_height_ = 0;
     Rml::Matrix4f projection_mtx_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f transform_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f mvp_ = Rml::Matrix4f::Identity();
@@ -274,11 +278,16 @@ public:
         uint32_t total_bytes = vert_size_bytes + index_size_bytes;
         uint32_t index_bytes_start = vert_size_bytes;
 
-        if (textures_.size() == 0) {
-            // Create a 1x1 pixel white texture as the first handle
-            Rml::byte white_pixel[] = { 255, 255, 255, 255 };
-            Rml::TextureHandle dummy_handle;
-            GenerateTexture(dummy_handle, white_pixel, Rml::Vector2i{ 1,1 });
+
+        if (!textures_.contains(texture)) {
+            if (texture == 0) {
+                // Create a 1x1 pixel white texture as the first handle
+                Rml::byte white_pixel[] = { 255, 255, 255, 255 };
+                create_texture(0, white_pixel, Rml::Vector2i{ 1,1 });
+            }
+            else {
+                assert(false && "Rendered without texture!");
+            }
         }
 
         uint32_t upload_buffer_offset = allocate_upload_data(total_bytes);
@@ -325,17 +334,19 @@ public:
 		};
         list_->barriers(usage_barriers, uint32_t(std::size(usage_barriers)));
 
-        // TODO set scissor, viewport
-        //if (scissor_enabled_) {
-            list_->setViewports(RT64::RenderViewport{ 0, 0, float(scissor_width_), float(scissor_height_) });
-            list_->setScissors(RT64::RenderRect{ 0, 0, scissor_width_, scissor_height_ });
-        //}
+        list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
+        if (scissor_enabled_) {
+            list_->setScissors(RT64::RenderRect{ scissor_x_, scissor_y_, scissor_width_, scissor_height_ });
+        }
+        else {
+            list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
+        }
 
         RT64::RenderIndexBufferView index_view{index_buffer_->at(0), index_size_bytes, RT64::RenderFormat::R32_UINT};
         list_->setIndexBuffer(&index_view);
         RT64::RenderVertexBufferView vertex_view{vertex_buffer_->at(0), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
-        list_->setGraphicsDescriptorHeap(textures_[texture].heap.get());
+        list_->setGraphicsDescriptorHeap(textures_.at(texture).heap.get());
 
         RmlPushConstants constants{
             .transform = mvp_,
@@ -420,6 +431,7 @@ public:
             texture_dimensions.x = size_x;
             texture_dimensions.y = size_y;
 
+            texture_handle = texture_count_++;
             create_texture(texture_handle, reinterpret_cast<const Rml::byte*>(file_data.data() + 18), texture_dimensions, true);
 
             return true;
@@ -429,11 +441,11 @@ public:
     }
 
     bool GenerateTexture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions) override {
+        texture_handle = texture_count_++;
         return create_texture(texture_handle, source, source_dimensions);
     }
 
-    bool create_texture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions, bool flip_y = false) {
-        texture_handle = texture_count_++;
+    bool create_texture(Rml::TextureHandle texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions, bool flip_y = false) {
         std::unique_ptr<RT64::RenderTexture> texture =
             render_context_->device->createTexture(RT64::RenderTextureDesc::Texture2D(source_dimensions.x, source_dimensions.y, 1, RmlTextureFormat));
 
@@ -524,6 +536,9 @@ public:
         list_->setPipeline(pipeline_.get());
         list_->setGraphicsPipelineLayout(layout_.get());
 
+        window_width_ = image_width;
+        window_height_ = image_height;
+
         projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, static_cast<float>(image_width), static_cast<float>(image_height), 0.0f, -10000, 10000);
         recalculate_mvp();
 
@@ -565,6 +580,10 @@ extern SDL_Window* window;
 
 void load_document() {
     if (UIContext.render.document) {
+        UIContext.render.document->ReloadStyleSheet();
+        Rml::ReleaseTextures();
+        Rml::ReleaseMemoryPools();
+        UIContext.render.document->Hide();
         UIContext.render.document->Close();
         // Documents are owned by RmlUi, so we don't have anything to free here.
         UIContext.render.document = nullptr;
@@ -620,15 +639,17 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     load_document();
 }
 
+moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
+
+void queue_event(const SDL_Event& event) {
+    ui_event_queue.enqueue(event);
+}
+
+bool try_deque_event(SDL_Event& out) {
+    return ui_event_queue.try_dequeue(out);
+}
+
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
-    command_list->barriers(RT64::RenderTextureBarrier::Transition(swap_chain_texture, RT64::RenderTextureState::RENDER_TARGET));
-    // command_list->setGraphicsPipelineLayout(UIContext.render.layout.get());
-    // command_list->setPipeline(UIContext.render.pipeline.get());
-    // command_list->setIndexBuffer(&UIContext.render.index_buffer_view);
-    // command_list->drawIndexedInstanced(6, 1, 0, 0, 0);
-
-    // TODO process SDL events
-
     int num_keys;
     const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
 
@@ -637,13 +658,26 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
     
-    static bool menu_open = false;
+    static bool menu_open = true;
     static bool was_toggle_menu_held = false;
     bool is_toggle_menu_held = key_state[SDL_SCANCODE_M] != 0;
     if (is_toggle_menu_held && !was_toggle_menu_held) {
         menu_open = !menu_open;
     }
     was_toggle_menu_held = is_toggle_menu_held;
+    
+    static bool was_start_game_held = false;
+    bool is_start_game_held = key_state[SDL_SCANCODE_SPACE] != 0;
+    if (is_start_game_held && !was_start_game_held) {
+        Multilibultra::start_game(0);
+    }
+    was_start_game_held = is_start_game_held;
+
+    SDL_Event cur_event{};
+
+    while (try_deque_event(cur_event)) {
+        RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
+    }
 
     if (menu_open) {
         int width, height;
