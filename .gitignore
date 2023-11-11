@@ -7,6 +7,7 @@
 
 # Output C files
 RecompiledFuncs/
+RecompiledPatches/
 
 # Linux build output
 build/
@@ -43,6 +44,7 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+vcpkg_installed/
 
 # Runtime files
 imgui.ini

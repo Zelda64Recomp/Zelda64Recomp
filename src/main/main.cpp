@@ -148,6 +148,7 @@ int sdl_event_filter(void* userdata, SDL_Event* event) {
 }
 
 Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) > 0) {
         exit_error("Failed to initialize SDL2: %s\n", SDL_GetError());
     }
@@ -158,7 +159,7 @@ Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
 SDL_Window* window;
 
 Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_data_t) {
-    window = SDL_CreateWindow("Recomp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Recomp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE );
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());

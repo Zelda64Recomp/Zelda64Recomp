@@ -1,0 +1,22 @@
+<rml>
+	<head>
+		<title>Launcher</title>
+		<link type="text/rcss" href="rml.rcss"/>
+		<link type="text/rcss" href="invader_spritesheet.rcss"/>
+		<link type="text/rcss" href="invader.rcss"/>
+		<style>
+			body
+			{
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="window">
+			<button onclick="start_game" style="align-self: center;">Start Game</button>
+			This is a sample.<br/>
+			Test text
+		</div>
+	</body>
+</rml>

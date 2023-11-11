@@ -5,6 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
+#include "recomp_ui.h"
+
 #include "concurrentqueue.h"
 
 #include "rt64_layer.h"
@@ -124,7 +126,7 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     Rml::Matrix4f transform_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f mvp_ = Rml::Matrix4f::Identity();
     std::unordered_map<Rml::TextureHandle, TextureHandle> textures_{};
-    Rml::TextureHandle texture_count_ = 0;
+    Rml::TextureHandle texture_count_ = 1; // Start at 1 to reserve texture 0 as the 1x1 pixel white texture
     std::unique_ptr<RT64::RenderBuffer> upload_buffer_{};
     std::unique_ptr<RT64::RenderBuffer> vertex_buffer_{};
     std::unique_ptr<RT64::RenderBuffer> index_buffer_{};
@@ -251,8 +253,22 @@ public:
     }
 
     uint32_t allocate_upload_data_aligned(uint32_t num_bytes, uint32_t alignment) {
+        // Check if there's enough remaining room in the upload buffer to allocate the requested bytes.
+        uint32_t total_bytes = num_bytes + upload_buffer_bytes_used_;
+
+        // Determine the amount of padding needed to meet the target alignment.
         uint32_t padding_bytes = ((upload_buffer_bytes_used_ + alignment - 1) / alignment) * alignment - upload_buffer_bytes_used_;
 
+        // If there isn't enough room to allocate the required bytes plus the padding then resize the upload buffer and allocate from the start of the new one.
+        if (total_bytes + padding_bytes > upload_buffer_size_) {
+            resize_upload_buffer(total_bytes + total_bytes / 2);
+
+            upload_buffer_bytes_used_ += num_bytes;
+
+            return 0;
+        }
+
+        // Otherwise allocate the padding and required bytes and offset the allocated position by the padding size.
         return allocate_upload_data(padding_bytes + num_bytes) + padding_bytes;
     }
 
@@ -373,8 +389,6 @@ public:
         std::filesystem::path image_path{ source.c_str() };
 
         if (image_path.extension() == ".tga") {
-            printf("Opening TGA image: %s\n", image_path.u8string().c_str());
-
             std::vector<char> file_data = read_file(image_path);
 
             if (file_data.empty()) {
@@ -531,7 +545,7 @@ public:
         mvp_ = projection_mtx_ * transform_;
     }
 
-    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height, bool reload_style) {
+    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height) {
         list_ = list;
         list_->setPipeline(pipeline_.get());
         list_->setGraphicsPipelineLayout(layout_.get());
@@ -545,10 +559,6 @@ public:
         // The following code assumes command lists aren't double buffered.
         // Clear out any stale buffers from the last command list.
         stale_buffers_.clear();
-
-        if (reload_style) {
-            load_document();
-        }
 
         // Reset and map the upload buffer.
         upload_buffer_bytes_used_ = 0;
@@ -568,31 +578,59 @@ public:
 
 struct {
     struct UIRenderContext render;
-    struct {
+    class {
+        std::unordered_map<Menu, Rml::ElementDocument*> documents;
+        Rml::ElementDocument* current_document;
+    public:
         SystemInterface_SDL system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         Rml::Context* context;
+        std::unique_ptr<Rml::EventListenerInstancer> event_listener_instancer;
+
+        void swap_document(Menu menu) {
+            if (current_document != nullptr) {
+                current_document->Hide();
+            }
+
+            auto find_it = documents.find(menu);
+            if (find_it != documents.end()) {
+                assert(find_it->second && "Document for menu not loaded!");
+                current_document = find_it->second;
+                current_document->Show();
+            }
+            else {
+                current_document = nullptr;
+            }
+        }
+
+        void load_documents() {
+            if (!documents.empty()) {
+                Rml::Factory::RegisterEventListenerInstancer(nullptr);
+                for (auto doc : documents) {
+                    doc.second->ReloadStyleSheet();
+                }
+
+                Rml::ReleaseTextures();
+                Rml::ReleaseMemoryPools();
+
+                if (current_document != nullptr) {
+                    current_document->Hide();
+                    current_document->Close();
+                }
+
+                current_document = nullptr;
+
+                documents.clear();
+                Rml::Factory::RegisterEventListenerInstancer(event_listener_instancer.get());
+            }
+
+            documents.emplace(Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
+        }
     } rml;
 } UIContext;
 
 // TODO make this not be global
 extern SDL_Window* window;
-
-void load_document() {
-    if (UIContext.render.document) {
-        UIContext.render.document->ReloadStyleSheet();
-        Rml::ReleaseTextures();
-        Rml::ReleaseMemoryPools();
-        UIContext.render.document->Hide();
-        UIContext.render.document->Close();
-        // Documents are owned by RmlUi, so we don't have anything to free here.
-        UIContext.render.document = nullptr;
-    }
-    UIContext.render.document = UIContext.rml.context->LoadDocument("assets/demo.rml");
-    if (UIContext.render.document) {
-        UIContext.render.document->Show();
-    }
-}
 
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     printf("RT64 hook init\n");
@@ -603,9 +641,11 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     // Setup RML
     UIContext.rml.system_interface.SetWindow(window);
     UIContext.rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&UIContext.render);
+    UIContext.rml.event_listener_instancer = make_event_listener_instancer();
 
     Rml::SetSystemInterface(&UIContext.rml.system_interface);
     Rml::SetRenderInterface(UIContext.rml.render_interface.get());
+    Rml::Factory::RegisterEventListenerInstancer(UIContext.rml.event_listener_instancer.get());
 
     Rml::Initialise();
 
@@ -636,7 +676,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         }
     }
 
-    load_document();
+    UIContext.rml.load_documents();
 }
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
@@ -649,6 +689,8 @@ bool try_deque_event(SDL_Event& out) {
     return ui_event_queue.try_dequeue(out);
 }
 
+std::atomic<Menu> open_menu = Menu::Launcher;
+
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
     int num_keys;
     const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
@@ -658,20 +700,19 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
     
-    static bool menu_open = true;
-    static bool was_toggle_menu_held = false;
-    bool is_toggle_menu_held = key_state[SDL_SCANCODE_M] != 0;
-    if (is_toggle_menu_held && !was_toggle_menu_held) {
-        menu_open = !menu_open;
+    static Menu prev_menu = Menu::None;
+    Menu cur_menu = open_menu.load();
+
+    if (reload_sheets) {
+        UIContext.rml.load_documents();
+        prev_menu = Menu::None;
     }
-    was_toggle_menu_held = is_toggle_menu_held;
-    
-    static bool was_start_game_held = false;
-    bool is_start_game_held = key_state[SDL_SCANCODE_SPACE] != 0;
-    if (is_start_game_held && !was_start_game_held) {
-        Multilibultra::start_game(0);
+
+    if (cur_menu != prev_menu) {
+        UIContext.rml.swap_document(cur_menu);
     }
-    was_start_game_held = is_start_game_held;
+
+    prev_menu = cur_menu;
 
     SDL_Event cur_event{};
 
@@ -679,11 +720,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
         RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
     }
 
-    if (menu_open) {
+    if (cur_menu != Menu::None) {
         int width, height;
         SDL_GetWindowSizeInPixels(window, &width, &height);
 
-        UIContext.rml.render_interface->start(command_list, width, height, reload_sheets);
+        UIContext.rml.render_interface->start(command_list, width, height);
 
         static int prev_width = 0;
         static int prev_height = 0;
@@ -706,4 +747,8 @@ void deinit_hook() {
 
 void set_rt64_hooks() {
     RT64::SetRenderHooks(init_hook, draw_hook, deinit_hook);
+}
+
+void set_current_menu(Menu menu) {
+    open_menu.store(menu);
 }

@@ -125,8 +125,8 @@ auto RSP::CFC2(r32& rt, u8 rd) -> void {
     if constexpr (Accuracy::RSP::SISD) {
         rt = 0;
         for (u32 n = 0; n < 8; n++) {
-            rt |= lo.get(n) << 0 + n;
-            rt |= hi.get(n) << 8 + n;
+            rt |= lo.get(n) << (0 + n);
+            rt |= hi.get(n) << (8 + n);
         }
         rt = s16(rt);
     }
@@ -151,8 +151,8 @@ auto RSP::CTC2(cr32& rt, u8 rd) -> void {
 
     if constexpr (Accuracy::RSP::SISD) {
         for (u32 n = 0; n < 8; n++) {
-            lo->set(n, rt & 1 << 0 + n);
-            hi->set(n, rt & 1 << 8 + n);
+            lo->set(n, rt & 1 << (0 + n));
+            hi->set(n, rt & 1 << (8 + n));
         }
     }
 

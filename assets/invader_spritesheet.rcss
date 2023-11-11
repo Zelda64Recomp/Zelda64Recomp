@@ -1,0 +1,134 @@
+@spritesheet theme
+{
+	src: invader.tga;
+
+	/* For high dpi screens, designates the scaling it is intended to be shown at. */
+	resolution: 1x;
+
+	/**
+		The following specifies a list of sprite names and associated rectangles into the image given above.
+		Any sprite given here can be specified in a decorator. Their names must be globally unique.
+		Rectangles are specified as: x y width height. With the origin assumed to be at the top left corner.
+	*/
+	title-bar-l: 147px 0px 82px 85px;
+	title-bar-c: 229px 0px  1px 85px;
+	title-bar-r: 231px 0px 15px 85px;
+
+	/* huditems are vertically flipped titlebars */
+	huditem-l: 147px 55px 82px -55px;
+	huditem-c: 229px 55px  1px -55px;
+	huditem-r: 231px 55px 15px -55px;
+
+	icon-help:    128px 152px 51px 39px;
+	icon-invader: 179px 152px 51px 39px;
+	icon-game:    230px 152px 51px 39px;
+	icon-hiscore: 281px 152px 51px 39px;
+	icon-waves:   332px 152px 51px 39px;
+	icon-flag:    336px 191px 51px 39px;
+	icon-lives:   383px 152px 51px 39px;
+	icon-score:   434px 152px 51px 39px;
+
+	window-tl: 0px 0px 133px 140px;
+	window-t:  134px 0px 1px 140px;
+	window-tr: 136px 0px 10px 140px;
+	window-l:  0px 139px 10px 1px;
+	window-c:  11px 139px 1px 1px;
+	window-r:  10px 139px -10px 1px; /* mirrored left */
+	window-bl: 0px 140px 11px 11px;
+	window-b:  11px 140px 1px 11px;
+	window-br: 136px 140px 10px 11px;
+
+	button: 247px 0px 159px 45px;
+	button-hover:  247px 45px 159px 45px;
+	button-active: 247px 90px 159px 45px;
+
+	button-inner: 259px 19px 135px 1px;
+	button-inner-hover:  259px 64px 135px 1px;
+	button-inner-active: 259px 109px 135px 1px;
+
+	text-l: 162px 192px 14px 31px;
+	text-c: 176px 192px 1px 31px;
+	textarea: 162px 193px 145px 31px;
+	textarea-inner: 173px 206px 127px 10px;
+
+	selectbox-tl: 281px 275px 11px 9px;
+	selectbox-t:  292px 275px 1px 9px;
+	selectbox-tr: 294px 275px 11px 9px;
+	selectbox-l:  281px 283px 11px 1px;
+	selectbox-c:  292px 283px 1px 1px;
+	selectbox-bl: 281px 285px 11px 11px;
+	selectbox-b:  292px 285px 1px 11px;
+	selectbox-br: 294px 285px 11px 11px;
+
+	selectvalue: 162px 192px 145px 37px;
+	selectvalue-hover: 162px 230px 145px 37px;
+	selectarrow: 307px 192px 30px 37px;
+	selectarrow-hover: 307px 230px 30px 37px;
+	selectarrow-active: 307px 268px 30px 37px;
+
+	radio: 407px 0px 30px 30px;
+	radio-hover: 437px 0px 30px 30px;
+	radio-active: 467px 0px 30px 30px;
+	radio-checked: 407px 30px 30px 30px;
+	radio-checked-hover: 437px 30px 30px 30px;
+	radio-checked-active: 467px 30px 30px 30px;
+
+	checkbox: 407px 60px 30px 30px;
+	checkbox-hover: 437px 60px 30px 30px;
+	checkbox-active: 467px 60px 30px 30px;
+	checkbox-checked: 407px 90px 30px 30px;
+	checkbox-checked-hover: 437px 90px 30px 30px;
+	checkbox-checked-active: 467px 90px 30px 30px;
+
+	tableheader-l: 127px 192px 16px 31px;
+	tableheader-c: 143px 192px 2px 31px;
+	tableheader-r: 145px 192px 15px 31px;
+
+	expand: 3px 232px 17px 17px;
+	expand-hover: 21px 232px 17px 17px;
+	expand-active: 39px 232px 17px 17px;
+	expand-collapsed: 3px 250px 17px 17px;
+	expand-collapsed-hover: 21px 250px 17px 17px;
+	expand-collapsed-active: 39px 250px 17px 17px;
+
+	slidertrack-t: 70px 199px 27px 2px;
+	slidertrack-c: 70px 201px 27px 1px;
+	slidertrack-b: 70px 202px 27px 2px;
+
+	sliderbar-t:         56px 152px 23px 23px;
+	sliderbar-c:         56px 175px 23px 1px;
+	sliderbar-b:         56px 176px 23px 22px;
+	sliderbar-hover-t:   80px 152px 23px 23px;
+	sliderbar-hover-c:   80px 175px 23px 1px;
+	sliderbar-hover-b:   80px 176px 23px 22px;
+	sliderbar-active-t: 104px 152px 23px 23px;
+	sliderbar-active-c: 104px 175px 23px 1px;
+	sliderbar-active-b: 104px 176px 23px 22px;
+
+	sliderarrowdec: 0px 152px 27px 24px;
+	sliderarrowdec-hover: 0px 177px 27px 24px;
+	sliderarrowdec-active: 0px 202px 27px 24px;
+
+	sliderarrowinc: 28px 152px 27px 24px;
+	sliderarrowinc-hover: 28px 177px 27px 24px;
+	sliderarrowinc-active: 28px 202px 27px 24px;
+
+	range-track:       219px 194px  3px 32px;
+	range-track-inner: 220px 204px  1px 14px;
+	range-bar:         127px 191px 34px 32px;
+	range-dec:           3px 232px 17px 17px;
+	range-dec-hover:    21px 232px 17px 17px;
+	range-dec-active:   39px 232px 17px 17px;
+	range-inc:           3px 250px 17px 17px;
+	range-inc-hover:    21px 250px 17px 17px;
+	range-inc-active:   39px 250px 17px 17px;
+
+	progress-l:      103px 267px 13px 34px;
+	progress-c:      116px 267px 54px 34px;
+	progress-r:      170px 267px 13px 34px;
+	progress-fill-l: 110px 302px  6px 34px;
+	progress-fill-c: 140px 302px  6px 34px;
+	progress-fill-r: 170px 302px  6px 34px;
+	gauge:      0px 271px 100px 86px;
+	gauge-fill: 0px 356px 100px 86px;
+}

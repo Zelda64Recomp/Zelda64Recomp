@@ -1,0 +1,5 @@
+*.d
+*.o
+*.elf
+*.bin
+./funcs.h

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(MMRecomp)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -16,14 +17,13 @@ find_package(Freetype REQUIRED)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64 ${CMAKE_BINARY_DIR}/rt64)
 add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/RmlUi)
+add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/nativefiledialog-extended)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
 get_target_property(RT64_BASENAME rt64 OUTPUT_NAME)
 set(RT64_DLL ${RT64_BASENAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-file(GLOB FUNC_C_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.c)
-file(GLOB FUNC_CXX_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.cpp)
-
+# RecompiledFuncs - Library containing the primary recompiler output
 add_library(RecompiledFuncs STATIC)
 
 target_compile_options(RecompiledFuncs PRIVATE
@@ -35,7 +35,43 @@ target_include_directories(RecompiledFuncs PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
+file(GLOB FUNC_C_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.c)
+file(GLOB FUNC_CXX_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.cpp)
+
 target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
+
+# PatchesLib - Library containing the recompiled output for any custom function patches
+add_library(PatchesLib STATIC)
+
+target_compile_options(PatchesLib PRIVATE
+    # -Wno-unused-but-set-variable
+    -fno-strict-aliasing
+)
+
+target_include_directories(PatchesLib PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_sources(PatchesLib PRIVATE
+    ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
+)
+
+# Build patches elf
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.elf
+    COMMAND make
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
+    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
+)
+
+# Recompile patches elf into patches.c
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
+                   COMMAND RecompPort patches.toml
+                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                   DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf
+)
+
+# Main executable
+add_executable(MMRecomp)
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/portultra/audio.cpp
@@ -67,15 +103,15 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/vi.cpp
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui.cpp
+
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_renderer.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_events.cpp
     
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 
     ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
-
-add_executable(MMRecomp)
 
 target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -100,12 +136,14 @@ target_link_directories(MMRecomp PRIVATE
 )
 
 target_link_libraries(MMRecomp PRIVATE
+    PatchesLib
     RecompiledFuncs
     SDL2
     rt64
     Freetype::Freetype
     RmlCore
     RmlDebugger
+    nfd
 )
 
 # TODO fix the RT64 CMake script so that this doesn't need to be duplicated here

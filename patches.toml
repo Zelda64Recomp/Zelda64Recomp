@@ -1,0 +1,9 @@
+# Config file for recompiling patches for the Majora's Mask NTSC 1.0 Recompilation.
+
+[input]
+# Paths are relative to the location of this config file.
+elf_path = "patches/patches.elf"
+output_func_path = "RecompiledPatches"
+single_file_output = true
+# Allow absolute symbols to be used as jump targets
+use_absolute_symbols = true
