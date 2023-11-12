@@ -161,12 +161,6 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
     } else {
         Multilibultra::schedule_running_thread(t);
     }
-
-    // The main thread "becomes" the first thread started, so join on it and exit after it completes.
-    if (is_main_thread) {
-        t->context->host_thread.join();
-        std::exit(EXIT_SUCCESS);
-    }
 }
 
 extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_func_t) entrypoint, PTR(void) arg, PTR(void) sp, OSPri pri) {

@@ -76,6 +76,7 @@ DLLIMPORT void ProcessRDPList(void);
 DLLIMPORT void ProcessDList(void);
 DLLIMPORT void UpdateScreen(void);
 DLLIMPORT void ChangeWindow(void);
+DLLIMPORT void PluginShutdown(void);
 
 void set_rt64_hooks();
 

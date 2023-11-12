@@ -1,4 +1,4 @@
-#include "global.h"
+#include "patches.h"
 
 // Disable frustum culling for actors, but leave distance culling intact
 s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projectedW) {

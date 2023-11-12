@@ -14,6 +14,7 @@
 #include "ultra64.h"
 #include "multilibultra.hpp"
 #include "recomp.h"
+#include "recomp_ui.h"
 #include "rsp.h"
 
 struct SpTaskAction {
@@ -42,17 +43,14 @@ static struct {
         OSMesg msg = (OSMesg)0;
     } sp;
     struct {
-        std::thread thread;
         PTR(OSMesgQueue) mq = NULLPTR;
         OSMesg msg = (OSMesg)0;
     } dp;
     struct {
-        std::thread thread;
         PTR(OSMesgQueue) mq = NULLPTR;
         OSMesg msg = (OSMesg)0;
     } ai;
     struct {
-        std::thread thread;
         PTR(OSMesgQueue) mq = NULLPTR;
         OSMesg msg = (OSMesg)0;
     } si;
@@ -95,6 +93,9 @@ extern "C" void osViSetEvent(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, u32 ret
 
 uint64_t total_vis = 0;
 
+
+extern std::atomic_bool exited;
+
 void set_dummy_vi();
 
 void vi_thread_func() {
@@ -106,7 +107,7 @@ void vi_thread_func() {
     
     int remaining_retraces = events_context.vi.retrace_count;
 
-    while (true) {
+    while (!exited) {
         // Determine the next VI time (more accurate than adding 16ms each VI interrupt)
         auto next = Multilibultra::get_start() + (total_vis * 1000000us) / (60 * Multilibultra::get_speed_multiplier());
         //if (next > std::chrono::system_clock::now()) {
@@ -177,6 +178,7 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_h
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();
+void RT64Shutdown();
 
 uint8_t dmem[0x1000];
 uint16_t rspReciprocals[512];
@@ -225,9 +227,13 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     thread_ready->test_and_set();
     thread_ready->notify_all();
 
-    while (1) {
+    while (true) {
         // Wait until an RSP task has been sent
         events_context.sp_task.wait(nullptr);
+
+        if (exited) {
+            return;
+        }
 
         // Retrieve the task pointer and clear the pending RSP task
         OSTask* task = events_context.sp_task;
@@ -265,7 +271,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
     thread_ready->test_and_set();
     thread_ready->notify_all();
 
-    while (true) {
+    while (!exited) {
         // Try to pull an action from the queue
         Action action;
         if (events_context.action_queue.wait_dequeue_timed(action, 1ms)) {
@@ -284,6 +290,9 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
             }
         }
     }
+    destroy_ui();
+    // TODO restore this call once the RT64 shutdown issue is fixed.
+    // RT64Shutdown();
 }
 
 extern unsigned int VI_STATUS_REG;
@@ -468,4 +477,22 @@ void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, Multilibultra::Win
     task_thread_ready.wait(false);
 
     events_context.vi.thread = std::thread{ vi_thread_func };
+}
+
+void Multilibultra::join_event_threads() {
+    events_context.sp.gfx_thread.join();
+    events_context.vi.thread.join();
+
+    // Send a dummy RSP task so that the task thread is able to exit it's atomic wait and terminate.
+    OSTask dummy_task{};
+    OSTask* expected = nullptr;
+
+    // Attempt to exchange the task with the dummy task one until it was nullptr, as that indicates the
+    // task thread was ready for a new task.
+    do {
+        expected = nullptr;
+    } while (!events_context.sp_task.compare_exchange_weak(expected, &dummy_task));
+    events_context.sp_task.notify_all();
+
+    events_context.sp.task_thread.join();
 }

@@ -10,10 +10,15 @@ relocatable_sections_path = "overlays.us.rev1.txt"
 [patches]
 stubs = [
     # Stub out unused functions that directly manipulate RCP status.
-    "func_80084940",
-    "func_80084968",
+    "RcpUtils_PrintRegisterStatus",
+    "RcpUtils_Reset",
     # Stub out an unnecessary function that accesses kseg1 addresses.
-    "func_800818F4"
+    "CIC6105_Init"
+]
+
+ignored = [
+    # Not actually a function
+    "D_80186028"
 ]
 
 # Hooks
@@ -25,23 +30,14 @@ args = ["u32", "u32", "u32"]
 
 # Function hooks for overlay loading.
 [[patches.hook]]
-func = "Idle_InitCodeAndMemory"
-calls = "load_overlays"
-args = ["a2", "a1", "a3"]
+func = "Main_Init"
+text = "    load_overlays((uint32_t)ctx->r6, (uint32_t)ctx->r5, (uint32_t)ctx->r7);"
 after_vram = 0x800802A4
 
 [[patches.hook]]
-func = "Load2_LoadOverlay"
-calls = "load_overlays"
-# args = [
-#     "a0", # $a0 contains rom start
-#     {operation = "load", type = "u32", base = "sp", offset = 0x10}, # sp + 10 contains the ram address
-#     {operation = "subtract", arguments = ["a1", "a0"]} # Calculate size from rom end - rom start
-# ]
-args = ["a1", "a0", "a2"]
-# This vram address is an instruction in a delay slot. In that case, the recompiler will emit the
-# hook call after this instruction is run and before the function is called.
-after_vram = 0x80085048
+func = "Overlay_Load"
+text = "    load_overlays((uint32_t)ctx->r4, MEM_W(0x10, ctx->r29), (uint32_t)(ctx->r5 - ctx->r4));"
+# No after_vram means this will be placed at the start of the function
 
 # Single-instruction patches
 

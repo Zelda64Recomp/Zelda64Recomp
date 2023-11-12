@@ -121,7 +121,8 @@ void timer_thread(RDRAM_ARG1) {
             active_timers.insert(cur_timer_);
             // Process the new action
             process_timer_action(cur_action);
-        } else {
+        }
+        else {
             // Waiting for the timer completed, so send the timer's message to its message queue
             osSendMesg(PASS_RDRAM cur_timer->mq, cur_timer->msg, OS_MESG_NOBLOCK);
             // If the timer has a specified interval then reload it with that value
@@ -135,6 +136,7 @@ void timer_thread(RDRAM_ARG1) {
 
 void Multilibultra::init_timers(RDRAM_ARG1) {
     timer_context.thread = std::thread{ timer_thread, PASS_RDRAM1 };
+    timer_context.thread.detach();
 }
 
 uint32_t Multilibultra::get_speed_multiplier() {

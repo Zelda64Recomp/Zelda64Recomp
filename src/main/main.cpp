@@ -99,7 +99,7 @@ std::vector<GameControllerButtonMapping> controller_button_map{
 
 std::vector<SDL_JoystickID> controllers{};
 
-int sdl_event_filter(void* userdata, SDL_Event* event) {
+bool sdl_event_filter(void* userdata, SDL_Event* event) {
     switch (event->type) {
     //case SDL_EventType::SDL_KEYUP:
     //case SDL_EventType::SDL_KEYDOWN:
@@ -138,13 +138,13 @@ int sdl_event_filter(void* userdata, SDL_Event* event) {
         }
         break;
     case SDL_EventType::SDL_QUIT:
-        std::quick_exit(EXIT_SUCCESS);
-        break;
+        Multilibultra::quit();
+        return true;
     default:
         queue_event(*event);
         break;
     }
-    return 1;
+    return false;
 }
 
 Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
@@ -185,8 +185,9 @@ void update_gfx(void*) {
     constexpr int max_events_per_frame = 16;
     SDL_Event cur_event;
     int i = 0;
-    while (i++ < max_events_per_frame && SDL_PollEvent(&cur_event)) {
-        sdl_event_filter(nullptr, &cur_event);
+    static bool exited = false;
+    while (i++ < max_events_per_frame && SDL_PollEvent(&cur_event) && !exited) {
+        exited = sdl_event_filter(nullptr, &cur_event);
     }
 }
 

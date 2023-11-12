@@ -130,3 +130,7 @@ void RT64UpdateScreen(uint32_t vi_origin) {
 void RT64ChangeWindow() {
     ChangeWindow();
 }
+
+void RT64Shutdown() {
+    PluginShutdown();
+}

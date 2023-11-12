@@ -5,7 +5,7 @@ LD      := ld.lld
 OBJCOPY := llvm-objcopy
 
 CFLAGS   := -target mips -mips2 -mabi=32 -O2 -mno-odd-spreg -fomit-frame-pointer -G0 -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-parameter -Wno-unknown-pragmas -Wno-unused-variable
-CPPFLAGS := -nostdinc -D_LANGUAGE_C -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets
+CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets
 LDFLAGS  := -nostdlib -T patches.ld -T syms.ld
 BINFLAGS := -O binary
 

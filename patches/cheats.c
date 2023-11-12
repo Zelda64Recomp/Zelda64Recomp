@@ -1,5 +1,4 @@
-#define Audio_PlaySfx play_sound
-#include "global.h"
+#include "patches.h"
 
 // Infinite magic
 s32 Magic_Consume(PlayState* play, s16 magicToConsume, s16 type) {

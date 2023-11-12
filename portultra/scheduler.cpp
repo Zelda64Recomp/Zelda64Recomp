@@ -144,6 +144,8 @@ void swap_running_thread(thread_queue_t& running_thread_queue, OSThread*& cur_ru
     }
 }
 
+extern std::atomic_bool exited;
+
 void scheduler_func() {
     thread_queue_t running_thread_queue{};
     OSThread* cur_running_thread = nullptr;
@@ -169,8 +171,13 @@ void scheduler_func() {
         // Handle threads that have changed priority
         handle_thread_reprioritization(running_thread_queue);
 
-        // Determine which thread to run, stopping the current running thread if necessary
-        swap_running_thread(running_thread_queue, cur_running_thread);
+        if (!exited) {
+            // Determine which thread to run, stopping the current running thread if necessary
+            swap_running_thread(running_thread_queue, cur_running_thread);
+        }
+        else {
+            return;
+        }
 
         std::this_thread::yield();
         if (old_running_thread != cur_running_thread && old_running_thread && cur_running_thread) {

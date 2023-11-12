@@ -122,6 +122,28 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
 std::unique_ptr<uint8_t[]> rdram_buffer;
 recomp_context context{};
 
+void read_patch_data(uint8_t* rdram, gpr patch_data_address) {
+    const char patches_data_file_path[] = "patches/patches.bin";
+    std::ifstream patches_data_file{ patches_data_file_path, std::ios::binary };
+
+    if (!patches_data_file) {
+        fprintf(stderr, "Failed to open patches data file: %s\n", patches_data_file_path);
+        exit(EXIT_FAILURE);
+    }
+
+    patches_data_file.seekg(0, std::ios::end);
+    size_t patches_data_size = patches_data_file.tellg();
+    patches_data_file.seekg(0, std::ios::beg);
+
+    std::unique_ptr<uint8_t[]> patches_data = std::make_unique<uint8_t[]>(patches_data_size);
+
+    patches_data_file.read(reinterpret_cast<char*>(patches_data.get()), patches_data_size);
+
+    for (size_t i = 0; i < patches_data_size; i++) {
+        MEM_B(i, patch_data_address) = patches_data[i];
+    }
+}
+
 EXPORT extern "C" void init() {
     {
         std::ifstream rom_file{ get_rom_name(), std::ios::binary };
@@ -160,6 +182,9 @@ EXPORT extern "C" void init() {
     // Initial 1MB DMA (rom address 0x1000 = physical address 0x10001000)
     do_rom_read(rdram_buffer.get(), entrypoint, 0x10001000, 0x100000);
 
+    // Read in any extra data from patches
+    read_patch_data(rdram_buffer.get(), (gpr)(s32)0x80800100);
+
     // Set up stack pointer
     context.r29 = 0xFFFFFFFF803FFFF0u;
 
@@ -197,6 +222,15 @@ bool Multilibultra::is_game_started() {
 void set_audio_callbacks(const Multilibultra::audio_callbacks_t& callbacks);
 void set_input_callbacks(const Multilibultra::input_callbacks_t& callback);
 
+std::atomic_bool exited = false;
+
+void Multilibultra::quit() {
+    exited.store(true);
+    int desired = -1;
+    game_started.compare_exchange_strong(desired, -2);
+    game_started.notify_all();
+}
+
 void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks_) {
     set_audio_callbacks(audio_callbacks);
     set_input_callbacks(input_callbacks);
@@ -231,16 +265,20 @@ void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& a
             case 0:
                 recomp_entrypoint(rdram_buffer.get(), &context);
                 break;
+            case -2:
+                break;
         }
         
         debug_printf("[Recomp] Quitting\n");
     }, window_handle};
 
-    while (true) {
+    while (!exited) {
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(1ms);
         if (gfx_callbacks.update_gfx != nullptr) {
             gfx_callbacks.update_gfx(gfx_data);
         }
     }
+    game_thread.join();
+    Multilibultra::join_event_threads();
 }

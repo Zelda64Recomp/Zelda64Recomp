@@ -21,5 +21,6 @@ enum class Menu {
 };
 
 void set_current_menu(Menu menu);
+void destroy_ui();
 
 #endif

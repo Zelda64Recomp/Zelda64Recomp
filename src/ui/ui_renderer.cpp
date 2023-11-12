@@ -587,6 +587,10 @@ struct {
         Rml::Context* context;
         std::unique_ptr<Rml::EventListenerInstancer> event_listener_instancer;
 
+        void unload() {
+            render_interface.reset();
+        }
+
         void swap_document(Menu menu) {
             if (current_document != nullptr) {
                 current_document->Hide();
@@ -751,4 +755,9 @@ void set_rt64_hooks() {
 
 void set_current_menu(Menu menu) {
     open_menu.store(menu);
+}
+
+void destroy_ui() {
+    Rml::Shutdown();
+    UIContext.rml.unload();
 }

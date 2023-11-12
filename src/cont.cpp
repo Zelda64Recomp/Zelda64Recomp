@@ -1,5 +1,5 @@
 #include "../portultra/multilibultra.hpp"
-#include "recomp.h"
+#include "recomp_helpers.h"
 
 static Multilibultra::input_callbacks_t input_callbacks;
 
@@ -10,8 +10,8 @@ void set_input_callbacks(const Multilibultra::input_callbacks_t& callbacks) {
 static int max_controllers = 0;
 
 extern "C" void osContInit_recomp(uint8_t* rdram, recomp_context* ctx) {
-    gpr bitpattern = ctx->r5;
-    gpr status = ctx->r6;
+    PTR(void) bitpattern = _arg<1, PTR(void)>(rdram, ctx);
+    PTR(void) status = _arg<2, PTR(void)>(rdram, ctx);
 
     // Set bit 0 to indicate that controller 0 is present
     MEM_B(0, bitpattern) = 0x01;
@@ -29,22 +29,15 @@ extern "C" void osContInit_recomp(uint8_t* rdram, recomp_context* ctx) {
         MEM_B(4 * controller + 3, status) = 0x80 >> 4; // errno: CONT_NO_RESPONSE_ERROR >> 4
     }
 
-    ctx->r2 = 0;
+    _return<s32>(ctx, 0);
 }
 
 extern "C" void osContStartReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
     Multilibultra::send_si_message();
 }
 
-struct OSContPad {
-    u16 button;
-    s8 stick_x;		/* -80 <= stick_x <= 80 */
-    s8 stick_y;		/* -80 <= stick_y <= 80 */
-    u8 errno_;
-};
-
 extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
-    int32_t pad = (int32_t)ctx->r4;
+    PTR(void) pad = _arg<0, PTR(void)>(rdram, ctx);
 
     uint16_t buttons = 0;
     float x = 0.0f;
@@ -74,7 +67,7 @@ extern "C" void osContStartQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
 }
 
 extern "C" void osContGetQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
-    gpr status = ctx->r4;
+    PTR(void) status = _arg<0, PTR(void)>(rdram, ctx);
 
     // Mark controller 0 as present
     MEM_H(0, status) = 0x0005; // type: CONT_TYPE_NORMAL (from joybus)
@@ -89,8 +82,8 @@ extern "C" void osContGetQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
 }
 
 extern "C" void osContSetCh_recomp(uint8_t* rdram, recomp_context* ctx) {
-    max_controllers = std::min((unsigned int)ctx->r4, 4u);
-    ctx->r2 = 0;
+    max_controllers = std::min(_arg<0, u8>(rdram, ctx), u8(4));
+    _return<s32>(ctx, 0);
 }
 
 extern "C" void __osMotorAccess_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -107,4 +100,17 @@ extern "C" void osMotorStart_recomp(uint8_t* rdram, recomp_context* ctx) {
 
 extern "C" void osMotorStop_recomp(uint8_t* rdram, recomp_context* ctx) {
     ;
+}
+
+#include "../patches/input.h"
+
+extern "C" void recomp_get_item_inputs(uint8_t* rdram, recomp_context* ctx) {
+    RecompInputs* inputs = _arg<0, RecompInputs*>(rdram, ctx);
+
+    if (input_callbacks.get_input) {
+        u16 buttons;
+        input_callbacks.get_input(&buttons, &inputs->x, &inputs->y);
+        // TODO remap the inputs for items here
+        inputs->buttons = buttons;
+    }
 }

@@ -125,6 +125,8 @@ struct gfx_callbacks_t {
 void start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks);
 void start_game(int game);
 bool is_game_started();
+void quit();
+void join_event_threads();
 
 } // namespace Multilibultra
 
