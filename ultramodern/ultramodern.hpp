@@ -1,5 +1,5 @@
-#ifndef __MULTILIBULTRA_HPP__
-#define __MULTILIBULTRA_HPP__
+#ifndef __ultramodern_HPP__
+#define __ultramodern_HPP__
 
 #include <thread>
 #include <atomic>
@@ -26,7 +26,7 @@ struct UltraThreadContext {
     std::atomic_bool initialized;
 };
 
-namespace Multilibultra {
+namespace ultramodern {
 
 #if defined(_WIN32)
     // Native HWND handle to the target window.
@@ -128,7 +128,7 @@ bool is_game_started();
 void quit();
 void join_event_threads();
 
-} // namespace Multilibultra
+} // namespace ultramodern
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 

@@ -1,5 +1,5 @@
-#include "../portultra/ultra64.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultra64.h"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"
 #include "euc-jp.h"
 

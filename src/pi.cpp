@@ -3,8 +3,8 @@
 #include <array>
 #include <cstring>
 #include "recomp.h"
-#include "../portultra/ultra64.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultra64.h"
+#include "../ultramodern/ultramodern.hpp"
 
 // Flashram occupies the same physical address as sram, but that issue is avoided because libultra exposes
 // a high-level interface for flashram. Because that high-level interface is reimplemented, low level accesses
@@ -24,12 +24,12 @@ extern std::unique_ptr<uint8_t[]> rom;
 extern size_t rom_size;
 
 extern "C" void osCartRomInit_recomp(uint8_t* rdram, recomp_context* ctx) {
-    OSPiHandle* handle = TO_PTR(OSPiHandle, Multilibultra::cart_handle);
+    OSPiHandle* handle = TO_PTR(OSPiHandle, ultramodern::cart_handle);
     handle->type = 0; // cart
     handle->baseAddress = phys_to_k1(rom_base);
     handle->domain = 0;
 
-    ctx->r2 = (gpr)Multilibultra::cart_handle;
+    ctx->r2 = (gpr)ultramodern::cart_handle;
 }
 
 extern "C" void osCreatePiManager_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -89,7 +89,7 @@ void save_clear(uint32_t start, uint32_t size, char value) {
     }
 }
 
-void Multilibultra::save_init() {
+void ultramodern::save_init() {
     std::ifstream save_file{ save_filename, std::ios_base::binary };
 
     if (save_file.good()) {

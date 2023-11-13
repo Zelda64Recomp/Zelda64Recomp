@@ -1,6 +1,6 @@
 #include <memory>
-#include "../portultra/ultra64.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultra64.h"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"
 
 extern "C" void osInitialize_recomp(uint8_t * rdram, recomp_context * ctx) {
@@ -133,7 +133,7 @@ extern "C" void __osSetFpcCsr_recomp(uint8_t * rdram, recomp_context * ctx) {
 //    if (buf->magic == SETJMP_MAGIC) {
 //        // If so, longjmp to it
 //        // Setjmp/longjmp does not work across threads, so verify that this buffer was made by this thread
-//        assert(buf->owner == Multilibultra::this_thread());
+//        assert(buf->owner == ultramodern::this_thread());
 //        longjmp(buf->storage->buffer, ctx->r5);
 //    } else {
 //        // Otherwise, check if it was one built manually by the game with $ra pointing to a function
@@ -159,5 +159,5 @@ extern "C" void __osSetFpcCsr_recomp(uint8_t * rdram, recomp_context * ctx) {
 //}
 //
 //extern "C" int32_t osGetThreadEx(void) {
-//    return Multilibultra::this_thread();
+//    return ultramodern::this_thread();
 //}

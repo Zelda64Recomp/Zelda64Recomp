@@ -2,7 +2,7 @@
 #include <atomic>
 
 #include "ultra64.h"
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 #include "recomp.h"
 
 extern "C" void osCreateMesgQueue(RDRAM_ARG PTR(OSMesgQueue) mq_, PTR(OSMesg) msg, s32 count) {
@@ -51,26 +51,26 @@ extern "C" s32 osSendMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags)
     OSMesgQueue *mq = TO_PTR(OSMesgQueue, mq_);
     
     // Prevent accidentally blocking anything that isn't a game thread
-    if (!Multilibultra::is_game_thread()) {
+    if (!ultramodern::is_game_thread()) {
         flags = OS_MESG_NOBLOCK;
     }
 
-    Multilibultra::disable_preemption();
+    ultramodern::disable_preemption();
 
     if (flags == OS_MESG_NOBLOCK) {
         // If non-blocking, fail if the queue is full
         if (MQ_IS_FULL(mq)) {
-            Multilibultra::enable_preemption();
+            ultramodern::enable_preemption();
             return -1;
         }
     } else {
         // Otherwise, yield this thread until the queue has room
         while (MQ_IS_FULL(mq)) {
-            debug_printf("[Message Queue] Thread %d is blocked on send\n", TO_PTR(OSThread, Multilibultra::this_thread())->id);
-            thread_queue_insert(PASS_RDRAM &mq->blocked_on_send, Multilibultra::this_thread());
-            Multilibultra::enable_preemption();
-            Multilibultra::pause_self(PASS_RDRAM1);
-            Multilibultra::disable_preemption();
+            debug_printf("[Message Queue] Thread %d is blocked on send\n", TO_PTR(OSThread, ultramodern::this_thread())->id);
+            thread_queue_insert(PASS_RDRAM &mq->blocked_on_send, ultramodern::this_thread());
+            ultramodern::enable_preemption();
+            ultramodern::pause_self(PASS_RDRAM1);
+            ultramodern::disable_preemption();
         }
     }
     
@@ -84,18 +84,18 @@ extern "C" s32 osSendMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags)
         to_run = thread_queue_pop(PASS_RDRAM &mq->blocked_on_recv);
     }
     
-    Multilibultra::enable_preemption();
+    ultramodern::enable_preemption();
     if (to_run) {
         debug_printf("[Message Queue] Thread %d is unblocked\n", to_run->id);
-        if (Multilibultra::is_game_thread()) {
-            OSThread* self = TO_PTR(OSThread, Multilibultra::this_thread());
+        if (ultramodern::is_game_thread()) {
+            OSThread* self = TO_PTR(OSThread, ultramodern::this_thread());
             if (to_run->priority > self->priority) {
-                Multilibultra::swap_to_thread(PASS_RDRAM to_run);
+                ultramodern::swap_to_thread(PASS_RDRAM to_run);
             } else {
-                Multilibultra::schedule_running_thread(to_run);
+                ultramodern::schedule_running_thread(to_run);
             }
         } else {
-            Multilibultra::schedule_running_thread(to_run);
+            ultramodern::schedule_running_thread(to_run);
         }
     }
     return 0;
@@ -103,22 +103,22 @@ extern "C" s32 osSendMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags)
 
 extern "C" s32 osJamMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags) {
     OSMesgQueue *mq = TO_PTR(OSMesgQueue, mq_);
-    Multilibultra::disable_preemption();
+    ultramodern::disable_preemption();
 
     if (flags == OS_MESG_NOBLOCK) {
         // If non-blocking, fail if the queue is full
         if (MQ_IS_FULL(mq)) {
-            Multilibultra::enable_preemption();
+            ultramodern::enable_preemption();
             return -1;
         }
     } else {
         // Otherwise, yield this thread in a loop until the queue is no longer full
         while (MQ_IS_FULL(mq)) {
-            debug_printf("[Message Queue] Thread %d is blocked on jam\n", TO_PTR(OSThread, Multilibultra::this_thread())->id);
-            thread_queue_insert(PASS_RDRAM &mq->blocked_on_send, Multilibultra::this_thread());
-            Multilibultra::enable_preemption();
-            Multilibultra::pause_self(PASS_RDRAM1);
-            Multilibultra::disable_preemption();
+            debug_printf("[Message Queue] Thread %d is blocked on jam\n", TO_PTR(OSThread, ultramodern::this_thread())->id);
+            thread_queue_insert(PASS_RDRAM &mq->blocked_on_send, ultramodern::this_thread());
+            ultramodern::enable_preemption();
+            ultramodern::pause_self(PASS_RDRAM1);
+            ultramodern::disable_preemption();
         }
     }
     
@@ -132,14 +132,14 @@ extern "C" s32 osJamMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags) 
         to_run = thread_queue_pop(PASS_RDRAM &mq->blocked_on_recv);
     }
     
-    Multilibultra::enable_preemption();
+    ultramodern::enable_preemption();
     if (to_run) {
         debug_printf("[Message Queue] Thread %d is unblocked\n", to_run->id);
-        OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
+        OSThread *self = TO_PTR(OSThread, ultramodern::this_thread());
         if (to_run->priority > self->priority) {
-            Multilibultra::swap_to_thread(PASS_RDRAM to_run);
+            ultramodern::swap_to_thread(PASS_RDRAM to_run);
         } else {
-            Multilibultra::schedule_running_thread(to_run);
+            ultramodern::schedule_running_thread(to_run);
         }
     }
     return 0;
@@ -148,22 +148,22 @@ extern "C" s32 osJamMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags) 
 extern "C" s32 osRecvMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, PTR(OSMesg) msg_, s32 flags) {
     OSMesgQueue *mq = TO_PTR(OSMesgQueue, mq_);
     OSMesg *msg = TO_PTR(OSMesg, msg_);
-    Multilibultra::disable_preemption();
+    ultramodern::disable_preemption();
 
     if (flags == OS_MESG_NOBLOCK) {
         // If non-blocking, fail if the queue is empty
         if (MQ_IS_EMPTY(mq)) {
-            Multilibultra::enable_preemption();
+            ultramodern::enable_preemption();
             return -1;
         }
     } else {
         // Otherwise, yield this thread in a loop until the queue is no longer full
         while (MQ_IS_EMPTY(mq)) {
-            debug_printf("[Message Queue] Thread %d is blocked on receive\n", TO_PTR(OSThread, Multilibultra::this_thread())->id);
-            thread_queue_insert(PASS_RDRAM &mq->blocked_on_recv, Multilibultra::this_thread());
-            Multilibultra::enable_preemption();
-            Multilibultra::pause_self(PASS_RDRAM1);
-            Multilibultra::disable_preemption();
+            debug_printf("[Message Queue] Thread %d is blocked on receive\n", TO_PTR(OSThread, ultramodern::this_thread())->id);
+            thread_queue_insert(PASS_RDRAM &mq->blocked_on_recv, ultramodern::this_thread());
+            ultramodern::enable_preemption();
+            ultramodern::pause_self(PASS_RDRAM1);
+            ultramodern::disable_preemption();
         }
     }
 
@@ -180,14 +180,14 @@ extern "C" s32 osRecvMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, PTR(OSMesg) msg_, s32 
         to_run = thread_queue_pop(PASS_RDRAM &mq->blocked_on_send);
     }
     
-    Multilibultra::enable_preemption();
+    ultramodern::enable_preemption();
     if (to_run) {
         debug_printf("[Message Queue] Thread %d is unblocked\n", to_run->id);
-        OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
+        OSThread *self = TO_PTR(OSThread, ultramodern::this_thread());
         if (to_run->priority > self->priority) {
-            Multilibultra::swap_to_thread(PASS_RDRAM to_run);
+            ultramodern::swap_to_thread(PASS_RDRAM to_run);
         } else {
-            Multilibultra::schedule_running_thread(to_run);
+            ultramodern::schedule_running_thread(to_run);
         }
     }
     return 0;

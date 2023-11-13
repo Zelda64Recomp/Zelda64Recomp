@@ -1,5 +1,5 @@
 #include "recomp.h"
-#include "../portultra/ultra64.h"
+#include "../ultramodern/ultra64.h"
 
 void save_write(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
 void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);

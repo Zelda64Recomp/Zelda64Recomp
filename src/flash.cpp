@@ -1,8 +1,10 @@
 #include <array>
 #include <cassert>
-#include "../portultra/ultra64.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultra64.h"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"
+
+// TODO move this out into ultramodern code
 
 constexpr uint32_t flash_size = 1024 * 1024 / 8; // 1Mbit
 constexpr uint32_t page_size = 128;
@@ -19,7 +21,7 @@ void save_clear(uint32_t start, uint32_t size, char value);
 std::array<char, page_size> write_buffer;
 
 extern "C" void osFlashInit_recomp(uint8_t * rdram, recomp_context * ctx) {
-	ctx->r2 = Multilibultra::flash_handle;
+	ctx->r2 = ultramodern::flash_handle;
 }
 
 extern "C" void osFlashReadStatus_recomp(uint8_t * rdram, recomp_context * ctx) {
@@ -42,13 +44,13 @@ extern "C" void osFlashClearStatus_recomp(uint8_t * rdram, recomp_context * ctx)
 }
 
 extern "C" void osFlashAllErase_recomp(uint8_t * rdram, recomp_context * ctx) {
-	save_clear(0, Multilibultra::save_size, 0xFF);
+	save_clear(0, ultramodern::save_size, 0xFF);
 
 	ctx->r2 = 0;
 }
 
 extern "C" void osFlashAllEraseThrough_recomp(uint8_t * rdram, recomp_context * ctx) {
-	save_clear(0, Multilibultra::save_size, 0xFF);
+	save_clear(0, ultramodern::save_size, 0xFF);
 
 	ctx->r2 = 0;
 }

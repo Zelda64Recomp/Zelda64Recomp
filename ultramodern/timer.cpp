@@ -4,7 +4,7 @@
 #include "blockingconcurrentqueue.h"
 
 #include "ultra64.h"
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 
 // Start time for the program
 static std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
@@ -60,8 +60,8 @@ uint64_t time_now() {
 }
 
 void timer_thread(RDRAM_ARG1) {
-    Multilibultra::set_native_thread_name("Timer Thread");
-    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::VeryHigh);
+    ultramodern::set_native_thread_name("Timer Thread");
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::VeryHigh);
 
     // Lambda comparator function to keep the set ordered
     auto timer_sort = [PASS_RDRAM1](PTR(OSTimer) a_, PTR(OSTimer) b_) {
@@ -134,20 +134,20 @@ void timer_thread(RDRAM_ARG1) {
     }
 }
 
-void Multilibultra::init_timers(RDRAM_ARG1) {
+void ultramodern::init_timers(RDRAM_ARG1) {
     timer_context.thread = std::thread{ timer_thread, PASS_RDRAM1 };
     timer_context.thread.detach();
 }
 
-uint32_t Multilibultra::get_speed_multiplier() {
+uint32_t ultramodern::get_speed_multiplier() {
     return speed_multiplier;
 }
 
-std::chrono::system_clock::time_point Multilibultra::get_start() {
+std::chrono::system_clock::time_point ultramodern::get_start() {
     return start_time;
 }
 
-std::chrono::system_clock::duration Multilibultra::time_since_start() {
+std::chrono::system_clock::duration ultramodern::time_since_start() {
     return std::chrono::system_clock::now() - start_time;
 }
 

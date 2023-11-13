@@ -4,8 +4,8 @@
 #include <vector>
 #include <filesystem>
 
-#include "../../portultra/ultra64.h"
-#include "../../portultra/multilibultra.hpp"
+#include "../../ultramodern/ultra64.h"
+#include "../../ultramodern/ultramodern.hpp"
 #define SDL_MAIN_HANDLED
 #ifdef _WIN32
 #include "SDL.h"
@@ -23,7 +23,7 @@
 #endif
 
 extern "C" void init();
-/*extern "C"*/ void start(Multilibultra::WindowHandle window_handle, const Multilibultra::audio_callbacks_t* audio_callbacks, const Multilibultra::input_callbacks_t* input_callbacks);
+/*extern "C"*/ void start(ultramodern::WindowHandle window_handle, const ultramodern::audio_callbacks_t* audio_callbacks, const ultramodern::input_callbacks_t* input_callbacks);
 
 template<typename... Ts>
 void exit_error(const char* str, Ts ...args) {
@@ -138,7 +138,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         }
         break;
     case SDL_EventType::SDL_QUIT:
-        Multilibultra::quit();
+        ultramodern::quit();
         return true;
     default:
         queue_event(*event);
@@ -147,7 +147,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
     return false;
 }
 
-Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
+ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) > 0) {
         exit_error("Failed to initialize SDL2: %s\n", SDL_GetError());
@@ -158,7 +158,7 @@ Multilibultra::gfx_callbacks_t::gfx_data_t create_gfx() {
 
 SDL_Window* window;
 
-Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_data_t) {
+ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     window = SDL_CreateWindow("Recomp", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_RESIZABLE );
 
     if (window == nullptr) {
@@ -170,11 +170,11 @@ Multilibultra::WindowHandle create_window(Multilibultra::gfx_callbacks_t::gfx_da
     SDL_GetWindowWMInfo(window, &wmInfo);
 
 #if defined(_WIN32)
-    return Multilibultra::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
+    return ultramodern::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
-    return Multilibultra::WindowHandle{ wmInfo.info.x11.display, wmInfo.info.x11.window };
+    return ultramodern::WindowHandle{ wmInfo.info.x11.display, wmInfo.info.x11.window };
 #else
     static_assert(false && "Unimplemented");
 #endif
@@ -344,23 +344,23 @@ int main(int argc, char** argv) {
 
     init();
 
-    Multilibultra::gfx_callbacks_t gfx_callbacks{
+    ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,
         .create_window = create_window,
         .update_gfx = update_gfx,
     };
 
-    Multilibultra::audio_callbacks_t audio_callbacks{
+    ultramodern::audio_callbacks_t audio_callbacks{
         .queue_samples = queue_samples,
         .get_frames_remaining = get_frames_remaining,
         .set_frequency = set_frequency,
     };
 
-    Multilibultra::input_callbacks_t input_callbacks{
+    ultramodern::input_callbacks_t input_callbacks{
         .get_input = get_input,
     };
 
-    Multilibultra::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
+    ultramodern::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
 
     return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <fstream>
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"
 
 extern "C" void osSpTaskLoad_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -33,7 +33,7 @@ extern "C" void osSpTaskStartGo_recomp(uint8_t* rdram, recomp_context* ctx) {
         dump_file.write(ram_unswapped.get(), ram_size);
         dump_frame = false;
     }
-    Multilibultra::submit_rsp_task(rdram, ctx->r4);
+    ultramodern::submit_rsp_task(rdram, ctx->r4);
 }
 
 extern "C" void osSpTaskYield_recomp(uint8_t* rdram, recomp_context* ctx) {

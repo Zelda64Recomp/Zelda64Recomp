@@ -4,7 +4,7 @@
 #include <string>
 
 #include "ultra64.h"
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 
 // Native APIs only used to set thread names for easier debugging
 #ifdef _WIN32
@@ -18,18 +18,18 @@ thread_local bool is_main_thread = false;
 thread_local bool is_game_thread = false;
 thread_local PTR(OSThread) thread_self = NULLPTR;
 
-void Multilibultra::set_main_thread() {
+void ultramodern::set_main_thread() {
     ::is_game_thread = true;
     is_main_thread = true;
 }
 
-bool Multilibultra::is_game_thread() {
+bool ultramodern::is_game_thread() {
     return ::is_game_thread;
 }
 
 #if 0
 int main(int argc, char** argv) {
-    Multilibultra::set_main_thread();
+    ultramodern::set_main_thread();
 
     bootproc();
 }
@@ -44,7 +44,7 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
 struct thread_terminated : std::exception {};
 
 #if defined(_WIN32)
-void Multilibultra::set_native_thread_name(const std::string& name) {
+void ultramodern::set_native_thread_name(const std::string& name) {
     std::wstring wname{name.begin(), name.end()};
 
     HRESULT r;
@@ -54,7 +54,7 @@ void Multilibultra::set_native_thread_name(const std::string& name) {
     );
 }
 
-void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
+void ultramodern::set_native_thread_priority(ThreadPriority pri) {
     int nPriority = THREAD_PRIORITY_NORMAL;
 
     // Convert ThreadPriority to Win32 priority
@@ -81,11 +81,11 @@ void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
     // SetThreadPriority(GetCurrentThread(), nPriority);
 }
 #elif defined(__linux__)
-void Multilibultra::set_native_thread_name(const std::string& name) {
+void ultramodern::set_native_thread_name(const std::string& name) {
     pthread_setname_np(pthread_self(), name.c_str());
 }
 
-void Multilibultra::set_native_thread_priority(ThreadPriority pri) {
+void ultramodern::set_native_thread_priority(ThreadPriority pri) {
     // TODO linux thread priority
     printf("set_native_thread_priority unimplemented\n");
     // int nPriority = THREAD_PRIORITY_NORMAL;
@@ -121,8 +121,8 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     is_game_thread = true;
 
     // Set the thread name
-    Multilibultra::set_native_thread_name("Game Thread " + std::to_string(self->id));
-    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::High);
+    ultramodern::set_native_thread_name("Game Thread " + std::to_string(self->id));
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::High);
 
     // Set initialized to false to indicate that this thread can be started.
     self->context->initialized.store(true);
@@ -131,8 +131,8 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     debug_printf("[Thread] Thread waiting to be started: %d\n", self->id);
 
     // Wait until the thread is marked as running.
-    Multilibultra::set_self_paused(PASS_RDRAM1);
-    Multilibultra::wait_for_resumed(PASS_RDRAM1);
+    ultramodern::set_self_paused(PASS_RDRAM1);
+    ultramodern::wait_for_resumed(PASS_RDRAM1);
 
     debug_printf("[Thread] Thread started: %d\n", self->id);
 
@@ -144,7 +144,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     }
 
     // Dispose of this thread after it completes.
-    Multilibultra::cleanup_thread(self);
+    ultramodern::cleanup_thread(self);
 }
 
 extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
@@ -157,9 +157,9 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
     debug_printf("[os] Thread %d is ready to be started\n", t->id);
 
     if (thread_self && (t->priority > TO_PTR(OSThread, thread_self)->priority)) {
-        Multilibultra::swap_to_thread(PASS_RDRAM t);
+        ultramodern::swap_to_thread(PASS_RDRAM t);
     } else {
-        Multilibultra::schedule_running_thread(t);
+        ultramodern::schedule_running_thread(t);
     }
 }
 
@@ -206,14 +206,14 @@ extern "C" void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri) {
     bool pause_self = false;
     if (pri > TO_PTR(OSThread, thread_self)->priority) {
         pause_self = true;
-        Multilibultra::set_self_paused(PASS_RDRAM1);
+        ultramodern::set_self_paused(PASS_RDRAM1);
     } else if (t == thread_self && pri < TO_PTR(OSThread, thread_self)->priority) {
         pause_self = true;
-        Multilibultra::set_self_paused(PASS_RDRAM1);
+        ultramodern::set_self_paused(PASS_RDRAM1);
     }
-    Multilibultra::reprioritize_thread(TO_PTR(OSThread, t), pri);
+    ultramodern::reprioritize_thread(TO_PTR(OSThread, t), pri);
     if (pause_self) {
-        Multilibultra::wait_for_resumed(PASS_RDRAM1);
+        ultramodern::wait_for_resumed(PASS_RDRAM1);
     }
 }
 
@@ -233,7 +233,7 @@ extern "C" OSId osGetThreadId(RDRAM_ARG PTR(OSThread) t) {
 
 // TODO yield thread, need a stable priority queue in the scheduler
 
-void Multilibultra::set_self_paused(RDRAM_ARG1) {
+void ultramodern::set_self_paused(RDRAM_ARG1) {
     debug_printf("[Thread] Thread pausing itself: %d\n", TO_PTR(OSThread, thread_self)->id);
     TO_PTR(OSThread, thread_self)->state = OSThreadState::PAUSED;
     TO_PTR(OSThread, thread_self)->context->running.store(false);
@@ -246,19 +246,19 @@ void check_destroyed(OSThread* t) {
     }
 }
 
-void Multilibultra::wait_for_resumed(RDRAM_ARG1) {
+void ultramodern::wait_for_resumed(RDRAM_ARG1) {
     check_destroyed(TO_PTR(OSThread, thread_self));
     TO_PTR(OSThread, thread_self)->context->running.wait(false);
     check_destroyed(TO_PTR(OSThread, thread_self));
 }
 
-void Multilibultra::pause_thread_impl(OSThread* t) {
+void ultramodern::pause_thread_impl(OSThread* t) {
     t->state = OSThreadState::PREEMPTED;
     t->context->running.store(false);
     t->context->running.notify_all();
 }
 
-void Multilibultra::resume_thread_impl(OSThread *t) {
+void ultramodern::resume_thread_impl(OSThread *t) {
     if (t->state == OSThreadState::PREEMPTED) {
         // Nothing to do here
     }
@@ -267,6 +267,6 @@ void Multilibultra::resume_thread_impl(OSThread *t) {
     t->context->running.notify_all();
 }
 
-PTR(OSThread) Multilibultra::this_thread() {
+PTR(OSThread) ultramodern::this_thread() {
     return thread_self;
 }

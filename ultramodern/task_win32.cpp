@@ -3,7 +3,7 @@
 #include <Windows.h>
 
 #include "ultra64.h"
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 
 extern "C" unsigned int sleep(unsigned int seconds) {
     Sleep(seconds * 1000);

@@ -12,7 +12,7 @@
 #include "blockingconcurrentqueue.h"
 
 #include "ultra64.h"
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 #include "recomp.h"
 #include "recomp_ui.h"
 #include "rsp.h"
@@ -99,17 +99,17 @@ extern std::atomic_bool exited;
 void set_dummy_vi();
 
 void vi_thread_func() {
-    Multilibultra::set_native_thread_name("VI Thread");
+    ultramodern::set_native_thread_name("VI Thread");
     // This thread should be prioritized over every other thread in the application, as it's what allows
     // the game to generate new audio and gfx lists.
-    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Critical);
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Critical);
     using namespace std::chrono_literals;
     
     int remaining_retraces = events_context.vi.retrace_count;
 
     while (!exited) {
         // Determine the next VI time (more accurate than adding 16ms each VI interrupt)
-        auto next = Multilibultra::get_start() + (total_vis * 1000000us) / (60 * Multilibultra::get_speed_multiplier());
+        auto next = ultramodern::get_start() + (total_vis * 1000000us) / (60 * ultramodern::get_speed_multiplier());
         //if (next > std::chrono::system_clock::now()) {
         //    printf("Sleeping for %" PRIu64 " us to get from %" PRIu64 " us to %" PRIu64 " us \n",
         //        (next - std::chrono::system_clock::now()) / 1us,
@@ -120,7 +120,7 @@ void vi_thread_func() {
         //}
         std::this_thread::sleep_until(next);
         // Calculate how many VIs have passed
-        uint64_t new_total_vis = (Multilibultra::time_since_start() * (60 * Multilibultra::get_speed_multiplier()) / 1000ms) + 1;
+        uint64_t new_total_vis = (ultramodern::time_since_start() * (60 * ultramodern::get_speed_multiplier()) / 1000ms) + 1;
         if (new_total_vis > total_vis + 1) {
             //printf("Skipped % " PRId64 " frames in VI interupt thread!\n", new_total_vis - total_vis - 1);
         }
@@ -134,7 +134,7 @@ void vi_thread_func() {
             if (remaining_retraces == 0) {
                 remaining_retraces = events_context.vi.retrace_count;
 
-                if (Multilibultra::is_game_started()) {
+                if (ultramodern::is_game_started()) {
                     if (events_context.vi.mq != NULLPTR) {
                         if (osSendMesg(PASS_RDRAM events_context.vi.mq, events_context.vi.msg, OS_MESG_NOBLOCK) == -1) {
                             //printf("Game skipped a VI frame!\n");
@@ -174,7 +174,7 @@ void dp_complete() {
     osSendMesg(PASS_RDRAM events_context.dp.mq, events_context.dp.msg, OS_MESG_NOBLOCK);
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_handle);
+void RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle);
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();
@@ -220,8 +220,8 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
 
 
 void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
-    Multilibultra::set_native_thread_name("SP Task Thread");
-    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
+    ultramodern::set_native_thread_name("SP Task Thread");
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
     // Notify the caller thread that this thread is ready.
     thread_ready->test_and_set();
@@ -257,11 +257,11 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
-void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, Multilibultra::WindowHandle window_handle) {
+void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
     using namespace std::chrono_literals;
 
-    Multilibultra::set_native_thread_name("Gfx Thread");
-    Multilibultra::set_native_thread_priority(Multilibultra::ThreadPriority::Normal);
+    ultramodern::set_native_thread_name("Gfx Thread");
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
     RT64Init(rom, rdram, window_handle);
     
@@ -445,7 +445,7 @@ extern "C" PTR(void) osViGetCurrentFramebuffer() {
     return events_context.vi.current_buffer;
 }
 
-void Multilibultra::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
+void ultramodern::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
     OSTask* task = TO_PTR(OSTask, task_);
 
     // Send gfx tasks to the graphics action queue
@@ -459,12 +459,12 @@ void Multilibultra::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
     }
 }
 
-void Multilibultra::send_si_message() {
+void ultramodern::send_si_message() {
     uint8_t* rdram = events_context.rdram;
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
-void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, Multilibultra::WindowHandle window_handle) {
+void ultramodern::init_events(uint8_t* rdram, uint8_t* rom, ultramodern::WindowHandle window_handle) {
     std::atomic_flag gfx_thread_ready;
     std::atomic_flag task_thread_ready;
     events_context.rdram = rdram;
@@ -479,7 +479,7 @@ void Multilibultra::init_events(uint8_t* rdram, uint8_t* rom, Multilibultra::Win
     events_context.vi.thread = std::thread{ vi_thread_func };
 }
 
-void Multilibultra::join_event_threads() {
+void ultramodern::join_event_threads() {
     events_context.sp.gfx_thread.join();
     events_context.vi.thread.join();
 

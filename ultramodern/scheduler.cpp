@@ -3,7 +3,7 @@
 #include <atomic>
 #include <vector>
 
-#include "multilibultra.hpp"
+#include "ultramodern.hpp"
 
 class OSThreadComparator {
 public:
@@ -134,10 +134,10 @@ void swap_running_thread(thread_queue_t& running_thread_queue, OSThread*& cur_ru
             } else {
                 debug_printf("[Scheduler] Switching execution to thread %d (%d)\n", new_running_thread->id, new_running_thread->priority);
             }
-            Multilibultra::resume_thread_impl(new_running_thread);
+            ultramodern::resume_thread_impl(new_running_thread);
             cur_running_thread = new_running_thread;
         } else if (cur_running_thread && cur_running_thread->state != OSThreadState::RUNNING) {
-            Multilibultra::resume_thread_impl(cur_running_thread);
+            ultramodern::resume_thread_impl(cur_running_thread);
         }
     } else {
         cur_running_thread = nullptr;
@@ -191,7 +191,7 @@ extern "C" void do_yield() {
     std::this_thread::yield();
 }
 
-namespace Multilibultra {
+namespace ultramodern {
 
 void init_scheduler() {
     scheduler_context.can_preempt = true;
@@ -208,16 +208,16 @@ void schedule_running_thread(OSThread *t) {
 }
 
 void swap_to_thread(RDRAM_ARG OSThread *to) {
-    OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
+    OSThread *self = TO_PTR(OSThread, ultramodern::this_thread());
     debug_printf("[Scheduler] Scheduling swap from thread %d to %d\n", self->id, to->id);
     {
         std::lock_guard lock{scheduler_context.mutex};
         scheduler_context.to_schedule.push_back(to);
-        Multilibultra::set_self_paused(PASS_RDRAM1);
+        ultramodern::set_self_paused(PASS_RDRAM1);
         scheduler_context.action_count.fetch_add(1);
         scheduler_context.action_count.notify_all();
     }
-    Multilibultra::wait_for_resumed(PASS_RDRAM1);
+    ultramodern::wait_for_resumed(PASS_RDRAM1);
 }
 
 void reprioritize_thread(OSThread *t, OSPri pri) {
@@ -229,16 +229,16 @@ void reprioritize_thread(OSThread *t, OSPri pri) {
 }
 
 void pause_self(RDRAM_ARG1) {
-    OSThread *self = TO_PTR(OSThread, Multilibultra::this_thread());
+    OSThread *self = TO_PTR(OSThread, ultramodern::this_thread());
     debug_printf("[Scheduler] Thread %d pausing itself\n", self->id);
     {
         std::lock_guard lock{scheduler_context.mutex};
-        Multilibultra::set_self_paused(PASS_RDRAM1);
+        ultramodern::set_self_paused(PASS_RDRAM1);
         scheduler_context.to_stop.push_back(self);
         scheduler_context.action_count.fetch_add(1);
         scheduler_context.action_count.notify_all();
     }
-    Multilibultra::wait_for_resumed(PASS_RDRAM1);
+    ultramodern::wait_for_resumed(PASS_RDRAM1);
 }
 
 void cleanup_thread(OSThread *t) {
@@ -250,13 +250,13 @@ void cleanup_thread(OSThread *t) {
 
 void disable_preemption() {
     scheduler_context.premption_mutex.lock();
-    if (Multilibultra::is_game_thread()) {
+    if (ultramodern::is_game_thread()) {
         scheduler_context.can_preempt = false;
     }
 }
 
 void enable_preemption() {
-    if (Multilibultra::is_game_thread()) {
+    if (ultramodern::is_game_thread()) {
         scheduler_context.can_preempt = true;
     }
 #pragma warning(push)
@@ -275,6 +275,6 @@ void notify_scheduler() {
 }
 
 extern "C" void pause_self(uint8_t* rdram) {
-    Multilibultra::pause_self(rdram);
+    ultramodern::pause_self(rdram);
 }
 

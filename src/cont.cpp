@@ -1,9 +1,9 @@
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp_helpers.h"
 
-static Multilibultra::input_callbacks_t input_callbacks;
+static ultramodern::input_callbacks_t input_callbacks;
 
-void set_input_callbacks(const Multilibultra::input_callbacks_t& callbacks) {
+void set_input_callbacks(const ultramodern::input_callbacks_t& callbacks) {
     input_callbacks = callbacks;
 }
 
@@ -33,7 +33,7 @@ extern "C" void osContInit_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osContStartReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
-    Multilibultra::send_si_message();
+    ultramodern::send_si_message();
 }
 
 extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -63,7 +63,7 @@ extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osContStartQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
-    Multilibultra::send_si_message();
+    ultramodern::send_si_message();
 }
 
 extern "C" void osContGetQuery_recomp(uint8_t * rdram, recomp_context * ctx) {

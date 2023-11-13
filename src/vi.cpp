@@ -1,4 +1,4 @@
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"
 
 extern "C" void osViSetYScale_recomp(uint8_t* rdram, recomp_context * ctx) {

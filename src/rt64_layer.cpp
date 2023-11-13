@@ -2,7 +2,7 @@
 #include <cstring>
 // #include <Windows.h>
 
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultramodern.hpp"
 #include "rt64_layer.h"
 #include "rt64_render_hooks.h"
 
@@ -45,7 +45,7 @@ void dummy_check_interrupts() {
 
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, Multilibultra::WindowHandle window_handle) {
+void RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle) {
     set_rt64_hooks();
     // Dynamic loading
     //auto RT64 = LoadLibrary("RT64.dll");

@@ -1,5 +1,5 @@
-#ifndef __ULTRA64_MULTILIBULTRA_H__
-#define __ULTRA64_MULTILIBULTRA_H__
+#ifndef __ULTRA64_ultramodern_H__
+#define __ULTRA64_ultramodern_H__
 
 #include <stdint.h>
 

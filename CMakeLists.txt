@@ -74,16 +74,16 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
 add_executable(MMRecomp)
 
 set (SOURCES
-    ${CMAKE_SOURCE_DIR}/portultra/audio.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/events.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/mesgqueue.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/misc_ultra.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/port_main.c
-    ${CMAKE_SOURCE_DIR}/portultra/scheduler.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/task_win32.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/threads.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/timer.cpp
-    ${CMAKE_SOURCE_DIR}/portultra/ultrainit.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/audio.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/events.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/mesgqueue.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/misc_ultra.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/port_main.c
+    ${CMAKE_SOURCE_DIR}/ultramodern/scheduler.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/task_win32.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/threads.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/timer.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/ultrainit.cpp
 
     ${CMAKE_SOURCE_DIR}/src/ai.cpp
     ${CMAKE_SOURCE_DIR}/src/cont.cpp
@@ -95,8 +95,8 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/overlays.cpp
     ${CMAKE_SOURCE_DIR}/src/pak.cpp
     ${CMAKE_SOURCE_DIR}/src/pi.cpp
-    ${CMAKE_SOURCE_DIR}/src/portultra_stubs.cpp
-    ${CMAKE_SOURCE_DIR}/src/portultra_translation.cpp
+    ${CMAKE_SOURCE_DIR}/src/ultra_stubs.cpp
+    ${CMAKE_SOURCE_DIR}/src/ultra_translation.cpp
     ${CMAKE_SOURCE_DIR}/src/print.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp.cpp
     ${CMAKE_SOURCE_DIR}/src/rt64_layer.cpp

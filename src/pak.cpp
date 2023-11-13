@@ -1,6 +1,6 @@
 #include "recomp.h"
-#include "../portultra/ultra64.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultra64.h"
+#include "../ultramodern/ultramodern.hpp"
 
 extern "C" void osPfsInitPak_recomp(uint8_t * rdram, recomp_context* ctx) {
 	ctx->r2 = 1; // PFS_ERR_NOPACK

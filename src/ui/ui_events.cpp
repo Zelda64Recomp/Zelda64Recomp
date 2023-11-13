@@ -1,5 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "recomp_ui.h"
-#include "../../portultra/multilibultra.hpp"
+#include "../../ultramodern/ultramodern.hpp"
 
 #include "nfd.h"
 #include "RmlUi/Core.h"
@@ -39,7 +41,7 @@ std::unique_ptr<Rml::EventListenerInstancer> make_event_listener_instancer() {
 
 	ret->register_event("start_game",
 		[](Rml::Event& event) {
-			Multilibultra::start_game(0);
+			ultramodern::start_game(0);
 			set_current_menu(Menu::None);
 		}
 	);

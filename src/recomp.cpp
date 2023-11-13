@@ -10,7 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include "recomp.h"
-#include "../portultra/multilibultra.hpp"
+#include "../ultramodern/ultramodern.hpp"
 
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
@@ -210,28 +210,28 @@ EXPORT extern "C" void init() {
 
 std::atomic_int game_started = -1;
 
-void Multilibultra::start_game(int game) {
+void ultramodern::start_game(int game) {
     game_started.store(game);
     game_started.notify_all();
 }
 
-bool Multilibultra::is_game_started() {
+bool ultramodern::is_game_started() {
     return game_started.load() != -1;
 }
 
-void set_audio_callbacks(const Multilibultra::audio_callbacks_t& callbacks);
-void set_input_callbacks(const Multilibultra::input_callbacks_t& callback);
+void set_audio_callbacks(const ultramodern::audio_callbacks_t& callbacks);
+void set_input_callbacks(const ultramodern::input_callbacks_t& callback);
 
 std::atomic_bool exited = false;
 
-void Multilibultra::quit() {
+void ultramodern::quit() {
     exited.store(true);
     int desired = -1;
     game_started.compare_exchange_strong(desired, -2);
     game_started.notify_all();
 }
 
-void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks_) {
+void ultramodern::start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks_) {
     set_audio_callbacks(audio_callbacks);
     set_input_callbacks(input_callbacks);
 
@@ -252,12 +252,12 @@ void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& a
         }
     }
 
-    std::thread game_thread{[](Multilibultra::WindowHandle window_handle) {
+    std::thread game_thread{[](ultramodern::WindowHandle window_handle) {
         debug_printf("[Recomp] Starting\n");
         
-        Multilibultra::set_native_thread_name("Game Start Thread");
+        ultramodern::set_native_thread_name("Game Start Thread");
 
-        Multilibultra::preinit(rdram_buffer.get(), rom.get(), window_handle);
+        ultramodern::preinit(rdram_buffer.get(), rom.get(), window_handle);
 
         game_started.wait(-1);
 
@@ -280,5 +280,5 @@ void Multilibultra::start(WindowHandle window_handle, const audio_callbacks_t& a
         }
     }
     game_thread.join();
-    Multilibultra::join_event_threads();
+    ultramodern::join_event_threads();
 }
