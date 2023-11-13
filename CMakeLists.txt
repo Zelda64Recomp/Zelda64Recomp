@@ -85,23 +85,24 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/timer.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/ultrainit.cpp
 
-    ${CMAKE_SOURCE_DIR}/src/ai.cpp
-    ${CMAKE_SOURCE_DIR}/src/cont.cpp
-    ${CMAKE_SOURCE_DIR}/src/dp.cpp
-    ${CMAKE_SOURCE_DIR}/src/eep.cpp
-    ${CMAKE_SOURCE_DIR}/src/euc-jp.cpp
-    ${CMAKE_SOURCE_DIR}/src/flash.cpp
-    ${CMAKE_SOURCE_DIR}/src/math_routines.cpp
-    ${CMAKE_SOURCE_DIR}/src/overlays.cpp
-    ${CMAKE_SOURCE_DIR}/src/pak.cpp
-    ${CMAKE_SOURCE_DIR}/src/pi.cpp
-    ${CMAKE_SOURCE_DIR}/src/ultra_stubs.cpp
-    ${CMAKE_SOURCE_DIR}/src/ultra_translation.cpp
-    ${CMAKE_SOURCE_DIR}/src/print.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp.cpp
-    ${CMAKE_SOURCE_DIR}/src/rt64_layer.cpp
-    ${CMAKE_SOURCE_DIR}/src/sp.cpp
-    ${CMAKE_SOURCE_DIR}/src/vi.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/ai.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/cont.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/dp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/eep.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/euc-jp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/flash.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/math_routines.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/overlays.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/pak.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/pi.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/ultra_stubs.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/ultra_translation.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/print.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/recomp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/rt64_layer.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
+    
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
 
     ${CMAKE_SOURCE_DIR}/src/ui/ui_renderer.cpp

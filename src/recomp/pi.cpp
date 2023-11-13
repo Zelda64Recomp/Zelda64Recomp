@@ -38,6 +38,11 @@ extern "C" void osCreatePiManager_recomp(uint8_t* rdram, recomp_context* ctx) {
 
 void do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr, size_t num_bytes) {
     // TODO use word copies when possible
+
+    // TODO handle misaligned DMA
+    assert((physical_addr & 0x1) == 0 && "Only PI DMA from aligned ROM addresses is currently supported");
+    assert((ram_address & 0x7) == 0 && "Only PI DMA to aligned RDRAM addresses is currently supported");
+    assert((num_bytes & 0x1) == 0 && "Only PI DMA with aligned sizes is currently supported");
     uint8_t* rom_addr = rom.get() + physical_addr - rom_base;
     for (size_t i = 0; i < num_bytes; i++) {
         MEM_B(i, ram_address) = *rom_addr;
