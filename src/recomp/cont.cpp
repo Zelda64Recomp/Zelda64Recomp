@@ -101,16 +101,3 @@ extern "C" void osMotorStart_recomp(uint8_t* rdram, recomp_context* ctx) {
 extern "C" void osMotorStop_recomp(uint8_t* rdram, recomp_context* ctx) {
     ;
 }
-
-#include "../patches/input.h"
-
-extern "C" void recomp_get_item_inputs(uint8_t* rdram, recomp_context* ctx) {
-    RecompInputs* inputs = _arg<0, RecompInputs*>(rdram, ctx);
-
-    if (input_callbacks.get_input) {
-        u16 buttons;
-        input_callbacks.get_input(&buttons, &inputs->x, &inputs->y);
-        // TODO remap the inputs for items here
-        inputs->buttons = buttons;
-    }
-}

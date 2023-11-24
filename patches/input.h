@@ -11,13 +11,6 @@
 extern "C" {
 #endif
 
-typedef struct RecompInputs {
-    u32 buttons;
-    float x;
-    float y;
-} RecompInputs;
-
-
 #ifdef MIPS
 #   define DECLARE_FUNC(type, name, ...) \
         type name(__VA_ARGS__);
@@ -26,7 +19,9 @@ typedef struct RecompInputs {
         void name(uint8_t* rdram, recomp_context* ctx);
 #endif
 
-DECLARE_FUNC(void, recomp_get_item_inputs, RecompInputs* inputs);
+DECLARE_FUNC(void, recomp_get_item_inputs, u32* buttons);
+// TODO move this
+DECLARE_FUNC(void, recomp_puts, const char* data, u32 size);
 
 #ifdef __cplusplus
 }

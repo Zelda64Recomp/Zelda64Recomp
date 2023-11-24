@@ -3,4 +3,6 @@
 
 #include "global.h"
 
+int recomp_printf(const char* fmt, ...);
+
 #endif

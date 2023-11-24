@@ -579,7 +579,7 @@ public:
 struct {
     struct UIRenderContext render;
     class {
-        std::unordered_map<Menu, Rml::ElementDocument*> documents;
+        std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
     public:
         SystemInterface_SDL system_interface;
@@ -591,7 +591,7 @@ struct {
             render_interface.reset();
         }
 
-        void swap_document(Menu menu) {
+        void swap_document(recomp::Menu menu) {
             if (current_document != nullptr) {
                 current_document->Hide();
             }
@@ -628,7 +628,7 @@ struct {
                 Rml::Factory::RegisterEventListenerInstancer(event_listener_instancer.get());
             }
 
-            documents.emplace(Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
+            documents.emplace(recomp::Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
         }
     } rml;
 } UIContext;
@@ -645,7 +645,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     // Setup RML
     UIContext.rml.system_interface.SetWindow(window);
     UIContext.rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&UIContext.render);
-    UIContext.rml.event_listener_instancer = make_event_listener_instancer();
+    UIContext.rml.event_listener_instancer = recomp::make_event_listener_instancer();
 
     Rml::SetSystemInterface(&UIContext.rml.system_interface);
     Rml::SetRenderInterface(UIContext.rml.render_interface.get());
@@ -685,15 +685,15 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
 
-void queue_event(const SDL_Event& event) {
+void recomp::queue_event(const SDL_Event& event) {
     ui_event_queue.enqueue(event);
 }
 
-bool try_deque_event(SDL_Event& out) {
+bool recomp::try_deque_event(SDL_Event& out) {
     return ui_event_queue.try_dequeue(out);
 }
 
-std::atomic<Menu> open_menu = Menu::Launcher;
+std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
     int num_keys;
@@ -704,12 +704,12 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
     
-    static Menu prev_menu = Menu::None;
-    Menu cur_menu = open_menu.load();
+    static recomp::Menu prev_menu = recomp::Menu::None;
+    recomp::Menu cur_menu = open_menu.load();
 
     if (reload_sheets) {
         UIContext.rml.load_documents();
-        prev_menu = Menu::None;
+        prev_menu = recomp::Menu::None;
     }
 
     if (cur_menu != prev_menu) {
@@ -720,11 +720,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
 
     SDL_Event cur_event{};
 
-    while (try_deque_event(cur_event)) {
+    while (recomp::try_deque_event(cur_event)) {
         RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
     }
 
-    if (cur_menu != Menu::None) {
+    if (cur_menu != recomp::Menu::None) {
         int width, height;
         SDL_GetWindowSizeInPixels(window, &width, &height);
 
@@ -753,11 +753,11 @@ void set_rt64_hooks() {
     RT64::SetRenderHooks(init_hook, draw_hook, deinit_hook);
 }
 
-void set_current_menu(Menu menu) {
+void recomp::set_current_menu(Menu menu) {
     open_menu.store(menu);
 }
 
-void destroy_ui() {
+void recomp::destroy_ui() {
     Rml::Shutdown();
     UIContext.rml.unload();
 }

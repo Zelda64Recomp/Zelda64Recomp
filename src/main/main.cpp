@@ -15,6 +15,7 @@
 #endif
 
 #include "recomp_ui.h"
+#include "recomp_input.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -31,120 +32,6 @@ void exit_error(const char* str, Ts ...args) {
     ((void)fprintf(stderr, str, args), ...);
     assert(false);
     std::quick_exit(EXIT_FAILURE);
-}
-
-
-std::vector<std::pair<SDL_Scancode, int>> keyboard_button_map{
-    { SDL_Scancode::SDL_SCANCODE_LEFT,   0x0002 }, // c left
-    { SDL_Scancode::SDL_SCANCODE_RIGHT,  0x0001 }, // c right
-    { SDL_Scancode::SDL_SCANCODE_UP,     0x0008 }, // c up
-    { SDL_Scancode::SDL_SCANCODE_DOWN,   0x0004 }, // c down
-    { SDL_Scancode::SDL_SCANCODE_RETURN, 0x1000 }, // start
-    { SDL_Scancode::SDL_SCANCODE_SPACE,  0x8000 }, // a
-    { SDL_Scancode::SDL_SCANCODE_LSHIFT, 0x4000 }, // b
-    { SDL_Scancode::SDL_SCANCODE_Q,      0x2000 }, // z
-    { SDL_Scancode::SDL_SCANCODE_E,      0x0020 }, // l
-    { SDL_Scancode::SDL_SCANCODE_R,      0x0010 }, // r
-    { SDL_Scancode::SDL_SCANCODE_J,      0x0200 }, // dpad left
-    { SDL_Scancode::SDL_SCANCODE_L,      0x0100 }, // dpad right
-    { SDL_Scancode::SDL_SCANCODE_I,      0x0800 }, // dpad up
-    { SDL_Scancode::SDL_SCANCODE_K,      0x0400 }, // dpad down
-};
-
-struct GameControllerAxisMapping {
-    SDL_GameControllerAxis axis;
-    int threshold; // Positive or negative to indicate direction
-    uint16_t output_mask;
-};
-
-constexpr int controller_default_threshold = 20000;
-
-std::vector<GameControllerAxisMapping> controller_axis_map{
-    { SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX,      -controller_default_threshold, 0x0002 }, // c left
-    { SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX,       controller_default_threshold, 0x0001 }, // c right
-    { SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY,      -controller_default_threshold, 0x0008 }, // c up
-    { SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY,       controller_default_threshold, 0x0004 }, // c down
-    { SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERLEFT, 10000,                         0x2000 }, // z
-    //{ SDL_Scancode::SDL_SCANCODE_RIGHT,  0x0001 }, // c right
-    //{ SDL_Scancode::SDL_SCANCODE_UP,     0x0008 }, // c up
-    //{ SDL_Scancode::SDL_SCANCODE_DOWN,   0x0004 }, // c down
-    //{ SDL_Scancode::SDL_SCANCODE_RETURN, 0x1000 }, // start
-    //{ SDL_Scancode::SDL_SCANCODE_SPACE,  0x8000 }, // a
-    //{ SDL_Scancode::SDL_SCANCODE_LSHIFT, 0x4000 }, // b
-    //{ SDL_Scancode::SDL_SCANCODE_Q,      0x2000 }, // z
-    //{ SDL_Scancode::SDL_SCANCODE_E,      0x0020 }, // l
-    //{ SDL_Scancode::SDL_SCANCODE_R,      0x0010 }, // r
-    //{ SDL_Scancode::SDL_SCANCODE_J,      0x0200 }, // dpad left
-    //{ SDL_Scancode::SDL_SCANCODE_L,      0x0100 }, // dpad right
-    //{ SDL_Scancode::SDL_SCANCODE_I,      0x0800 }, // dpad up
-    //{ SDL_Scancode::SDL_SCANCODE_K,      0x0400 }, // dpad down
-};
-
-struct GameControllerButtonMapping {
-    SDL_GameControllerButton button;
-    uint16_t output_mask;
-};
-std::vector<GameControllerButtonMapping> controller_button_map{
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START,         0x1000 }, // start
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A,             0x8000 }, // a
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B,             0x4000 }, // b
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X,             0x4000 }, // b
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSHOULDER,  0x0020 }, // l
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, 0x0010 }, // r
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT,     0x0200 }, // dpad left
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT,    0x0100 }, // dpad right
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP,       0x0800 }, // dpad up
-    { SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN,     0x0400 }, // dpad down
-};
-
-std::vector<SDL_JoystickID> controllers{};
-
-bool sdl_event_filter(void* userdata, SDL_Event* event) {
-    switch (event->type) {
-    //case SDL_EventType::SDL_KEYUP:
-    //case SDL_EventType::SDL_KEYDOWN:
-    //    {
-    //        const Uint8* key_states = SDL_GetKeyboardState(nullptr);
-    //        int new_button = 0;
-
-    //        for (const auto& mapping : keyboard_button_map) {
-    //            if (key_states[mapping.first]) {
-    //                new_button |= mapping.second;
-    //            }
-    //        }
-
-    //        button = new_button;
-
-    //        stick_x = (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
-    //        stick_y = (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
-    //    }
-    //    break;
-    case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
-        {
-            SDL_ControllerDeviceEvent* controller_event = (SDL_ControllerDeviceEvent*)event;
-            SDL_GameController* controller = SDL_GameControllerOpen(controller_event->which);
-            printf("Controller added: %d\n", controller_event->which);
-            if (controller != nullptr) {
-                printf("  Instance ID: %d\n", SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
-                controllers.push_back(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
-            }
-        }
-        break;
-    case SDL_EventType::SDL_CONTROLLERDEVICEREMOVED:
-        {
-            SDL_ControllerDeviceEvent* controller_event = (SDL_ControllerDeviceEvent*)event;
-            printf("Controller removed: %d\n", controller_event->which);
-            std::erase(controllers, controller_event->which);
-        }
-        break;
-    case SDL_EventType::SDL_QUIT:
-        ultramodern::quit();
-        return true;
-    default:
-        queue_event(*event);
-        break;
-    }
-    return false;
 }
 
 ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
@@ -181,67 +68,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
 }
 
 void update_gfx(void*) {
-    // Handle events
-    constexpr int max_events_per_frame = 16;
-    SDL_Event cur_event;
-    int i = 0;
-    static bool exited = false;
-    while (i++ < max_events_per_frame && SDL_PollEvent(&cur_event) && !exited) {
-        exited = sdl_event_filter(nullptr, &cur_event);
-    }
-}
-
-void get_input(uint16_t* buttons_out, float* x_out, float* y_out) {
-    uint16_t cur_buttons = 0;
-    float cur_x = 0.0f;
-    float cur_y = 0.0f;
-
-    const Uint8* key_states = SDL_GetKeyboardState(nullptr);
-    int new_button = 0;
-
-    for (const auto& mapping : keyboard_button_map) {
-        if (key_states[mapping.first]) {
-            cur_buttons |= mapping.second;
-        }
-    }
-
-    cur_x += (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
-    cur_y += (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
-
-    for (SDL_JoystickID controller_id : controllers) {
-        SDL_GameController* controller = SDL_GameControllerFromInstanceID(controller_id);
-        if (controller != nullptr) {
-            cur_x += SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) * (1/32768.0f);
-            cur_y -= SDL_GameControllerGetAxis(controller, SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) * (1/32768.0f);
-        }
-
-        for (const auto& mapping : controller_axis_map) {
-            int input_value = SDL_GameControllerGetAxis(controller, mapping.axis);
-            if (mapping.threshold > 0) {
-                if (input_value > mapping.threshold) {
-                    cur_buttons |= mapping.output_mask;
-                }
-            }
-            else {
-                if (input_value < mapping.threshold) {
-                    cur_buttons |= mapping.output_mask;
-                }
-            }
-        }
-
-        for (const auto& mapping : controller_button_map) {
-            int input_value = SDL_GameControllerGetButton(controller, mapping.button);
-            if (input_value) {
-                cur_buttons |= mapping.output_mask;
-            }
-        }
-    }
-
-    *buttons_out = cur_buttons;
-    cur_x = std::clamp(cur_x, -1.0f, 1.0f);
-    cur_y = std::clamp(cur_y, -1.0f, 1.0f);
-    *x_out = cur_x;
-    *y_out = cur_y;
+    recomp::handle_events();
 }
 
 static SDL_AudioDeviceID audio_device = 0;
@@ -357,7 +184,7 @@ int main(int argc, char** argv) {
     };
 
     ultramodern::input_callbacks_t input_callbacks{
-        .get_input = get_input,
+        .get_input = recomp::get_n64_input,
     };
 
     ultramodern::start({}, audio_callbacks, input_callbacks, gfx_callbacks);

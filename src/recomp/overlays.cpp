@@ -35,6 +35,13 @@ void load_overlay(size_t section_table_index, int32_t ram) {
     section_addresses[section.index] = ram;
 }
 
+void load_special_overlay(const SectionTableEntry& section, int32_t ram) {
+    for (size_t function_index = 0; function_index < section.num_funcs; function_index++) {
+        const FuncEntry& func = section.funcs[function_index];
+        func_map[ram + func.offset] = func.func;
+    }
+}
+
 
 extern "C" {
 int32_t section_addresses[num_sections];
@@ -128,6 +135,8 @@ extern "C" void unload_overlays(int32_t ram_addr, uint32_t size) {
     }
 }
 
+void load_patch_functions();
+
 void init_overlays() {
     for (size_t section_index = 0; section_index < num_code_sections; section_index++) {
         section_addresses[section_table[section_index].index] = section_table[section_index].ram_addr;
@@ -139,6 +148,8 @@ void init_overlays() {
             return a.rom_addr < b.rom_addr;
         }
     );
+
+    load_patch_functions();
 }
 
 extern "C" recomp_func_t * get_function(int32_t addr) {

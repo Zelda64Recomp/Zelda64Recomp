@@ -36,7 +36,7 @@ public:
 	}
 };
 
-std::unique_ptr<Rml::EventListenerInstancer> make_event_listener_instancer() {
+std::unique_ptr<Rml::EventListenerInstancer> recomp::make_event_listener_instancer() {
 	std::unique_ptr<UiEventListenerInstancer> ret = std::make_unique<UiEventListenerInstancer>();
 
 	ret->register_event("start_game",

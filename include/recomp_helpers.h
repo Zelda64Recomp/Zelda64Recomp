@@ -2,6 +2,7 @@
 #define __RECOMP_HELPERS__
 
 #include "recomp.h"
+#include "../ultramodern/ultra64.h"
 
 template<int index, typename T>
 T _arg(uint8_t* rdram, recomp_context* ctx) {
@@ -13,7 +14,10 @@ T _arg(uint8_t* rdram, recomp_context* ctx) {
             return ctx->f12.fl;
         }
         else {
-            return std::bit_cast<T>(raw_arg);
+            // static_assert in else workaround
+            [] <bool flag = false>() {
+                static_assert(flag, "Floats in a2/a3 not supported");
+            }();
         }
     }
     else if constexpr (std::is_pointer_v<T>) {

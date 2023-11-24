@@ -93,6 +93,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/flash.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/math_routines.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/overlays.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/pak.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/pi.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/ultra_stubs.cpp
@@ -102,8 +103,11 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/rt64_layer.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
-    
+
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
+    
+    ${CMAKE_SOURCE_DIR}/src/game/input.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/controls.cpp
 
     ${CMAKE_SOURCE_DIR}/src/ui/ui_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_events.cpp
