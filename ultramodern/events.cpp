@@ -174,7 +174,7 @@ void dp_complete() {
     osSendMesg(PASS_RDRAM events_context.dp.mq, events_context.dp.msg, OS_MESG_NOBLOCK);
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle);
+bool RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle);
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();
@@ -263,7 +263,9 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
     ultramodern::set_native_thread_name("Gfx Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
-    RT64Init(rom, rdram, window_handle);
+    if (!RT64Init(rom, rdram, window_handle)) {
+        throw std::runtime_error("Failed to initialize RT64!");
+    }
     
     rsp_constants_init();
 

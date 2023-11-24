@@ -45,7 +45,7 @@ void dummy_check_interrupts() {
 
 }
 
-void RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle) {
+bool RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle) {
     set_rt64_hooks();
     // Dynamic loading
     //auto RT64 = LoadLibrary("RT64.dll");
@@ -100,11 +100,11 @@ void RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_han
     gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
 #if defined(_WIN32)
-    InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
+    return InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
-	InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
+	return InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
 #else
     static_assert(false && "Unimplemented");
 #endif
