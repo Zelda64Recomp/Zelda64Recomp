@@ -53,22 +53,6 @@ void CalculateTextureRowWidthPadding(uint32_t rowPitch, uint32_t &rowWidth, uint
     rowWidth += rowPadding;
 }
 
-struct RmlRenderInterfaceHeapBase : public RT64::RenderDescriptorHeapBase {
-    uint32_t gSampler;
-    uint32_t gTexture;
-
-    RmlRenderInterfaceHeapBase(const RT64::RenderSampler* linear_sampler) {
-        assert(linear_sampler != nullptr);
-
-        builder.begin();
-        builder.beginSet();
-        gSampler = builder.addImmutableSampler(1, linear_sampler);
-        gTexture = builder.addTexture(2);
-        builder.endSet();
-        builder.end();
-    }
-};
-
 struct RmlPushConstants {
     Rml::Matrix4f transform;
     Rml::Vector2f translation;
@@ -76,7 +60,7 @@ struct RmlPushConstants {
 
 struct TextureHandle {
     std::unique_ptr<RT64::RenderTexture> texture;
-    std::unique_ptr<RT64::RenderDescriptorHeap> heap;
+    std::unique_ptr<RT64::RenderDescriptorSet> set;
 };
 
 std::vector<char> read_file(const std::filesystem::path& filepath) {
@@ -134,7 +118,8 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     std::unique_ptr<RT64::RenderSampler> linearSampler_{};
     std::unique_ptr<RT64::RenderShader> vertex_shader_{};
     std::unique_ptr<RT64::RenderShader> pixel_shader_{};
-    std::unique_ptr<RmlRenderInterfaceHeapBase> heap_base_{};
+    std::unique_ptr<RT64::RenderDescriptorSet> sampler_set_{};
+    std::unique_ptr<RT64::RenderDescriptorSetBuilder> texture_set_builder_{};
     std::unique_ptr<RT64::RenderPipelineLayout> layout_{};
     std::unique_ptr<RT64::RenderPipeline> pipeline_{};
     uint32_t upload_buffer_size_ = 0;
@@ -142,6 +127,7 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     uint8_t* upload_buffer_mapped_data_ = nullptr;
     uint32_t vertex_buffer_size_ = 0;
     uint32_t index_buffer_size_ = 0;
+    uint32_t gTexture_descriptor_index;
     RT64::RenderInputSlot vertex_slot_{ 0, sizeof(Rml::Vertex) };
     RT64::RenderCommandList* list_ = nullptr;
     bool scissor_enabled_ = false;
@@ -157,9 +143,9 @@ public:
 
         // Describe the vertex format
         std::vector<RT64::RenderInputElement> vertex_elements{};
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "POSITION", 0, 0, RT64::RenderFormat::R32G32_FLOAT, 0,   offsetof(Rml::Vertex, position) });
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "COLOR",    0, 1, RT64::RenderFormat::R8G8B8A8_UNORM, 0, offsetof(Rml::Vertex, colour) });
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "TEXCOORD", 0, 2, RT64::RenderFormat::R32G32_FLOAT, 0,   offsetof(Rml::Vertex, tex_coord) });
+        vertex_elements.emplace_back(RT64::RenderInputElement{ "POSITION", 0, 0, RT64::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, position) });
+        vertex_elements.emplace_back(RT64::RenderInputElement{ "COLOR", 0, 1, RT64::RenderFormat::R8G8B8A8_UNORM, 0, offsetof(Rml::Vertex, colour) });
+        vertex_elements.emplace_back(RT64::RenderInputElement{ "TEXCOORD", 0, 2, RT64::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, tex_coord) });
 
         // Create a nearest sampler and a linear sampler
         RT64::RenderSamplerDesc samplerDesc;
@@ -181,15 +167,27 @@ public:
         pixel_shader_ = render_context->device->createShader(GET_SHADER_BLOB(InterfacePS, shaderFormat), GET_SHADER_SIZE(InterfacePS, shaderFormat), "PSMain", shaderFormat);
 
 
-        // Create the descriptor heap
-        heap_base_ = std::make_unique<RmlRenderInterfaceHeapBase>(linearSampler_.get());
+        // Create the descriptor set that contains the sampler
+        RT64::RenderDescriptorSetBuilder sampler_set_builder{};
+        sampler_set_builder.begin();
+        sampler_set_builder.addImmutableSampler(1, linearSampler_.get());
+        sampler_set_builder.end();
+        sampler_set_ = sampler_set_builder.create(render_context->device);
+
+        // Create a builder for the descriptor sets that will contain textures
+        texture_set_builder_ = std::make_unique<RT64::RenderDescriptorSetBuilder>();
+        texture_set_builder_->begin();
+        gTexture_descriptor_index = texture_set_builder_->addTexture(2);
+        texture_set_builder_->end();
 
         // Create the pipeline layout
         RT64::RenderPipelineLayoutBuilder layout_builder{};
         layout_builder.begin(false, true);
         layout_builder.addPushConstant(0, 0, sizeof(RmlPushConstants), RT64::RenderShaderStageFlag::VERTEX);
         // Add the descriptor set for descriptors changed once per frame.
-        layout_builder.addDescriptorSetsFromHeap(heap_base_->builder);
+        layout_builder.addDescriptorSet(sampler_set_builder);
+        // Add the descriptor set for descriptors changed once per draw.
+        layout_builder.addDescriptorSet(*texture_set_builder_);
         layout_builder.end();
         layout_ = layout_builder.create(render_context->device);
 
@@ -362,7 +360,7 @@ public:
         list_->setIndexBuffer(&index_view);
         RT64::RenderVertexBufferView vertex_view{vertex_buffer_->at(0), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
-        list_->setGraphicsDescriptorHeap(textures_.at(texture).heap.get());
+        list_->setGraphicsDescriptorSet(textures_.at(texture).set.get(), 1);
 
         RmlPushConstants constants{
             .transform = mvp_,
@@ -519,12 +517,12 @@ public:
             // Prepare the texture for being read from a pixel shader.
             list_->barriers(RT64::RenderTextureBarrier::Transition(texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS));
 
-            // Create a descriptor heap with this texture in it.
-            std::unique_ptr<RT64::RenderDescriptorHeap> heap = heap_base_->builder.create(render_context_->device);
+            // Create a descriptor set with this texture in it.
+            std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(render_context_->device);
 
-            heap->setTexture(heap_base_->gTexture, 0, texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS);
+            set->setTexture(gTexture_descriptor_index, texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS);
 
-            textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(heap) });
+            textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(set) });
 
             return true;
         }
@@ -549,6 +547,8 @@ public:
         list_ = list;
         list_->setPipeline(pipeline_.get());
         list_->setGraphicsPipelineLayout(layout_.get());
+        // Bind the set for descriptors that don't change across draws
+        list_->setGraphicsDescriptorSet(sampler_set_.get(), 0);
 
         window_width_ = image_width;
         window_height_ = image_height;

@@ -293,8 +293,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
         }
     }
     recomp::destroy_ui();
-    // TODO restore this call once the RT64 shutdown issue is fixed.
-    // RT64Shutdown();
+    RT64Shutdown();
 }
 
 extern unsigned int VI_STATUS_REG;

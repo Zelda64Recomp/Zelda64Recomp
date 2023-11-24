@@ -1,5 +1,5 @@
 SamplerState gSampler : register(s1, space0);
-Texture2D<float4> gTexture : register(t2, space0);
+Texture2D<float4> gTexture : register(t2, space1);
 
 void PSMain(
     in float4 iColor : COLOR,
