@@ -4,9 +4,9 @@ CC      := clang
 LD      := ld.lld
 OBJCOPY := llvm-objcopy
 
-CFLAGS   := -target mips -mips2 -mabi=32 -O2 -mno-odd-spreg -fomit-frame-pointer -G0 -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-parameter -Wno-unknown-pragmas -Wno-unused-variable
-CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets
-LDFLAGS  := -nostdlib -T patches.ld -T syms.ld
+CFLAGS   := -target mips -mips2 -mabi=32 -O2 -mno-abicalls -mno-odd-spreg -fomit-frame-pointer -mno-check-zero-division -G0 -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-parameter -Wno-unknown-pragmas -Wno-unused-variable -Wno-missing-braces
+CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets -I../../mupen_rt64/mupen64plus-video-rt64/include
+LDFLAGS  := -nostdlib -T patches.ld -T syms.ld --just-symbols=../mm.us.rev1.elf --allow-multiple-definition
 BINFLAGS := -O binary
 
 C_SRCS := $(wildcard *.c)
@@ -19,7 +19,7 @@ $(DATABIN): $(TARGET)
 	$(OBJCOPY) $(BINFLAGS) $(TARGET) $@
 
 $(TARGET): $(C_OBJS) patches.ld syms.ld
-	$(LD) $(LDFLAGS) $(C_OBJS) -o $@
+	$(LD) $(C_OBJS) $(LDFLAGS) -o $@
 
 $(C_OBJS): %.o : %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
