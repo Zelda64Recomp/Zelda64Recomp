@@ -8,6 +8,13 @@ u32 sPlayerItemButtons[] = {
     BTN_CRIGHT,
 };
 
+u32 sPlayerItemButtonsDualAnalog[] = {
+    BTN_B,
+    BTN_DLEFT,
+    BTN_DDOWN,
+    BTN_DRIGHT
+};
+
 u32 prev_item_buttons = 0;
 u32 cur_item_buttons = 0;
 u32 pressed_item_buttons = 0;
@@ -23,6 +30,11 @@ typedef enum {
 void GameState_GetInput(GameState* gameState) {
     PadMgr_GetInput(gameState->input, true);
 
+    if (recomp_camera_mode == RECOMP_CAMERA_DUALANALOG) {
+        gameState->input[0].cur.button &= ~BTN_CUP;
+        gameState->input[0].press.button &= ~BTN_CUP;
+        gameState->input[0].rel.button &= ~BTN_CUP;
+    }
 
     prev_item_buttons = cur_item_buttons;
     recomp_get_item_inputs(&cur_item_buttons);
@@ -46,25 +58,27 @@ struct SlotMap exSlotMapping[] = {
 // D-Pad items
 // TODO restore this once UI is made
 // Return currently-pressed button, in order of priority D-Pad, B, CLEFT, CDOWN, CRIGHT.
-/*
+
 EquipSlot func_8082FDC4(void) {
     EquipSlot i;
 
-    for (int mapping_index = 0; mapping_index < ARRAY_COUNT(exSlotMapping); mapping_index++) {
-        if (pressed_item_buttons & exSlotMapping[mapping_index].button) {
-            return (EquipSlot)exSlotMapping[mapping_index].slot;
-        }
-    }
+    // for (int mapping_index = 0; mapping_index < ARRAY_COUNT(exSlotMapping); mapping_index++) {
+    //     if (pressed_item_buttons & exSlotMapping[mapping_index].button) {
+    //         return (EquipSlot)exSlotMapping[mapping_index].slot;
+    //     }
+    // }
+
+    u32* button_map = recomp_camera_mode == RECOMP_CAMERA_DUALANALOG ? sPlayerItemButtonsDualAnalog : sPlayerItemButtons;
 
     for (i = 0; i < ARRAY_COUNT(sPlayerItemButtons); i++) {
-        if (CHECK_BTN_ALL(pressed_item_buttons, sPlayerItemButtons[i])) {
+        if (CHECK_BTN_ALL(pressed_item_buttons, button_map[i])) {
             break;
         }
     }
 
     return i;
 }
-
+/*
 ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
     if (slot >= EQUIP_SLOT_A) {
         return ITEM_NONE;

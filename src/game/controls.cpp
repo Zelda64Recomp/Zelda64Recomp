@@ -152,6 +152,30 @@ extern "C" void recomp_get_item_inputs(uint8_t* rdram, recomp_context* ctx) {
     *buttons_out = cur_buttons;
 }
 
+extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
+    float* x_out = _arg<0, float*>(rdram, ctx);
+    float* y_out = _arg<1, float*>(rdram, ctx);
+
+    float x_val = 0.0f;
+    float y_val = 0.0f;
+
+    // Process controller inputs
+    std::vector<recomp::InputState> input_states = recomp::get_input_states();
+
+    for (const recomp::InputState& state : input_states) {
+        if (const auto* controller_state = std::get_if<recomp::ControllerState>(&state)) {
+            x_val += controller_state->axes[recomp::ControllerState::AXIS_RIGHT_X];
+            y_val += controller_state->axes[recomp::ControllerState::AXIS_RIGHT_Y];
+        }
+        else if (const auto* mouse_state = std::get_if<recomp::MouseState>(&state)) {
+            // Mouse currently unused
+        }
+    }
+
+    *x_out = x_val;
+    *y_out = y_val;
+}
+
 // TODO move this
 extern "C" void recomp_puts(uint8_t* rdram, recomp_context* ctx) {
     PTR(char) cur_str = _arg<0, PTR(char)>(rdram, ctx);

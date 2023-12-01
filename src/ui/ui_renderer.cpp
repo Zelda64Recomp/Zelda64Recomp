@@ -171,6 +171,7 @@ public:
         RT64::RenderDescriptorSetBuilder sampler_set_builder{};
         sampler_set_builder.begin();
         sampler_set_builder.addImmutableSampler(1, linearSampler_.get());
+        sampler_set_builder.addConstantBuffer(3, 1); // Workaround D3D12 crash due to an empty RT64 descriptor set
         sampler_set_builder.end();
         sampler_set_ = sampler_set_builder.create(render_context->device);
 

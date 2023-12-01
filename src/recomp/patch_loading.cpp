@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include "recomp.h"
-#include "../RecompiledPatches/recomp_overlays.inl"
+#include "../../RecompiledPatches/recomp_overlays.inl"
 
 void load_special_overlay(const SectionTableEntry& section, int32_t ram);
 
