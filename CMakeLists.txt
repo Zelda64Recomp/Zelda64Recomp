@@ -69,7 +69,7 @@ add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h
                        ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
-                   COMMAND RecompPort patches.toml && touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
+                   COMMAND RecompPort patches.toml && ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf
 )
