@@ -5,7 +5,7 @@ LD      := ld.lld
 OBJCOPY := llvm-objcopy
 
 CFLAGS   := -target mips -mips2 -mabi=32 -O2 -mno-abicalls -mno-odd-spreg -fomit-frame-pointer -mno-check-zero-division -G0 -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-parameter -Wno-unknown-pragmas -Wno-unused-variable -Wno-missing-braces
-CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets -I../../mupen_rt64/mupen64plus-video-rt64/include
+CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I ../../mm/include -I ../../mm/src -I ../../mm/build -I ../../mm/assets -I../lib/RT64-HLE/include
 LDFLAGS  := -nostdlib -T patches.ld -T syms.ld --just-symbols=../mm.us.rev1.elf --allow-multiple-definition
 BINFLAGS := -O binary
 

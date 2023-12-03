@@ -1,9 +1,9 @@
 [submodule "lib/RmlUi"]
 	path = lib/RmlUi
 	url = https://github.com/mikke89/RmlUi/
-[submodule "thirdparty/RmlUi"]
-	path = thirdparty/RmlUi
-	url = https://github.com/mikke89/RmlUi
-[submodule "thirdparty/nativefiledialog-extended"]
-	path = thirdparty/nativefiledialog-extended
+[submodule "lib/nativefiledialog-extended"]
+	path = lib/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended
+[submodule "lib/RT64-HLE"]
+	path = lib/RT64-HLE
+	url = https://github.com/DarioSamo/RT64-HLE/

@@ -15,9 +15,9 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 find_package(Freetype REQUIRED)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64 ${CMAKE_BINARY_DIR}/rt64)
-add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/RmlUi)
-add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/nativefiledialog-extended)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RT64-HLE ${CMAKE_BINARY_DIR}/rt64)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/nativefiledialog-extended)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
 get_target_property(RT64_BASENAME rt64 OUTPUT_NAME)
@@ -119,18 +119,18 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 
-    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Backends/RmlUi_Platform_SDL.cpp
+    ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
 
 target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/thirdparty
-    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Include
-    ${CMAKE_SOURCE_DIR}/thirdparty/RmlUi/Backends
-    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-win32-deps/SDL2-2.26.3/include
-    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src
-    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/rhi
-    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/render
+    ${CMAKE_SOURCE_DIR}/lib/concurrentqueue
+    ${CMAKE_SOURCE_DIR}/lib/RmlUi/Include
+    ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/mupen64plus-win32-deps/SDL2-2.26.3/include
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/rhi
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/render
     ${CMAKE_BINARY_DIR}/shaders
 )
 
@@ -141,7 +141,7 @@ target_compile_options(MMRecomp PRIVATE
 )
 
 target_link_directories(MMRecomp PRIVATE
-    ${CMAKE_SOURCE_DIR}/../mupen_rt64/mupen64plus-win32-deps/SDL2-2.26.3/lib/x64
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/mupen64plus-win32-deps/SDL2-2.26.3/lib/x64
 )
 
 target_link_libraries(MMRecomp PRIVATE
@@ -167,10 +167,10 @@ set (DXC_GS_OPTS "${DXC_COMMON_OPTS}" "-E" "GSMain" "-T gs_6_0")
 set (DXC_RT_OPTS "${DXC_COMMON_OPTS}" "-D" "RT_SHADER" "-T" "lib_6_3" "-fspv-target-env=vulkan1.1spirv1.4" "-fspv-extension=SPV_KHR_ray_tracing" "-fspv-extension=SPV_EXT_descriptor_indexing")
 
 if (${WIN32})
-    set (DXC "${PROJECT_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/contrib/dxc/bin/x64/dxc.exe")
+    set (DXC "${PROJECT_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/../mupen_rt64/mupen64plus-video-rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
+    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/RT64-HLE/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
 endif()
 
 build_vertex_shader(MMRecomp "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
