@@ -12,7 +12,7 @@ float recomp_camera_pitch_vel = 0.0f;
 
 float recomp_deadzone = 0.2f;
 float recomp_camera_x_sensitivity = 1500.0f;
-float recomp_camera_y_sensitivity = -500.0f;
+float recomp_camera_y_sensitivity = 500.0f;
 // float recomp_camera_acceleration = 500.0f;
 
 void update_recomp_camera_params(Camera* camera) {

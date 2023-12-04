@@ -6,6 +6,8 @@
 // This moves elements towards the screen edges when increased
 s32 margin_reduction = 8;
 
+extern s32 gFramerateDivisor;
+
 // Modified to enable RT64 extended GBI mode
 void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     GfxPool* pool = &gGfxPools[gfxCtx->gfxPoolIdx % 2];
@@ -40,9 +42,10 @@ void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     gSPEndDisplayList(&gGfxMasterDL->disps[4]);
     gSPBranchList(&gGfxMasterDL->debugDisp[0], pool->debugBuffer);
 
-    // @recomp Enable RT64 extended GBI mode
+    // @recomp Enable RT64 extended GBI mode and set the current framerate
     OPEN_DISPS(gfxCtx);
     gEXEnable(POLY_OPA_DISP++);
+    gEXSetRefreshRate(POLY_OPA_DISP++, 60 / gFramerateDivisor);
     // gEXPrint(POLY_OPA_DISP++);
     CLOSE_DISPS(gfxCtx);
 }
