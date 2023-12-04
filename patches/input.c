@@ -27,6 +27,12 @@ typedef enum {
     EQUIP_SLOT_EX_OCARINA = -5
 } EquipSlotEx;
 
+static inline void dup_to_cup(u16* button) {
+    if (*button & BTN_DUP) {
+        *button |= BTN_CUP; 
+    }
+}
+
 void GameState_GetInput(GameState* gameState) {
     PadMgr_GetInput(gameState->input, true);
 
@@ -34,6 +40,9 @@ void GameState_GetInput(GameState* gameState) {
         gameState->input[0].cur.button &= ~BTN_CUP;
         gameState->input[0].press.button &= ~BTN_CUP;
         gameState->input[0].rel.button &= ~BTN_CUP;
+        dup_to_cup(&gameState->input[0].cur.button);
+        dup_to_cup(&gameState->input[0].press.button);
+        dup_to_cup(&gameState->input[0].rel.button);
     }
 
     prev_item_buttons = cur_item_buttons;
