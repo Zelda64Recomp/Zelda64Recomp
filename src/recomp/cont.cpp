@@ -33,6 +33,10 @@ extern "C" void osContInit_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osContStartReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
+    if (input_callbacks.poll_input) {
+        input_callbacks.poll_input();
+    }
+
     ultramodern::send_si_message();
 }
 

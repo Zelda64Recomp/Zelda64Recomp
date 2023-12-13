@@ -109,7 +109,9 @@ struct audio_callbacks_t {
 
 // Input
 struct input_callbacks_t {
+    using poll_input_t = void(void);
     using get_input_t = void(uint16_t*, float*, float*);
+    poll_input_t* poll_input;
     get_input_t* get_input;
 };
 

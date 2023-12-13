@@ -36,141 +36,80 @@ struct GameControllerButtonMapping {
 };
 using button_map_t = std::vector<GameControllerButtonMapping>;
 
-uint32_t process_controller_mappings(const recomp::ControllerState& controller_state, const axis_map_t& axis_map, const button_map_t& button_map) {
-    uint32_t cur_buttons = 0;
-
-    for (const auto& mapping : axis_map) {
-        float input_value = controller_state.axes[mapping.axis];
-        if (mapping.threshold > 0) {
-            if (input_value > mapping.threshold) {
-                cur_buttons |= mapping.output_mask;
-            }
-        }
-        else {
-            if (input_value < mapping.threshold) {
-                cur_buttons |= mapping.output_mask;
-            }
-        }
-    }
-
-    for (const auto& mapping : button_map) {
-        int input_value = controller_state.buttons & mapping.button;
-        if (input_value) {
-            cur_buttons |= mapping.output_mask;
-        }
-    }
-
-    return cur_buttons;
-}
-
 void recomp::get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out) {
-    static const axis_map_t general_axis_map{
-        { recomp::ControllerState::AXIS_RIGHT_X,      -controller_default_threshold, N64Inputs::C_LEFT },
-        { recomp::ControllerState::AXIS_RIGHT_X,       controller_default_threshold, N64Inputs::C_RIGHT },
-        { recomp::ControllerState::AXIS_RIGHT_Y,      -controller_default_threshold, N64Inputs::C_UP },
-        { recomp::ControllerState::AXIS_RIGHT_Y,       controller_default_threshold, N64Inputs::C_DOWN },
-        { recomp::ControllerState::AXIS_LEFT_TRIGGER, 0.30f,                         N64Inputs::Z },
-    };
-    static const button_map_t general_button_map{
-        { recomp::ControllerState::BUTTON_START,      N64Inputs::START },
-        { recomp::ControllerState::BUTTON_SOUTH,      N64Inputs::A },
-        { recomp::ControllerState::BUTTON_EAST,       N64Inputs::B },
-        { recomp::ControllerState::BUTTON_WEST,       N64Inputs::B },
-        { recomp::ControllerState::BUTTON_L1,         N64Inputs::L },
-        { recomp::ControllerState::BUTTON_R1,         N64Inputs::R },
-        { recomp::ControllerState::BUTTON_DPAD_LEFT,  N64Inputs::DPAD_LEFT },
-        { recomp::ControllerState::BUTTON_DPAD_RIGHT, N64Inputs::DPAD_RIGHT },
-        { recomp::ControllerState::BUTTON_DPAD_UP,    N64Inputs::DPAD_UP },
-        { recomp::ControllerState::BUTTON_DPAD_DOWN,  N64Inputs::DPAD_DOWN },
-    };
 
     uint16_t cur_buttons = 0;
     float cur_x = 0.0f;
     float cur_y = 0.0f;
 
-    recomp::get_keyboard_input(&cur_buttons, &cur_x, &cur_y);
-
-    std::vector<InputState> input_states = recomp::get_input_states();
-
-    for (const InputState& state : input_states) {
-        if (const auto* controller_state = std::get_if<ControllerState>(&state)) {
-            cur_x += controller_state->axes[ControllerState::AXIS_LEFT_X];
-            cur_y -= controller_state->axes[ControllerState::AXIS_LEFT_Y];
-
-            cur_buttons |= (uint16_t)process_controller_mappings(*controller_state, general_axis_map, general_button_map);
-        }
-        else if (const auto* mouse_state = std::get_if<MouseState>(&state)) {
-            // Mouse currently unused
-        }
-    }
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.a) ? N64Inputs::A : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.b) ? N64Inputs::B : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.l) ? N64Inputs::L : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.r) ? N64Inputs::R : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.z) ? N64Inputs::Z : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.start) ? N64Inputs::START : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_left)  ? N64Inputs::C_LEFT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_up)    ? N64Inputs::C_UP : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_down)  ? N64Inputs::C_DOWN : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_left)  ? N64Inputs::DPAD_LEFT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_up)    ? N64Inputs::DPAD_UP : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_down)  ? N64Inputs::DPAD_DOWN : 0;
 
     *buttons_out = cur_buttons;
-    cur_x = std::clamp(cur_x, -1.0f, 1.0f);
-    cur_y = std::clamp(cur_y, -1.0f, 1.0f);
+    cur_x = recomp::get_input_analog(recomp::default_n64_mappings.analog_right) - recomp::get_input_analog(recomp::default_n64_mappings.analog_left);
+    cur_y = recomp::get_input_analog(recomp::default_n64_mappings.analog_up) - recomp::get_input_analog(recomp::default_n64_mappings.analog_down);
     *x_out = cur_x;
     *y_out = cur_y;
 }
 
 extern "C" void recomp_get_item_inputs(uint8_t* rdram, recomp_context* ctx) {
-    static const axis_map_t item_axis_map{
-        { recomp::ControllerState::AXIS_RIGHT_X, -controller_default_threshold, N64Inputs::C_LEFT },
-        { recomp::ControllerState::AXIS_RIGHT_X,  controller_default_threshold, N64Inputs::C_RIGHT },
-        { recomp::ControllerState::AXIS_RIGHT_Y,  controller_default_threshold, N64Inputs::C_DOWN },
-    };
-
-    static const button_map_t item_button_map {
-        { recomp::ControllerState::BUTTON_EAST, N64Inputs::B },
-        { recomp::ControllerState::BUTTON_WEST, N64Inputs::B },
-        { recomp::ControllerState::BUTTON_DPAD_LEFT,  N64Inputs::DPAD_LEFT },
-        { recomp::ControllerState::BUTTON_DPAD_RIGHT, N64Inputs::DPAD_RIGHT },
-        { recomp::ControllerState::BUTTON_DPAD_UP,    N64Inputs::DPAD_UP },
-        { recomp::ControllerState::BUTTON_DPAD_DOWN,  N64Inputs::DPAD_DOWN },
-    };
-
     u32* buttons_out = _arg<0, u32*>(rdram, ctx);
 
     uint32_t cur_buttons = 0;
 
-    // TODO do this in a way that will allow for remapping keyboard inputs
-    uint16_t keyboard_buttons;
-    float dummy_x, dummy_y;
-    recomp::get_keyboard_input(&keyboard_buttons, &dummy_x, &dummy_y);
-    cur_buttons |= keyboard_buttons;
-
-    // Process controller inputs
-    std::vector<recomp::InputState> input_states = recomp::get_input_states();
-
-    for (const recomp::InputState& state : input_states) {
-        if (const auto* controller_state = std::get_if<recomp::ControllerState>(&state)) {
-            cur_buttons |= process_controller_mappings(*controller_state, item_axis_map, item_button_map);
-        }
-        else if (const auto* mouse_state = std::get_if<recomp::MouseState>(&state)) {
-            // Mouse currently unused
-        }
-    }
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.b) ? N64Inputs::B : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_left) ? N64Inputs::C_LEFT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_down) ? N64Inputs::C_DOWN : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
+    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
 
     *buttons_out = cur_buttons;
+}
+
+bool recomp_digital_input_state[RECOMP_DIGITAL_INPUT_MAX];
+float recomp_analog_input_state[RECOMP_ANALOG_INPUT_MAX];
+
+extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
+    recomp::poll_inputs();
+}
+
+extern "C" void recomp_get_digital_input(uint8_t* rdram, recomp_context* ctx) {
+    u32 input_slot = _arg<0, u32>(rdram, ctx);
+
+    // TODO implement this
+
+    _return<u32>(ctx, 0);
+}
+
+extern "C" void recomp_get_analog_input(uint8_t* rdram, recomp_context* ctx) {
+    u32 input_slot = _arg<0, u32>(rdram, ctx);
+
+    // TODO implement this
+
+    _return<float>(ctx, 0);
 }
 
 extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
 
-    float x_val = 0.0f;
-    float y_val = 0.0f;
-
-    // Process controller inputs
-    std::vector<recomp::InputState> input_states = recomp::get_input_states();
-
-    for (const recomp::InputState& state : input_states) {
-        if (const auto* controller_state = std::get_if<recomp::ControllerState>(&state)) {
-            x_val += controller_state->axes[recomp::ControllerState::AXIS_RIGHT_X];
-            y_val += controller_state->axes[recomp::ControllerState::AXIS_RIGHT_Y];
-        }
-        else if (const auto* mouse_state = std::get_if<recomp::MouseState>(&state)) {
-            // Mouse currently unused
-        }
-    }
+    float x_val = recomp::get_input_analog(recomp::default_n64_mappings.c_right) - recomp::get_input_analog(recomp::default_n64_mappings.c_left);
+    float y_val = recomp::get_input_analog(recomp::default_n64_mappings.c_up) - recomp::get_input_analog(recomp::default_n64_mappings.c_down);
 
     *x_out = x_val;
     *y_out = y_val;
