@@ -106,9 +106,7 @@ typedef struct OSMesgQueue {
     PTR(OSThread) blocked_on_send; /* Linked list of threads blocked on sending to this queue */ 
     s32 validCount;                /* Number of messages in the queue */
     s32 first;                     /* Index of the first message in the ring buffer */
-    uint8_t lock;                  /* Lock flag used to implement a spinlock */
-    uint8_t pad;                   /* Explicit padding (would be compiler-inserted otherwise) */
-    s16 msgCount;                  /* Size of message buffer (s32 in the original libultra, but s16 here to make room for the lock flag) */
+    s32 msgCount;                  /* Size of message buffer */
     PTR(OSMesg) msg;               /* Pointer to circular buffer to store messages */
 } OSMesgQueue;
 
