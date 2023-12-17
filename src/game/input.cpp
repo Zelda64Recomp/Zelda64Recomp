@@ -5,6 +5,7 @@
 #include "recomp_input.h"
 #include "recomp_ui.h"
 #include "SDL.h"
+#include "rt64_layer.h"
 
 
 static struct {
@@ -17,24 +18,15 @@ static struct {
 
 bool sdl_event_filter(void* userdata, SDL_Event* event) {
     switch (event->type) {
-    //case SDL_EventType::SDL_KEYUP:
-    //case SDL_EventType::SDL_KEYDOWN:
-    //    {
-    //        const Uint8* key_states = SDL_GetKeyboardState(nullptr);
-    //        int new_button = 0;
+    case SDL_EventType::SDL_KEYDOWN:
+        {
+            SDL_KeyboardEvent* keyevent = (SDL_KeyboardEvent*)event;
 
-    //        for (const auto& mapping : keyboard_button_map) {
-    //            if (key_states[mapping.first]) {
-    //                new_button |= mapping.second;
-    //            }
-    //        }
-
-    //        button = new_button;
-
-    //        stick_x = (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_D] - key_states[SDL_Scancode::SDL_SCANCODE_A]);
-    //        stick_y = (100.0f / 100.0f) * (key_states[SDL_Scancode::SDL_SCANCODE_W] - key_states[SDL_Scancode::SDL_SCANCODE_S]);
-    //    }
-    //    break;
+            if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) {
+                ChangeWindow();
+            }
+        }
+        break;
     case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
         {
             SDL_ControllerDeviceEvent* controller_event = (SDL_ControllerDeviceEvent*)event;
