@@ -129,7 +129,7 @@ void Interface_Draw(PlayState* play) {
     if (pauseCtx->debugEditor == DEBUG_EDITOR_NONE) {
         Interface_SetVertices(play);
         // @recomp Adjust any scissors to cover the whole screen
-        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, -margin_reduction, -SCREEN_WIDTH, margin_reduction);
+        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, -margin_reduction, -SCREEN_WIDTH, margin_reduction, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         Interface_SetOrthoView(interfaceCtx);
 
         // Draw Grandma's Story
@@ -470,7 +470,7 @@ void Interface_Draw(PlayState* play) {
         // @recomp Restore normal alignment and shift down for minigame countdown or clock
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
         gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, 0, 0);
-        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
+        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         Interface_SetOrthoView(interfaceCtx);
     }
 
