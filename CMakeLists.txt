@@ -13,7 +13,7 @@ endif()
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-find_package(Freetype REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RT64-HLE ${CMAKE_BINARY_DIR}/rt64)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
@@ -149,7 +149,6 @@ target_link_libraries(MMRecomp PRIVATE
     RecompiledFuncs
     SDL2
     rt64
-    Freetype::Freetype
     RmlCore
     RmlDebugger
     nfd
