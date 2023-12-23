@@ -306,8 +306,6 @@ public:
         }
 
         uint32_t upload_buffer_offset = allocate_upload_data(total_bytes);
-        //uint32_t upload_buffer_offset = 0;
-        //std::unique_ptr<RT64::RenderBuffer> cur_upload_buffer = render_context_->device->createBuffer(RT64::RenderBufferDesc::UploadBuffer(total_bytes));
 
         if (vert_size_bytes > vertex_buffer_size_) {
             resize_vertex_buffer(vert_size_bytes + vert_size_bytes / 2);
@@ -321,33 +319,23 @@ public:
         memcpy(upload_buffer_mapped_data_ + upload_buffer_offset, vertices, vert_size_bytes);
         memcpy(upload_buffer_mapped_data_ + upload_buffer_offset + vert_size_bytes, indices, index_size_bytes);
 
-        //uint8_t* buffer_data = reinterpret_cast<uint8_t*>(cur_upload_buffer->map());
-        //memcpy(buffer_data, vertices, vert_size_bytes);
-        //memcpy(buffer_data + vert_size_bytes, indices, index_size_bytes);
-        //cur_upload_buffer->unmap();
-
         // Prepare the vertex and index buffers for being copied to.
         RT64::RenderBufferBarrier copy_barriers[] = {
-			RT64::RenderBufferBarrier::Transition(vertex_buffer_.get(), RT64::RenderBufferState::COPY_DEST),
-			RT64::RenderBufferBarrier::Transition(index_buffer_.get(), RT64::RenderBufferState::COPY_DEST)
+			RT64::RenderBufferBarrier(vertex_buffer_.get(), RT64::RenderBufferAccess::WRITE),
+			RT64::RenderBufferBarrier(index_buffer_.get(), RT64::RenderBufferAccess::WRITE)
 		};
-        list_->barriers(copy_barriers, uint32_t(std::size(copy_barriers)));
+        list_->barriers(RT64::RenderBarrierStage::COPY, copy_barriers, uint32_t(std::size(copy_barriers)));
 
         // Copy from the upload buffer to the vertex and index buffers.
         list_->copyBufferRegion(vertex_buffer_->at(0), upload_buffer_->at(upload_buffer_offset), vert_size_bytes);
         list_->copyBufferRegion(index_buffer_->at(0), upload_buffer_->at(upload_buffer_offset + index_bytes_start), index_size_bytes);
-         
-        //list_->copyBufferRegion(vertex_buffer_->at(0), cur_upload_buffer->at(0), vert_size_bytes);
-        //list_->copyBufferRegion(index_buffer_->at(0), cur_upload_buffer->at(0 + index_bytes_start), index_size_bytes);
-
-        //stale_buffers_.emplace_back(std::move(cur_upload_buffer));
 
         // Prepare the vertex and index buffers for being used for rendering.
         RT64::RenderBufferBarrier usage_barriers[] = {
-			RT64::RenderBufferBarrier::Transition(vertex_buffer_.get(), RT64::RenderBufferState::VERTEX_AND_CONSTANT_BUFFER),
-			RT64::RenderBufferBarrier::Transition(index_buffer_.get(), RT64::RenderBufferState::INDEX_BUFFER)
+			RT64::RenderBufferBarrier(vertex_buffer_.get(), RT64::RenderBufferAccess::READ),
+			RT64::RenderBufferBarrier(index_buffer_.get(), RT64::RenderBufferAccess::READ)
 		};
-        list_->barriers(usage_barriers, uint32_t(std::size(usage_barriers)));
+        list_->barriers(RT64::RenderBarrierStage::GRAPHICS, usage_barriers, uint32_t(std::size(usage_barriers)));
 
         list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
@@ -507,8 +495,7 @@ public:
             }
 
             // Prepare the texture to be a destination for copying.
-            list_->barriers(
-                RT64::RenderTextureBarrier::Transition(texture.get(), RT64::RenderTextureState::COPY_DEST));
+            list_->barriers(RT64::RenderBarrierStage::COPY, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::COPY_DEST));
             
             // Copy the upload buffer into the texture.
             list_->copyTextureRegion(
@@ -516,12 +503,12 @@ public:
                 RT64::RenderTextureCopyLocation::PlacedFootprint(upload_buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width, upload_buffer_offset));
             
             // Prepare the texture for being read from a pixel shader.
-            list_->barriers(RT64::RenderTextureBarrier::Transition(texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS));
+            list_->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::SHADER_READ));
 
             // Create a descriptor set with this texture in it.
             std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(render_context_->device);
 
-            set->setTexture(gTexture_descriptor_index, texture.get(), RT64::RenderTextureState::PIXEL_SHADER_ACCESS);
+            set->setTexture(gTexture_descriptor_index, texture.get(), RT64::RenderTextureLayout::SHADER_READ);
 
             textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(set) });
 
