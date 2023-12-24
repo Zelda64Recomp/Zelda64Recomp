@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <filesystem>
+#include <numeric>
 
 #include "../../ultramodern/ultra64.h"
 #include "../../ultramodern/ultramodern.hpp"
@@ -71,37 +72,83 @@ void update_gfx(void*) {
     recomp::handle_events();
 }
 
+static SDL_AudioCVT audio_convert;
 static SDL_AudioDeviceID audio_device = 0;
+
+// Samples per channel per second.
 static uint32_t sample_rate = 48000;
+static uint32_t output_sample_rate = 48000;
+// Channel count.
+constexpr uint32_t input_channels = 2;
+static uint32_t output_channels = 2;
+
+// Terminology: a frame is a collection of samples for each channel. e.g. 2 input samples is one input frame. This is unrelated to graphical frames.
+
+// In order to prevent resampling discontinuities, the last few frames of the previous audio chunk are prepended to the current chunk before
+// resampling it so there's enough information for interpolation.
+constexpr uint32_t min_duplicated_frames = 32;
+// The number of input frames to duplicate for interpolation to prevent discontinuities.
+static uint32_t duplicated_input_frames;
+// The number of output frames to skip for playback (to avoid playing duplicate inputs twice).
+static uint32_t discarded_output_frames;
 
 void queue_samples(int16_t* audio_data, size_t sample_count) {
     // Buffer for holding the output of swapping the audio channels. This is reused across
     // calls to reduce runtime allocations.
     static std::vector<float> swap_buffer;
+    static std::vector<float> duplicated_sample_buffer;
+    
+    assert((sample_count / input_channels) / duplicated_input_frames * duplicated_input_frames == (sample_count / input_channels));
 
-    // Make sure the swap buffer is large enough to hold all the incoming audio data.
-    if (sample_count > swap_buffer.size()) {
-        swap_buffer.resize(sample_count);
+    if (duplicated_input_frames * input_channels > duplicated_sample_buffer.size()) {
+        duplicated_sample_buffer.resize(duplicated_input_frames * input_channels);
+    }
+
+    size_t max_sample_count = std::max(sample_count, sample_count * audio_convert.len_mult);
+
+    // Make sure the swap buffer is large enough to hold the audio data.
+    if (max_sample_count > swap_buffer.size()) {
+        swap_buffer.resize(max_sample_count);
+    }
+    
+    // Copy the duplicated frames from last chunk into this chunk
+    for (size_t i = 0; i < duplicated_input_frames * input_channels; i++) {
+        swap_buffer[i] = duplicated_sample_buffer[i];
     }
 
     // Convert the audio from 16-bit values to floats and swap the audio channels into the
     // swap buffer to correct for the address xor caused by endianness handling.
-    for (size_t i = 0; i < sample_count; i += 2) {
-        swap_buffer[i + 0] = audio_data[i + 1] * (0.5f / 32768.0f);
-        swap_buffer[i + 1] = audio_data[i + 0] * (0.5f / 32768.0f);
+    for (size_t i = 0; i < sample_count; i += input_channels) {
+        swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f);
+        swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f);
     }
+    
+    assert(sample_count > duplicated_input_frames * input_channels);
+
+    // Copy the last converted samples into the duplicated sample buffer to reuse in resampling the next queued chunk.
+    for (size_t i = 0; i < duplicated_input_frames * 2; i++) {
+        duplicated_sample_buffer[i] = swap_buffer[i + sample_count];
+    }
+    
+    audio_convert.buf = reinterpret_cast<Uint8*>(swap_buffer.data());
+    audio_convert.len = (sample_count + duplicated_input_frames * input_channels) * sizeof(swap_buffer[0]);
+
+    SDL_ConvertAudio(&audio_convert);
 
     // Queue the swapped audio data.
-    SDL_QueueAudio(audio_device, swap_buffer.data(), sample_count * sizeof(swap_buffer[0]));
+    SDL_QueueAudio(audio_device, swap_buffer.data() + output_channels * discarded_output_frames,
+        sample_count * sizeof(swap_buffer[0]) * output_sample_rate * output_channels / (sample_rate * input_channels));
 }
 
-constexpr int channel_count = 2;
-constexpr int bytes_per_frame = channel_count * sizeof(float);
+constexpr uint32_t bytes_per_frame = input_channels * sizeof(float);
 
 size_t get_frames_remaining() {
     constexpr float buffer_offset_frames = 1.0f;
     // Get the number of remaining buffered audio bytes.
     uint32_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
+
+    // Scale the byte count based on the ratio of sample rates and channel counts.
+    buffered_byte_count = buffered_byte_count * 2 * sample_rate / output_sample_rate / output_channels;
 
     // Adjust the reported count to be some number of refreshes in the future, which helps ensure that
     // there are enough samples even if the audio thread experiences a small amount of lag. This prevents
@@ -118,14 +165,34 @@ size_t get_frames_remaining() {
     return buffered_byte_count / bytes_per_frame;
 }
 
+void update_audio_converter() {
+    SDL_BuildAudioCVT(&audio_convert, AUDIO_F32, 2, sample_rate, AUDIO_F32, output_channels, output_sample_rate);
+
+    // Calculate the number of samples to duplicate and discard based on the greatest common denominator fo the input and output sample rates.
+    // Keeping them at the same ratio as the sample rates themselves ensures an integer number of output samples are produced from an
+    // integer number of input samples. 
+    size_t rate_gcd = std::gcd(sample_rate, output_sample_rate);
+    size_t gcd_input_samples = sample_rate / rate_gcd;
+    size_t gcd_output_samples = output_sample_rate / rate_gcd;
+    size_t num_duplicated_chunks = (gcd_input_samples + min_duplicated_frames - 1) / min_duplicated_frames;
+    // Duplicate twice as many input frames as the corresponding skipped input frames as we need to prevent discontinuities at
+    // both the start and end of a given chunk.
+    duplicated_input_frames = num_duplicated_chunks * gcd_input_samples * 2;
+    discarded_output_frames = num_duplicated_chunks * gcd_output_samples;
+}
+
 void set_frequency(uint32_t freq) {
-    if (audio_device != 0) {
-        SDL_CloseAudioDevice(audio_device);
-    }
+    assert(freq == 32000 || freq == 48000);
+    sample_rate = freq;
+    
+    update_audio_converter();
+}
+
+void reset_audio(uint32_t output_freq) {
     SDL_AudioSpec spec_desired{
-        .freq = (int)freq,
+        .freq = (int)output_freq,
         .format = AUDIO_F32,
-        .channels = channel_count,
+        .channels = (Uint8)output_channels,
         .silence = 0, // calculated
         .samples = 0x100, // Fairly small sample count to reduce the latency of internal buffering
         .padding = 0, // unused
@@ -134,12 +201,15 @@ void set_frequency(uint32_t freq) {
         .userdata = nullptr
     };
 
+
     audio_device = SDL_OpenAudioDevice(nullptr, false, &spec_desired, nullptr, 0);
     if (audio_device == 0) {
         exit_error("SDL error opening audio device: %s\n", SDL_GetError());
     }
     SDL_PauseAudioDevice(audio_device, 0);
-    sample_rate = freq;
+
+    output_sample_rate = output_freq;
+    update_audio_converter();
 }
 
 int main(int argc, char** argv) {
@@ -167,7 +237,7 @@ int main(int argc, char** argv) {
     // Initialize SDL audio.
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     // Pick an initial dummy sample rate; this will be set by the game later to the true sample rate.
-    set_frequency(sample_rate);
+    reset_audio(48000);
 
     init();
 
