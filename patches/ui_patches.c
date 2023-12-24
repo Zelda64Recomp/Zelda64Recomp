@@ -376,6 +376,7 @@ void Interface_Draw(PlayState* play) {
             -(SCREEN_WIDTH - margin_reduction) * 4, -margin_reduction * 4,
             -(SCREEN_WIDTH - margin_reduction) * 4, -margin_reduction * 4);
         gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_RIGHT, -(SCREEN_WIDTH - margin_reduction) * 4, -margin_reduction * 4);
+        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_RIGHT, G_EX_ORIGIN_RIGHT, -(SCREEN_WIDTH - margin_reduction), -margin_reduction, -(SCREEN_WIDTH - margin_reduction), -margin_reduction, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         Interface_SetOrthoView(interfaceCtx);
 
         Gfx_SetupDL39_Overlay(play->state.gfxCtx);
@@ -388,6 +389,9 @@ void Interface_Draw(PlayState* play) {
         Interface_DrawCButtonIcons(play);
 
         Interface_DrawAButton(play);
+
+        // @recomp Adjust any scissors to cover the whole screen
+        gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, -margin_reduction, -SCREEN_WIDTH, margin_reduction, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // @recomp Move the item being equipped from the center of the screen to the right edge as the timer counts down
         if (gKaleidoMgrOverlayTable[0].loadedRamAddr != NULL) {
