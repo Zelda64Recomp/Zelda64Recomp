@@ -192,7 +192,7 @@ void reset_audio(uint32_t output_freq) {
         .samples = 0x100, // Fairly small sample count to reduce the latency of internal buffering
         .padding = 0, // unused
         .size = 0, // calculated
-        .callback = nullptr,//feed_audio, // Use a callback as QueueAudio causes popping
+        .callback = nullptr,
         .userdata = nullptr
     };
 
@@ -229,9 +229,8 @@ int main(int argc, char** argv) {
 
     printf("Current dir: %ls\n", std::filesystem::current_path().c_str());
 
-    // Initialize SDL audio.
+    // Initialize SDL audio and set the output frequency.
     SDL_InitSubSystem(SDL_INIT_AUDIO);
-    // Pick an initial dummy sample rate; this will be set by the game later to the true sample rate.
     reset_audio(48000);
 
     init();
