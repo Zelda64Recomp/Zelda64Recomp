@@ -1,8 +1,8 @@
 #include "patches.h"
 #include "input.h"
 #include "z64quake.h"
-
-RecompCameraMode recomp_camera_mode = RECOMP_CAMERA_DUALANALOG;
+#if 0
+RecompCameraMode recomp_camera_mode = RECOMP_CAMERA_NORMAL;
 
 VecGeo recomp_camera_pos = { .r = 66.0f, .pitch = 0, .yaw = 0 };
 
@@ -272,11 +272,6 @@ Vec3s Camera_Update(Camera* camera) {
     }
 
     // Call the camera update function
-    recomp_printf(
-        "Camera:\n"
-        "  setting: %d\n"
-        "  mode: %d\n"
-        "  funcId: %d\n", camera->setting, camera->mode, sCameraSettings[camera->setting].cameraModes[camera->mode].funcId);
     sCameraUpdateHandlers[sCameraSettings[camera->setting].cameraModes[camera->mode].funcId](camera);
 
     // @recomp
@@ -410,8 +405,6 @@ s32 Camera_Normal1(Camera* camera) {
     CameraModeValue* values = sCameraSettings[camera->setting].cameraModes[camera->mode].values;
     f32 phi_f2;
     f32 rand;
-
-    recomp_printf("Camera_Normal1\n");
 
     roData->unk_00 = GET_NEXT_RO_DATA(values) * (sp88 * 0.01f * (0.8f - ((68.0f / sp88) * -0.2f)));
     roData->unk_04 = GET_NEXT_RO_DATA(values) * (sp88 * 0.01f * (0.8f - ((68.0f / sp88) * -0.2f)));
@@ -790,3 +783,4 @@ s32 Camera_Normal1(Camera* camera) {
 
     return true;
 }
+#endif // #if 0

@@ -1,6 +1,6 @@
 #include "patches.h"
 #include "input.h"
-
+#if 0
 u32 sPlayerItemButtons[] = {
     BTN_B,
     BTN_CLEFT,
@@ -154,3 +154,4 @@ ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
     return C_BTN_ITEM(EQUIP_SLOT_C_RIGHT);
 }
 */
+#endif // #if 0

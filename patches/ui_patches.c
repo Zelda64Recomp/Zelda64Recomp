@@ -389,6 +389,39 @@ void Interface_Draw(PlayState* play) {
 
         Interface_DrawAButton(play);
 
+        // @recomp Move the item being equipped from the center of the screen to the right edge as the timer counts down
+        if (gKaleidoMgrOverlayTable[0].loadedRamAddr != NULL) {
+            // These are overlay symbols, so their addresses need to be offset to get their actual loaded vram address.
+            // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
+            extern s16 sEquipAnimTimer;
+            extern s16 sMaskEquipAnimTimer;
+            extern s16 sEquipState;
+            extern s16 sMaskEquipState;
+            s16 equip_timer =      *(s16*)((u8*)&sEquipAnimTimer     + gKaleidoMgrOverlayTable[0].offset);
+            s16 mask_equip_timer = *(s16*)((u8*)&sMaskEquipAnimTimer + gKaleidoMgrOverlayTable[0].offset);
+            s16 equip_state =      *(s16*)((u8*)&sEquipState         + gKaleidoMgrOverlayTable[0].offset);
+            s16 mask_equip_state = *(s16*)((u8*)&sMaskEquipState     + gKaleidoMgrOverlayTable[0].offset);
+
+            s16 timer = MIN(equip_timer, mask_equip_timer);
+            s32 max_timer = 10;
+
+            // Prevent the timer from being used to calculate the origin when an arrow effect is taking place.
+            if (equip_timer < 10 && equip_state != EQUIP_STATE_MOVE_TO_C_BTN) {
+                timer = 10;
+            }
+
+            // Adjust the max timer value if a magic arrow is being equipped.
+            if ((pauseCtx->equipTargetItem == ITEM_BOW_FIRE) ||
+                (pauseCtx->equipTargetItem == ITEM_BOW_ICE) ||
+                (pauseCtx->equipTargetItem == ITEM_BOW_LIGHT)) {
+                max_timer = 6;
+            }
+
+            s32 origin = (G_EX_ORIGIN_CENTER - G_EX_ORIGIN_RIGHT) * (timer - 1) / (max_timer - 1) + G_EX_ORIGIN_RIGHT;
+            s32 offset = (SCREEN_WIDTH / 2) * (timer - 1) / (max_timer - 1) - SCREEN_WIDTH;
+            gEXSetRectAlign(OVERLAY_DISP++, origin, origin, offset * 4, 0, offset * 4, 0);
+            gEXSetViewportAlign(OVERLAY_DISP++, origin, offset * 4, 0);
+        }
         Interface_DrawPauseMenuEquippingIcons(play);
 
         // Draw either the minigame countdown or the three-day clock

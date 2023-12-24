@@ -29,6 +29,49 @@ s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projec
     return false;
 }
 
+// Disable frustum culling for bush spawning
+// s32 EnWood02_SpawnZoneCheck(EnWood02* this, PlayState* play, Vec3f* arg2) {
+//     f32 phi_f12;
+
+//     SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, arg2, &this->actor.projectedPos, &this->actor.projectedW);
+
+//     if (this->actor.projectedW == 0.0f) {
+//         phi_f12 = 1000.0f;
+//     } else {
+//         phi_f12 = fabsf(1.0f / this->actor.projectedW);
+//     }
+
+//     if (((-this->actor.uncullZoneScale < this->actor.projectedPos.z) &&
+//          (this->actor.projectedPos.z < (this->actor.uncullZoneForward + this->actor.uncullZoneScale)) /* &&
+//          (((fabsf(this->actor.projectedPos.x) - this->actor.uncullZoneScale) * phi_f12) < 1.0f)) &&
+//         (((this->actor.projectedPos.y + this->actor.uncullZoneDownward) * phi_f12) > -1.0f) &&
+//         (((this->actor.projectedPos.y - this->actor.uncullZoneScale) * phi_f12) < 1.0f */)) {
+//         return true;
+//     }
+//     return false;
+// }
+
+// Disable frustum culling for grass
+s32 func_809A9110(PlayState* play, Vec3f* pos) {
+    f32 w;
+    Vec3f projectedPos;
+
+    SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, pos, &projectedPos, &w);
+
+    if ((play->projectionMtxFDiagonal.z * -130.13191f) < projectedPos.z) {
+        if (w < 1.0f) {
+            w = 1.0f;
+        }
+
+        // if (((fabsf(projectedPos.x) - (130.13191f * play->projectionMtxFDiagonal.x)) < w) &&
+        //     ((fabsf(projectedPos.y) - (130.13191f * play->projectionMtxFDiagonal.y)) < w)) {
+            return true;
+        // }
+    }
+    return false;
+}
+
+
 // Override LOD to 0
 void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
                          OverrideLimbDrawFlex overrideLimbDraw) {
