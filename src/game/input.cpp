@@ -98,6 +98,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_mappings = {
     },
     .r = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+        {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_TRIGGERRIGHT + 1},
         {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_R}
     },
     .z = {
