@@ -45,8 +45,9 @@ DECLARE_FUNC(u32, recomp_get_digital_input, u32 which);
 DECLARE_FUNC(float, recomp_get_analog_input, u32 which);
 DECLARE_FUNC(void, recomp_get_item_inputs, u32* buttons);
 DECLARE_FUNC(void, recomp_get_camera_inputs, float* x_out, float* y_out);
-// TODO move this
+// TODO move these
 DECLARE_FUNC(void, recomp_puts, const char* data, u32 size);
+DECLARE_FUNC(void, recomp_exit);
 
 #ifdef __cplusplus
 }
