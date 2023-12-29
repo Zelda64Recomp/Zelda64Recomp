@@ -617,6 +617,7 @@ struct {
             }
 
             documents.emplace(recomp::Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
+            documents.emplace(recomp::Menu::Config, context->LoadDocument("assets/config_menu.rml"));
         }
     } rml;
 } UIContext;
@@ -661,6 +662,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
             {"LatoLatin-Bold.ttf", false},
             {"LatoLatin-BoldItalic.ttf", false},
             {"NotoEmoji-Regular.ttf", true},
+            {"promptfont/promptfont.ttf", false},
         };
 
         for (const FontFace& face : font_faces) {
@@ -681,7 +683,7 @@ bool recomp::try_deque_event(SDL_Event& out) {
     return ui_event_queue.try_dequeue(out);
 }
 
-std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
+std::atomic<recomp::Menu> open_menu = recomp::Menu::Config;//Launcher;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
     int num_keys;

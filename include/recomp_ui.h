@@ -19,6 +19,7 @@ namespace recomp {
 
 	enum class Menu {
 		Launcher,
+		Config,
 		None
 	};
 

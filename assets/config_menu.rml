@@ -1,0 +1,83 @@
+<rml>
+<head>
+	<link type="text/rcss" href="rml.rcss"/>
+	<link type="text/rcss" href="recomp.rcss"/>
+	<title>Inventory</title>
+	<style>
+		body
+		{
+			width: 100%;
+			height: 100%;
+		}
+
+		/* Hide the window icon. */
+		div#title_bar div#icon
+		{
+			display: none;
+		}
+		.flex-grid {
+			display: flex;
+		}
+		.col {
+			flex: 1;
+    		text-align: center;
+		}
+		#tab_graphics:selected {
+			nav-down:#ar_original;
+		}
+	</style>
+</head>
+<body class="window">
+	<!-- <handle move_target="#document"> -->
+		<div id="window" style="display:flex; flex-flow: column; text-align:center; background-color:rgba(0,0,0,0)">
+			<div style="flex:1 1 auto">
+				<tabset>
+					<tab id="tab_graphics" autofocus>Graphics</tab>
+					<panel>
+						<form>
+							<div style="width:700dp; border-radius:0dp; height:auto; padding:16dp; text-align:left; margin-left:auto; margin-right:auto; font-effect: outline(2dp black); font-size:24dp; background:rgba(50,50,50,200);">
+								<label style="padding:4dp;">Aspect Ratio</label><br/>
+								<hr/>
+								<div style="padding:2dp;">
+									<input type="radio" name="aspectratio" id="ar_original"/>
+									<label for="ar_original">Original</label>
+									<input type="radio" name="aspectratio" id="ar_expand" checked="checked" style="nav-right:none"/>
+									<label for="ar_expand">Expand</label>
+								</div>
+								<br/>
+
+								<label style="padding:4dp;">Refresh Rate</label><br/>
+								<hr/>
+								<p style="padding:2dp;">
+									<input type="radio" name="refreshrate" id="rr_original"/>
+									<label for="rr_original">Original</label>
+									<input type="radio" name="refreshrate" id="rr_display"/>
+									<label for="rr_display">Display</label>
+									<input type="radio" name="refreshrate" id="rr_manual" checked="checked" style="nav-up:#ar_expand;nav-right:none"/>
+									<label for="rr_manual">Manual</label>
+									<br/>
+									<input id="rr_manual_input" type="range" min="60" max="1000" style="font:normal;flex:1;nav-up:auto;nav-down:auto;" value="60"/>
+								</p>
+							</div>
+						</form>
+					</panel>
+					<tab>Controls</tab>
+					<panel>
+					</panel>
+					<tab>Sound</tab>
+					<panel>
+					</panel>
+				</tabset>
+			</div>
+			<div style="flex:0 1 80dp;display:flex; justify-content: space-between; width:100%; max-width:800dp; align-self:center;">
+				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x2424;&#x242B;</span><span style="font-size:24dp;">Navigate</span></label>
+				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x242E;</span><span style="font-size:24dp;">Accept</span></label>
+				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x242F;</span><span style="font-size:24dp;">Exit</span></label>
+				<!-- <label><span style="font-family:promptfont;">&#x21F3;</span> Navigate</label>
+				<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
+			</div>
+		</div>
+	<!-- </handle> -->
+	<!-- <handle size_target="#document" style="position: absolute; width: 16dp; height: 16dp; bottom: 0px; right: 0px; cursor: resize;"></handle> -->
+</body>
+</rml>

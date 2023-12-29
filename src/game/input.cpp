@@ -26,6 +26,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
                 ChangeWindow();
             }
         }
+        recomp::queue_event(*event);
         break;
     case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
         {

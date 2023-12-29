@@ -2,8 +2,7 @@
 	<head>
 		<title>Launcher</title>
 		<link type="text/rcss" href="rml.rcss"/>
-		<link type="text/rcss" href="invader_spritesheet.rcss"/>
-		<link type="text/rcss" href="invader.rcss"/>
+		<link type="text/rcss" href="recomp.rcss"/>
 		<style>
 			body
 			{
