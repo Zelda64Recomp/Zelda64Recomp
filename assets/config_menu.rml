@@ -23,7 +23,7 @@
     		text-align: center;
 		}
 		#tab_graphics:selected {
-			nav-down:#ar_original;
+			nav-down:#res_auto;
 		}
 	</style>
 </head>
@@ -35,29 +35,74 @@
 					<tab id="tab_graphics" autofocus>Graphics</tab>
 					<panel>
 						<form>
-							<div style="width:700dp; border-radius:0dp; height:auto; padding:16dp; text-align:left; margin-left:auto; margin-right:auto; font-effect: outline(2dp black); font-size:24dp; background:rgba(50,50,50,200);">
-								<label style="padding:4dp;">Aspect Ratio</label><br/>
-								<hr/>
-								<div style="padding:2dp;">
-									<input type="radio" name="aspectratio" id="ar_original"/>
-									<label for="ar_original">Original</label>
-									<input type="radio" name="aspectratio" id="ar_expand" checked="checked" style="nav-right:none"/>
-									<label for="ar_expand">Expand</label>
+							<div class="option_container">
+								<div class="option_row">
+									<div class="option">
+										<label style="padding:4dp;">Resolution</label><br/>
+										<hr/>
+										<div class="option_list">
+											<input type="radio" name="resolution" id="res_original"/>
+											<label for="res_original">Original</label>
+											<input type="radio" name="resolution" id="res_2x" style="nav-down:#ar_expand"/>
+											<label for="res_2x">Original 2x</label>
+											<input type="radio" name="resolution" id="res_auto" style="nav-down:#ar_expand" checked="checked"/>
+											<label for="res_auto">Auto</label>
+										</div>
+									</div>
+									<div class="option">
+										<label style="padding:4dp;">Window Mode</label><br/>
+										<hr/>
+										<div class="option_list">
+											<input type="radio" name="windowmode" id="wm_windowed" style="nav-down:#msaa_none" checked="checked"/>
+											<label for="wm_windowed">Windowed</label>
+											<input type="radio" name="windowmode" id="wm_fullscreen" style="nav-right:none"/>
+											<label for="wm_fullscreen">Fullscreen</label>
+										</div>
+									</div>
 								</div>
-								<br/>
-
-								<label style="padding:4dp;">Refresh Rate</label><br/>
-								<hr/>
-								<p style="padding:2dp;">
-									<input type="radio" name="refreshrate" id="rr_original"/>
-									<label for="rr_original">Original</label>
-									<input type="radio" name="refreshrate" id="rr_display"/>
-									<label for="rr_display">Display</label>
-									<input type="radio" name="refreshrate" id="rr_manual" checked="checked" style="nav-up:#ar_expand;nav-right:none"/>
-									<label for="rr_manual">Manual</label>
-									<br/>
-									<input id="rr_manual_input" type="range" min="60" max="1000" style="font:normal;flex:1;nav-up:auto;nav-down:auto;" value="60"/>
-								</p>
+								<div class="option_row">
+									<div class="option">
+										<label style="padding:4dp;">Aspect Ratio</label><br/>
+										<hr/>
+										<div class="option_list">
+											<input type="radio" name="aspectratio" id="ar_original" style="nav-left:none"/>
+											<label for="ar_original">Original</label>
+											<input type="radio" name="aspectratio" id="ar_expand" style="nav-up:#res_2x" checked="checked"/>
+											<label for="ar_expand">Expand</label>
+										</div>
+									</div>
+									<div class="option">
+										<label style="padding:4dp;">MS Anti-Aliasing</label><br/>
+										<hr/>
+										<div class="option_list">
+											<input type="radio" name="antialiasing" id="msaa_none" checked="checked" style="nav-up:#wm_windowed;nav-left:none"/>
+											<label for="msaa_none">None</label>
+											<input type="radio" name="antialiasing" id="msaa_2x"/>
+											<label for="msaa_2x">2x</label>
+											<input type="radio" name="antialiasing" id="msaa_4x"/>
+											<label for="msaa_4x">4x</label>
+											<input type="radio" name="antialiasing" id="msaa_8x" style="nav-right:none"/>
+											<label for="msaa_8x">8x</label>
+										</div>
+									</div>
+								</div>
+								
+								<div class="option_row">
+									<div class="option">
+										<label style="padding:4dp;">Refresh Rate</label><br/>
+										<hr/>
+										<div class="option_list" style="flex-wrap: wrap;">
+											<input type="radio" name="refreshrate" id="rr_original" style="nav-up:#ar_expand"/>
+											<label for="rr_original">Original</label>
+											<input type="radio" name="refreshrate" id="rr_display" style="nav-up:#ar_expand"/>
+											<label for="rr_display">Display</label>
+											<input type="radio" name="refreshrate" id="rr_manual" checked="checked" style="nav-up:#msaa_none;nav-right:none"/>
+											<label for="rr_manual">Manual</label>
+											<div style="flex-basis:100%;height:0"/>
+											<input id="rr_manual_input" type="range" min="60" max="1000" style="font:normal;flex:1;nav-up:auto;nav-down:auto;width:100%" value="60"/>
+										</div>
+									</div>
+								</div>
 							</div>
 						</form>
 					</panel>

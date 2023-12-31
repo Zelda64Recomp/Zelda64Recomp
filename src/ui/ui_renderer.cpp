@@ -339,7 +339,7 @@ public:
 
         list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
-            list_->setScissors(RT64::RenderRect{ scissor_x_, scissor_y_, scissor_width_, scissor_height_ });
+            list_->setScissors(RT64::RenderRect{ scissor_x_, scissor_y_, scissor_width_ + scissor_x_, scissor_height_ + scissor_y_ });
         }
         else {
             list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
@@ -564,11 +564,34 @@ public:
     }
 };
 
+bool can_focus(Rml::Element* element) {
+    return element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Property(Rml::Style::TabIndex::None);
+}
+
+Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
+    // Labels can have targets, so check if this element is a label.
+    if (element->GetTagName() == "label") {
+        // Check if the label has a "for" property.
+        Rml::String for_value = element->GetAttribute<Rml::String>("for", "");
+
+        // If there is a value for the "for" property, find that element and return it if it exists.
+        if (!for_value.empty()) {
+            Rml::Element* target_element = document->GetElementById(for_value);
+            if (target_element) {
+                return target_element;
+            }
+        }
+    }
+    // Return the element directly if no target exists.
+    return element;
+}
+
 struct {
     struct UIRenderContext render;
     class {
         std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
+        Rml::Element* prev_focused;
     public:
         SystemInterface_SDL system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
@@ -618,6 +641,30 @@ struct {
 
             documents.emplace(recomp::Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
             documents.emplace(recomp::Menu::Config, context->LoadDocument("assets/config_menu.rml"));
+        }
+
+        void update_focus(bool mouse_moved) {
+            Rml::Element* focused = current_document->GetFocusLeafNode();
+
+            // If there was mouse motion, get the current hovered element (or its target if it points to one) and focus that if applicable.
+            if (mouse_moved) {
+                Rml::Element* hovered = context->GetHoverElement();
+                if (hovered) {
+                    Rml::Element* hover_target = get_target(current_document, hovered);
+                    if (hover_target && can_focus(hover_target)) {
+                        hover_target->Focus();
+                    }
+                }
+            }
+
+            // Revert focus to the previous element if focused on anything without a tab index.
+            // This should prevent the user from losing focus on something that has no navigation.
+            if (focused && !can_focus(focused)) {
+                prev_focused->Focus();
+            }
+            else {
+                prev_focused = current_document->GetFocusLeafNode();
+            }
         }
     } rml;
 } UIContext;
@@ -693,7 +740,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
     bool is_reload_held = key_state[SDL_SCANCODE_F11] != 0;
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
-    
+
     static recomp::Menu prev_menu = recomp::Menu::None;
     recomp::Menu cur_menu = open_menu.load();
 
@@ -710,9 +757,22 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
 
     SDL_Event cur_event{};
 
+    bool mouse_moved = false;
+
     while (recomp::try_deque_event(cur_event)) {
         RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
+
+        // If a menu is open then implement some additional behavior for specific events on top of what RmlUi normally does with them.
+        if (cur_menu != recomp::Menu::None) {
+            switch (cur_event.type) {
+            case SDL_EventType::SDL_MOUSEMOTION:
+                mouse_moved = true;
+                break;
+            }
+        }
     }
+
+    UIContext.rml.update_focus(mouse_moved);
 
     if (cur_menu != recomp::Menu::None) {
         int width, height;

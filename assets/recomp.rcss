@@ -22,6 +22,39 @@ body {
     tab-index:none;
 } */
 
+div.option_container {
+    display:flex;
+    flex-direction: column;
+    width:850dp;
+    border-radius:0dp;
+    height:auto;
+    padding:16dp;
+    text-align:left;
+    margin-left:auto;
+    margin-right:auto;
+    font-effect: outline(2dp black);
+    font-size:24dp;
+    background:rgba(50,50,50,200);
+}
+
+div.option_row {
+    display:flex;
+    flex-direction: row;
+}
+
+div.option {
+    flex:1;
+    padding:4dp;
+    text-align:center;
+}
+
+div.option_list {
+    padding:2dp;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+}
+
 div#title_bar {
     z-index: 1;
     position: absolute;
@@ -71,7 +104,7 @@ div#content {
 
 p {
     text-align: left;
-    margin-bottom: 4dp;
+    /* margin-bottom: 4dp; */
 }
 
 h1 {
@@ -255,17 +288,18 @@ select selectbox option:hover {
 input.radio,
 input.checkbox {
     /* width: 30dp; */
-    height: 30dp;
+    /* height: 30dp; */
     /* vertical-align: -11dp; */
-    margin-top: 4dp;
-    margin-bottom: 4dp;
-    flex: 1;
+    /* margin-top: 4dp; */
+    /* margin-bottom: 4dp; */
+    flex: 0;
     tab-index:auto;
     focus:auto;
     nav-up:auto;
     nav-down:auto;
     nav-right:auto;
     nav-left:auto;
+    width:0dp;
 }
 
 input.radio + label {
@@ -276,6 +310,8 @@ input.radio + label {
     text-align:center;
     tab-index:none;
     focus:auto;
+    margin-left:10dp;
+    margin-right:10dp;
     /* display:none; */
     /* decorator: image(radio) */
 }
@@ -295,18 +331,8 @@ input.radio:checked + label {
     /* decorator: image(radio-checked) */
 }
 
-input.radio:hover + label {
-    color:#329696;
-    /* background: rgb(150,150,150); */
-}
-
 input.radio:focus + label {
     color:#329696;
-    /* background: rgb(150,150,150); */
-}
-
-input.radio:checked:hover + label {
-    border-bottom:1dp;
     /* background: rgb(150,150,150); */
 }
 
@@ -330,10 +356,6 @@ tab {
     nav-down:auto;
     nav-right:auto;
     nav-left:auto;
-}
-
-tab:hover {
-    color:#329696;
 }
 
 tab:selected {
