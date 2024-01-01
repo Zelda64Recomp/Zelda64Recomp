@@ -565,7 +565,7 @@ public:
 };
 
 bool can_focus(Rml::Element* element) {
-    return element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Property(Rml::Style::TabIndex::None);
+    return element->GetOwnerDocument() != nullptr && element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Property(Rml::Style::TabIndex::None);
 }
 
 Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
@@ -660,7 +660,20 @@ struct {
             // Revert focus to the previous element if focused on anything without a tab index.
             // This should prevent the user from losing focus on something that has no navigation.
             if (focused && !can_focus(focused)) {
-                prev_focused->Focus();
+                // If the previously focused element is still accepting focus, return focus to it.
+                if (prev_focused && can_focus(prev_focused)) {
+                    prev_focused->Focus();
+                }
+                // Otherwise, check if the currently focused element has a "nav-return" attribute and focus that attribute's value if so.
+                else {
+                    Rml::Variant* nav_return = focused->GetAttribute("nav-return");
+                    if (nav_return && nav_return->GetType() == Rml::Variant::STRING) {
+                        Rml::Element* return_element = current_document->GetElementById(nav_return->Get<std::string>());
+                        if (return_element) {
+                            return_element->Focus();
+                        }
+                    }
+                }
             }
             else {
                 prev_focused = current_document->GetFocusLeafNode();
@@ -693,6 +706,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
     UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width, height));
+    recomp::make_ui_bindings(UIContext.rml.context);
 
     Rml::Debugger::Initialise(UIContext.rml.context);
 
@@ -730,7 +744,7 @@ bool recomp::try_deque_event(SDL_Event& out) {
     return ui_event_queue.try_dequeue(out);
 }
 
-std::atomic<recomp::Menu> open_menu = recomp::Menu::Config;//Launcher;
+std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
     int num_keys;
@@ -777,6 +791,9 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
     if (cur_menu != recomp::Menu::None) {
         int width, height;
         SDL_GetWindowSizeInPixels(window, &width, &height);
+
+        // Scale the UI based on the window size with 720 vertical resolution as the reference point.
+        UIContext.rml.context->SetDensityIndependentPixelRatio(height / 720.0f);
 
         UIContext.rml.render_interface->start(command_list, width, height);
 

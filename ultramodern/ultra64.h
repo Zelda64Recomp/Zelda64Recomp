@@ -136,10 +136,10 @@ typedef struct {
 
     PTR(u64) yield_data_ptr;
     u32	yield_data_size;
-} OSTask_t;
+} OSTask_s;
 
 typedef union {
-    OSTask_t t;
+    OSTask_s t;
     int64_t force_structure_alignment;
 } OSTask;
 

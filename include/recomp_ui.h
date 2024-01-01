@@ -8,6 +8,7 @@
 namespace Rml {
 	class ElementDocument;
 	class EventListenerInstancer;
+	class Context;
 }
 
 namespace recomp {
@@ -16,6 +17,7 @@ namespace recomp {
 	bool try_deque_event(SDL_Event& out);
 
 	std::unique_ptr<Rml::EventListenerInstancer> make_event_listener_instancer();
+	void make_ui_bindings(Rml::Context* context);
 
 	enum class Menu {
 		Launcher,

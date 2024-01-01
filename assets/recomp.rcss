@@ -33,7 +33,7 @@ div.option_container {
     margin-left:auto;
     margin-right:auto;
     font-effect: outline(2dp black);
-    font-size:24dp;
+    font-size:20dp;
     background:rgba(50,50,50,200);
 }
 
@@ -53,6 +53,11 @@ div.option_list {
     text-align:center;
     display:flex;
     justify-content:center;
+}
+
+label.option_title {
+    padding:4dp;
+    font-size:24dp;
 }
 
 div#title_bar {
@@ -137,17 +142,18 @@ input.submit {
     /* vertical-align: center; */
     height: auto;
     width: 100%;
+    focus:auto;
+    tab-index:auto;
+    nav-up:auto;
+    nav-down:auto;
+    nav-right:auto;
+    nav-left:auto;
 }
 
 button:focus,
 input.submit:focus {
-    font-effect: blur(3dp #fff);
-    background-color: rgb(120, 120, 120);
-}
-
-button:hover,
-input.submit:hover {
-    background-color: rgb(150, 150, 150);
+    /* font-effect: blur(3dp #fff); */
+    color: #329696;
 }
 
 button:active,
@@ -159,6 +165,34 @@ input.submit:disabled {
     /* decorator: image(button); */
     image-color: #329696;
     cursor: unavailable
+}
+
+button[disabled] {
+    /* decorator: image(button); */
+    /* image-color: #329696; */
+    /* color:black; */
+    color:rgb(100,100,100);
+    background-color: rgb(50, 50, 50);
+    /* focus:none;
+    tab-index:none;
+    nav-up:none;
+    nav-down:none;
+    nav-right:none;
+    nav-left:none; */
+}
+
+button:focus[disabled] {
+    /* decorator: image(button); */
+    /* image-color: #329696; */
+    /* color:black; */
+    color:#329696;
+    background-color: rgb(50, 50, 50);
+    /* focus:none;
+    tab-index:none;
+    nav-up:none;
+    nav-down:none;
+    nav-right:none;
+    nav-left:none; */
 }
 
 input.text,
@@ -316,14 +350,6 @@ input.radio + label {
     /* decorator: image(radio) */
 }
 
-#rr_manual:not(:checked) ~ #rr_manual_input {
-    /* background: rgb(120,120,120); */
-    /* font-effect: outline(2dp black); */
-    display:none;
-    /* display:none; */
-    /* decorator: image(radio) */
-}
-
 input.radio:checked + label {
     /* background: rgb(72, 102, 255); */
     color: white;
@@ -402,12 +428,6 @@ input.checkbox:checked:hover {
 input.checkbox:checked:active {
     decorator: image(checkbox-checked-active)
 } */
-
-input.range {
-    height: 32dp;
-    margin:auto;
-    width:80%;
-}
 
 input.range slidertrack {
     margin-top: 7dp;

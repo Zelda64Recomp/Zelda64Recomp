@@ -13,6 +13,8 @@
 
 #include "ultra64.h"
 #include "ultramodern.hpp"
+#include "config.hpp"
+#include "rt64_layer.h"
 #include "recomp.h"
 #include "recomp_ui.h"
 #include "rsp.h"
@@ -25,7 +27,11 @@ struct SwapBuffersAction {
     uint32_t origin;
 };
 
-using Action = std::variant<SpTaskAction, SwapBuffersAction>;
+struct UpdateConfigAction {
+    ultramodern::GraphicsConfig config;
+};
+
+using Action = std::variant<SpTaskAction, SwapBuffersAction, UpdateConfigAction>;
 
 static struct {
     struct {
@@ -174,12 +180,6 @@ void dp_complete() {
     osSendMesg(PASS_RDRAM events_context.dp.mq, events_context.dp.msg, OS_MESG_NOBLOCK);
 }
 
-bool RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle);
-void RT64SendDL(uint8_t* rdram, const OSTask* task);
-void RT64UpdateScreen(uint32_t vi_origin);
-void RT64ChangeWindow();
-void RT64Shutdown();
-
 uint8_t dmem[0x1000];
 uint16_t rspReciprocals[512];
 uint16_t rspInverseSquareRoots[512];
@@ -257,13 +257,21 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
+void ultramodern::update_graphics_config(const ultramodern::GraphicsConfig& config) {
+    events_context.action_queue.enqueue(UpdateConfigAction{ config });
+}
+
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
     using namespace std::chrono_literals;
 
     ultramodern::set_native_thread_name("Gfx Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
-    if (!RT64Init(rom, rdram, window_handle)) {
+    ultramodern::GraphicsConfig cur_config{};
+
+    RT64::Application* application = RT64Init(rom, rdram, window_handle);
+
+    if (application == nullptr) {
         throw std::runtime_error("Failed to initialize RT64!");
     }
     
@@ -286,9 +294,16 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
                 sp_complete();
                 RT64SendDL(rdram, &task_action->task);
                 dp_complete();
-            } else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
+            }
+            else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
                 RT64UpdateScreen(swap_action->origin);
+            }
+            else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
+                if (cur_config != config_action->config) {
+                    RT64UpdateConfig(application, cur_config, config_action->config);
+                    cur_config = config_action->config;
+                }
             }
         }
     }
