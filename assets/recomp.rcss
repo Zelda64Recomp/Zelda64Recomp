@@ -1,6 +1,5 @@
 * {
     box-sizing:border-box;
-    font-effect: outline(2dp black);
 }
 
 hr {
@@ -10,7 +9,7 @@ hr {
 }
 
 body {
-    font-family: LatoLatin;
+    font-family: chiaro;
     font-weight: normal;
     font-style: normal;
     font-size: 20dp;
