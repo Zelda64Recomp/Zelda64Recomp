@@ -1,0 +1,45 @@
+@import "./base";
+
+
+$font-stack: chiaro;
+$font-size: 20dp;
+
+body
+{
+    @extend %body;
+    box-sizing: border-box;
+	color: $color-text;
+	font-family: $font-stack;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+h1 {
+    @extend %header-1;
+}
+
+h2 {
+    @extend %header-2;
+}
+
+h3 {
+    @extend %header-3;
+}
+
+h4 {
+    @extend %label-lg;
+}
+
+h5 {
+    @extend %label-md;
+}
+
+h6 {
+    @extend %label-sm;
+}
+
+button {
+    background-color: $color-primary-d;
+}
