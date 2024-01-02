@@ -586,9 +586,44 @@ Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) 
     return element;
 }
 
+namespace recomp {
+    class UiEventListener : public Rml::EventListener {
+        event_handler_t* handler_;
+    public:
+        UiEventListener(event_handler_t* handler) : handler_(handler) {}
+        void ProcessEvent(Rml::Event& event) override {
+            handler_(event);
+        }
+    };
+
+    class UiEventListenerInstancer : public Rml::EventListenerInstancer {
+        std::unordered_map<Rml::String, UiEventListener> listener_map_;
+    public:
+        Rml::EventListener* InstanceEventListener(const Rml::String& value, Rml::Element* element) override {
+            printf("Instancing event listener for %s\n", value.c_str());
+            auto find_it = listener_map_.find(value);
+
+            if (find_it != listener_map_.end()) {
+                return &find_it->second;
+            }
+
+            return nullptr;
+        }
+
+        void register_event(const Rml::String& value, event_handler_t* handler) {
+            listener_map_.emplace(value, UiEventListener{ handler });
+        }
+    };
+}
+
+void recomp::register_event(UiEventListenerInstancer& listener, const std::string& name, event_handler_t* handler) {
+    listener.register_event(name, handler);
+}
+
 struct {
     struct UIRenderContext render;
     class {
+        std::unordered_map<recomp::Menu, std::unique_ptr<recomp::MenuController>> menus;
         std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
         Rml::Element* prev_focused;
@@ -596,7 +631,7 @@ struct {
         SystemInterface_SDL system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         Rml::Context* context;
-        std::unique_ptr<Rml::EventListenerInstancer> event_listener_instancer;
+        recomp::UiEventListenerInstancer event_listener_instancer;
 
         void unload() {
             render_interface.reset();
@@ -636,11 +671,24 @@ struct {
                 current_document = nullptr;
 
                 documents.clear();
-                Rml::Factory::RegisterEventListenerInstancer(event_listener_instancer.get());
+                Rml::Factory::RegisterEventListenerInstancer(&event_listener_instancer);
             }
 
-            documents.emplace(recomp::Menu::Launcher, context->LoadDocument("assets/launcher.rml"));
-            documents.emplace(recomp::Menu::Config, context->LoadDocument("assets/config_menu.rml"));
+            for (auto& [menu, controller]: menus) {
+                documents.emplace(menu, controller->load_document(context));
+            }
+        }
+
+        void make_event_listeners() {
+            for (auto& [menu, controller]: menus) {
+                controller->register_events(event_listener_instancer);
+            }
+        }
+
+        void make_bindings() {
+            for (auto& [menu, controller]: menus) {
+                controller->make_bindings(context);
+            }
         }
 
         void update_focus(bool mouse_moved) {
@@ -679,6 +727,10 @@ struct {
                 prev_focused = current_document->GetFocusLeafNode();
             }
         }
+
+        void add_menu(recomp::Menu menu, std::unique_ptr<recomp::MenuController>&& controller) {
+            menus.emplace(menu, std::move(controller));
+        }
     } rml;
 } UIContext;
 
@@ -688,17 +740,20 @@ extern SDL_Window* window;
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     printf("RT64 hook init\n");
 
+    UIContext.rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
+    UIContext.rml.add_menu(recomp::Menu::Launcher, recomp::create_launcher_menu());
+
     UIContext.render.interface = interface;
     UIContext.render.device = device;
 
     // Setup RML
     UIContext.rml.system_interface.SetWindow(window);
     UIContext.rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&UIContext.render);
-    UIContext.rml.event_listener_instancer = recomp::make_event_listener_instancer();
+    UIContext.rml.make_event_listeners();
 
     Rml::SetSystemInterface(&UIContext.rml.system_interface);
     Rml::SetRenderInterface(UIContext.rml.render_interface.get());
-    Rml::Factory::RegisterEventListenerInstancer(UIContext.rml.event_listener_instancer.get());
+    Rml::Factory::RegisterEventListenerInstancer(&UIContext.rml.event_listener_instancer);
 
     Rml::Initialise();
 
@@ -706,7 +761,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
     UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width, height));
-    recomp::make_ui_bindings(UIContext.rml.context);
+    UIContext.rml.make_bindings();
 
     Rml::Debugger::Initialise(UIContext.rml.context);
 
