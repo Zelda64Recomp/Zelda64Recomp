@@ -3,6 +3,7 @@
 		<title>Launcher</title>
 		<link type="text/rcss" href="rml.rcss"/>
 		<link type="text/rcss" href="recomp.rcss"/>
+		<link type="text/rcss" href="main.rcss"/>
 		<style>
 			body
 			{
@@ -13,9 +14,14 @@
 	</head>
 	<body>
 		<div id="window">
+			<h1>Header-1</h1><br />
+			<h2>Header-2</h2><br />
+			<h3>Header-3</h3><br />
+			<h4>Label-LG</h4><br />
+			<h5>Label-MD</h5><br />
+			<h6>Label-SM</h6><br />
+			<div>Body</div><br />
 			<button onclick="start_game" style="align-self: center;">Start Game</button>
-			This is a sample.<br/>
-			Test text
 		</div>
 	</body>
 </rml>

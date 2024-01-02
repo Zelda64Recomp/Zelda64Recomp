@@ -50,3 +50,5 @@ vcpkg_installed/
 # Runtime files
 imgui.ini
 rt64.log
+
+node_modules/
