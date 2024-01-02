@@ -131,6 +131,7 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/mupen64plus-win32-deps/SDL2-2.26.3/include
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/hlslpp/include
+    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/inc
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/render

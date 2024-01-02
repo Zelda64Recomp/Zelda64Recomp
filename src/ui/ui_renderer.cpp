@@ -565,7 +565,7 @@ public:
 };
 
 bool can_focus(Rml::Element* element) {
-    return element->GetOwnerDocument() != nullptr && element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Property(Rml::Style::TabIndex::None);
+    return element->GetOwnerDocument() != nullptr && element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Style::TabIndex::None;
 }
 
 Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
