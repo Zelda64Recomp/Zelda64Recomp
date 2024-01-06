@@ -43,6 +43,7 @@ namespace recomp {
 
 	void set_current_menu(Menu menu);
 	void destroy_ui();
+	void apply_color_hack();
 }
 
 #endif

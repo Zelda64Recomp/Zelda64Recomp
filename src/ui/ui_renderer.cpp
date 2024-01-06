@@ -758,6 +758,9 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 
     Rml::Initialise();
 
+    // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility
+    recomp::apply_color_hack();
+
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
