@@ -628,7 +628,7 @@ struct {
         Rml::ElementDocument* current_document;
         Rml::Element* prev_focused;
     public:
-        SystemInterface_SDL system_interface;
+        std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
@@ -747,11 +747,12 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     UIContext.render.device = device;
 
     // Setup RML
-    UIContext.rml.system_interface.SetWindow(window);
+    UIContext.rml.system_interface = std::make_unique<SystemInterface_SDL>();
+    UIContext.rml.system_interface->SetWindow(window);
     UIContext.rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&UIContext.render);
     UIContext.rml.make_event_listeners();
 
-    Rml::SetSystemInterface(&UIContext.rml.system_interface);
+    Rml::SetSystemInterface(UIContext.rml.system_interface.get());
     Rml::SetRenderInterface(UIContext.rml.render_interface.get());
     Rml::Factory::RegisterEventListenerInstancer(&UIContext.rml.event_listener_instancer);
 
