@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "sass --no-source-map --style=compressed main.scss ..\\main.rcss",
-    "watch": "sass --no-source-map --style=compressed main.scss ..\\main.rcss --watch",
+    "start": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss",
+    "watch": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss --watch",
     "lint": "stylelint '.\\**\\*.scss'"
   },
   "author": "",

@@ -3,7 +3,6 @@
 		<title>Launcher</title>
 		<link type="text/rcss" href="rml.rcss"/>
 		<link type="text/rcss" href="recomp.rcss"/>
-		<link type="text/rcss" href="main.rcss"/>
 		<style>
 			body
 			{

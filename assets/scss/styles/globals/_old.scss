@@ -1,0 +1,675 @@
+
+* {
+    box-sizing:border-box;
+}
+
+hr {
+    display:block;
+    background:black;
+    padding:1.5dp;
+}
+
+body {
+    font-family: chiaro;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20dp;
+    color: #fff
+}
+
+/* div { 
+    focus:none;
+    tab-index:none;
+} */
+form {
+    width: 100%;
+    height: 100%;
+}
+
+div.option_container {
+    display:flex;
+    flex-direction: column;
+    border-radius:0dp;
+    width: 100%;
+    height:auto;
+    padding:16dp;
+    text-align:left;
+    background: $color-bg-shadow;
+}
+
+div.option_row {
+    display:flex;
+    flex-direction: row;
+}
+
+div.option {
+    flex:1;
+    padding:4dp;
+    text-align:center;
+}
+
+div.option_list {
+    padding:2dp;
+    text-align:center;
+    display:flex;
+    justify-content:center;
+}
+
+label.option_title {
+    @extend %label-md;
+    padding: 16dp 0dp;
+}
+
+div#title_bar {
+    z-index: 1;
+    position: absolute;
+    top: 7dp;
+    left: 0;
+    text-align: left;
+    vertical-align: bottom
+}
+
+div#title_bar div#icon {
+    position: absolute;
+    left: 15dp;
+    top: -4dp;
+    width: 51dp;
+    height: 39dp
+}
+
+div#title_bar span {
+    padding-left: 85dp;
+    padding-right: 25dp;
+    padding-top: 18dp;
+    padding-bottom: 43dp;
+    vertical-align: top;
+    line-height: 24dp;
+    font-size: 20dp;
+    font-weight: bold;
+    font-effect: glow(1dp black);
+    /* decorator: tiled-horizontal(title-bar-l, title-bar-c, title-bar-r) */
+}
+
+div#window {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10dp 15dp;
+    background-color: #004164;
+    border-color: red
+}
+
+div#content {
+    z-index: 2;
+    width: auto;
+    height: 100%;
+    overflow: hidden auto;
+    text-align: center
+}
+
+p {
+    text-align: left;
+    /* margin-bottom: 4dp; */
+}
+
+h1 {
+    margin-left: .4em;
+    margin-bottom: .4em;
+    text-align: left;
+    font-size: 16dp;
+    font-weight: bold;
+    font-effect: glow(1dp 1dp 1dp 1dp rgba(17, 17, 17, 0.4666666667))
+}
+
+input,
+select {
+    /* margin-left: 20dp */
+}
+
+input.submit {
+    margin-left: 0
+}
+
+button,
+input.submit {
+    display: inline-block;
+    /* width: 100dp;
+    padding: 4dp; */
+    text-align: center;
+    /* tab-index: auto; */
+    /* border-radius: 5dp; */
+    background-color: rgb(120, 120, 120);
+    /* vertical-align: center; */
+    height: auto;
+    width: 100%;
+    focus:auto;
+    tab-index:auto;
+    nav-up:auto;
+    nav-down:auto;
+    nav-right:auto;
+    nav-left:auto;
+}
+
+button:focus,
+input.submit:focus {
+    /* font-effect: blur(3dp #fff); */
+    color: #329696;
+}
+
+button:active,
+input.submit:active {
+    background-color: rgb(100, 100, 100);
+}
+
+input.submit:disabled {
+    /* decorator: image(button); */
+    image-color: #329696;
+    cursor: unavailable
+}
+
+button[disabled] {
+    /* decorator: image(button); */
+    /* image-color: #329696; */
+    /* color:black; */
+    color:rgb(100,100,100);
+    background-color: rgb(50, 50, 50);
+    /* focus:none;
+    tab-index:none;
+    nav-up:none;
+    nav-down:none;
+    nav-right:none;
+    nav-left:none; */
+}
+
+button:focus[disabled] {
+    /* decorator: image(button); */
+    /* image-color: #329696; */
+    /* color:black; */
+    color:#329696;
+    background-color: rgb(50, 50, 50);
+    /* focus:none;
+    tab-index:none;
+    nav-up:none;
+    nav-down:none;
+    nav-right:none;
+    nav-left:none; */
+}
+
+input.text,
+input.password {
+    box-sizing: border-box;
+    height: 31dp;
+    padding: 11dp 10dp 0;
+    /* decorator: tiled-horizontal(text-l, text-c, auto); */
+    cursor: text;
+    text-align: left
+}
+
+textarea {
+    padding: 14dp 12dp 10dp;
+    /* decorator: ninepatch(textarea, textarea-inner, 1); */
+    cursor: text;
+    text-align: left
+}
+
+input.text,
+input.password,
+select,
+textarea {
+    /* color: #333; */
+    /* font-size: 13dp */
+    height: auto;
+}
+
+table input.text {
+    box-sizing: border-box;
+    width: 100%;
+    /* height: 18dp; */
+    margin: 0;
+    /* padding: 0 5dp; */
+    line-height: 1;
+    border-width: 1dp;
+    border-color: #000;
+    background-color: #fff;
+    font-size: 15dp;
+    decorator: none;
+    height: auto;
+    /* vertical-align: center; */
+}
+
+select {
+    display: inline-block;
+    /* width: 175dp; */
+    /* height: 37dp; */
+    /* height: auto; */
+    text-align: left;
+    box-sizing:border-box;
+    /* padding: 4dp; */
+    vertical-align: center;
+    padding: 4dp;
+    border-radius: 5dp;
+    background-color: rgb(120, 120, 120);
+    width: 100%;
+}
+
+select selectvalue {
+    height: auto;
+    /* padding: 4dp; */
+    /* margin-right: 30dp; */
+    /* height: 25dp; */
+    /* padding: 4dp; */
+    /* decorator: image(selectvalue) */
+}
+
+select:hover selectvalue {
+    /* margin-right: 30dp; */
+    /* height: 25dp; */
+    /* padding: 4dp; */
+    background-color: rgb(150, 150, 150);
+    /* decorator: image(selectvalue) */
+}
+
+select selectarrow {
+    /* width: 30dp; */
+    /* height: 37dp; */
+    /* decorator: image(selectarrow) */
+    /* background-color: black; */
+    /* appearance: none; */
+}
+
+select:hover selectarrow {
+    /* decorator: image(selectarrow-hover) */
+}
+
+select:active selectarrow,
+select selectarrow:checked {
+    /* decorator: image(selectarrow-active) */
+}
+
+select selectbox {
+    /* margin-left: 1dp; */
+    /* margin-top: -7dp; */
+    /* margin-bottom: -10dp; */
+    /* width: 162dp; */
+    /* padding: 1dp 4dp 4dp 4dp */
+}
+
+select selectbox,
+tbody {
+    background-color: rgb(120,120,120);
+    /* decorator: tiled-box(selectbox-tl, selectbox-t, selectbox-tr, selectbox-l, selectbox-c, auto, selectbox-bl, selectbox-b, selectbox-br) */
+}
+
+select selectbox option {
+    width: auto;
+    background-color: rgb(120, 120, 120)
+}
+
+select selectbox option:nth-child(even),
+tr:nth-child(even) {
+    background-color: rgb(100, 100, 100)
+}
+
+select selectbox option:checked {
+    font-weight:bold;
+    color:rgb(255,255,255);
+}
+
+select selectbox option:hover {
+    background: rgb(150,150,150)
+}
+
+input.radio,
+input.checkbox {
+    /* width: 30dp; */
+    /* height: 30dp; */
+    /* vertical-align: -11dp; */
+    /* margin-top: 4dp; */
+    /* margin-bottom: 4dp; */
+    flex: 0;
+    tab-index:auto;
+    focus:auto;
+    nav-up:auto;
+    nav-down:auto;
+    nav-right:auto;
+    nav-left:auto;
+    width:0dp;
+}
+
+input.radio + label {
+    /* background: rgb(120,120,120); */
+    /* font-effect: outline(2dp black); */
+    color: gray;
+    /* flex: 1; */
+    text-align:center;
+    tab-index:none;
+    focus:auto;
+    margin-left:10dp;
+    margin-right:10dp;
+    /* display:none; */
+    /* decorator: image(radio) */
+}
+
+input.radio:checked + label {
+    /* background: rgb(72, 102, 255); */
+    color: white;
+    border-bottom:1dp;
+    /* decorator: image(radio-checked) */
+}
+
+input.radio:focus + label {
+    color:#329696;
+    /* background: rgb(150,150,150); */
+}
+
+tabset {
+    display: block;
+    position: relative;
+    margin: 0 auto;
+    max-width: 1280dp;
+    focus:auto;
+    nav-up:auto;
+    nav-down:auto;
+    nav-right:auto;
+    nav-left:auto;
+}
+
+tabset tabs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+tabset panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+tab {
+    display: block;
+    padding: 24dp 16dp;
+    background-color: rgba(0,0,0,0);
+    margin: 0;
+    tab-index:auto;
+    focus:auto;
+    nav-up:auto;
+    nav-down:auto;
+    nav-right:auto;
+    nav-left:auto;
+}
+
+tab:selected {
+    background-color: $color-border-soft;
+    border-bottom: 2dp;
+    border-color: $color-border-solid;
+
+    &:hover {
+        cursor: default;
+    }
+}
+
+tab:focus {
+    color:#329696;
+}
+
+tab:hover {
+    cursor: pointer;
+}
+
+/* input.radio:checked:hover + label {
+    background: rgb(150,150,150);
+} */
+
+/* input.radio:checked:active {
+    decorator: image(radio-checked-active)
+} */
+
+/* input.checkbox {
+    decorator: image(checkbox)
+}
+
+input.checkbox:hover {
+    decorator: image(checkbox-hover)
+}
+
+input.checkbox:active {
+    decorator: image(checkbox-active)
+}
+
+input.checkbox:checked {
+    decorator: image(checkbox-checked)
+}
+
+input.checkbox:checked:hover {
+    decorator: image(checkbox-checked-hover)
+}
+
+input.checkbox:checked:active {
+    decorator: image(checkbox-checked-active)
+} */
+
+input.range slidertrack {
+    margin-top: 7dp;
+    height: 6dp;
+    image-color: #ecc;
+    /* decorator: ninepatch(range-track, range-track-inner, 1) */
+    background-color:white;
+    border-width:1dp;
+    border-color:black;
+}
+
+input.range sliderbar {
+    margin-left: -8dp;
+    margin-right: -8dp;
+    /* margin-top: -3dp; */
+    width: 20dp;
+    height: 20dp;
+    background-color:white;
+    border-color:black;
+    border-width:3dp;
+    border-radius:10dp;
+    /* decorator: image(range-bar) */
+}
+
+input.range sliderbar:hover,
+input.range slidertrack:hover+sliderbar {
+    image-color: #cc0
+}
+
+input.range sliderbar:active,
+input.range sliderbar:focus {
+    background-color:#329696;
+}
+
+input.range sliderarrowdec,
+input.range sliderarrowinc {
+    /* width: 17dp;
+    height: 17dp;
+    margin-top: 6dp; */
+    display:none;
+}
+
+/* input.range sliderarrowdec {
+    decorator: image(range-dec)
+}
+
+input.range sliderarrowinc {
+    decorator: image(range-inc)
+}
+
+input.range sliderarrowdec:hover {
+    decorator: image(range-dec-hover)
+}
+
+input.range sliderarrowinc:hover {
+    decorator: image(range-inc-hover)
+}
+
+input.range sliderarrowdec:active {
+    decorator: image(range-dec-active)
+}
+
+input.range sliderarrowinc:active {
+    decorator: image(range-inc-active)
+} */
+
+thead tr {
+    height: 35dp;
+    /* decorator: tiled-horizontal(tableheader-l, tableheader-c, tableheader-r) */
+}
+
+thead td {
+    padding-top: 11dp
+}
+
+tbody {
+    margin-left: 5dp;
+    margin-right: 4dp;
+    padding-top: 4dp;
+    padding-bottom: 4dp
+}
+
+tbody tr {
+    margin-left: 9dp;
+    margin-right: 8dp;
+    color: #000
+}
+
+expand {
+    display: block;
+    margin: 1dp 0 1dp 5dp;
+    height: 17dp;
+    width: 17dp;
+    /* decorator: image(expand) */
+}
+
+/* expand:hover {
+    decorator: image(expand-hover)
+}
+
+expand:active {
+    decorator: image(expand-active)
+}
+
+expand.collapsed {
+    decorator: image(expand-collapsed)
+}
+
+expand.collapsed:hover {
+    decorator: image(expand-collapsed-hover)
+}
+
+expand.collapsed:active {
+    decorator: image(expand-collapsed-active)
+} */
+
+scrollbarvertical {
+    margin-top: -6dp;
+    margin-bottom: -6dp;
+    margin-right: -11dp;
+    width: 27dp
+}
+
+scrollbarvertical slidertrack {
+    /* decorator: tiled-vertical(slidertrack-t, slidertrack-c, slidertrack-b) */
+}
+
+scrollbarvertical slidertrack:active {
+    image-color: #aaa
+}
+
+scrollbarvertical sliderbar {
+    margin-left: 4dp;
+    width: 23dp;
+    min-height: 46dp;
+    /* decorator: tiled-vertical(sliderbar-t, sliderbar-c, sliderbar-b) */
+}
+
+/* scrollbarvertical sliderbar:hover {
+    decorator: tiled-vertical(sliderbar-hover-t, sliderbar-hover-c, sliderbar-hover-b)
+} */
+
+/* scrollbarvertical sliderbar:active {
+    decorator: tiled-vertical(sliderbar-active-t, sliderbar-active-c, sliderbar-active-b)
+} */
+
+scrollbarvertical sliderarrowdec,
+scrollbarvertical sliderarrowinc {
+    width: 27dp;
+    height: 24dp
+}
+
+/* scrollbarvertical sliderarrowdec {
+    decorator: image(sliderarrowdec)
+}
+
+scrollbarvertical sliderarrowdec:hover {
+    decorator: image(sliderarrowdec-hover)
+}
+
+scrollbarvertical sliderarrowdec:active {
+    decorator: image(sliderarrowdec-active)
+}
+
+scrollbarvertical sliderarrowinc {
+    decorator: image(sliderarrowinc)
+}
+
+scrollbarvertical sliderarrowinc:hover {
+    decorator: image(sliderarrowinc-hover)
+}
+
+scrollbarvertical sliderarrowinc:active {
+    decorator: image(sliderarrowinc-active)
+} */
+
+scrollbarhorizontal {
+    width: 0;
+    height: 0
+}
+
+textarea scrollbarvertical {
+    cursor: arrow;
+    margin: 10dp 0 4dp 0;
+    width: 12dp
+}
+
+textarea scrollbarvertical slidertrack {
+    decorator: none
+}
+
+textarea scrollbarvertical sliderbar {
+    margin-left: 2dp;
+    width: 10dp;
+    min-height: 16dp
+}
+
+textarea scrollbarvertical sliderarrowdec,
+textarea scrollbarvertical sliderarrowinc {
+    width: 0;
+    height: 0
+}
+
+textarea scrollbarhorizontal {
+    cursor: arrow;
+    margin-left: 7dp;
+    height: 12dp
+}
+
+textarea scrollbarhorizontal sliderbar {
+    background-color: rgba(188, 0, 0, .8);
+    height: 8dp;
+    min-width: 10dp
+}
+
+textarea scrollbarhorizontal sliderbar:hover {
+    background-color: rgba(184, 37, 0, .8)
+}
+
+textarea scrollbarhorizontal sliderbar:active {
+    background-color: rgba(119, 0, 0, .8)
+}
