@@ -1,18 +1,34 @@
+@use 'sass:math';
 
-$page-margin: 16;
+$page-margin: 32;
+$base-height: 1080;
 
 .centered-page {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: space($page-margin);
+}
+
+.centered-page__modal {
     @extend %nav-all;
     display: flex;
     flex-direction: column;
     position: relative;
-    margin: #{$page-margin}dp auto;
-    // 16:9
-    // max-width: 1280dp;
-    // 4:3
-    max-width: #{960 - ($page-margin * 2)}dp;
+    margin: auto;
+    flex: 1 1 100%;
+    max-width: space(math.div($base-height*4, 3))dp;
     width: 100%;
-    height: #{720 - ($page-margin * 2)}dp;
+    height: 100%;
     background: $color-bg-shadow-2;
-    border-radius: 16dp;
+    border-radius: $border-radius-modal;
+    border-color: $color-border-soft;
+    border-width: space(1);
+}
+
+.centered-page__modal panels {
+    flex: 1 1 100%;
 }

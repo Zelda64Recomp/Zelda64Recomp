@@ -1,0 +1,17 @@
+
+$border-radius-sm: 8dp;
+$border-radius-md: 12dp;
+// modals/pages
+$border-radius-lg: 16dp;
+
+$border-radius-modal: $border-radius-lg;
+
+@mixin border($col: $color-border) {
+    border-color: $col;
+    border-width: space(1);
+}
+
+@mixin border-top($col: $color-border) {
+    border-top-color: $col;
+    border-top-width: space(1);
+}

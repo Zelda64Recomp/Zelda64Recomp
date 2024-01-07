@@ -13,14 +13,44 @@
 	</head>
 	<body>
 		<div id="window">
-			<h1>Header-1</h1><br />
-			<h2>Header-2</h2><br />
-			<h3>Header-3</h3><br />
-			<h4>Label-LG</h4><br />
-			<h5>Label-MD</h5><br />
-			<h6>Label-SM</h6><br />
-			<div>Body</div><br />
-			<button onclick="start_game" style="align-self: center;">Start Game</button>
+			<div class="launcher">
+				<div class="launcher__vertical-split">
+					<div class="launcher__title-quadrant">
+						<button class="subtitle-title" disabled>
+							<div><h3>Zelda 64: Recompiled</h3></div>
+							<div><h1>Ocarina of Time</h1></div>
+							<div class="subtitle-title__disclaimer">Coming Soon™</div>
+						</button>
+					</div>
+					<div class="launcher__content-quadrant"></div>
+				</div>
+				<div class="launcher__vertical-split launcher__vertical-split--right">
+					<div class="launcher__title-quadrant launcher__title-quadrant--right">
+						<button class="subtitle-title subtitle-title--right" selected>
+							<div><h3>Zelda 64: Recompiled</h3></div>
+							<div><h1>Majora's Mask</h1></div>
+						</button>
+					</div>
+					<div class="launcher__content-quadrant">
+						<button onclick="start_game" class="menu-list-item menu-list-item--right" autofocus>
+							<div class="menu-list-item__bullet">•</div>
+							<div class="menu-list-item__label">Start game</div>
+						</button>
+						<button class="menu-list-item menu-list-item--right">
+							<div class="menu-list-item__bullet">•</div>
+							<div class="menu-list-item__label">Setup controls</div>
+						</button>
+						<button class="menu-list-item menu-list-item--right">
+							<div class="menu-list-item__bullet">•</div>
+							<div class="menu-list-item__label">Settings</div>
+						</button>
+						<button class="menu-list-item menu-list-item--right">
+							<div class="menu-list-item__bullet">•</div>
+							<div class="menu-list-item__label">Exit</div>
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 </rml>

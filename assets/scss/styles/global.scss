@@ -30,15 +30,15 @@ h3 {
     @extend %header-3;
 }
 
-h4 {
+.label-lg {
     @extend %label-lg;
 }
 
-h5 {
+.label-md {
     @extend %label-md;
 }
 
-h6 {
+.label-sm {
     @extend %label-sm;
 }
 

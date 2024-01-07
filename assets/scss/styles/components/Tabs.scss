@@ -1,3 +1,11 @@
+/*
+    Example:
+        <tab class="tab">
+            <div>Graphics</div>
+            <div class="tab__indicator"></div>
+        </tab>
+*/
+
 .tabs tabs {
     display: flex;
     flex-direction: row;
@@ -8,17 +16,20 @@
 .tab {
     @extend %nav-all;
     display: block;
-    padding: 24dp 24dp;
+    position: relative;
+    padding: space(20) space(24);
     background-color: rgba(0,0,0,0);
     margin: 0;
     color: $color-text-inactive;
     transition: color $transition-quick;
 
     &:selected {
-        border-bottom: 2dp;
-        border-color: $color-border-solid;
         color: $color-text;
-    
+
+        .tab__indicator {
+            background-color: $color-border-solid;
+        }
+
         &:hover {
             cursor: default;
         }
@@ -31,4 +42,13 @@
     &:focus {
         color: $color-text;
     }
+}
+
+.tab__indicator {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0);
+    right: 0;
+    bottom: 2dp;
+    left: 0;
+    height: 2dp;
 }

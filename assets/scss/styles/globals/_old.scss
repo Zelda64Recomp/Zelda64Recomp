@@ -22,43 +22,8 @@ body {
     tab-index:none;
 } */
 
-div.option_row {
-    display: flex;
-    gap: 2dp;
-    flex-direction: row;
-}
-
-div#title_bar {
-    z-index: 1;
-    position: absolute;
-    top: 7dp;
-    left: 0;
-    text-align: left;
-    vertical-align: bottom
-}
-
-div#title_bar div#icon {
-    position: absolute;
-    left: 15dp;
-    top: -4dp;
-    width: 51dp;
-    height: 39dp
-}
-
-div#title_bar span {
-    padding-left: 85dp;
-    padding-right: 25dp;
-    padding-top: 18dp;
-    padding-bottom: 43dp;
-    vertical-align: top;
-    line-height: 24dp;
-    font-size: 20dp;
-    font-weight: bold;
-    font-effect: glow(1dp black);
-    /* decorator: tiled-horizontal(title-bar-l, title-bar-c, title-bar-r) */
-}
-
 div#window {
+    position: relative;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
@@ -76,21 +41,6 @@ div#content {
 
 p {
     text-align: left;
-    /* margin-bottom: 4dp; */
-}
-
-h1 {
-    margin-left: .4em;
-    margin-bottom: .4em;
-    text-align: left;
-    font-size: 16dp;
-    font-weight: bold;
-    font-effect: glow(1dp 1dp 1dp 1dp rgba(17, 17, 17, 0.4666666667))
-}
-
-input,
-select {
-    /* margin-left: 20dp */
 }
 
 input.submit {
@@ -103,14 +53,12 @@ input.password {
     box-sizing: border-box;
     height: 31dp;
     padding: 11dp 10dp 0;
-    /* decorator: tiled-horizontal(text-l, text-c, auto); */
     cursor: text;
     text-align: left
 }
 
 textarea {
     padding: 14dp 12dp 10dp;
-    /* decorator: ninepatch(textarea, textarea-inner, 1); */
     cursor: text;
     text-align: left
 }

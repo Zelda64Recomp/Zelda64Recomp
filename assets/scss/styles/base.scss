@@ -1,4 +1,8 @@
+@use 'sass:math';
+@import "./functions/spacing";
 @import "./vars/colors";
+@import "./vars/borders";
+@import "./vars/gradients";
 @import "./vars/transitions";
 @import "./mixins/typography";
 @import "./mixins/helpers";

@@ -29,14 +29,17 @@
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
-		<div id="window" style="display:flex; flex-flow: column; text-align:center; background-color:rgba(0,0,0,0)">
-			<div style="flex: 1 1 100%">
-				<tabset class="centered-page tabs">
-					<tab class="tab" id="tab_graphics" autofocus>Graphics</tab>
+		<div id="window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)">
+			<div class="centered-page">
+				<tabset class="centered-page__modal tabs">
+					<tab class="tab" id="tab_graphics" autofocus>
+						<div>Graphics</div>
+						<div class="tab__indicator"></div>
+					</tab>
 					<panel class="config" data-model="graphics_model">
 						<form class="config__form">
 							<div class="config__wrapper">
-								<div class="option_row">
+								<div class="config__row">
 									<div class="config-option">
 										<label class="config-option__title">Resolution</label>
 										<div class="config-option__list config-option__list">
@@ -58,7 +61,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="option_row">
+								<div class="config__row">
 									<div class="config-option">
 										<label class="config-option__title">Aspect Ratio</label>
 										<div class="config-option__list config-option__list">
@@ -83,7 +86,7 @@
 									</div>
 								</div>
 								
-								<div class="option_row">
+								<div class="config__row">
 									<div class="config-option">
 										<label class="config-option__title">Framerate</label>
 										<div class="config-option__list config-option__list">
@@ -94,29 +97,38 @@
 											<input type="radio" name="refreshrate" data-checked="rr_option" value="Manual" id="rr_manual" style="nav-up:#msaa_none;nav-right:none"/>
 											<label class="config-option__tab-label" for="rr_manual">Manual</label>
 										</div>
-										<div data-if="rr_option=='Manual'" class="config-option__list">
+										<div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
 											<label class="config-option__range-label">{{rr_manual_value}}</label>
 											<input id="rr_manual_input" type="range" min="20" max="360" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rr_manual_value"/>
 										</div>
 									</div>
 								</div>
-
-								<button
-									class="button"
-									nav-return="rr_manual"
-									data-attrif-disabled="!options_changed"
-									onclick="apply_options"
-								>
-									<div>Apply</div>
-								</button>
+							</div>
+							<div class="config__footer">
+								<div>
+									<button
+										class="button"
+										nav-return="rr_manual"
+										data-attrif-disabled="!options_changed"
+										onclick="apply_options"
+									>
+										<div class="button__label">Apply</div>
+									</button>
+								</div>
 							</div>
 						</form>
 					</panel>
-					<tab class="tab">Controls</tab>
-					<panel>
+					<tab class="tab">
+						<div>Controls</div>
+						<div class="tab__indicator"></div>
+					</tab>
+					<panel class="config" >
 					</panel>
-					<tab class="tab">Sound</tab>
-					<panel>
+					<tab class="tab">
+						<div>Sound</div>
+						<div class="tab__indicator"></div>
+					</tab>
+					<panel class="config" >
 					</panel>
 				</tabset>
 			</div>

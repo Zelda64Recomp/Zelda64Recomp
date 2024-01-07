@@ -1,30 +1,36 @@
+@use 'sass:color';
 
 .button {
     @extend %label-md;
-    margin: auto;
     display: block;
-    align-items: center;
-    justify-content: center;
-    padding: 12dp;
-    background-color: $color-primary-d;
+    padding: 16dp 20dp;
+    background-color: rgba($color-primary-d, 0.8);
     color: $color-text;
-    border-radius: 8dp;
+    border-radius: $border-radius-md;
+    width: auto;
+    height: auto;
 
     &:not([disabled]) {
         @extend %nav-all;
     }
 
     &:focus {
-        color: $color-primary-l;
+        // color: $color-primary-l;
+        background-color: $color-primary-d;
     }
 
     &:disabled,&[disabled] {
         opacity: 0.5;
-        background-color: $color-primary-d;
         color: $color-text-inactive;
     }
 
     &:active {
-        color: $color-error-l;
+        background-color: color.scale($color-primary-d, $lightness: -10%);
+        color: $color-error-d;
+    }
+
+    &__label {
+        width: auto;
+        height: auto;
     }
 }

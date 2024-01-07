@@ -1,0 +1,70 @@
+
+/*
+    Example layout:
+        <button class="menu-list-item menu-list-item--right">
+            <div class="menu-list-item__bullet">•</div>
+            <div class="menu-list-item__label">Setup controls</div>
+        </button>
+    - Variants:
+        .menu-list-item--right (align to right side)
+    - Optional:
+        - <div class="subtitle-title__disclaimer">Coming Soon™</div>
+
+*/
+
+.menu-list-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding: space(16);
+    border-radius: $border-radius-sm;
+    background-color: rgba(0, 0, 0, 0);
+    color: $color-text-dim;
+    cursor: pointer;
+
+    &--right {
+        align-content: flex-end;
+        flex-direction: row-reverse;
+
+        .menu-list-item__bullet {
+            opacity: 1;
+            margin-left: space(12);
+        }
+
+        &.menu-list-item:focus:not(:disabled, [disabled]),
+        &.menu-list-item:hover:not(:disabled, [disabled]) {
+            decorator: $primary-rl-fade;
+        }
+    }
+
+    &:focus:not(:disabled, [disabled]),
+    &:hover:not(:disabled, [disabled]) {
+        color: $color-primary;
+        decorator: $primary-lr-fade;
+
+        .menu-list-item__bullet {
+            opacity: 1;
+        }
+    }
+
+    &:not(:disabled, [disabled]) {
+        @extend %nav-all;
+    }
+
+    &:disabled, &[disabled] {
+        opacity: 0.5;
+        tab-index: none;
+        cursor: default;
+    }
+
+}
+.menu-list-item__label {
+    @extend .label-lg;
+}
+
+.menu-list-item__bullet {
+    opacity: 0;
+    margin-right: space(12);
+}

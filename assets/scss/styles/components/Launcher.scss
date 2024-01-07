@@ -1,0 +1,53 @@
+
+.launcher {
+    display: block;
+    flex-direction: row;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: $color-background-1;
+}
+
+.launcher__vertical-split {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    top: 0;
+    right: 50%;
+    bottom: 0;
+    left: 0;
+
+    &--right {
+        align-items: flex-end;
+        right: 0;
+        left: 50%;  
+    }
+}
+
+.launcher__title-quadrant {
+    flex: 1 1 auto;
+    padding-top: space(96);
+    padding-left: space(96);
+    width: auto;
+    height: auto;
+
+    &--right {
+        padding-right: space(96);
+        padding-left: 0;
+    }
+}
+
+.launcher__content-quadrant {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: space(32);
+    width: 100%;
+    height: auto;
+    flex: 1 1 100%;
+}

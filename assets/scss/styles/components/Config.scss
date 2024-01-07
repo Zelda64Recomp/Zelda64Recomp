@@ -1,10 +1,14 @@
 
 .config__form {
+    @include border-top($color-border-soft);
     display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     flex: 1 1 100%;
     width: 100%;
     height: 100%;
-    background: $color-bg-shadow;
+    border-bottom-left-radius: $border-radius-modal;
+    border-bottom-right-radius: $border-radius-modal;
 }
 
 .config__wrapper {
@@ -15,7 +19,24 @@
     height: 100%;
     padding: 16dp;
     text-align: left;
-    background: $color-bg-shadow;
+    background-color: $color-bg-shadow;
+}
+
+.config__footer {
+    @include border-top($color-border-soft);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    padding: space(20) space(20);
+    background-color: $color-bg-shadow-2;
+    border-bottom-left-radius: $border-radius-modal;
+    border-bottom-right-radius: $border-radius-modal;
+}
+
+.config__row {
+    display: flex;
+    flex-direction: row;
 }
 
 .config-option {
@@ -28,7 +49,7 @@
 
 .config-option__title {
     @extend %label-md;
-    padding: 16dp 12dp 0;
+    padding: 12dp 12dp 0;
 }
 
 .config-option__list {
@@ -40,7 +61,6 @@
     width: 100%;
     align-items: flex-start;
     justify-content: flex-start;
-    // background-color: $color-error-d;
 
     .config-option__tab-label {
         @extend %label-sm;
@@ -107,6 +127,11 @@
     input.range sliderarrowinc {
         display: none;
     }
+}
+
+.config-option__range-wrapper {
+    margin-top: space(4);
+    max-width: space(360);
 }
 
 .config-option__range-label {
