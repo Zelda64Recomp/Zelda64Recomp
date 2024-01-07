@@ -589,29 +589,41 @@ Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) 
 namespace recomp {
     class UiEventListener : public Rml::EventListener {
         event_handler_t* handler_;
+        Rml::String param_;
     public:
-        UiEventListener(event_handler_t* handler) : handler_(handler) {}
+        UiEventListener(event_handler_t* handler, Rml::String&& param) : handler_(handler), param_(std::move(param)) {}
         void ProcessEvent(Rml::Event& event) override {
-            handler_(event);
+            handler_(param_, event);
         }
     };
 
     class UiEventListenerInstancer : public Rml::EventListenerInstancer {
+        std::unordered_map<Rml::String, event_handler_t*> handler_map_;
         std::unordered_map<Rml::String, UiEventListener> listener_map_;
     public:
         Rml::EventListener* InstanceEventListener(const Rml::String& value, Rml::Element* element) override {
             printf("Instancing event listener for %s\n", value.c_str());
-            auto find_it = listener_map_.find(value);
+            // Check if a listener has already been made for the full event string and return it if so.
+            auto find_listener_it = listener_map_.find(value);
+            if (find_listener_it != listener_map_.end()) {
+                return &find_listener_it->second;
+            }
 
-            if (find_it != listener_map_.end()) {
-                return &find_it->second;
+            // No existing listener, so check if a handler has been registered for this event type and create a listener for it if so.
+            size_t delimiter_pos = value.find(':');
+            Rml::String event_type = value.substr(0, delimiter_pos);
+            auto find_handler_it = handler_map_.find(event_type);
+            if (find_handler_it != handler_map_.end()) {
+                // A handler was found, create a listener and return it.
+                Rml::String event_param = value.substr(std::min(delimiter_pos, value.size()));
+                return &listener_map_.emplace(value, UiEventListener{ find_handler_it->second, std::move(event_param) }).first->second;
             }
 
             return nullptr;
         }
 
         void register_event(const Rml::String& value, event_handler_t* handler) {
-            listener_map_.emplace(value, UiEventListener{ handler });
+            handler_map_.emplace(value, handler);
         }
     };
 }

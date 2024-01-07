@@ -27,7 +27,7 @@ namespace recomp {
 	std::unique_ptr<MenuController> create_launcher_menu();
 	std::unique_ptr<MenuController> create_config_menu();
 
-	using event_handler_t = void(Rml::Event&);
+	using event_handler_t = void(const std::string& param, Rml::Event&);
 
 	void queue_event(const SDL_Event& event);
 	bool try_deque_event(SDL_Event& out);

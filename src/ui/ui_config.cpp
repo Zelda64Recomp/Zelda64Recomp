@@ -62,7 +62,7 @@ public:
 	}
 	void register_events(recomp::UiEventListenerInstancer& listener) override {
 		recomp::register_event(listener, "apply_options",
-			[](Rml::Event& event) {
+			[](const std::string& param, Rml::Event& event) {
 				cur_options = new_options;
 				options_handle.DirtyVariable("options_changed");
 				update_graphics_config(new_options);

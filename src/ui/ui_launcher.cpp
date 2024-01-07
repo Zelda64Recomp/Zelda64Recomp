@@ -15,7 +15,7 @@ public:
 	}
 	void register_events(recomp::UiEventListenerInstancer& listener) override {
 		recomp::register_event(listener, "start_game",
-			[](Rml::Event& event) {
+			[](const std::string& param, Rml::Event& event) {
 				ultramodern::start_game(0);
 				recomp::set_current_menu(recomp::Menu::Config);
 			}
