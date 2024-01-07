@@ -15,6 +15,7 @@
 
 .tab {
     @extend %nav-all;
+    @extend %label-md;
     display: block;
     position: relative;
     padding: space(20) space(24);

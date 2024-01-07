@@ -26,7 +26,7 @@
 
     &:active {
         background-color: color.scale($color-primary-d, $lightness: -10%);
-        color: $color-error-d;
+        color: color.scale($color-text, $lightness: 20%);
     }
 
     &__label {
