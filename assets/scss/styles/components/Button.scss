@@ -1,0 +1,30 @@
+
+.button {
+    @extend %label-md;
+    margin: auto;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    padding: 12dp;
+    background-color: $color-primary-d;
+    color: $color-text;
+    border-radius: 8dp;
+
+    &:not([disabled]) {
+        @extend %nav-all;
+    }
+
+    &:focus {
+        color: $color-primary-l;
+    }
+
+    &:disabled,&[disabled] {
+        opacity: 0.5;
+        background-color: $color-primary-d;
+        color: $color-text-inactive;
+    }
+
+    &:active {
+        color: $color-error-l;
+    }
+}

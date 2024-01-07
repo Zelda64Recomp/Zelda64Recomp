@@ -6,6 +6,7 @@
   "scripts": {
     "start": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss",
     "watch": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss --watch",
+    "watch-debug": "sass --no-source-map main.scss ..\\recomp.rcss --watch",
     "lint": "stylelint '.\\**\\*.scss'"
   },
   "author": "",

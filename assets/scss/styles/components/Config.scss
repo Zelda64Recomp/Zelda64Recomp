@@ -1,0 +1,122 @@
+
+.config__form {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+    height: 100%;
+    background: $color-bg-shadow;
+}
+
+.config__wrapper {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0dp;
+    flex: 1 1 100%;
+    height: 100%;
+    padding: 16dp;
+    text-align: left;
+    background: $color-bg-shadow;
+}
+
+.config-option {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.config-option__title {
+    @extend %label-md;
+    padding: 16dp 12dp 0;
+}
+
+.config-option__list {
+    display: flex;
+    padding: 0;
+    flex-direction: row;
+    // flex: 1 1 100%;
+    // height: auto;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    // background-color: $color-error-d;
+
+    .config-option__tab-label {
+        @extend %label-sm;
+        display: block;
+        padding: 8dp 0;
+        margin: 0 12dp;
+        margin-right: 16dp;
+        color: $color-text-inactive;
+        tab-index: none;
+        transition: color $transition-quick;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    input.radio {
+        @extend %nav-all;
+        visibility: hidden;
+        width: 0;
+        height: 0;
+
+        &:checked + .config-option__tab-label {
+            border-bottom: 1dp;
+            border-color: $color-border-hard;
+
+            &:hover {
+                cursor: default;
+            }
+        }
+
+        &:focus + .config-option__tab-label {
+            color: $color-text;
+        }
+    }
+
+    input.range slidertrack {
+        margin-top: 7dp;
+        height: 2dp;
+        background-color: $color-border;
+    }
+    
+    input.range sliderbar {
+        margin-left: -8dp;
+        margin-right: -6dp;
+        width: 16dp;
+        height: 16dp;
+        background-color: $color-text-dim;
+        border-radius: 8dp;
+        transition: background-color $transition-quick;
+        
+        &:hover {
+            cursor: pointer;
+            background-color: $color-text;
+        }
+    }
+    
+    input.range sliderbar:active,
+    input.range slidertrack:active + sliderbar {
+        background-color: $color-secondary;
+    }
+
+    input.range sliderarrowdec,
+    input.range sliderarrowinc {
+        display: none;
+    }
+}
+
+.config-option__range-label {
+    @extend %label-sm;
+    flex: 0 0 16dp;
+
+    display: block;
+    padding: 0;
+    margin: 0 12dp;
+    margin-right: 16dp;
+    color: $color-text;
+    tab-index: none;
+}

@@ -1,0 +1,17 @@
+
+%nav-dir {
+    nav-up: auto;
+    nav-down: auto;
+    nav-right: auto;
+    nav-left: auto;
+}
+
+%nav-foc {
+    focus: auto;
+    tab-index: auto;
+}
+
+%nav-all {
+    @extend %nav-dir;
+    @extend %nav-foc;
+}
