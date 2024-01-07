@@ -676,7 +676,6 @@ struct {
                 Rml::ReleaseMemoryPools();
 
                 if (current_document != nullptr) {
-                    current_document->Hide();
                     current_document->Close();
                 }
 
@@ -865,8 +864,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
         int width, height;
         SDL_GetWindowSizeInPixels(window, &width, &height);
 
-        // Scale the UI based on the window size with 720 vertical resolution as the reference point.
-        UIContext.rml.context->SetDensityIndependentPixelRatio(height / 720.0f);
+        // Scale the UI based on the window size with 1080 vertical resolution as the reference point.
+        UIContext.rml.context->SetDensityIndependentPixelRatio(height / 1080.0f);
 
         UIContext.rml.render_interface->start(command_list, width, height);
 
