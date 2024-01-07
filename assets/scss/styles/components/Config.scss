@@ -45,11 +45,12 @@
     flex: 1;
     align-items: flex-start;
     justify-content: space-between;
+    margin: space(8) 0 space(16);
 }
 
 .config-option__title {
     @extend %label-md;
-    padding: 12dp 12dp 0;
+    padding: 0 12dp;
 }
 
 .config-option__list {
