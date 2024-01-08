@@ -5,6 +5,7 @@ $base-height: 1080;
 
 .centered-page {
     display: flex;
+    // visibility: hidden;
     position: absolute;
     top: 0;
     right: 0;
@@ -25,7 +26,7 @@ $base-height: 1080;
     height: 100%;
     background: $color-bg-shadow-2;
     border-radius: $border-radius-modal;
-    border-color: $color-border-soft;
+    border-color: $color-bg-shadow;
     border-width: space(1);
 }
 

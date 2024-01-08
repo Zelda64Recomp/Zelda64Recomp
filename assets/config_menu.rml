@@ -107,7 +107,7 @@
 							<div class="config__footer">
 								<div>
 									<button
-										class="button"
+										class="button button--secondary"
 										nav-return="rr_manual"
 										data-attrif-disabled="!options_changed"
 										onclick="apply_options"

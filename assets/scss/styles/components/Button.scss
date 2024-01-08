@@ -1,32 +1,69 @@
 @use 'sass:color';
 
+@mixin create-button-variation($base-col) {
+    background-color: rgba($base-col, 0.05);
+    color: $color-text-dim;
+    border-color: rgba($base-col, 0.8);
+
+    &:focus {
+        color: $color-text;
+        border-color: $base-col;
+        background-color: rgba($base-col, 0.3);
+    }
+
+    &:disabled,&[disabled] {
+        color: $color-text-inactive;
+    }
+
+    &:active {
+        background-color: rgba($base-col, 0.2);
+        color: color.scale($color-text, $lightness: 20%);
+    }
+}
+
 .button {
-    @extend %label-md;
+    @extend %label-lg;
+    @include create-button-variation($color-primary);
+
     display: block;
-    padding: 16dp 20dp;
-    background-color: rgba($color-primary-d, 0.8);
-    color: $color-text;
+    padding: space(24);
+
     border-radius: $border-radius-md;
+    border-width: space(1);
     width: auto;
     height: auto;
+
+    // Setting it by default for convenience
+    // &--primary {
+    //     @include create-button-variation($color-primary);
+    // }
+
+    &--secondary {
+        @include create-button-variation($color-secondary);
+    }
+
+    &--tertiary {
+        @include create-button-variation($color-text);
+    }
+
+    &--success {
+        @include create-button-variation($color-success);
+    }
+
+    &--error {
+        @include create-button-variation($color-error);
+    }
+
+    &--warning {
+        @include create-button-variation($color-warning);
+    }
 
     &:not([disabled]) {
         @extend %nav-all;
     }
 
-    &:focus {
-        // color: $color-primary-l;
-        background-color: $color-primary-d;
-    }
-
     &:disabled,&[disabled] {
         opacity: 0.5;
-        color: $color-text-inactive;
-    }
-
-    &:active {
-        background-color: color.scale($color-primary-d, $lightness: -10%);
-        color: color.scale($color-text, $lightness: 20%);
     }
 
     &__label {
