@@ -20,6 +20,11 @@ public:
 				recomp::set_current_menu(recomp::Menu::Config);
 			}
 		);
+		recomp::register_event(listener, "exit_game",
+			[](const std::string& param, Rml::Event& event) {
+				ultramodern::quit();
+			}
+		);
 	}
 	void make_bindings(Rml::Context* context) override {
 
