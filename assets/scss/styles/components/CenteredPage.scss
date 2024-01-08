@@ -12,6 +12,7 @@ $base-height: 1080;
     bottom: 0;
     left: 0;
     padding: space($page-margin);
+    background-color: $color-border-soft;
 }
 
 .centered-page__modal {

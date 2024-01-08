@@ -650,6 +650,10 @@ struct {
 
         void swap_document(recomp::Menu menu) {
             if (current_document != nullptr) {
+                Rml::Element* window_el = current_document->GetElementById("window");
+                if (window_el != nullptr) {
+                    window_el->SetClassNames("rmlui-window rmlui-window--hidden");
+                }
                 current_document->Hide();
             }
 
@@ -657,6 +661,10 @@ struct {
             if (find_it != documents.end()) {
                 assert(find_it->second && "Document for menu not loaded!");
                 current_document = find_it->second;
+                Rml::Element* window_el = current_document->GetElementById("window");
+                if (window_el != nullptr) {
+                    window_el->SetClassNames("rmlui-window");
+                }
                 current_document->Show();
             }
             else {
