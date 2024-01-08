@@ -80,7 +80,7 @@
 
     input.radio {
         @extend %nav-all;
-        visibility: hidden;
+        visibility: visible;
         width: 0;
         height: 0;
 

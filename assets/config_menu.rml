@@ -29,7 +29,7 @@
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
-		<div id="window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)">
+		<div id="window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
 			<div class="centered-page">
 				<tabset class="centered-page__modal tabs" id="config_tabset">
 					<tab class="tab" id="tab_graphics" autofocus>
@@ -43,20 +43,20 @@
 									<div class="config-option">
 										<label class="config-option__title">Resolution</label>
 										<div class="config-option__list config-option__list">
-											<input type="radio" name="resolution" data-checked="res_option" value="Original" id="res_original"/>
+											<input type="radio" name="resolution" data-checked="res_option" value="Original" id="res_original" style="nav-left:none;nav-up:#tab_graphics"/>
 											<label class="config-option__tab-label" for="res_original">Original</label>
-											<input type="radio" name="resolution" data-checked="res_option" value="Original2x" id="res_2x" style="nav-down:#ar_expand"/>
+											<input type="radio" name="resolution" data-checked="res_option" value="Original2x" id="res_2x" style="nav-up:#tab_graphics"/>
 											<label class="config-option__tab-label" for="res_2x">Original 2x</label>
-											<input type="radio" name="resolution" data-checked="res_option" value="Auto" id="res_auto" style="nav-down:#ar_expand"/>
+											<input type="radio" name="resolution" data-checked="res_option" value="Auto" id="res_auto" style="nav-down:#ar_expand;nav-up:#tab_graphics"/>
 											<label class="config-option__tab-label" for="res_auto">Auto</label>
 										</div>
 									</div>
 									<div class="config-option">
 										<label class="config-option__title">Window Mode</label>
 										<div class="config-option__list config-option__list">
-											<input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" style="nav-down:#msaa_none"/>
+											<input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" style="nav-up:#tab_graphics"/>
 											<label class="config-option__tab-label" for="wm_windowed">Windowed</label>
-											<input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none"/>
+											<input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none;nav-up:#tab_graphics"/>
 											<label class="config-option__tab-label" for="wm_fullscreen">Fullscreen</label>
 										</div>
 									</div>
@@ -74,13 +74,13 @@
 									<div class="config-option">
 										<label class="config-option__title">MS Anti-Aliasing</label>
 										<div class="config-option__list config-option__list">
-											<input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-up:#wm_windowed;nav-down:#rr_manual"/>
+											<input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="msaa_none">None</label>
-											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#rr_manual"/>
+											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="msaa_2x">2x</label>
-											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#rr_manual"/>
+											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="msaa_4x">4x</label>
-											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#rr_manual"/>
+											<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="msaa_8x">8x</label>
 										</div>
 									</div>
@@ -90,11 +90,11 @@
 									<div class="config-option">
 										<label class="config-option__title">Framerate</label>
 										<div class="config-option__list config-option__list">
-											<input type="radio" name="refreshrate" data-checked="rr_option" value="Original" id="rr_original" style="nav-up:#ar_expand"/>
+											<input type="radio" name="refreshrate" data-checked="rr_option" value="Original" id="rr_original" style="nav-left:none;nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="rr_original">Original</label>
-											<input type="radio" name="refreshrate" data-checked="rr_option" value="Display" id="rr_display" style="nav-up:#ar_expand"/>
+											<input type="radio" name="refreshrate" data-checked="rr_option" value="Display" id="rr_display" style="nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="rr_display">Display</label>
-											<input type="radio" name="refreshrate" data-checked="rr_option" value="Manual" id="rr_manual" style="nav-up:#msaa_none;nav-right:none"/>
+											<input type="radio" name="refreshrate" data-checked="rr_option" value="Manual" id="rr_manual" style="nav-up:#ar_expand;nav-down:#apply_button"/>
 											<label class="config-option__tab-label" for="rr_manual">Manual</label>
 										</div>
 										<div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
@@ -111,6 +111,7 @@
 										nav-return="rr_manual"
 										data-attrif-disabled="!options_changed"
 										onclick="apply_options"
+										id="apply_button"
 									>
 										<div class="button__label">Apply</div>
 									</button>
