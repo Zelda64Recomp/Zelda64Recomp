@@ -602,7 +602,6 @@ namespace recomp {
         std::unordered_map<Rml::String, UiEventListener> listener_map_;
     public:
         Rml::EventListener* InstanceEventListener(const Rml::String& value, Rml::Element* element) override {
-            printf("Instancing event listener for %s\n", value.c_str());
             // Check if a listener has already been made for the full event string and return it if so.
             auto find_listener_it = listener_map_.find(value);
             if (find_listener_it != listener_map_.end()) {
@@ -878,6 +877,29 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
                 break;
             }
         }
+        // If no menu is open and the game has been started and either the escape key or select button are pressed, open the config menu.
+        if (cur_menu == recomp::Menu::None && ultramodern::is_game_started()) {
+            bool open_config = false;
+
+            switch (cur_event.type) {
+            case SDL_EventType::SDL_KEYDOWN:
+                if (cur_event.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+                    open_config = true;
+                }
+                break;
+            case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
+                if (cur_event.cbutton.button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK) {
+                    open_config = true;
+                }
+                break;
+            }
+
+            if (open_config) {
+                cur_menu = recomp::Menu::Config;
+                open_menu.store(recomp::Menu::Config);
+                UIContext.rml.swap_document(cur_menu);
+            }
+        }
     }
 
     UIContext.rml.update_focus(mouse_moved);
@@ -925,4 +947,8 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 void recomp::destroy_ui() {
     Rml::Shutdown();
     UIContext.rml.unload();
+}
+
+recomp::Menu recomp::get_current_menu() {
+    return open_menu.load();
 }

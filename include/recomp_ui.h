@@ -42,6 +42,7 @@ namespace recomp {
 	};
 
 	void set_current_menu(Menu menu);
+	Menu get_current_menu();
 
 	enum class ConfigSubmenu {
 		Graphics,

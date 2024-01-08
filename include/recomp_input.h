@@ -43,10 +43,13 @@ namespace recomp {
         std::vector<InputField> analog_down;
     };
 
-    extern const DefaultN64Mappings default_n64_mappings;
+    extern const DefaultN64Mappings default_n64_keyboard_mappings;
+    extern const DefaultN64Mappings default_n64_controller_mappings;
 
     void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
     void handle_events();
+
+    bool game_input_disabled();
 }
 
 #endif

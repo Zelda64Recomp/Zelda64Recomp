@@ -42,24 +42,44 @@ void recomp::get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out) {
     float cur_x = 0.0f;
     float cur_y = 0.0f;
 
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.a) ? N64Inputs::A : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.b) ? N64Inputs::B : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.l) ? N64Inputs::L : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.r) ? N64Inputs::R : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.z) ? N64Inputs::Z : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.start) ? N64Inputs::START : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_left)  ? N64Inputs::C_LEFT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_up)    ? N64Inputs::C_UP : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_down)  ? N64Inputs::C_DOWN : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_left)  ? N64Inputs::DPAD_LEFT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_up)    ? N64Inputs::DPAD_UP : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_down)  ? N64Inputs::DPAD_DOWN : 0;
+    if (!recomp::game_input_disabled()) {
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.a) ? N64Inputs::A : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.b) ? N64Inputs::B : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.l) ? N64Inputs::L : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.r) ? N64Inputs::R : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.z) ? N64Inputs::Z : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.start) ? N64Inputs::START : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_left) ? N64Inputs::C_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_up) ? N64Inputs::C_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_down) ? N64Inputs::C_DOWN : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
+
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.a) ? N64Inputs::A : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.b) ? N64Inputs::B : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.l) ? N64Inputs::L : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.r) ? N64Inputs::R : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.z) ? N64Inputs::Z : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.start) ? N64Inputs::START : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_left) ? N64Inputs::C_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_up) ? N64Inputs::C_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_down) ? N64Inputs::C_DOWN : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
+
+        cur_x = recomp::get_input_analog(recomp::default_n64_keyboard_mappings.analog_right) - recomp::get_input_analog(recomp::default_n64_keyboard_mappings.analog_left);
+        cur_y = recomp::get_input_analog(recomp::default_n64_keyboard_mappings.analog_up) - recomp::get_input_analog(recomp::default_n64_keyboard_mappings.analog_down);
+        cur_x += recomp::get_input_analog(recomp::default_n64_controller_mappings.analog_right) - recomp::get_input_analog(recomp::default_n64_controller_mappings.analog_left);
+        cur_y += recomp::get_input_analog(recomp::default_n64_controller_mappings.analog_up) - recomp::get_input_analog(recomp::default_n64_controller_mappings.analog_down);
+    }
 
     *buttons_out = cur_buttons;
-    cur_x = recomp::get_input_analog(recomp::default_n64_mappings.analog_right) - recomp::get_input_analog(recomp::default_n64_mappings.analog_left);
-    cur_y = recomp::get_input_analog(recomp::default_n64_mappings.analog_up) - recomp::get_input_analog(recomp::default_n64_mappings.analog_down);
     *x_out = cur_x;
     *y_out = cur_y;
 }
@@ -69,14 +89,25 @@ extern "C" void recomp_get_item_inputs(uint8_t* rdram, recomp_context* ctx) {
 
     uint32_t cur_buttons = 0;
 
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.b) ? N64Inputs::B : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_left) ? N64Inputs::C_LEFT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.c_down) ? N64Inputs::C_DOWN : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
-    cur_buttons |= recomp::get_input_digital(recomp::default_n64_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
+    if (!recomp::game_input_disabled()) {
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.b) ? N64Inputs::B : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_left) ? N64Inputs::C_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.c_down) ? N64Inputs::C_DOWN : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_keyboard_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
+
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.b) ? N64Inputs::B : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_left) ? N64Inputs::C_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_right) ? N64Inputs::C_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.c_down) ? N64Inputs::C_DOWN : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_left) ? N64Inputs::DPAD_LEFT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_right) ? N64Inputs::DPAD_RIGHT : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_up) ? N64Inputs::DPAD_UP : 0;
+        cur_buttons |= recomp::get_input_digital(recomp::default_n64_controller_mappings.dpad_down) ? N64Inputs::DPAD_DOWN : 0;
+    }
 
     *buttons_out = cur_buttons;
 }
@@ -108,8 +139,16 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
 
-    float x_val = recomp::get_input_analog(recomp::default_n64_mappings.c_right) - recomp::get_input_analog(recomp::default_n64_mappings.c_left);
-    float y_val = recomp::get_input_analog(recomp::default_n64_mappings.c_up) - recomp::get_input_analog(recomp::default_n64_mappings.c_down);
+    float x_val = 0;
+    float y_val = 0;
+
+    if (!recomp::game_input_disabled()) {
+        x_val += recomp::get_input_analog(recomp::default_n64_keyboard_mappings.c_right) - recomp::get_input_analog(recomp::default_n64_keyboard_mappings.c_left);
+        y_val += recomp::get_input_analog(recomp::default_n64_keyboard_mappings.c_up) - recomp::get_input_analog(recomp::default_n64_keyboard_mappings.c_down);
+
+        x_val += recomp::get_input_analog(recomp::default_n64_controller_mappings.c_right) - recomp::get_input_analog(recomp::default_n64_controller_mappings.c_left);
+        y_val += recomp::get_input_analog(recomp::default_n64_controller_mappings.c_up) - recomp::get_input_analog(recomp::default_n64_controller_mappings.c_down);
+    }
 
     *x_out = x_val;
     *y_out = y_val;

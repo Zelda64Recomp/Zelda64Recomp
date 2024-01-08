@@ -83,80 +83,119 @@ constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_EAST = SDL_CONTROLLER_B
 constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_WEST = SDL_CONTROLLER_BUTTON_X;
 constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_NORTH = SDL_CONTROLLER_BUTTON_Y;
 
-const recomp::DefaultN64Mappings recomp::default_n64_mappings = {
+const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
+    .a = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_SPACE}
+    },
+    .b = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_LSHIFT}
+    },
+    .l = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_E}
+    },
+    .r = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_R}
+    },
+    .z = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_Q}
+    },
+    .start = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_RETURN}
+    },
+    .c_left = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_LEFT}
+    },
+    .c_right = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_RIGHT}
+    },
+    .c_up = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_UP}
+    },
+    .c_down = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_DOWN}
+    },
+    .dpad_left = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_J}
+    },
+    .dpad_right = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_L}
+    },
+    .dpad_up = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_I}
+    },
+    .dpad_down = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_K}
+    },
+    .analog_left = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_A}
+    },
+    .analog_right = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_D}
+    },
+    .analog_up = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_W}
+    },
+    .analog_down = {
+        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_S}
+    },
+};
+
+const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
     .a = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_SOUTH},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_SPACE}
     },
     .b = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_EAST},
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_WEST},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_LSHIFT}
     },
     .l = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_E}
     },
     .r = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_TRIGGERRIGHT + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_R}
     },
     .z = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_TRIGGERLEFT + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_Q}
     },
     .start = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_START},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_RETURN}
     },
     .c_left = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = -(SDL_CONTROLLER_AXIS_RIGHTX + 1)},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_LEFT}
     },
     .c_right = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_RIGHTX + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_RIGHT}
     },
     .c_up = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = -(SDL_CONTROLLER_AXIS_RIGHTY + 1)},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_UP}
     },
     .c_down = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_RIGHTY + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_DOWN}
     },
     .dpad_left = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_DPAD_LEFT},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_J}
     },
     .dpad_right = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_L}
     },
     .dpad_up = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_DPAD_UP},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_I}
     },
     .dpad_down = {
         {.device_type = (uint32_t)DeviceType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_DPAD_DOWN},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_K}
     },
     .analog_left = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = -(SDL_CONTROLLER_AXIS_LEFTX + 1)},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_A}
     },
     .analog_right = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_LEFTX + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_D}
     },
     .analog_up = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = -(SDL_CONTROLLER_AXIS_LEFTY + 1)},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_W}
     },
     .analog_down = {
         {.device_type = (uint32_t)DeviceType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_LEFTY + 1},
-        {.device_type = (uint32_t)DeviceType::Keyboard, .input_id = SDL_SCANCODE_S}
     },
 };
 
@@ -271,4 +310,9 @@ bool recomp::get_input_digital(const std::span<const recomp::InputField> fields)
         ret |= get_input_digital(field);
     }
     return ret;
+}
+
+bool recomp::game_input_disabled() {
+    // Disable input if any menu is open.
+    return recomp::get_current_menu() != recomp::Menu::None;
 }

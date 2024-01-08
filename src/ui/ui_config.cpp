@@ -1,5 +1,6 @@
 #include "recomp_ui.h"
 #include "../../ultramodern/config.hpp"
+#include "../../ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
 
 ultramodern::GraphicsConfig cur_options;
@@ -66,6 +67,19 @@ public:
 				cur_options = new_options;
 				options_handle.DirtyVariable("options_changed");
 				update_graphics_config(new_options);
+			});
+		recomp::register_event(listener, "config_keydown",
+			[](const std::string& param, Rml::Event& event) {
+				if (event.GetId() == Rml::EventId::Keydown) {
+					if (event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN) == Rml::Input::KeyIdentifier::KI_ESCAPE) {
+						if (ultramodern::is_game_started()) {
+							recomp::set_current_menu(recomp::Menu::None);
+						}
+						else {
+							recomp::set_current_menu(recomp::Menu::Launcher);
+						}
+					}
+				}
 			});
 	}
 	void make_bindings(Rml::Context* context) override {
