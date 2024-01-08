@@ -17,6 +17,17 @@ public:
 		recomp::register_event(listener, "start_game",
 			[](const std::string& param, Rml::Event& event) {
 				ultramodern::start_game(0);
+				recomp::set_current_menu(recomp::Menu::None);
+			}
+		);
+		recomp::register_event(listener, "open_controls",
+			[](const std::string& param, Rml::Event& event) {
+				recomp::set_current_menu(recomp::Menu::Config);
+				recomp::set_config_submenu(recomp::ConfigSubmenu::Controls);
+			}
+		);
+		recomp::register_event(listener, "open_settings",
+			[](const std::string& param, Rml::Event& event) {
 				recomp::set_current_menu(recomp::Menu::Config);
 			}
 		);

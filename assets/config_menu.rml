@@ -31,7 +31,7 @@
 	<!-- <handle move_target="#document"> -->
 		<div id="window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)">
 			<div class="centered-page">
-				<tabset class="centered-page__modal tabs">
+				<tabset class="centered-page__modal tabs" id="config_tabset">
 					<tab class="tab" id="tab_graphics" autofocus>
 						<div>Graphics</div>
 						<div class="tab__indicator"></div>

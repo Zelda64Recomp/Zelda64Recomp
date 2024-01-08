@@ -665,6 +665,18 @@ struct {
             }
         }
 
+        void swap_config_menu(recomp::ConfigSubmenu submenu) {
+            if (current_document != nullptr) {
+                Rml::Element* config_tabset_base = current_document->GetElementById("config_tabset");
+                if (config_tabset_base != nullptr) {
+                    Rml::ElementTabSet* config_tabset = rmlui_dynamic_cast<Rml::ElementTabSet*>(config_tabset_base);
+                    if (config_tabset != nullptr) {
+                        config_tabset->SetActiveTab(static_cast<int>(submenu));
+                    }
+                }
+            }
+        }
+
         void load_documents() {
             if (!documents.empty()) {
                 Rml::Factory::RegisterEventListenerInstancer(nullptr);
@@ -703,6 +715,9 @@ struct {
         }
 
         void update_focus(bool mouse_moved) {
+            if (current_document == nullptr) {
+                return;
+            }
             Rml::Element* focused = current_document->GetFocusLeafNode();
 
             // If there was mouse motion, get the current hovered element (or its target if it points to one) and focus that if applicable.
@@ -817,6 +832,7 @@ bool recomp::try_deque_event(SDL_Event& out) {
 }
 
 std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
+std::atomic<recomp::ConfigSubmenu> open_config_submenu = recomp::ConfigSubmenu::Count;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_chain_texture) {
     int num_keys;
@@ -837,6 +853,12 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
 
     if (cur_menu != prev_menu) {
         UIContext.rml.swap_document(cur_menu);
+    }
+
+    recomp::ConfigSubmenu config_submenu = open_config_submenu.load();
+    if (config_submenu != recomp::ConfigSubmenu::Count) {
+        UIContext.rml.swap_config_menu(config_submenu);
+        open_config_submenu.store(recomp::ConfigSubmenu::Count);
     }
 
     prev_menu = cur_menu;
@@ -894,6 +916,10 @@ void set_rt64_hooks() {
 
 void recomp::set_current_menu(Menu menu) {
     open_menu.store(menu);
+}
+
+void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
+	open_config_submenu.store(submenu);
 }
 
 void recomp::destroy_ui() {

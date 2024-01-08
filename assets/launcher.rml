@@ -36,11 +36,11 @@
 							<div class="menu-list-item__bullet">•</div>
 							<div class="menu-list-item__label">Start game</div>
 						</button>
-						<button class="menu-list-item menu-list-item--right">
+						<button onclick="open_controls" class="menu-list-item menu-list-item--right">
 							<div class="menu-list-item__bullet">•</div>
 							<div class="menu-list-item__label">Setup controls</div>
 						</button>
-						<button class="menu-list-item menu-list-item--right">
+						<button onclick="open_settings" class="menu-list-item menu-list-item--right">
 							<div class="menu-list-item__bullet">•</div>
 							<div class="menu-list-item__label">Settings</div>
 						</button>

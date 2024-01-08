@@ -42,6 +42,16 @@ namespace recomp {
 	};
 
 	void set_current_menu(Menu menu);
+
+	enum class ConfigSubmenu {
+		Graphics,
+		Controls,
+		Audio,
+		Count
+	};
+
+	void set_config_submenu(ConfigSubmenu submenu);
+
 	void destroy_ui();
 	void apply_color_hack();
 }
