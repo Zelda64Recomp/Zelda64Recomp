@@ -97,8 +97,10 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     static constexpr uint32_t initial_upload_buffer_size = 1024 * 1024;
     static constexpr uint32_t initial_vertex_buffer_size = 512 * sizeof(Rml::Vertex);
     static constexpr uint32_t initial_index_buffer_size = 1024 * sizeof(int);
-    static constexpr RT64::RenderFormat RmlTextureFormat = RT64::RenderFormat::B8G8R8A8_UNORM;
+    static constexpr RT64::RenderFormat RmlTextureFormat = RT64::RenderFormat::R8G8B8A8_UNORM;
+    static constexpr RT64::RenderFormat RmlTextureFormatBgra = RT64::RenderFormat::B8G8R8A8_UNORM;
     static constexpr uint32_t RmlTextureFormatBytesPerPixel = RenderFormatSize(RmlTextureFormat);
+    static_assert(RenderFormatSize(RmlTextureFormatBgra) == RmlTextureFormatBytesPerPixel);
     struct UIRenderContext* render_context_;
     int scissor_x_ = 0;
     int scissor_y_ = 0;
@@ -433,7 +435,7 @@ public:
             texture_dimensions.y = size_y;
 
             texture_handle = texture_count_++;
-            create_texture(texture_handle, reinterpret_cast<const Rml::byte*>(file_data.data() + 18), texture_dimensions, true);
+            create_texture(texture_handle, reinterpret_cast<const Rml::byte*>(file_data.data() + 18), texture_dimensions, true, true);
 
             return true;
         }
@@ -442,13 +444,18 @@ public:
     }
 
     bool GenerateTexture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions) override {
+        if (source_dimensions.x == 0 || source_dimensions.y == 0) {
+            texture_handle = 0;
+            return true;
+        }
+
         texture_handle = texture_count_++;
         return create_texture(texture_handle, source, source_dimensions);
     }
 
-    bool create_texture(Rml::TextureHandle texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions, bool flip_y = false) {
+    bool create_texture(Rml::TextureHandle texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions, bool flip_y = false, bool bgra = false) {
         std::unique_ptr<RT64::RenderTexture> texture =
-            render_context_->device->createTexture(RT64::RenderTextureDesc::Texture2D(source_dimensions.x, source_dimensions.y, 1, RmlTextureFormat));
+            render_context_->device->createTexture(RT64::RenderTextureDesc::Texture2D(source_dimensions.x, source_dimensions.y, 1, bgra ? RmlTextureFormatBgra : RmlTextureFormat));
 
         if (texture != nullptr) {
             uint32_t image_size_bytes = source_dimensions.x * source_dimensions.y * RmlTextureFormatBytesPerPixel;

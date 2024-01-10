@@ -16,6 +16,13 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RT64-HLE ${CMAKE_BINARY_DIR}/rt64)
+
+# set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
+set(BUILD_SHARED_LIBS OFF)
+SET(LUNASVG_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
+# set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
+SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/nativefiledialog-extended)
 
@@ -157,6 +164,7 @@ target_link_libraries(MMRecomp PRIVATE
     RmlCore
     RmlDebugger
     nfd
+    lunasvg
 )
 
 # TODO fix the RT64 CMake script so that this doesn't need to be duplicated here

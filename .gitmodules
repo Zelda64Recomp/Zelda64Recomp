@@ -13,3 +13,6 @@
 [submodule "lib/mm-decomp"]
 	path = lib/mm-decomp
 	url = https://github.com/zeldaret/mm
+[submodule "lib/lunasvg"]
+	path = lib/lunasvg
+	url = https://github.com/sammycage/lunasvg
