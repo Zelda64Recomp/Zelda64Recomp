@@ -15,3 +15,14 @@
     @extend %nav-dir;
     @extend %nav-foc;
 }
+
+/*
+@include set-color(COLOR);
+*/
+@mixin set-color($col) {
+    color: $col;
+
+    svg {
+        image-color: $col;
+    }
+}

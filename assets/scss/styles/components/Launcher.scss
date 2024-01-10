@@ -1,4 +1,14 @@
 
+// TODO: Affect all elements with launcher fade-in
+// @keyframes fade-launcher-in {
+// 	0% {
+// 		opacity: 0;
+// 	}
+// 	to { 
+// 		opacity: 1;
+// 	}
+// }
+
 .launcher {
     display: block;
     flex-direction: row;
@@ -7,6 +17,8 @@
     width: 100%;
     height: 100%;
     background-color: $color-background-1;
+    // TODO: Affect all elements with launcher fade-in
+    // animation: 1.5s cubic-in-out 1 fade-launcher-in;
 }
 
 .launcher__vertical-split {
@@ -25,6 +37,51 @@
         right: 0;
         left: 50%;  
     }
+}
+
+
+@keyframes slide-mm-bg-over {
+	0% {
+		transform: translateX(space(100));
+	}
+	to { 
+		transform: translateX(space(0));
+	}
+}
+
+.launcher__background-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: absolute;
+    left: -70vw;
+    right: -100%;
+    top: -55vw;
+    bottom: -50vw;
+    transform: translateX(space(0));
+    animation: 25s cubic-out 1 slide-mm-bg-over;
+    // height: auto;
+}
+
+@keyframes fade-mm-in {
+	0% {
+		opacity: 0;
+	}
+	to { 
+		opacity: 0.1;
+	}
+}
+
+.launcher__background-mm {
+    position: absolute;
+    left: 0;
+    top: 0;
+    // top: -20%;
+    bottom: 0;
+    height: 100%;
+    width: auto;
+    opacity: 0.1;
+    animation: 2.5s cubic-in-out 1 fade-mm-in;
 }
 
 .launcher__title-quadrant {

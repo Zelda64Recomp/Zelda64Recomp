@@ -25,6 +25,9 @@
 					<div class="launcher__content-quadrant"></div>
 				</div>
 				<div class="launcher__vertical-split launcher__vertical-split--right">
+					<div class="launcher__background-wrapper">
+						<svg src="mm-clipped.svg" class="launcher__background-mm" />
+					</div>
 					<div class="launcher__title-quadrant launcher__title-quadrant--right">
 						<button class="subtitle-title subtitle-title--right" selected>
 							<div><h3>Zelda 64: Recompiled</h3></div>
