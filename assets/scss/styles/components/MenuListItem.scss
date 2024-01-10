@@ -13,6 +13,7 @@
 */
 
 .menu-list-item {
+    @include set-color($color-text-dim);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -21,7 +22,6 @@
     padding: space(16);
     border-radius: $border-radius-sm;
     background-color: rgba(0, 0, 0, 0);
-    color: $color-text-dim;
     cursor: pointer;
 
     &--right {
@@ -41,7 +41,7 @@
 
     &:focus:not(:disabled, [disabled]),
     &:hover:not(:disabled, [disabled]) {
-        color: $color-primary;
+        @include set-color($color-primary);
         decorator: $primary-lr-fade;
 
         .menu-list-item__bullet {
