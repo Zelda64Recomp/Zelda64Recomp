@@ -114,6 +114,9 @@ void ultramodern::set_native_thread_priority(ThreadPriority pri) {
 }
 #endif
 
+std::atomic_int temporary_threads = 0;
+std::atomic_int permanent_threads = 0;
+
 static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg) {
     OSThread *self = TO_PTR(OSThread, self_);
     debug_printf("[Thread] Thread created: %d\n", self->id);
@@ -123,6 +126,14 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     // Set the thread name
     ultramodern::set_native_thread_name("Game Thread " + std::to_string(self->id));
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::High);
+
+    // TODO fix these being hardcoded (this is only used for quicksaving)
+    if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
+        temporary_threads.fetch_add(1);
+    }
+    else if (self->id != 1 && self->id != 2) { // ignore idle and fault
+        permanent_threads.fetch_add(1);
+    }
 
     // Set initialized to false to indicate that this thread can be started.
     self->context->initialized.store(true);
@@ -145,6 +156,19 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
 
     // Dispose of this thread after it completes.
     ultramodern::cleanup_thread(self);
+    
+    // TODO fix these being hardcoded (this is only used for quicksaving)
+    if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
+        temporary_threads.fetch_sub(1);
+    }
+}
+
+uint32_t ultramodern::permanent_thread_count() {
+    return permanent_threads.load();
+}
+
+uint32_t ultramodern::temporary_thread_count() {
+    return temporary_threads.load();
 }
 
 extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {

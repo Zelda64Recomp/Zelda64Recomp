@@ -63,6 +63,8 @@ target_sources(PatchesLib PRIVATE
     ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
 )
 
+set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
+
 # Build patches elf
 add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.elf
     COMMAND make
@@ -119,6 +121,7 @@ set (SOURCES
     
     ${CMAKE_SOURCE_DIR}/src/game/input.cpp
     ${CMAKE_SOURCE_DIR}/src/game/controls.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/quicksaving.cpp
 
     ${CMAKE_SOURCE_DIR}/src/ui/ui_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_launcher.cpp

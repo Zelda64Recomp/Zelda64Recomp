@@ -46,6 +46,7 @@ namespace ultramodern {
 #endif
 
 // We need a place in rdram to hold the PI handles, so pick an address in extended rdram
+constexpr uint32_t rdram_size = 1024 * 1024 * 16; // 16MB to give extra room for anything custom
 constexpr int32_t cart_handle = 0x80800000;
 constexpr int32_t flash_handle = (int32_t)(cart_handle + sizeof(OSPiHandle));
 constexpr uint32_t save_size = 1024 * 1024 / 8; // Maximum save size, 1Mbit for flash
@@ -68,6 +69,8 @@ void pause_self(RDRAM_ARG1);
 void halt_self(RDRAM_ARG1);
 void stop_thread(OSThread *t);
 void cleanup_thread(OSThread *t);
+uint32_t permanent_thread_count();
+uint32_t temporary_thread_count();
 
 enum class ThreadPriority {
     Low,

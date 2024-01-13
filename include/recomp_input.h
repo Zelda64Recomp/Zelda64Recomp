@@ -50,6 +50,10 @@ namespace recomp {
     void handle_events();
 
     bool game_input_disabled();
+
+    // TODO move these
+    void quicksave_save();
+    void quicksave_load();
 }
 
 #endif

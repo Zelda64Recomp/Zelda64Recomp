@@ -175,9 +175,9 @@ EXPORT extern "C" void init() {
     // Load overlays in the first 1MB
     load_overlays(0x1000, (int32_t)entrypoint, 1024 * 1024);
 
-    // Allocate rdram_buffer (16MB to give room for any extra addressable data used by recomp)
-    rdram_buffer = std::make_unique<uint8_t[]>(16 * 1024 * 1024);
-    std::memset(rdram_buffer.get(), 0, 8 * 1024 * 1024);
+    // Allocate rdram_buffer
+    rdram_buffer = std::make_unique<uint8_t[]>(ultramodern::rdram_size);
+    std::memset(rdram_buffer.get(), 0, ultramodern::rdram_size);
 
     // Initial 1MB DMA (rom address 0x1000 = physical address 0x10001000)
     do_rom_read(rdram_buffer.get(), entrypoint, 0x10001000, 0x100000);

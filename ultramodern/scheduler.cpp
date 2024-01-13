@@ -150,6 +150,9 @@ void scheduler_func() {
     thread_queue_t running_thread_queue{};
     OSThread* cur_running_thread = nullptr;
 
+    ultramodern::set_native_thread_name("Scheduler Thread");
+    ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Critical);
+
     while (true) {
         OSThread* old_running_thread = cur_running_thread;
         scheduler_context.action_count.wait(0);
