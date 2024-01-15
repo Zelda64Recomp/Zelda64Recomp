@@ -234,6 +234,7 @@ int main(int argc, char** argv) {
     reset_audio(48000);
 
     init();
+    recomp::init_control_mappings();
 
     ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,

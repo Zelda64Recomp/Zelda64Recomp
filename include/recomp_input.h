@@ -46,6 +46,9 @@ namespace recomp {
     extern const DefaultN64Mappings default_n64_keyboard_mappings;
     extern const DefaultN64Mappings default_n64_controller_mappings;
 
+    // Loads the user's saved controller mapping if one exists, loads the default mappings if no saved mapping exists.
+    void init_control_mappings();
+
     void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
     void handle_events();
 
