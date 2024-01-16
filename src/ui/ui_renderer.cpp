@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "recomp_ui.h"
+#include "recomp_input.h"
 
 #include "concurrentqueue.h"
 
@@ -677,6 +678,7 @@ struct {
             else {
                 current_document = nullptr;
             }
+            prev_focused = nullptr;
         }
 
         void swap_config_menu(recomp::ConfigSubmenu submenu) {
@@ -686,6 +688,7 @@ struct {
                     Rml::ElementTabSet* config_tabset = rmlui_dynamic_cast<Rml::ElementTabSet*>(config_tabset_base);
                     if (config_tabset != nullptr) {
                         config_tabset->SetActiveTab(static_cast<int>(submenu));
+                        prev_focused = nullptr;
                     }
                 }
             }
@@ -714,6 +717,8 @@ struct {
             for (auto& [menu, controller]: menus) {
                 documents.emplace(menu, controller->load_document(context));
             }
+
+            prev_focused = nullptr;
         }
 
         void make_event_listeners() {
@@ -915,6 +920,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderTexture* swap_
                 UIContext.rml.swap_document(cur_menu);
             }
         }
+    }
+
+    recomp::InputField scanned_field = recomp::get_scanned_input();
+    if (scanned_field != recomp::InputField{}) {
+        recomp::finish_scanning_input(scanned_field);
     }
 
     UIContext.rml.update_focus(mouse_moved);

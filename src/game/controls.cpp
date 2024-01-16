@@ -5,34 +5,38 @@
 #include "../ultramodern/ultramodern.hpp"
 #include "../patches/input.h"
 
-// x-macros to build input enums and arrays. First parameter is the name, second parameter is the bit field for the input (or 0 if there is no associated one)
+// x-macros to build input enums and arrays.
+// First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
 #define DEFINE_N64_BUTTON_INPUTS() \
-    DEFINE_INPUT(A, 0x8000) \
-    DEFINE_INPUT(B, 0x4000) \
-    DEFINE_INPUT(Z, 0x2000) \
-    DEFINE_INPUT(START, 0x1000) \
-    DEFINE_INPUT(DPAD_UP, 0x0800) \
-    DEFINE_INPUT(DPAD_DOWN, 0x0400) \
-    DEFINE_INPUT(DPAD_LEFT, 0x0200) \
-    DEFINE_INPUT(DPAD_RIGHT, 0x0100) \
-    DEFINE_INPUT(L, 0x0020) \
-    DEFINE_INPUT(R, 0x0010) \
-    DEFINE_INPUT(C_UP, 0x0008) \
-    DEFINE_INPUT(C_DOWN, 0x0004) \
-    DEFINE_INPUT(C_LEFT, 0x0002) \
-    DEFINE_INPUT(C_RIGHT, 0x0001)
+    DEFINE_INPUT(A, 0x8000, "[A Button]") \
+    DEFINE_INPUT(B, 0x4000, "[B Button]") \
+    DEFINE_INPUT(Z, 0x2000, "[Z Button]") \
+    DEFINE_INPUT(START, 0x1000, "[Start Button]") \
+    DEFINE_INPUT(DPAD_UP, 0x0800, "[Dpad Up]") \
+    DEFINE_INPUT(DPAD_DOWN, 0x0400, "[Dpad Down]") \
+    DEFINE_INPUT(DPAD_LEFT, 0x0200, "[Dpad Left]") \
+    DEFINE_INPUT(DPAD_RIGHT, 0x0100, "[Dpad Right]") \
+    DEFINE_INPUT(L, 0x0020, "[L Button]") \
+    DEFINE_INPUT(R, 0x0010, "[R Button]") \
+    DEFINE_INPUT(C_UP, 0x0008, "[C Up]") \
+    DEFINE_INPUT(C_DOWN, 0x0004, "[C Down]") \
+    DEFINE_INPUT(C_LEFT, 0x0002, "[C Left]") \
+    DEFINE_INPUT(C_RIGHT, 0x0001, "[C Right]")
 
 #define DEFINE_N64_AXIS_INPUTS() \
-    DEFINE_INPUT(X_AXIS_NEG, 0) \
-    DEFINE_INPUT(X_AXIS_POS, 0) \
-    DEFINE_INPUT(Y_AXIS_NEG, 0) \
-    DEFINE_INPUT(Y_AXIS_POS, 0) \
+    DEFINE_INPUT(X_AXIS_NEG, 0, "[Analog Left]") \
+    DEFINE_INPUT(X_AXIS_POS, 0, "[Analog Right]") \
+    DEFINE_INPUT(Y_AXIS_NEG, 0, "[Analog Down]") \
+    DEFINE_INPUT(Y_AXIS_POS, 0, "[Analog Up]") \
+
+#define DEFINE_ALL_INPUTS() \
+    DEFINE_N64_BUTTON_INPUTS() \
+    DEFINE_N64_AXIS_INPUTS()
 
 // Make the input enum.
-#define DEFINE_INPUT(name, value) name,
+#define DEFINE_INPUT(name, value, readable) name,
 enum class GameInput {
-    DEFINE_N64_BUTTON_INPUTS()
-    DEFINE_N64_AXIS_INPUTS()
+    DEFINE_ALL_INPUTS()
 
     COUNT,
     N64_BUTTON_START = A,
@@ -43,22 +47,30 @@ enum class GameInput {
 #undef DEFINE_INPUT
 
 // Arrays that hold the mappings for every input for keyboard and controller respectively.
-using input_mapping_array = std::array<std::vector<recomp::InputField>, (size_t)GameInput::COUNT>;
-static std::array<std::vector<recomp::InputField>, (size_t)GameInput::COUNT> keyboard_input_mappings{};
-static std::array<std::vector<recomp::InputField>, (size_t)GameInput::COUNT> controller_input_mappings{};
+using input_mapping = std::array<recomp::InputField, recomp::bindings_per_input>;
+using input_mapping_array = std::array<input_mapping, (size_t)GameInput::COUNT>;
+static input_mapping_array keyboard_input_mappings{};
+static input_mapping_array controller_input_mappings{};
 
 // Make the button value array, which maps a button index to its bit field.
-#define DEFINE_INPUT(name, value) uint16_t(value##u),
+#define DEFINE_INPUT(name, value, readable) uint16_t(value##u),
 static const std::array n64_button_values = {
     DEFINE_N64_BUTTON_INPUTS()
 };
 #undef DEFINE_INPUT
 
+// Make the input name array.
+#define DEFINE_INPUT(name, value, readable) readable,
+static const std::vector<std::string> input_names = {
+    DEFINE_ALL_INPUTS()
+};
+
 void recomp::init_control_mappings() {
     // TODO load from a file if one exists.
 
     auto assign_mapping = [](input_mapping_array& mapping, GameInput input, const std::vector<recomp::InputField>& value) {
-        mapping[(size_t)input] = value;
+        input_mapping& cur_mapping = mapping.at((size_t)input);
+        std::copy_n(value.begin(), std::min(value.size(), cur_mapping.size()), cur_mapping.begin());
     };
 
     auto assign_all_mappings = [&](input_mapping_array& mapping, const recomp::DefaultN64Mappings& values) {
@@ -86,6 +98,37 @@ void recomp::init_control_mappings() {
 
     assign_all_mappings(keyboard_input_mappings, recomp::default_n64_keyboard_mappings);
     assign_all_mappings(controller_input_mappings, recomp::default_n64_controller_mappings);
+}
+
+size_t recomp::get_num_inputs() {
+    return (size_t)GameInput::COUNT;
+}
+
+const std::vector<std::string>& recomp::get_input_names() {
+    return input_names;
+}
+
+// Due to an RmlUi limitation this can't be const. Ideally it would return a const reference or even just a straight up copy.
+recomp::InputField& recomp::get_input_binding(size_t input_index, size_t binding_index, recomp::InputDevice device) {
+    input_mapping_array& device_mappings = (device == recomp::InputDevice::Controller) ?  controller_input_mappings : keyboard_input_mappings;
+    input_mapping& cur_input_mapping = device_mappings.at(input_index);
+
+    if (binding_index < cur_input_mapping.size()) {
+        return cur_input_mapping[binding_index];
+    }
+    else {
+        static recomp::InputField dummy_field = {};
+        return dummy_field;
+    }
+}
+
+void recomp::set_input_binding(size_t input_index, size_t binding_index, recomp::InputDevice device, recomp::InputField value) {
+    input_mapping_array& device_mappings = (device == recomp::InputDevice::Controller) ?  controller_input_mappings : keyboard_input_mappings;
+    input_mapping& cur_input_mapping = device_mappings.at(input_index);
+
+    if (binding_index < cur_input_mapping.size()) {
+        cur_input_mapping[binding_index] = value;
+    }
 }
 
 void recomp::get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out) {
