@@ -1,8 +1,5 @@
 @use 'sass:math';
 
-$page-margin: 32;
-$base-height: 1080;
-
 .centered-page {
     display: flex;
     // visibility: hidden;
@@ -22,7 +19,8 @@ $base-height: 1080;
     position: relative;
     margin: auto;
     flex: 1 1 100%;
-    max-width: space(math.div($base-height*4, 3))dp;
+    max-width: space(math.div($base-height*16, 9))dp;
+    // max-width: space(math.div($base-height*4, 3))dp;
     width: 100%;
     height: 100%;
     background: $color-modal-overlay;

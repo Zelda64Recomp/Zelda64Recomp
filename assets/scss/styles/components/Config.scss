@@ -17,7 +17,7 @@
     border-radius: 0dp;
     flex: 1 1 100%;
     height: 100%;
-    padding: 16dp;
+    padding: space(16);
     text-align: left;
     background-color: $color-bg-shadow;
 }
@@ -50,15 +50,13 @@
 
 .config-option__title {
     @extend %label-md;
-    padding: 0 12dp;
+    padding: 0 space(12);
 }
 
 .config-option__list {
     display: flex;
     padding: 0;
     flex-direction: row;
-    // flex: 1 1 100%;
-    // height: auto;
     width: 100%;
     align-items: flex-start;
     justify-content: flex-start;
@@ -68,7 +66,7 @@
         display: block;
         padding: 12dp 0;
         margin: 0 12dp;
-        margin-right: 16dp;
+        margin-right: space(16);
         color: $color-text-inactive;
         tab-index: none;
         transition: color $transition-quick;
@@ -107,8 +105,8 @@
     input.range sliderbar {
         margin-left: -8dp;
         margin-right: -6dp;
-        width: 16dp;
-        height: 16dp;
+        width: space(16);
+        height: space(16);
         background-color: $color-text-dim;
         border-radius: 8dp;
         transition: background-color $transition-quick;
@@ -137,12 +135,12 @@
 
 .config-option__range-label {
     @extend %label-sm;
-    flex: 0 0 16dp;
+    flex: 0 0 space(16);
 
     display: block;
     padding: 0;
     margin: 0 12dp;
-    margin-right: 16dp;
+    margin-right: space(16);
     color: $color-text;
     tab-index: none;
 }

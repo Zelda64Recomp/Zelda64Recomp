@@ -1,0 +1,72 @@
+@use 'sass:math';
+
+// Probably will need to adjust for other langs...
+$mapping-min-width: 720;
+// Need to figure out where the -16 comes from...
+$visual-max-width: math.div($base-height*16, 9) - $page-margin - $page-margin - $mapping-min-width - 16;
+
+.input-config {
+    padding: 0;
+}
+
+.input-config__horizontal-split {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    height: 100%;
+}
+
+.input-config__mappings {
+    display: block;
+    flex: 1 1 auto;
+    height: 100%;
+    min-width: space($mapping-min-width);
+}
+
+.input-config__mappings-scroll {
+    display: block;
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.input-config__map-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 100%;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: $border-radius-sm;
+    padding: space(4);
+
+    &:hover, &:focus-visible {
+        background-color: $color-primary-a20;
+    }
+}
+
+.input-config__visual-wrapper {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: space($visual-max-width);
+    max-height: 100%;
+    margin: auto 0;
+    flex: 1 1 100%;
+}
+
+.input-config__visual-aspect {
+    position: relative;
+    width: 100%;
+    padding-bottom: 75%;
+    background-color: $color-secondary-a5;
+    margin: auto 0;
+}
+
+.input-config__visual {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
