@@ -124,15 +124,36 @@
 						<div class="tab__indicator"></div>
 					</tab>
 					<panel class="config" data-model="controls_model">
-						<form class="config__form">
+						<form class="config__form" data-attr-cur-input="cur_input_row">
 							<div class="config__wrapper input-config">
 								<div class="input-config__horizontal-split">
-									<div class="input-config__mappings">
+									<div class="input-config__mappings" data-event-mouseout="set_input_row_focus(-1)">
 										<div class="input-config__mappings-scroll">
-											<div class="input-config__map-row" id="input_row" data-for="input_bindings, i : inputs">
-												<label class="config-option__title" style="display:inline-block;width:250dp">{{get_input_name(i)}}</label>
-												<button data-for="cur_binding, j : input_bindings" data-event-click="set_input_binding(i,j)" class="button button--secondary label-md" style="font-family:promptfont;font-size:40dp;display:inline-block;height:50dp;width:150dp;padding:0dp;text-align:center">{{cur_binding}}</button>
-												<button data-event-click="clear_input_bindings(i)" class="button button--secondary label-md" style="display:inline-block;height:50dp;width:150dp;padding:0dp;text-align:center">Delete</button>
+											<div
+												class="input-config__map-row"
+												id="input_row"
+												data-for="input_bindings, i : inputs"
+												data-event-mouseover="set_input_row_focus(i)"
+											>
+												<label
+													class="config-option__title"
+													style="display:inline-block;width:250dp"
+													>{{get_input_name(i)}}</label>
+												<button
+													data-event-blur="set_input_row_focus(-1)"
+													data-event-focus="set_input_row_focus(i)"
+													data-for="cur_binding, j : input_bindings"
+													data-event-click="set_input_binding(i,j)"
+													class="button button--secondary label-md"
+													style="font-family:promptfont;font-size:40dp;display:inline-block;height:50dp;width:150dp;padding:0dp;text-align:center"
+													>{{cur_binding}}</button>
+												<button
+													data-event-blur="set_input_row_focus(-1)"
+													data-event-focus="set_input_row_focus(i)"
+													data-event-click="clear_input_bindings(i)"
+													class="button button--secondary label-md"
+													style="display:inline-block;height:50dp;width:150dp;padding:0dp;text-align:center"
+													>Delete</button>
 											</div>
 										</div>
 									</div>
@@ -140,6 +161,14 @@
 										<div class="input-config__visual-aspect">
 											<div class="input-config__visual">
 												<h3>Insert visual here:{{active_binding_input}}:{{active_binding_slot}}</h3>
+												<h3>Current focused row: {{cur_input_row}}</h3>
+												<div
+													class="input-config__visual-input"
+													data-for="input_bindings, i : inputs"
+													data-attr-visual-input="get_input_enum_name(i)"
+												>
+													{{get_input_name(i)}}
+												</div>
 											</div>
 										</div>
 									</div>

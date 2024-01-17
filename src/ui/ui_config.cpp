@@ -56,6 +56,7 @@ void bind_option(Rml::DataModelConstructor& constructor, const std::string& name
 
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
+static int focused_input_index = -1;
 
 constexpr recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
@@ -90,6 +91,9 @@ public:
 			[](const std::string& param, Rml::Event& event) {
 			});
 		recomp::register_event(listener, "clear_input_bindings",
+			[](const std::string& param, Rml::Event& event) {
+			});
+		recomp::register_event(listener, "set_input_row_focus",
 			[](const std::string& param, Rml::Event& event) {
 			});
 		recomp::register_event(listener, "add_input_binding",
@@ -149,6 +153,10 @@ public:
 			return Rml::Variant{recomp::get_input_name(inputs.at(0).Get<size_t>())};
 		});
 
+		constructor.RegisterTransformFunc("get_input_enum_name", [](const Rml::VariantList& inputs) {
+			return Rml::Variant{recomp::get_input_enum_name(inputs.at(0).Get<size_t>())};
+		});
+
 		constructor.BindEventCallback("set_input_binding",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
 				scanned_input_index = inputs.at(0).Get<size_t>();
@@ -165,6 +173,17 @@ public:
 					recomp::set_input_binding(input_index, binding_index, cur_device, recomp::InputField{});
 				}
 				model_handle.DirtyVariable("inputs");
+			});
+
+		constructor.BindEventCallback("set_input_row_focus",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+				int input_index = inputs.at(0).Get<size_t>();
+				// watch for mouseout being overzealous during event bubbling, only clear if the event's attached element matches the current
+				if (input_index == -1 && event.GetType() == "mouseout" && event.GetCurrentElement() != event.GetTargetElement()) {
+					return;
+				}
+				focused_input_index = input_index;
+				model_handle.DirtyVariable("cur_input_row");
 			});
 
 		// Rml variable definition for an individual InputField.
@@ -214,6 +233,15 @@ public:
 		// Dummy instance of the dummy type to bind to the variable.
 		static InputContainer dummy_container;
 		constructor.Bind("inputs", &dummy_container);
+
+		constructor.BindFunc("cur_input_row", [](Rml::Variant& out) {
+			if (focused_input_index == -1) {
+				out = "NONE";
+			}
+			else {
+				out = recomp::get_input_enum_name(focused_input_index);
+			}
+		});
 
 		constructor.BindFunc("active_binding_input", [](Rml::Variant& out) {
 			if (scanned_input_index == -1) {

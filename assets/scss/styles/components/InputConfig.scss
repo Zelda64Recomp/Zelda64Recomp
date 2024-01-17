@@ -64,9 +64,46 @@ $visual-max-width: math.div($base-height*16, 9) - $page-margin - $page-margin - 
 
 .input-config__visual {
     display: flex;
+    flex-direction: column;
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
+}
+
+
+$all-inputs:
+    A,
+    B,
+    Z,
+    START,
+    DPAD_UP,
+    DPAD_DOWN,
+    DPAD_LEFT,
+    DPAD_RIGHT,
+    L,
+    R,
+    C_UP,
+    C_DOWN,
+    C_LEFT,
+    C_RIGHT,
+    X_AXIS_NEG,
+    X_AXIS_POS,
+    Y_AXIS_NEG,
+    Y_AXIS_POS;
+
+// Show default state while no inputs are active
+[cur-input="NONE"] .input-config__visual-input[visual-input] {
+    opacity: 1;
+}
+
+@each $inp in $all-inputs {
+    .input-config__visual-input[visual-input="#{$inp}"] {
+        opacity: 0.5;
+
+        [cur-input="#{$inp}"] & {
+            opacity: 1.0;
+        }
+    }
 }
