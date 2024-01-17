@@ -12,6 +12,10 @@ body
     box-sizing: border-box;
 	color: $color-text;
 	font-family: $font-stack;
+
+    &[disable-mouse] {
+        pointer-events: none;
+    }
 }
 
 .rmlui-window {
