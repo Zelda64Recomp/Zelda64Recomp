@@ -87,18 +87,6 @@ public:
 				graphics_model_handle.DirtyVariable("options_changed");
 				update_graphics_config(new_options);
 			});
-		recomp::register_event(listener, "rebind_input_bindings",
-			[](const std::string& param, Rml::Event& event) {
-			});
-		recomp::register_event(listener, "clear_input_bindings",
-			[](const std::string& param, Rml::Event& event) {
-			});
-		recomp::register_event(listener, "set_input_row_focus",
-			[](const std::string& param, Rml::Event& event) {
-			});
-		recomp::register_event(listener, "add_input_binding",
-			[](const std::string& param, Rml::Event& event) {
-			});
 		recomp::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
 				if (event.GetId() == Rml::EventId::Keydown) {
