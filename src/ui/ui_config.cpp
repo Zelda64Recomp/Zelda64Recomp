@@ -54,14 +54,18 @@ void bind_option(Rml::DataModelConstructor& constructor, const std::string& name
 	);
 };
 
-static size_t scanned_binding_index;
-static size_t scanned_input_index;
+static int scanned_binding_index = -1;
+static int scanned_input_index = -1;
 
 constexpr recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
 void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	recomp::set_input_binding(scanned_input_index, scanned_binding_index, cur_device, scanned_field);
+	scanned_input_index = -1;
+	scanned_binding_index = -1;
 	controls_model_handle.DirtyVariable("inputs");
+	controls_model_handle.DirtyVariable("active_binding_input");
+	controls_model_handle.DirtyVariable("active_binding_slot");
 }
 
 class ConfigMenu : public recomp::MenuController {
@@ -142,7 +146,7 @@ public:
 		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = recomp::get_num_inputs(); } );
 		
 		constructor.RegisterTransformFunc("get_input_name", [](const Rml::VariantList& inputs) {
-			return Rml::Variant{recomp::get_input_names().at(inputs.at(0).Get<size_t>())};
+			return Rml::Variant{recomp::get_input_name(inputs.at(0).Get<size_t>())};
 		});
 
 		constructor.BindEventCallback("set_input_binding",
@@ -150,6 +154,8 @@ public:
 				scanned_input_index = inputs.at(0).Get<size_t>();
 				scanned_binding_index = inputs.at(1).Get<size_t>();
 				recomp::start_scanning_input(cur_device);
+				model_handle.DirtyVariable("active_binding_input");
+				model_handle.DirtyVariable("active_binding_slot");
 			});
 
 		constructor.BindEventCallback("clear_input_bindings",
@@ -208,6 +214,17 @@ public:
 		// Dummy instance of the dummy type to bind to the variable.
 		static InputContainer dummy_container;
 		constructor.Bind("inputs", &dummy_container);
+
+		constructor.BindFunc("active_binding_input", [](Rml::Variant& out) {
+			if (scanned_input_index == -1) {
+				out = "NONE";
+			}
+			else {
+				out = recomp::get_input_enum_name(scanned_input_index);
+			}
+		});
+
+		constructor.Bind<int>("active_binding_slot", &scanned_binding_index);
 
 		controls_model_handle = constructor.GetModelHandle();
 	}

@@ -64,6 +64,14 @@ static const std::array n64_button_values = {
 static const std::vector<std::string> input_names = {
     DEFINE_ALL_INPUTS()
 };
+#undef DEFINE_INPUT
+
+// Make the input enum name array.
+#define DEFINE_INPUT(name, value, readable) #name,
+static const std::vector<std::string> input_enum_names = {
+    DEFINE_ALL_INPUTS()
+};
+#undef DEFINE_INPUT
 
 void recomp::init_control_mappings() {
     // TODO load from a file if one exists.
@@ -104,8 +112,12 @@ size_t recomp::get_num_inputs() {
     return (size_t)GameInput::COUNT;
 }
 
-const std::vector<std::string>& recomp::get_input_names() {
-    return input_names;
+const std::string& recomp::get_input_name(size_t input_index) {
+    return input_names.at(input_index);
+}
+
+const std::string& recomp::get_input_enum_name(size_t input_index) {
+    return input_enum_names.at(input_index);
 }
 
 // Due to an RmlUi limitation this can't be const. Ideally it would return a const reference or even just a straight up copy.

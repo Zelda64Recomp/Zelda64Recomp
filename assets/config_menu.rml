@@ -139,7 +139,7 @@
 									<div class="input-config__visual-wrapper">
 										<div class="input-config__visual-aspect">
 											<div class="input-config__visual">
-												<h3>Insert visual here</h3>
+												<h3>Insert visual here:{{active_binding_input}}:{{active_binding_slot}}</h3>
 											</div>
 										</div>
 									</div>

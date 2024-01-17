@@ -64,7 +64,8 @@ namespace recomp {
     // Loads the user's saved controller mapping if one exists, loads the default mappings if no saved mapping exists.
     void init_control_mappings();
     size_t get_num_inputs();
-    const std::vector<std::string>& get_input_names();
+    const std::string& get_input_name(size_t input_index);
+    const std::string& get_input_enum_name(size_t input_index);
     InputField& get_input_binding(size_t input_index, size_t binding_index, InputDevice device);
     void set_input_binding(size_t input_index, size_t binding_index, InputDevice device, InputField value);
 
