@@ -2,8 +2,6 @@
 @import "./globals/old";
 @import "./components/components";
 
-
-$font-stack: chiaro;
 $font-size: 20dp;
 
 body
@@ -54,6 +52,10 @@ h3 {
 
 .label-sm {
     @extend %label-sm;
+}
+
+.prompt-font {
+    @extend %prompt-font;
 }
 
 button {

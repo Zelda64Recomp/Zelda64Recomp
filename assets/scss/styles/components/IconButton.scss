@@ -1,0 +1,83 @@
+@use 'sass:color';
+
+@mixin create-icon-button-variation($base-col) {
+    background-color: rgba($base-col, 0.05);
+    border-color: rgba($base-col, 0.8);
+
+    &:focus, &:hover {
+        border-color: $base-col;
+        background-color: rgba($base-col, 0.3);
+    }
+
+    &:active {
+        background-color: rgba($base-col, 0.2);
+    }
+}
+
+$icon-button-size: 56;
+
+.icon-button {
+    @include set-color($color-text-dim);
+    @include create-icon-button-variation($color-primary);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    border-radius: space($icon-button-size * 0.5);
+    border-width: space(1.5);
+    width: space($icon-button-size);
+    height: space($icon-button-size);
+    min-width: space($icon-button-size);
+    min-height: space($icon-button-size);
+    max-width: space($icon-button-size);
+    max-height: space($icon-button-size);
+
+    &:focus, &:hover {
+        @include set-color($color-text);
+    }
+
+    &:active {
+        @include set-color(color.scale($color-text, $lightness: 20%));
+    }
+
+    &:disabled,&[disabled] {
+        @include set-color($color-text-dim);
+        opacity: 0.5;
+    }
+
+    &:not([disabled]) {
+        @extend %nav-all;
+    }
+
+    svg {
+        width: space(32);
+        height: space(32);
+    }
+
+    // Setting it by default for convenience
+    // &--primary {
+    //     @include create-icon-button-variation($color-primary);
+    // }
+
+    &--secondary {
+        @include create-icon-button-variation($color-secondary);
+    }
+
+    &--tertiary {
+        @include create-icon-button-variation($color-text);
+    }
+
+    &--success {
+        @include create-icon-button-variation($color-success);
+    }
+
+    &--danger {
+        @include create-icon-button-variation($color-error);
+    }
+
+    &--warning {
+        @include create-icon-button-variation($color-warning);
+    }
+}

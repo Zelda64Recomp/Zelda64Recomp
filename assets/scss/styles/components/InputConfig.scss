@@ -30,18 +30,8 @@ $visual-max-width: math.div($base-height*16, 9) - $page-margin - $page-margin - 
     overflow-y: auto;
 }
 
-.input-config__map-row {
-    display: flex;
-    flex-direction: row;
-    flex: 1 1 100%;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: $border-radius-sm;
-    padding: space(4);
-
-    &:hover, &:focus-visible {
-        background-color: $color-primary-a20;
-    }
+.input-config__mappings-wrapper {
+    padding: space(8);
 }
 
 .input-config__visual-wrapper {

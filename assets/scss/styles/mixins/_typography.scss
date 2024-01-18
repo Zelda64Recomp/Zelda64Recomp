@@ -1,5 +1,8 @@
 
+$font-stack: chiaro;
+
 @mixin set-font-sizing($sz, $spacing) {
+    // font-family: $font-stack;
     font-size: space($sz);
     letter-spacing: space($sz * $spacing);
     line-height: space($sz);
@@ -46,4 +49,12 @@
     @include set-font-sizing(16, 0.0);
     font-style: normal;
 	font-weight: 400;
+}
+
+%prompt-font {
+    font-family: promptfont;
+    font-style: normal;
+    font-weight: 400;
+    font-size: space(40);
+    line-height: space(40);
 }

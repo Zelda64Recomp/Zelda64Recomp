@@ -1,0 +1,84 @@
+@use 'sass:color';
+
+.control-option {
+    @include set-color($color-text-dim);
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: auto;
+    padding: space(8) space(16) space(8) space(20);
+    border-radius: $border-radius-sm;
+    background-color: rgba(0, 0, 0, 0);
+
+    &:focus-visible:not(:disabled, [disabled]),
+    &:hover:not(:disabled, [disabled]) {
+        @include set-color($color-text);
+        background-color: $color-bg-overlay;
+    }
+
+    &:disabled, &[disabled] {
+        opacity: 0.5;
+    }
+
+    .icon-button {
+        flex: 1 1 auto;
+    }
+}
+
+.control-option__label {
+    @extend %label-md;
+    flex: 2 1 space(300);
+    height: auto;
+    white-space: nowrap;
+}
+
+.control-option__bindings {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex: 2 1 space(400);
+    width: 100%;
+    height: space(72);
+    padding: 0 space(12) 0 space(4);
+}
+
+.control-option__binding {
+    @include set-color($color-text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 space(4);
+
+    flex: 1 1 100%;
+    width: 100%;
+    height: space(72);
+    padding: space(8);
+    background-color: $color-bg-overlay;
+    border-color: $color-bg-overlay;
+    border-width: space(1);
+    border-radius: $border-radius-sm;
+
+    &:focus, &:hover {
+        @include set-color($color-text);
+        background-color: $color-border-soft;
+        border-color: $color-text;
+    }
+
+    &:active {
+        @include set-color(color.scale($color-text, $lightness: 20%));
+    }
+
+    &:disabled, &[disabled] {
+        @include set-color($color-text-dim);
+        opacity: 0.5;
+    }
+
+    &:not([disabled]) {
+        @extend %nav-all;
+    }
+}
