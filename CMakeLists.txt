@@ -128,6 +128,14 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontEngineInterfaceScaled.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFace.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFaceHandleScaled.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFaceLayer.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFamily.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontProvider.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FreeTypeInterface.cpp
+    
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 
@@ -146,6 +154,7 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/render
+    ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_BINARY_DIR}/shaders
 )
 

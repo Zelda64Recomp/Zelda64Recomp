@@ -26,6 +26,8 @@
 #   include "InterfacePS.hlsl.dxil.h"
 #endif
 
+#include "FontEngineScaled/FontEngineInterfaceScaled.h"
+
 #ifdef _WIN32
 #    define GET_SHADER_BLOB(name, format) \
         ((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
@@ -735,6 +737,7 @@ struct {
     public:
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
+        std::unique_ptr<Rml::FontEngineInterface> font_interface;
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
         int32_t ui_scale = 4;
@@ -887,6 +890,9 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::SetSystemInterface(UIContext.rml.system_interface.get());
     Rml::SetRenderInterface(UIContext.rml.render_interface.get());
     Rml::Factory::RegisterEventListenerInstancer(&UIContext.rml.event_listener_instancer);
+    
+    UIContext.rml.font_interface = std::make_unique<RecompRml::FontEngineInterfaceScaled>();
+    Rml::SetFontEngineInterface(UIContext.rml.font_interface.get());
 
     Rml::Initialise();
 
