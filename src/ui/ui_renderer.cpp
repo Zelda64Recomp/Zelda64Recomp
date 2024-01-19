@@ -896,7 +896,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
-    UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width, height));
+    UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width * UIContext.rml.ui_scale, height * UIContext.rml.ui_scale));
     UIContext.rml.make_bindings();
 
     Rml::Debugger::Initialise(UIContext.rml.context);
@@ -974,6 +974,24 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool mouse_moved = false;
 
     while (recomp::try_deque_event(cur_event)) {
+        // Scale coordinates for mouse events based on the UI scale
+        switch (cur_event.type) {
+        case SDL_EventType::SDL_MOUSEMOTION:
+            cur_event.motion.x *= UIContext.rml.ui_scale;
+            cur_event.motion.y *= UIContext.rml.ui_scale;
+            cur_event.motion.xrel *= UIContext.rml.ui_scale;
+            cur_event.motion.yrel *= UIContext.rml.ui_scale;
+            break;
+        case SDL_EventType::SDL_MOUSEBUTTONDOWN:
+        case SDL_EventType::SDL_MOUSEBUTTONUP:
+            cur_event.button.x *= UIContext.rml.ui_scale;
+            cur_event.button.y *= UIContext.rml.ui_scale;
+            break;
+        case SDL_EventType::SDL_MOUSEWHEEL:
+            cur_event.wheel.x *= UIContext.rml.ui_scale;
+            cur_event.wheel.y *= UIContext.rml.ui_scale;
+            break;
+        }
         RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
 
         // If a menu is open then implement some additional behavior for specific events on top of what RmlUi normally does with them.
