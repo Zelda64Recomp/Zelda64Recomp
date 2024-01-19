@@ -60,7 +60,7 @@
     padding: space(8);
     background-color: $color-bg-overlay;
     border-color: $color-bg-overlay;
-    border-width: space(1);
+    border-width: $border-width-thickness;
     border-radius: $border-radius-sm;
 
     &:focus, &:hover {

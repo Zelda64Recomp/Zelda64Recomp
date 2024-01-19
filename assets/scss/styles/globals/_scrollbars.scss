@@ -1,0 +1,52 @@
+@use 'sass:math';
+
+$scrollbar-width: 12;
+
+@mixin _set-scroll-size($size-key) {
+    #{$size-key}: space($scrollbar-width);
+    
+    slidertrack {
+        #{$size-key}: space($scrollbar-width);
+    }
+    
+    sliderbar {
+        #{$size-key}: space($scrollbar-width);
+    }
+}
+
+scrollbarvertical,scrollbarhorizontal {
+    margin: 0;
+    border: 0;
+    
+    slidertrack {
+        background: $color-primary-l;
+        opacity: 0.05;
+    }
+    
+    sliderbar {
+        border-radius: space(math.div($scrollbar-width, 2) - 1);
+        background: $color-primary-l;
+        opacity: 0.1;
+
+        &:hover:not(:active) {
+            opacity: 0.2;
+        }
+
+        &:active {
+            opacity: 0.3;
+        }
+    }
+    
+    sliderarrowdec, sliderarrowinc {
+        width: 0;
+        height: 0;
+    }
+}
+
+scrollbarvertical {
+    @include _set-scroll-size(width);
+}
+
+scrollbarhorizontal {
+    @include _set-scroll-size(height);
+}
