@@ -741,6 +741,7 @@ struct {
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
         int32_t ui_scale = 4;
+        std::mutex draw_mutex;
 
         void unload() {
             render_interface.reset();
@@ -947,6 +948,7 @@ std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
 std::atomic<recomp::ConfigSubmenu> open_config_submenu = recomp::ConfigSubmenu::Count;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
+    std::lock_guard lock {UIContext.rml.draw_mutex};
     int num_keys;
     const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
 
@@ -980,7 +982,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool mouse_moved = false;
 
     while (recomp::try_deque_event(cur_event)) {
-        // Scale coordinates for mouse events based on the UI scale
+        // Scale coordinates for mouse and window events based on the UI scale
         switch (cur_event.type) {
         case SDL_EventType::SDL_MOUSEMOTION:
             cur_event.motion.x *= UIContext.rml.ui_scale;
@@ -996,6 +998,12 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         case SDL_EventType::SDL_MOUSEWHEEL:
             cur_event.wheel.x *= UIContext.rml.ui_scale;
             cur_event.wheel.y *= UIContext.rml.ui_scale;
+            break;
+        case SDL_EventType::SDL_WINDOWEVENT:
+            if (cur_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                cur_event.window.data1 *= UIContext.rml.ui_scale;
+                cur_event.window.data2 *= UIContext.rml.ui_scale;
+            }
             break;
         }
         RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
@@ -1053,6 +1061,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         static int prev_height = 0;
 
         if (prev_width != width || prev_height != height) {
+            printf("changed to %d by %d\n", width, height);
             UIContext.rml.context->SetDimensions({ (int)(width * UIContext.rml.ui_scale), (int)(height * UIContext.rml.ui_scale) });
         }
         prev_width = width;
@@ -1081,6 +1090,8 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 }
 
 void recomp::destroy_ui() {
+    std::lock_guard lock {UIContext.rml.draw_mutex};
+    UIContext.rml.font_interface.reset();
     Rml::Shutdown();
     UIContext.rml.unload();
 }
