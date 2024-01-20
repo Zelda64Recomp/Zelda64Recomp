@@ -1,5 +1,5 @@
 /*
- * This source file is modified from a part, the HTML/CSS Interface Middleware
+ * This source file is modified from a part of RmlUi, the HTML/CSS Interface Middleware
  *
  * For the latest information, see http://github.com/mikke89/RmlUi
  *

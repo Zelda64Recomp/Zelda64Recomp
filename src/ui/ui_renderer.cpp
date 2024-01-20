@@ -27,6 +27,8 @@
 #endif
 
 #include "FontEngineScaled/FontEngineInterfaceScaled.h"
+#include "FontEngineScaled/FontTypes.h"
+#include "ScaledSVG/ElementScaledSVG.h"
 
 #ifdef _WIN32
 #    define GET_SHADER_BLOB(name, format) \
@@ -146,7 +148,6 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterface {
     RT64::RenderCommandList* list_ = nullptr;
     bool scissor_enabled_ = false;
     std::vector<std::unique_ptr<RT64::RenderBuffer>> stale_buffers_{};
-    int32_t ui_scale_ = 1;
 public:
     RmlRenderInterface_RT64(struct UIRenderContext* render_context) {
         render_context_ = render_context;
@@ -379,7 +380,11 @@ public:
 
         list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
-            list_->setScissors(RT64::RenderRect{ scissor_x_ / ui_scale_, scissor_y_ / ui_scale_, (scissor_width_ + scissor_x_) / ui_scale_, (scissor_height_ + scissor_y_) / ui_scale_ });
+            list_->setScissors(RT64::RenderRect{
+                scissor_x_ / RecompRml::global_font_scale,
+                scissor_y_ / RecompRml::global_font_scale,
+                (scissor_width_ + scissor_x_) / RecompRml::global_font_scale,
+                (scissor_height_ + scissor_y_) / RecompRml::global_font_scale });
         }
         else {
             list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
@@ -576,9 +581,8 @@ public:
         mvp_ = projection_mtx_ * transform_;
     }
 
-    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height, int32_t ui_scale) {
+    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height) {
         list_ = list;
-        ui_scale_ = ui_scale;
 
         if (multisampling_.sampleCount > 1) {
             if (window_width_ != image_width || window_height_ != image_height) {
@@ -603,7 +607,7 @@ public:
         window_width_ = image_width;
         window_height_ = image_height;
 
-        projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, float(image_width * ui_scale), float(image_height * ui_scale), 0.0f, -10000, 10000);
+        projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, float(image_width * RecompRml::global_font_scale), float(image_height * RecompRml::global_font_scale), 0.0f, -10000, 10000);
         recalculate_mvp();
 
         // The following code assumes command lists aren't double buffered.
@@ -738,9 +742,9 @@ struct {
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         std::unique_ptr<Rml::FontEngineInterface> font_interface;
+        std::unique_ptr<Rml::ElementInstancer> svg_instancer;
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
-        int32_t ui_scale = 4;
         std::mutex draw_mutex;
 
         void unload() {
@@ -896,6 +900,10 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::SetFontEngineInterface(UIContext.rml.font_interface.get());
 
     Rml::Initialise();
+    
+    UIContext.rml.svg_instancer = std::make_unique<Rml::ElementInstancerGeneric<RecompRml::ElementScaledSVG>>();
+
+    Rml::Factory::RegisterElementInstancer("svg", UIContext.rml.svg_instancer.get());
 
     // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility
     recomp::apply_color_hack();
@@ -903,7 +911,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
-    UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width * UIContext.rml.ui_scale, height * UIContext.rml.ui_scale));
+    UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width * RecompRml::global_font_scale, height * RecompRml::global_font_scale));
     UIContext.rml.make_bindings();
 
     Rml::Debugger::Initialise(UIContext.rml.context);
@@ -985,24 +993,24 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         // Scale coordinates for mouse and window events based on the UI scale
         switch (cur_event.type) {
         case SDL_EventType::SDL_MOUSEMOTION:
-            cur_event.motion.x *= UIContext.rml.ui_scale;
-            cur_event.motion.y *= UIContext.rml.ui_scale;
-            cur_event.motion.xrel *= UIContext.rml.ui_scale;
-            cur_event.motion.yrel *= UIContext.rml.ui_scale;
+            cur_event.motion.x *= RecompRml::global_font_scale;
+            cur_event.motion.y *= RecompRml::global_font_scale;
+            cur_event.motion.xrel *= RecompRml::global_font_scale;
+            cur_event.motion.yrel *= RecompRml::global_font_scale;
             break;
         case SDL_EventType::SDL_MOUSEBUTTONDOWN:
         case SDL_EventType::SDL_MOUSEBUTTONUP:
-            cur_event.button.x *= UIContext.rml.ui_scale;
-            cur_event.button.y *= UIContext.rml.ui_scale;
+            cur_event.button.x *= RecompRml::global_font_scale;
+            cur_event.button.y *= RecompRml::global_font_scale;
             break;
         case SDL_EventType::SDL_MOUSEWHEEL:
-            cur_event.wheel.x *= UIContext.rml.ui_scale;
-            cur_event.wheel.y *= UIContext.rml.ui_scale;
+            cur_event.wheel.x *= RecompRml::global_font_scale;
+            cur_event.wheel.y *= RecompRml::global_font_scale;
             break;
         case SDL_EventType::SDL_WINDOWEVENT:
             if (cur_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                cur_event.window.data1 *= UIContext.rml.ui_scale;
-                cur_event.window.data2 *= UIContext.rml.ui_scale;
+                cur_event.window.data1 *= RecompRml::global_font_scale;
+                cur_event.window.data2 *= RecompRml::global_font_scale;
             }
             break;
         }
@@ -1053,16 +1061,15 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         int height = swap_chain_framebuffer->getHeight();
 
         // Scale the UI based on the window size with 1080 vertical resolution as the reference point.
-        UIContext.rml.context->SetDensityIndependentPixelRatio((height * UIContext.rml.ui_scale) / 1080.0f);
+        UIContext.rml.context->SetDensityIndependentPixelRatio((height * RecompRml::global_font_scale) / 1080.0f);
 
-        UIContext.rml.render_interface->start(command_list, width, height, UIContext.rml.ui_scale);
+        UIContext.rml.render_interface->start(command_list, width, height);
 
         static int prev_width = 0;
         static int prev_height = 0;
 
         if (prev_width != width || prev_height != height) {
-            printf("changed to %d by %d\n", width, height);
-            UIContext.rml.context->SetDimensions({ (int)(width * UIContext.rml.ui_scale), (int)(height * UIContext.rml.ui_scale) });
+            UIContext.rml.context->SetDimensions({ (int)(width * RecompRml::global_font_scale), (int)(height * RecompRml::global_font_scale) });
         }
         prev_width = width;
         prev_height = height;

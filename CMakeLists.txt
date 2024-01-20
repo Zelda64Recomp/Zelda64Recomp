@@ -22,7 +22,7 @@ set(BUILD_SHARED_LIBS OFF)
 SET(LUNASVG_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 # set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
+SET(ENABLE_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/nativefiledialog-extended)
 
@@ -135,6 +135,8 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFamily.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontProvider.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FreeTypeInterface.cpp
+
+    ${CMAKE_SOURCE_DIR}/src/ui/ScaledSVG/ElementScaledSVG.cpp
     
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
