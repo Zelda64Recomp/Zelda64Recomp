@@ -1,9 +1,8 @@
 @use 'sass:math';
 
 // Probably will need to adjust for other langs...
-$mapping-min-width: 720;
-// Need to figure out where the -16 comes from...
-$visual-max-width: math.div($base-height*16, 9) - $page-margin - $page-margin - $mapping-min-width - 16;
+$mapping-min-width: 80*8;
+$visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width;
 
 .input-config {
     padding: 0;
@@ -39,7 +38,7 @@ $visual-max-width: math.div($base-height*16, 9) - $page-margin - $page-margin - 
     width: auto;
     height: auto;
     max-width: space($visual-max-width);
-    max-height: 100%;
+    max-height: space(math.div($visual-max-width, 4) * 3);
     margin: auto 0;
     flex: 1 1 100%;
 }

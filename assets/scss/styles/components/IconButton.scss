@@ -14,7 +14,7 @@
     }
 }
 
-$icon-button-size: 56;
+$icon-button-size: 56 - ($border-width-thickness-num * 2);
 
 .icon-button {
     @include set-color($color-text-dim);
@@ -26,7 +26,7 @@ $icon-button-size: 56;
     overflow: hidden;
 
     border-radius: space($icon-button-size * 0.5);
-    border-width: space(1.5);
+    border-width: $border-width-thickness;
     width: space($icon-button-size);
     height: space($icon-button-size);
     min-width: space($icon-button-size);

@@ -19,14 +19,13 @@
     position: relative;
     margin: auto;
     flex: 1 1 100%;
-    max-width: space(math.div($base-height*16, 9))dp;
-    // max-width: space(math.div($base-height*4, 3))dp;
+    max-width: space($base-modal-max-width);
     width: 100%;
     height: 100%;
     background: $color-modal-overlay;
     border-radius: $border-radius-modal;
     border-color: $color-bg-shadow;
-    border-width: space(1);
+    border-width: $border-width-thickness;
 }
 
 .centered-page__modal panels {

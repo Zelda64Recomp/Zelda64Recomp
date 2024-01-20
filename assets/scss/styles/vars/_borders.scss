@@ -6,12 +6,15 @@ $border-radius-lg: 16dp;
 
 $border-radius-modal: $border-radius-lg;
 
+$border-width-thickness-num: 1.5;
+$border-width-thickness: space($border-width-thickness-num);
+
 @mixin border($col: $color-border) {
     border-color: $col;
-    border-width: space(1);
+    border-width: $border-width-thickness;
 }
 
 @mixin border-top($col: $color-border) {
     border-top-color: $col;
-    border-top-width: space(1);
+    border-top-width: $border-width-thickness;
 }
