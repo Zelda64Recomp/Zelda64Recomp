@@ -168,11 +168,43 @@
 												<h3>Insert visual here:{{active_binding_input}}:{{active_binding_slot}}</h3>
 												<h3>Current focused row: {{cur_input_row}}</h3>
 												<div
-													class="input-config__visual-input"
+													class="input-viz"
 													data-for="input_bindings, i : inputs.array"
 													data-attr-visual-input="get_input_enum_name(i)"
 												>
 													{{get_input_name(i)}}
+												</div>
+												<div
+													class="input-viz input-viz__button input-viz__button--md input-viz__button--C"
+													visual-input="C_DOWN"
+												>
+													<svg src="icons/VizMap/ButtonMedium.svg" />
+													<div class="input-config__visual-mappings">
+														{{C_DOWN}}
+														<div
+															class="input-config__visual-mapping"
+															data-for="cur_binding, j : inputs[C_DOWN]"
+														>
+															<div>{{cur_binding}}</div>
+															<div>{{get_input_from_enum_name('C_DOWN')}}</div>
+														</div>
+													</div>
+												</div>
+												<div
+													class="input-viz input-viz__Z"
+													visual-input="Z"
+												>
+													<svg src="icons/VizMap/Target.svg" />
+													<div class="input-config__visual-mappings">
+														{{Z}}
+														<div
+															class="input-config__visual-mapping"
+															data-for="cur_binding, j : inputs[Z]"
+														>
+															<div>{{cur_binding}}</div>
+															<div>{{get_input_from_enum_name('Z')}}</div>
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>

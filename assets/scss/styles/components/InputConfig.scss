@@ -61,6 +61,9 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     left: 0;
 }
 
+.input-viz {
+    position: relative;
+}
 
 $all-inputs:
     A,
@@ -83,16 +86,59 @@ $all-inputs:
     Y_AXIS_POS;
 
 // Show default state while no inputs are active
-[cur-input="NONE"] .input-config__visual-input[visual-input] {
+[cur-input="NONE"] .input-viz[visual-input] {
     opacity: 1;
 }
 
 @each $inp in $all-inputs {
-    .input-config__visual-input[visual-input="#{$inp}"] {
+    .input-viz[visual-input="#{$inp}"] {
         opacity: 0.5;
 
         [cur-input="#{$inp}"] & {
             opacity: 1.0;
         }
     }
+}
+
+@mixin set-sizes($sz) {
+    width: space($sz);
+    height: space($sz);
+    
+    svg {
+        width: space($sz);
+        height: space($sz);
+    }
+}
+
+.input-viz__button {
+    @include set-color($color-text);
+
+    &--sm {
+        @include set-sizes(64);
+    }
+
+    &--md {
+        @include set-sizes(76);
+    }
+
+    &--lg {
+        @include set-sizes(84);
+    }
+
+    &--C {
+        @include set-svgs-color($color-warning);
+    }
+
+    &--A {
+        @include set-svgs-color($color-a);
+    }
+
+    &--B {
+        @include set-svgs-color($color-success);
+    }
+}
+
+.input-viz__Z {
+    @include set-svgs-color($color-warning);
+    @include set-sizes(136);
 }

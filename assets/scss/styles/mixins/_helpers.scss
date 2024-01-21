@@ -16,13 +16,15 @@
     @extend %nav-foc;
 }
 
+@mixin set-svgs-color($col) {
+    svg {
+        image-color: $col;
+    }
+}
 /*
 @include set-color(COLOR);
 */
 @mixin set-color($col) {
+    @include set-svgs-color($col);
     color: $col;
-
-    svg {
-        image-color: $col;
-    }
 }
