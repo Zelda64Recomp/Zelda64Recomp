@@ -27,7 +27,8 @@ namespace ultramodern {
 		auto operator<=>(const GraphicsConfig& rhs) const = default;
 	};
 
-	void update_graphics_config(const GraphicsConfig& config);
+	void set_graphics_config(const GraphicsConfig& config);
+	const GraphicsConfig& get_graphics_config();
 };
 
 #endif

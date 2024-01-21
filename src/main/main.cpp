@@ -19,6 +19,7 @@
 
 #include "recomp_ui.h"
 #include "recomp_input.h"
+#include "recomp_config.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -234,7 +235,7 @@ int main(int argc, char** argv) {
     reset_audio(48000);
 
     init();
-    recomp::init_control_mappings();
+    recomp::load_config();
 
     ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,

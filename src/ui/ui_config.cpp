@@ -1,10 +1,10 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
+#include "recomp_config.h"
 #include "../../ultramodern/config.hpp"
 #include "../../ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
 
-ultramodern::GraphicsConfig cur_options;
 ultramodern::GraphicsConfig new_options;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle controls_model_handle;
@@ -61,12 +61,31 @@ static int focused_input_index = -1;
 constexpr recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
 void recomp::finish_scanning_input(recomp::InputField scanned_field) {
-	recomp::set_input_binding(scanned_input_index, scanned_binding_index, cur_device, scanned_field);
+	recomp::set_input_binding(static_cast<recomp::GameInput>(scanned_input_index), scanned_binding_index, cur_device, scanned_field);
 	scanned_input_index = -1;
 	scanned_binding_index = -1;
 	controls_model_handle.DirtyVariable("inputs");
 	controls_model_handle.DirtyVariable("active_binding_input");
 	controls_model_handle.DirtyVariable("active_binding_slot");
+}
+
+// Counts down every frame while positive until it reaches 0, then saves the graphics config file.
+// This prevents a graphics config that would cause the game to crash from 
+static std::atomic_int save_graphics_config_frame_timer;
+
+void queue_saving_graphics_config() {
+	save_graphics_config_frame_timer = 5;
+}
+
+void close_config_menu() {
+	recomp::save_config();
+
+	if (ultramodern::is_game_started()) {
+		recomp::set_current_menu(recomp::Menu::None);
+	}
+	else {
+		recomp::set_current_menu(recomp::Menu::Launcher);
+	}
 }
 
 class ConfigMenu : public recomp::MenuController {
@@ -83,20 +102,14 @@ public:
 	void register_events(recomp::UiEventListenerInstancer& listener) override {
 		recomp::register_event(listener, "apply_options",
 			[](const std::string& param, Rml::Event& event) {
-				cur_options = new_options;
 				graphics_model_handle.DirtyVariable("options_changed");
-				update_graphics_config(new_options);
+				ultramodern::set_graphics_config(new_options);
 			});
 		recomp::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
 				if (event.GetId() == Rml::EventId::Keydown) {
 					if (event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN) == Rml::Input::KeyIdentifier::KI_ESCAPE) {
-						if (ultramodern::is_game_started()) {
-							recomp::set_current_menu(recomp::Menu::None);
-						}
-						else {
-							recomp::set_current_menu(recomp::Menu::Launcher);
-						}
+						close_config_menu();
 					}
 				}
 			});
@@ -106,6 +119,12 @@ public:
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the graphics config menu");
 		}
+
+		{
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for(50ms);
+		}
+		new_options = ultramodern::get_graphics_config();
 
 		bind_option(constructor, "res_option", &new_options.res_option);
 		bind_option(constructor, "wm_option", &new_options.wm_option);
@@ -123,7 +142,7 @@ public:
 
 		constructor.BindFunc("options_changed",
 			[](Rml::Variant& out) {
-				out = (cur_options != new_options);
+				out = (ultramodern::get_graphics_config() != new_options);
 			});
 
 		graphics_model_handle = constructor.GetModelHandle();
@@ -138,11 +157,11 @@ public:
 		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = recomp::get_num_inputs(); } );
 		
 		constructor.RegisterTransformFunc("get_input_name", [](const Rml::VariantList& inputs) {
-			return Rml::Variant{recomp::get_input_name(inputs.at(0).Get<size_t>())};
+			return Rml::Variant{recomp::get_input_name(static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>()))};
 		});
 
 		constructor.RegisterTransformFunc("get_input_enum_name", [](const Rml::VariantList& inputs) {
-			return Rml::Variant{recomp::get_input_enum_name(inputs.at(0).Get<size_t>())};
+			return Rml::Variant{recomp::get_input_enum_name(static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>()))};
 		});
 
 		constructor.BindEventCallback("set_input_binding",
@@ -156,9 +175,9 @@ public:
 
 		constructor.BindEventCallback("clear_input_bindings",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
-				size_t input_index = inputs.at(0).Get<size_t>();
+				recomp::GameInput input = static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>());
 				for (size_t binding_index = 0; binding_index < recomp::bindings_per_input; binding_index++) {
-					recomp::set_input_binding(input_index, binding_index, cur_device, recomp::InputField{});
+					recomp::set_input_binding(input, binding_index, cur_device, recomp::InputField{});
 				}
 				model_handle.DirtyVariable("inputs");
 			});
@@ -193,16 +212,16 @@ public:
 
 			virtual int Size(void* ptr) override { return recomp::bindings_per_input; }
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
-				uintptr_t input_index = (uintptr_t)ptr;
-				return Rml::DataVariable{&input_field_definition_instance, & recomp::get_input_binding(input_index, address.index, recomp::InputDevice::Controller)};
+				recomp::GameInput input = static_cast<recomp::GameInput>((uintptr_t)ptr);
+				return Rml::DataVariable{&input_field_definition_instance, &recomp::get_input_binding(input, address.index, recomp::InputDevice::Controller)};
 			}
 		};
-		// Static instance of the InputField array variable definition to a fixed pointer to return to RmlUi.
+		// Static instance of the InputField array variable definition to have a fixed pointer to return to RmlUi.
 		static BindingContainerVariableDefinition binding_container_var_instance{};
 
 		// Rml variable definition for an array of an array of InputField values (e.g. all the bindings for all inputs).
-		struct InputContainerVariableDefinition : public Rml::VariableDefinition {
-			InputContainerVariableDefinition() : Rml::VariableDefinition(Rml::DataVariableType::Array) {}
+		struct BindingArrayContainerVariableDefinition : public Rml::VariableDefinition {
+			BindingArrayContainerVariableDefinition() : Rml::VariableDefinition(Rml::DataVariableType::Array) {}
 
 			virtual bool Get(void* ptr, Rml::Variant& variant) override { return false; }
 			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
@@ -211,6 +230,30 @@ public:
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
 				// Encode the input index as the pointer to avoid needing to do any allocations.
 				return Rml::DataVariable(&binding_container_var_instance, (void*)(uintptr_t)address.index);
+			}
+		};
+
+		// Static instance of the BindingArrayContainerVariableDefinition variable definition to have a fixed pointer to return to RmlUi.
+		static BindingArrayContainerVariableDefinition binding_array_var_instance{};
+
+		struct InputContainerVariableDefinition : public Rml::VariableDefinition {
+			InputContainerVariableDefinition() : Rml::VariableDefinition(Rml::DataVariableType::Struct) {}
+
+			virtual bool Get(void* ptr, Rml::Variant& variant) override { return true; }
+			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
+
+			virtual int Size(void* ptr) override { return recomp::get_num_inputs(); }
+			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
+				if (address.name == "array") {
+					return Rml::DataVariable(&binding_array_var_instance, nullptr);
+				}
+				else {
+					recomp::GameInput input = recomp::get_input_from_enum_name(address.name);
+					if (input != recomp::GameInput::COUNT) {
+						return Rml::DataVariable(&binding_container_var_instance, (void*)(uintptr_t)input);
+					}
+				}
+				return Rml::DataVariable{};
 			}
 		};
 
@@ -227,7 +270,7 @@ public:
 				out = "NONE";
 			}
 			else {
-				out = recomp::get_input_enum_name(focused_input_index);
+				out = recomp::get_input_enum_name(static_cast<recomp::GameInput>(focused_input_index));
 			}
 		});
 
@@ -236,7 +279,7 @@ public:
 				out = "NONE";
 			}
 			else {
-				out = recomp::get_input_enum_name(scanned_input_index);
+				out = recomp::get_input_enum_name(static_cast<recomp::GameInput>(scanned_input_index));
 			}
 		});
 

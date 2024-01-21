@@ -7,8 +7,50 @@
 #include <type_traits>
 #include <span>
 #include <string>
+#include <string_view>
 
 namespace recomp {
+    // x-macros to build input enums and arrays.
+    // First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
+    #define DEFINE_N64_BUTTON_INPUTS() \
+        DEFINE_INPUT(A, 0x8000, "[A Button]") \
+        DEFINE_INPUT(B, 0x4000, "[B Button]") \
+        DEFINE_INPUT(Z, 0x2000, "[Z Button]") \
+        DEFINE_INPUT(START, 0x1000, "[Start Button]") \
+        DEFINE_INPUT(DPAD_UP, 0x0800, "[Dpad Up]") \
+        DEFINE_INPUT(DPAD_DOWN, 0x0400, "[Dpad Down]") \
+        DEFINE_INPUT(DPAD_LEFT, 0x0200, "[Dpad Left]") \
+        DEFINE_INPUT(DPAD_RIGHT, 0x0100, "[Dpad Right]") \
+        DEFINE_INPUT(L, 0x0020, "[L Button]") \
+        DEFINE_INPUT(R, 0x0010, "[R Button]") \
+        DEFINE_INPUT(C_UP, 0x0008, "[C Up]") \
+        DEFINE_INPUT(C_DOWN, 0x0004, "[C Down]") \
+        DEFINE_INPUT(C_LEFT, 0x0002, "[C Left]") \
+        DEFINE_INPUT(C_RIGHT, 0x0001, "[C Right]")
+
+    #define DEFINE_N64_AXIS_INPUTS() \
+        DEFINE_INPUT(X_AXIS_NEG, 0, "[Analog Left]") \
+        DEFINE_INPUT(X_AXIS_POS, 0, "[Analog Right]") \
+        DEFINE_INPUT(Y_AXIS_NEG, 0, "[Analog Down]") \
+        DEFINE_INPUT(Y_AXIS_POS, 0, "[Analog Up]") \
+
+    #define DEFINE_ALL_INPUTS() \
+        DEFINE_N64_BUTTON_INPUTS() \
+        DEFINE_N64_AXIS_INPUTS()
+
+    // Enum containing every recomp input.
+    #define DEFINE_INPUT(name, value, readable) name,
+    enum class GameInput {
+        DEFINE_ALL_INPUTS()
+
+        COUNT,
+        N64_BUTTON_START = A,
+        N64_BUTTON_COUNT = C_RIGHT - N64_BUTTON_START + 1,
+        N64_AXIS_START = X_AXIS_NEG,
+        N64_AXIS_COUNT = Y_AXIS_POS - N64_AXIS_START + 1,
+    };
+    #undef DEFINE_INPUT
+
     struct InputField {
         uint32_t input_type;
         int32_t input_id;
@@ -61,13 +103,12 @@ namespace recomp {
 
     constexpr size_t bindings_per_input = 2;
 
-    // Loads the user's saved controller mapping if one exists, loads the default mappings if no saved mapping exists.
-    void init_control_mappings();
     size_t get_num_inputs();
-    const std::string& get_input_name(size_t input_index);
-    const std::string& get_input_enum_name(size_t input_index);
-    InputField& get_input_binding(size_t input_index, size_t binding_index, InputDevice device);
-    void set_input_binding(size_t input_index, size_t binding_index, InputDevice device, InputField value);
+    const std::string& get_input_name(GameInput input);
+    const std::string& get_input_enum_name(GameInput input);
+    GameInput get_input_from_enum_name(const std::string_view name);
+    InputField& get_input_binding(GameInput input, size_t binding_index, InputDevice device);
+    void set_input_binding(GameInput input, size_t binding_index, InputDevice device, InputField value);
 
     void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
     void handle_events();

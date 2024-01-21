@@ -108,11 +108,26 @@ unsigned int VI_Y_SCALE_REG = 0;
 unsigned int SP_STATUS_REG = 0;
 unsigned int RDRAM_SIZE = 0x800000;
 
+static RT64::UserConfiguration::Antialiasing device_max_msaa = RT64::UserConfiguration::Antialiasing::None;
+
 #define GET_FUNC(lib, name) \
     name = (decltype(name))GetProcAddress(lib, #name)
 
 void dummy_check_interrupts() {
 
+}
+
+RT64::UserConfiguration::Antialiasing compute_max_supported_aa(RT64::RenderSampleCounts bits) {
+    if (bits & RT64::RenderSampleCount::Bits::COUNT_2) {
+        if (bits & RT64::RenderSampleCount::Bits::COUNT_4) {
+            if (bits & RT64::RenderSampleCount::Bits::COUNT_8) {
+                return RT64::UserConfiguration::Antialiasing::MSAA8X;
+            }
+            return RT64::UserConfiguration::Antialiasing::MSAA4X;
+        }
+        return RT64::UserConfiguration::Antialiasing::MSAA2X;
+    };
+    return RT64::UserConfiguration::Antialiasing::None;
 }
 
 RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle) {
@@ -170,14 +185,23 @@ RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHan
     gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
 #if defined(_WIN32)
-    return InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
+    RT64::Application* ret = InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
-	return InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
+	RT64::Application* ret = InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
 #else
     static_assert(false && "Unimplemented");
 #endif
+
+    // Before configuring multisampling, make sure the device actually supports it for the formats we'll use. If it doesn't, turn off antialiasing in the configuration.
+    RT64::RenderSampleCounts color_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::R8G8B8A8_UNORM);
+    RT64::RenderSampleCounts depth_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::D32_FLOAT);
+    RT64::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
+
+    device_max_msaa = compute_max_supported_aa(common_sample_counts);
+
+    return ret;
 }
 
 void RT64SendDL(uint8_t* rdram, const OSTask* task) {
@@ -234,4 +258,8 @@ void RT64UpdateConfig(RT64::Application* application, const ultramodern::Graphic
     if (new_config.msaa_option != old_config.msaa_option) {
         application->updateMultisampling();
     }
+}
+
+RT64::UserConfiguration::Antialiasing RT64MaxMSAA() {
+    return device_max_msaa;
 }

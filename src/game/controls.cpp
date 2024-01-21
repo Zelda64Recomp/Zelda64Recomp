@@ -5,50 +5,9 @@
 #include "../ultramodern/ultramodern.hpp"
 #include "../patches/input.h"
 
-// x-macros to build input enums and arrays.
-// First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
-#define DEFINE_N64_BUTTON_INPUTS() \
-    DEFINE_INPUT(A, 0x8000, "[A Button]") \
-    DEFINE_INPUT(B, 0x4000, "[B Button]") \
-    DEFINE_INPUT(Z, 0x2000, "[Z Button]") \
-    DEFINE_INPUT(START, 0x1000, "[Start Button]") \
-    DEFINE_INPUT(DPAD_UP, 0x0800, "[Dpad Up]") \
-    DEFINE_INPUT(DPAD_DOWN, 0x0400, "[Dpad Down]") \
-    DEFINE_INPUT(DPAD_LEFT, 0x0200, "[Dpad Left]") \
-    DEFINE_INPUT(DPAD_RIGHT, 0x0100, "[Dpad Right]") \
-    DEFINE_INPUT(L, 0x0020, "[L Button]") \
-    DEFINE_INPUT(R, 0x0010, "[R Button]") \
-    DEFINE_INPUT(C_UP, 0x0008, "[C Up]") \
-    DEFINE_INPUT(C_DOWN, 0x0004, "[C Down]") \
-    DEFINE_INPUT(C_LEFT, 0x0002, "[C Left]") \
-    DEFINE_INPUT(C_RIGHT, 0x0001, "[C Right]")
-
-#define DEFINE_N64_AXIS_INPUTS() \
-    DEFINE_INPUT(X_AXIS_NEG, 0, "[Analog Left]") \
-    DEFINE_INPUT(X_AXIS_POS, 0, "[Analog Right]") \
-    DEFINE_INPUT(Y_AXIS_NEG, 0, "[Analog Down]") \
-    DEFINE_INPUT(Y_AXIS_POS, 0, "[Analog Up]") \
-
-#define DEFINE_ALL_INPUTS() \
-    DEFINE_N64_BUTTON_INPUTS() \
-    DEFINE_N64_AXIS_INPUTS()
-
-// Make the input enum.
-#define DEFINE_INPUT(name, value, readable) name,
-enum class GameInput {
-    DEFINE_ALL_INPUTS()
-
-    COUNT,
-    N64_BUTTON_START = A,
-    N64_BUTTON_COUNT = C_RIGHT - N64_BUTTON_START + 1,
-    N64_AXIS_START = X_AXIS_NEG,
-    N64_AXIS_COUNT = Y_AXIS_POS - N64_AXIS_START + 1,
-};
-#undef DEFINE_INPUT
-
 // Arrays that hold the mappings for every input for keyboard and controller respectively.
 using input_mapping = std::array<recomp::InputField, recomp::bindings_per_input>;
-using input_mapping_array = std::array<input_mapping, (size_t)GameInput::COUNT>;
+using input_mapping_array = std::array<input_mapping, static_cast<size_t>(recomp::GameInput::COUNT)>;
 static input_mapping_array keyboard_input_mappings{};
 static input_mapping_array controller_input_mappings{};
 
@@ -73,57 +32,31 @@ static const std::vector<std::string> input_enum_names = {
 };
 #undef DEFINE_INPUT
 
-void recomp::init_control_mappings() {
-    // TODO load from a file if one exists.
-
-    auto assign_mapping = [](input_mapping_array& mapping, GameInput input, const std::vector<recomp::InputField>& value) {
-        input_mapping& cur_mapping = mapping.at((size_t)input);
-        std::copy_n(value.begin(), std::min(value.size(), cur_mapping.size()), cur_mapping.begin());
-    };
-
-    auto assign_all_mappings = [&](input_mapping_array& mapping, const recomp::DefaultN64Mappings& values) {
-        assign_mapping(mapping, GameInput::A, values.a);
-        assign_mapping(mapping, GameInput::A, values.a);
-        assign_mapping(mapping, GameInput::B, values.b);
-        assign_mapping(mapping, GameInput::Z, values.z);
-        assign_mapping(mapping, GameInput::START, values.start);
-        assign_mapping(mapping, GameInput::DPAD_UP, values.dpad_up);
-        assign_mapping(mapping, GameInput::DPAD_DOWN, values.dpad_down);
-        assign_mapping(mapping, GameInput::DPAD_LEFT, values.dpad_left);
-        assign_mapping(mapping, GameInput::DPAD_RIGHT, values.dpad_right);
-        assign_mapping(mapping, GameInput::L, values.l);
-        assign_mapping(mapping, GameInput::R, values.r);
-        assign_mapping(mapping, GameInput::C_UP, values.c_up);
-        assign_mapping(mapping, GameInput::C_DOWN, values.c_down);
-        assign_mapping(mapping, GameInput::C_LEFT, values.c_left);
-        assign_mapping(mapping, GameInput::C_RIGHT, values.c_right);
-
-        assign_mapping(mapping, GameInput::X_AXIS_NEG, values.analog_left);
-        assign_mapping(mapping, GameInput::X_AXIS_POS, values.analog_right);
-        assign_mapping(mapping, GameInput::Y_AXIS_NEG, values.analog_down);
-        assign_mapping(mapping, GameInput::Y_AXIS_POS, values.analog_up);
-    };
-
-    assign_all_mappings(keyboard_input_mappings, recomp::default_n64_keyboard_mappings);
-    assign_all_mappings(controller_input_mappings, recomp::default_n64_controller_mappings);
-}
-
 size_t recomp::get_num_inputs() {
     return (size_t)GameInput::COUNT;
 }
 
-const std::string& recomp::get_input_name(size_t input_index) {
-    return input_names.at(input_index);
+const std::string& recomp::get_input_name(GameInput input) {
+    return input_names.at(static_cast<size_t>(input));
 }
 
-const std::string& recomp::get_input_enum_name(size_t input_index) {
-    return input_enum_names.at(input_index);
+const std::string& recomp::get_input_enum_name(GameInput input) {
+    return input_enum_names.at(static_cast<size_t>(input));
+}
+
+recomp::GameInput recomp::get_input_from_enum_name(const std::string_view enum_name) {
+    auto find_it = std::find(input_enum_names.begin(), input_enum_names.end(), enum_name);
+    if (find_it == input_enum_names.end()) {
+        return recomp::GameInput::COUNT;
+    }
+
+    return static_cast<recomp::GameInput>(find_it - input_enum_names.begin());
 }
 
 // Due to an RmlUi limitation this can't be const. Ideally it would return a const reference or even just a straight up copy.
-recomp::InputField& recomp::get_input_binding(size_t input_index, size_t binding_index, recomp::InputDevice device) {
+recomp::InputField& recomp::get_input_binding(GameInput input, size_t binding_index, recomp::InputDevice device) {
     input_mapping_array& device_mappings = (device == recomp::InputDevice::Controller) ?  controller_input_mappings : keyboard_input_mappings;
-    input_mapping& cur_input_mapping = device_mappings.at(input_index);
+    input_mapping& cur_input_mapping = device_mappings.at(static_cast<size_t>(input));
 
     if (binding_index < cur_input_mapping.size()) {
         return cur_input_mapping[binding_index];
@@ -134,9 +67,9 @@ recomp::InputField& recomp::get_input_binding(size_t input_index, size_t binding
     }
 }
 
-void recomp::set_input_binding(size_t input_index, size_t binding_index, recomp::InputDevice device, recomp::InputField value) {
+void recomp::set_input_binding(recomp::GameInput input, size_t binding_index, recomp::InputDevice device, recomp::InputField value) {
     input_mapping_array& device_mappings = (device == recomp::InputDevice::Controller) ?  controller_input_mappings : keyboard_input_mappings;
-    input_mapping& cur_input_mapping = device_mappings.at(input_index);
+    input_mapping& cur_input_mapping = device_mappings.at(static_cast<size_t>(input));
 
     if (binding_index < cur_input_mapping.size()) {
         cur_input_mapping[binding_index] = value;

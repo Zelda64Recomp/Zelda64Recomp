@@ -28,7 +28,6 @@ struct SwapBuffersAction {
 };
 
 struct UpdateConfigAction {
-    ultramodern::GraphicsConfig config;
 };
 
 using Action = std::variant<SpTaskAction, SwapBuffersAction, UpdateConfigAction>;
@@ -257,8 +256,15 @@ void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_rea
     }
 }
 
-void ultramodern::update_graphics_config(const ultramodern::GraphicsConfig& config) {
-    events_context.action_queue.enqueue(UpdateConfigAction{ config });
+static std::atomic<ultramodern::GraphicsConfig> cur_config{};
+
+void ultramodern::set_graphics_config(const ultramodern::GraphicsConfig& config) {
+    cur_config = config;
+    events_context.action_queue.enqueue(UpdateConfigAction{});
+}
+
+const ultramodern::GraphicsConfig& ultramodern::get_graphics_config() {
+    return cur_config;
 }
 
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
@@ -267,7 +273,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
     ultramodern::set_native_thread_name("Gfx Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
-    ultramodern::GraphicsConfig cur_config{};
+    ultramodern::GraphicsConfig old_config;
 
     RT64::Application* application = RT64Init(rom, rdram, window_handle);
 
@@ -300,9 +306,10 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
                 RT64UpdateScreen(swap_action->origin);
             }
             else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
-                if (cur_config != config_action->config) {
-                    RT64UpdateConfig(application, cur_config, config_action->config);
-                    cur_config = config_action->config;
+                ultramodern::GraphicsConfig new_config = cur_config;
+                if (old_config != new_config) {
+                    RT64UpdateConfig(application, old_config, new_config);
+                    old_config = new_config;
                 }
             }
         }

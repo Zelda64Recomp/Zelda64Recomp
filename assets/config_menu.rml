@@ -133,7 +133,7 @@
 												<div
 													class="control-option"
 													id="input_row"
-													data-for="input_bindings, i : inputs"
+													data-for="input_bindings, i : inputs.array"
 													data-event-mouseover="set_input_row_focus(i)"
 												>
 													<label
@@ -169,7 +169,7 @@
 												<h3>Current focused row: {{cur_input_row}}</h3>
 												<div
 													class="input-config__visual-input"
-													data-for="input_bindings, i : inputs"
+													data-for="input_bindings, i : inputs.array"
 													data-attr-visual-input="get_input_enum_name(i)"
 												>
 													{{get_input_name(i)}}
@@ -180,14 +180,6 @@
 								</div>
 							</div>
 							<div class="config__footer">
-								<div>
-									<button
-										class="button button--secondary"
-										id="save_button"
-									>
-										<div class="button__label">Save</div>
-									</button>
-								</div>
 							</div>
 						</form>
 					</panel>

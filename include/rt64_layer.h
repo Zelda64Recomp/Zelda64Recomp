@@ -18,6 +18,7 @@ void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();
 void RT64Shutdown();
+RT64::UserConfiguration::Antialiasing RT64MaxMSAA();
 
 void set_rt64_hooks();
 
