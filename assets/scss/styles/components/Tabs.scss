@@ -15,7 +15,7 @@
 
 .tab {
     @extend %nav-all;
-    @extend %label-md;
+    @extend %header-3;
     display: block;
     position: relative;
     padding: space(20) space(24);

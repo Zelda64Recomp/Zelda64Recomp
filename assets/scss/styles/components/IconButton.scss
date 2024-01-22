@@ -1,5 +1,11 @@
 @use 'sass:color';
-
+/*
+    <button
+        class="icon-button icon-button--danger"
+    >
+        <svg src="icons/Trash.svg" />
+    </button>
+*/
 @mixin create-icon-button-variation($base-col) {
     background-color: rgba($base-col, 0.05);
     border-color: rgba($base-col, 0.8);
@@ -18,7 +24,6 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
 
 .icon-button {
     @include set-color($color-text-dim);
-    @include create-icon-button-variation($color-primary);
 
     display: flex;
     align-items: center;
@@ -27,6 +32,8 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
 
     border-radius: space($icon-button-size * 0.5);
     border-width: $border-width-thickness;
+    border-color: $color-transparent;
+    background-color: $color-transparent;
     width: space($icon-button-size);
     height: space($icon-button-size);
     min-width: space($icon-button-size);
@@ -36,10 +43,12 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
 
     &:focus, &:hover {
         @include set-color($color-text);
+        background-color: $color-border;
     }
 
     &:active {
         @include set-color(color.scale($color-text, $lightness: 20%));
+        background-color: $color-border-soft;
     }
 
     &:disabled,&[disabled] {
@@ -49,6 +58,7 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
 
     &:not([disabled]) {
         @extend %nav-all;
+        cursor: pointer;
     }
 
     svg {
@@ -56,10 +66,9 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
         height: space(32);
     }
 
-    // Setting it by default for convenience
-    // &--primary {
-    //     @include create-icon-button-variation($color-primary);
-    // }
+    &--primary {
+        @include create-icon-button-variation($color-primary);
+    }
 
     &--secondary {
         @include create-icon-button-variation($color-secondary);

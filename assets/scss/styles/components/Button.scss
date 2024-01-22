@@ -22,7 +22,7 @@
 }
 
 .button {
-    @extend %label-lg;
+    @extend %label-md;
     @include create-button-variation($color-primary);
 
     display: block;
@@ -38,6 +38,10 @@
     // &--primary {
     //     @include create-button-variation($color-primary);
     // }
+
+    &--large {
+        @extend %label-lg;
+    }
 
     &--secondary {
         @include create-button-variation($color-secondary);
@@ -61,6 +65,7 @@
 
     &:not([disabled]) {
         @extend %nav-all;
+        cursor: pointer;
     }
 
     &:disabled,&[disabled] {

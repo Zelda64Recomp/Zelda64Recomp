@@ -26,8 +26,19 @@
     border-radius: $border-radius-modal;
     border-color: $color-bg-shadow;
     border-width: $border-width-thickness;
-}
 
-.centered-page__modal panels {
-    flex: 1 1 100%;
+    > .tabs {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        margin: auto;
+        flex: 1 1 100%;
+        max-width: space($base-modal-max-width);
+        width: 100%;
+        height: 100%;
+    }
+
+    panels {
+        flex: 1 1 100%;
+    }
 }

@@ -1,4 +1,10 @@
 
+.config__exit-button {
+    position: absolute;
+    top: space(8);
+    right: space(8);
+}
+
 .config__form {
     @include border-top($color-border-soft);
     display: flex;
@@ -25,13 +31,23 @@
 .config__footer {
     @include border-top($color-border-soft);
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     padding: space(20) space(20);
     background-color: $color-bg-shadow;
     border-bottom-left-radius: $border-radius-modal;
     border-bottom-right-radius: $border-radius-modal;
+}
+
+.config__footer-left {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 auto;
+
+    > :not(:first-child) {
+        margin-left: space(8);
+    }
 }
 
 .config__row {

@@ -47,7 +47,7 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     position: relative;
     width: 100%;
     padding-bottom: 75%;
-    background-color: $color-secondary-a5;
+    background-color: $color-bg-shadow;
     margin: auto 0;
 }
 
@@ -61,8 +61,74 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     left: 0;
 }
 
+.input-config__visual-half {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    flex: 1 1 100%;
+    padding: 6%;
+
+    &--bottom {
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+}
+
+.input-config__visual-quarter-left {
+    display: flex;
+    flex: 1 1 auto;
+    width: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+}
+
+.input-config__visual-quarter-right {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.input-config__visual-stick-wrapper {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.input-config__visual-stick {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: space(200);
+    height: space(200);
+    border-radius: space(100);
+    background-color: $color-white-a5;
+}
+
 .input-viz {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+    }
+
+    &__mappings div {
+        @extend %prompt-font-sm;
+    }
 }
 
 $all-inputs:
@@ -141,4 +207,47 @@ $all-inputs:
 .input-viz__Z {
     @include set-svgs-color($color-warning);
     @include set-sizes(136);
+}
+
+.input-viz__R {
+    @include set-svgs-color($color-white);
+    @include set-sizes(96);
+}
+
+.input-viz__L {
+    @include set-svgs-color($color-secondary);
+    @include set-sizes(136);
+}
+
+.input-config__c-buttons {
+    position: relative;
+    width: space(76+76+56);
+    height: space(76+56);
+
+    &-lr, &-du {
+        display: flex;
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+    }
+
+    &-lr {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    &-du {
+        flex-direction: column-reverse;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .input-viz {
+        &[visual-input="C_UP"] {
+            margin-top: space(-32);
+        }
+    }
 }

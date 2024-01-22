@@ -58,3 +58,11 @@ $font-stack: chiaro;
     font-size: space(40);
     line-height: space(40);
 }
+
+%prompt-font-sm {
+    font-family: promptfont;
+    font-style: normal;
+    font-weight: 400;
+    font-size: space(32);
+    line-height: space(32);
+}
