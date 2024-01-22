@@ -94,6 +94,17 @@ public:
 					}
 				}
 			});
+		// This needs to be separate from `close_config_menu` so it ensures that the event is only on the target
+		recomp::register_event(listener, "close_config_menu_backdrop",
+			[](const std::string& param, Rml::Event& event) {
+				if (event.GetPhase() == Rml::EventPhase::Target) {
+					close_config_menu();
+				}
+			});
+		recomp::register_event(listener, "close_config_menu",
+			[](const std::string& param, Rml::Event& event) {
+				close_config_menu();
+			});
 	}
 	void make_graphics_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("graphics_model");
