@@ -28,7 +28,18 @@ namespace ultramodern {
 	};
 
 	void set_graphics_config(const GraphicsConfig& config);
-	const GraphicsConfig& get_graphics_config();
+	GraphicsConfig get_graphics_config();
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::Resolution, {
+		{ultramodern::Resolution::Original, "Original"},
+		{ultramodern::Resolution::Original2x, "Original2x"},
+		{ultramodern::Resolution::Auto, "Auto"},
+	});
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::WindowMode, {
+		{ultramodern::WindowMode::Windowed, "Windowed"},
+		{ultramodern::WindowMode::Fullscreen, "Fullscreen"}
+	});
 };
 
 #endif

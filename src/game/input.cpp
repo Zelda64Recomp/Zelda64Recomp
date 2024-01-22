@@ -422,8 +422,9 @@ std::string controller_button_to_string(SDL_GameControllerButton button) {
     //     return "";
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_TOUCHPAD:
         return "\u21E7";
+    default:
+        return "Button " + std::to_string(button);
     }
-    return "Button " + std::to_string(button);
 }
 
 std::string controller_axis_to_string(int axis) {
@@ -442,8 +443,9 @@ std::string controller_axis_to_string(int axis) {
         return positive ? "\u219A" : "\u21DC";
     case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
         return positive ? "\u219B" : "\u21DD";
+    default:
+        return "Axis " + std::to_string(actual_axis) + (positive ? '+' : '-');
     }
-    return "Axis " + std::to_string(actual_axis) + (positive ? '+' : '-');
 }
 
 std::string recomp::InputField::to_string() const {
@@ -454,6 +456,7 @@ std::string recomp::InputField::to_string() const {
             return controller_button_to_string((SDL_GameControllerButton)input_id);
         case InputType::ControllerAnalog:
             return controller_axis_to_string(input_id);
+        default:
+            return std::to_string(input_type) + "," + std::to_string(input_id);
     }
-    return std::to_string(input_type) + "," + std::to_string(input_id);
 }

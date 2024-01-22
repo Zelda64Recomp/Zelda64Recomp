@@ -11,17 +11,6 @@ Rml::DataModelHandle controls_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false; 
 
-NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::Resolution, {
-	{ultramodern::Resolution::Original, "Original"},
-	{ultramodern::Resolution::Original2x, "Original2x"},
-	{ultramodern::Resolution::Auto, "Auto"},
-});
-
-NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::WindowMode, {
-	{ultramodern::WindowMode::Windowed, "Windowed"},
-	{ultramodern::WindowMode::Fullscreen, "Fullscreen"}
-});
-
 template <typename T>
 void get_option(const T& input, Rml::Variant& output) {
 	std::string value = "";
@@ -67,14 +56,6 @@ void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	controls_model_handle.DirtyVariable("inputs");
 	controls_model_handle.DirtyVariable("active_binding_input");
 	controls_model_handle.DirtyVariable("active_binding_slot");
-}
-
-// Counts down every frame while positive until it reaches 0, then saves the graphics config file.
-// This prevents a graphics config that would cause the game to crash from 
-static std::atomic_int save_graphics_config_frame_timer;
-
-void queue_saving_graphics_config() {
-	save_graphics_config_frame_timer = 5;
 }
 
 void close_config_menu() {
