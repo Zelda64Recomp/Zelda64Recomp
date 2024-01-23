@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
+# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
@@ -152,7 +157,6 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Include
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/mupen64plus-win32-deps/SDL2-2.26.3/include
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/hlslpp/include
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/inc
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src
@@ -168,9 +172,30 @@ target_compile_options(MMRecomp PRIVATE
     -fms-extensions
 )
 
-target_link_directories(MMRecomp PRIVATE
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/mupen64plus-win32-deps/SDL2-2.26.3/lib/x64
-)
+if (WIN32)
+    include(FetchContent)
+    # Fetch SDL2 on windows
+    FetchContent_Declare(
+        sdl2
+        URL https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-devel-2.28.5-VC.zip
+        URL_HASH MD5=d8173db078e54040c666f411c5a6afff
+    )
+    FetchContent_MakeAvailable(sdl2)
+    target_include_directories(MMRecomp PRIVATE
+        ${sdl2_SOURCE_DIR}/include
+    )
+    target_link_directories(MMRecomp PRIVATE
+        ${sdl2_SOURCE_DIR}/lib/x64
+    )
+
+    # Copy SDL2 DLL to output folder as post build step
+    if (WIN32)
+        add_custom_command(TARGET MMRecomp POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
+                $<TARGET_FILE_DIR:MMRecomp>)
+    endif()
+endif()
 
 target_link_libraries(MMRecomp PRIVATE
     PatchesLib
