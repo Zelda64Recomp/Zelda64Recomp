@@ -1,5 +1,54 @@
 #include "patches.h"
 #include "input.h"
+
+
+s32 func_80847190(PlayState* play, Player* this, s32 arg2);
+s16 func_80832754(Player* this, s32 arg1);
+s32 func_8082EF20(Player* this);
+
+// Patched to add gyro aiming
+s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
+    s32 pad;
+    s16 var_s0;
+
+    if (!func_800B7128(this) && !func_8082EF20(this) && !arg2) {
+        var_s0 = play->state.input[0].rel.stick_y * 0xF0;
+        Math_SmoothStepToS(&this->actor.focus.rot.x, var_s0, 0xE, 0xFA0, 0x1E);
+
+        var_s0 = play->state.input[0].rel.stick_x * -0x10;
+        var_s0 = CLAMP(var_s0, -0xBB8, 0xBB8);
+        this->actor.focus.rot.y += var_s0;
+    }
+    else {
+        float gyro_x, gyro_y;
+        recomp_get_gyro_deltas(&gyro_x, &gyro_y);
+
+        s16 temp3;
+
+        temp3 = ((play->state.input[0].rel.stick_y >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_y * 0xC8)) * 1500.0f);
+        this->actor.focus.rot.x += temp3 + (s32)(gyro_x * -3.0f);
+
+        if (this->stateFlags1 & PLAYER_STATE1_800000) {
+            this->actor.focus.rot.x = CLAMP(this->actor.focus.rot.x, -0x1F40, 0xFA0);
+        }
+        else {
+            this->actor.focus.rot.x = CLAMP(this->actor.focus.rot.x, -0x36B0, 0x36B0);
+        }
+
+        var_s0 = this->actor.focus.rot.y - this->actor.shape.rot.y;
+        temp3 = ((play->state.input[0].rel.stick_x >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_x * 0xC8)) * -1500.0f);
+        var_s0 += temp3 + (s32)(gyro_y * 3.0f);
+
+        this->actor.focus.rot.y = CLAMP(var_s0, -0x4AAA, 0x4AAA) + this->actor.shape.rot.y;
+    }
+
+    this->unk_AA6 |= 2;
+
+    return func_80832754(this, (play->unk_1887C != 0) || func_800B7128(this) || func_8082EF20(this));
+}
+
 #if 0
 u32 sPlayerItemButtons[] = {
     BTN_B,

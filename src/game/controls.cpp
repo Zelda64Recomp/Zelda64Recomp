@@ -120,3 +120,10 @@ extern "C" void recomp_puts(uint8_t* rdram, recomp_context* ctx) {
 extern "C" void recomp_exit(uint8_t* rdram, recomp_context* ctx) {
     ultramodern::quit();
 }
+
+extern "C" void recomp_get_gyro_deltas(uint8_t* rdram, recomp_context* ctx) {
+    float* x_out = _arg<0, float*>(rdram, ctx);
+    float* y_out = _arg<1, float*>(rdram, ctx);
+
+    recomp::get_gyro_deltas(x_out, y_out);
+}

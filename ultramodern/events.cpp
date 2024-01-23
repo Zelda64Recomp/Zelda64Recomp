@@ -263,7 +263,7 @@ void ultramodern::set_graphics_config(const ultramodern::GraphicsConfig& config)
     events_context.action_queue.enqueue(UpdateConfigAction{});
 }
 
-const ultramodern::GraphicsConfig& ultramodern::get_graphics_config() {
+ultramodern::GraphicsConfig ultramodern::get_graphics_config() {
     return cur_config;
 }
 

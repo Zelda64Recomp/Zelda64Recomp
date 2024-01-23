@@ -26,6 +26,7 @@ extern "C" {
         void name(uint8_t* rdram, recomp_context* ctx);
 #endif
 
+DECLARE_FUNC(void, recomp_get_gyro_deltas, float* x, float* y);
 // TODO move these
 DECLARE_FUNC(void, recomp_puts, const char* data, u32 size);
 DECLARE_FUNC(void, recomp_exit);

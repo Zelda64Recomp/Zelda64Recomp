@@ -63,6 +63,7 @@ namespace recomp {
     float get_input_analog(const std::span<const recomp::InputField> fields);
     bool get_input_digital(const InputField& field);
     bool get_input_digital(const std::span<const recomp::InputField> fields);
+    void get_gyro_deltas(float* x, float* y);
 
     enum class InputDevice {
         Controller,

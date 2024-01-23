@@ -6,15 +6,30 @@
 #include "recomp_ui.h"
 #include "SDL.h"
 #include "rt64_layer.h"
+#include "GamepadMotion.hpp"
 
 constexpr float axis_threshold = 0.5f;
+
+struct ControllerState {
+    SDL_GameController* controller;
+    std::array<float, 3> latest_accelerometer;
+    GamepadMotion motion;
+    uint32_t prev_gyro_timestamp;
+    ControllerState() : controller{}, latest_accelerometer{}, motion{}, prev_gyro_timestamp{} {
+        motion.Reset();
+        motion.SetCalibrationMode(GamepadMotionHelpers::CalibrationMode::Stillness | GamepadMotionHelpers::CalibrationMode::SensorFusion);
+    };
+};
 
 static struct {
     const Uint8* keys = nullptr;
     int numkeys = 0;
     std::atomic_int32_t mouse_wheel_pos = 0;
-    std::vector<SDL_JoystickID> controller_ids{};
     std::vector<SDL_GameController*> cur_controllers{};
+    std::unordered_map<SDL_JoystickID, ControllerState> controller_states;
+    std::array<float, 2> rotation_delta{};
+    std::mutex pending_rotation_mutex;
+    std::array<float, 2> pending_rotation_delta{};
 } InputState;
 
 std::atomic<recomp::InputDevice> scanning_device = recomp::InputDevice::COUNT;
@@ -72,7 +87,13 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             printf("Controller added: %d\n", controller_event->which);
             if (controller != nullptr) {
                 printf("  Instance ID: %d\n", SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
-                InputState.controller_ids.push_back(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)));
+                ControllerState& state = InputState.controller_states[SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller))];
+                state.controller = controller;
+
+                if (SDL_GameControllerHasSensor(controller, SDL_SensorType::SDL_SENSOR_GYRO) && SDL_GameControllerHasSensor(controller, SDL_SensorType::SDL_SENSOR_ACCEL)) {
+                    SDL_GameControllerSetSensorEnabled(controller, SDL_SensorType::SDL_SENSOR_GYRO, SDL_TRUE);
+                    SDL_GameControllerSetSensorEnabled(controller, SDL_SensorType::SDL_SENSOR_ACCEL, SDL_TRUE);
+                }
             }
         }
         break;
@@ -80,7 +101,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         {
             SDL_ControllerDeviceEvent* controller_event = &event->cdevice;
             printf("Controller removed: %d\n", controller_event->which);
-            std::erase(InputState.controller_ids, controller_event->which);
+            InputState.controller_states.erase(controller_event->which);
         }
         break;
     case SDL_EventType::SDL_QUIT:
@@ -112,6 +133,41 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             }
         }
         queue_if_enabled(event);
+        break;
+    case SDL_EventType::SDL_CONTROLLERSENSORUPDATE:
+        if (event->csensor.sensor == SDL_SensorType::SDL_SENSOR_ACCEL) {
+            // Convert acceleration to g's.
+            float x = event->csensor.data[0] / SDL_STANDARD_GRAVITY;
+            float y = event->csensor.data[1] / SDL_STANDARD_GRAVITY;
+            float z = event->csensor.data[2] / SDL_STANDARD_GRAVITY;
+            ControllerState& state = InputState.controller_states[event->csensor.which];
+            state.latest_accelerometer[0] = x;
+            state.latest_accelerometer[1] = y;
+            state.latest_accelerometer[2] = z;
+        }
+        else if (event->csensor.sensor == SDL_SensorType::SDL_SENSOR_GYRO) {
+            // constexpr float gyro_threshold = 0.05f;
+            // Convert rotational velocity to degrees per second.
+            constexpr float rad_to_deg = 180.0f / M_PI;
+            float x = event->csensor.data[0] * rad_to_deg;
+            float y = event->csensor.data[1] * rad_to_deg;
+            float z = event->csensor.data[2] * rad_to_deg;
+            ControllerState& state = InputState.controller_states[event->csensor.which];
+            uint64_t cur_timestamp = event->csensor.timestamp;
+            uint32_t delta_ms = cur_timestamp - state.prev_gyro_timestamp;
+            state.motion.ProcessMotion(x, y, z, state.latest_accelerometer[0], state.latest_accelerometer[1], state.latest_accelerometer[2], delta_ms * 0.001f);
+            state.prev_gyro_timestamp = cur_timestamp;
+
+            float rot_x = 0.0f;
+            float rot_y = 0.0f;
+            state.motion.GetPlayerSpaceGyro(rot_x, rot_y);
+
+            {
+                std::lock_guard lock{ InputState.pending_rotation_mutex };
+                InputState.pending_rotation_delta[0] += rot_x;
+                InputState.pending_rotation_delta[1] += rot_y;
+            }
+        }
         break;
     default:
         queue_if_enabled(event);
@@ -254,13 +310,21 @@ void recomp::poll_inputs() {
 
     InputState.cur_controllers.clear();
 
-    for (SDL_JoystickID id : InputState.controller_ids) {
-        SDL_GameController* controller = SDL_GameControllerFromInstanceID(id);
+    for (const auto& [id, state] : InputState.controller_states) {
+        (void)id; // Avoid unused variable warning.
+        SDL_GameController* controller = state.controller;
         if (controller != nullptr) {
             InputState.cur_controllers.push_back(controller);
         }
     }
 
+    // Read the deltas while resetting them to zero.
+    {
+        std::lock_guard lock{ InputState.pending_rotation_mutex };
+        InputState.rotation_delta = InputState.pending_rotation_delta;
+        InputState.pending_rotation_delta = { 0.0f, 0.0f };
+    }
+    
     // Quicksaving is disabled for now and will likely have more limited functionality
     // when restored, rather than allowing saving and loading at any point in time.
     #if 0
@@ -366,6 +430,12 @@ bool recomp::get_input_digital(const std::span<const recomp::InputField> fields)
         ret |= get_input_digital(field);
     }
     return ret;
+}
+
+void recomp::get_gyro_deltas(float* x, float* y) {
+    std::array<float, 2> cur_rotation_delta = InputState.rotation_delta;
+    *x = cur_rotation_delta[0];
+    *y = cur_rotation_delta[1];
 }
 
 bool recomp::game_input_disabled() {

@@ -148,6 +148,7 @@ set (SOURCES
 target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/lib/concurrentqueue
+    ${CMAKE_SOURCE_DIR}/lib/GamepadMotionHelpers
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Include
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib
