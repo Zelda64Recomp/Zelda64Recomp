@@ -20,14 +20,38 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         this->actor.focus.rot.y += var_s0;
     }
     else {
-        float gyro_x, gyro_y;
-        recomp_get_gyro_deltas(&gyro_x, &gyro_y);
+        static float total_gyro_x, total_gyro_y;
+        static float filtered_gyro_x, filtered_gyro_y;
+        static int applied_gyro_x, applied_gyro_y;
+
+        const float filter_factor = 0.50f;
+
+        // TODO remappable gyro reset button
+        if (play->state.input[0].press.button & BTN_L) {
+            total_gyro_x = 0;
+            total_gyro_y = 0;
+            filtered_gyro_x = 0;
+            filtered_gyro_y = 0;
+        }
+
+        float delta_gyro_x, delta_gyro_y;
+        recomp_get_gyro_deltas(&delta_gyro_x, &delta_gyro_y);
+
+        total_gyro_x += delta_gyro_x;
+        total_gyro_y += delta_gyro_y;
+
+        filtered_gyro_x = filtered_gyro_x * filter_factor + total_gyro_x * (1.0f - filter_factor);
+        filtered_gyro_y = filtered_gyro_y * filter_factor + total_gyro_y * (1.0f - filter_factor);
+
+        int target_gyro_x = (int)filtered_gyro_x;
+        int target_gyro_y = (int)filtered_gyro_y;
 
         s16 temp3;
 
         temp3 = ((play->state.input[0].rel.stick_y >= 0) ? 1 : -1) *
             (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_y * 0xC8)) * 1500.0f);
-        this->actor.focus.rot.x += temp3 + (s32)(gyro_x * -3.0f);
+        this->actor.focus.rot.x += temp3 + (s32)((target_gyro_x - applied_gyro_x) * -3.0f);
+        applied_gyro_x = target_gyro_x;
 
         if (this->stateFlags1 & PLAYER_STATE1_800000) {
             this->actor.focus.rot.x = CLAMP(this->actor.focus.rot.x, -0x1F40, 0xFA0);
@@ -39,7 +63,8 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         var_s0 = this->actor.focus.rot.y - this->actor.shape.rot.y;
         temp3 = ((play->state.input[0].rel.stick_x >= 0) ? 1 : -1) *
             (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_x * 0xC8)) * -1500.0f);
-        var_s0 += temp3 + (s32)(gyro_y * 3.0f);
+        var_s0 += temp3 + (s32)((target_gyro_y - applied_gyro_y) * 3.0f);
+        applied_gyro_y = target_gyro_y;
 
         this->actor.focus.rot.y = CLAMP(var_s0, -0x4AAA, 0x4AAA) + this->actor.shape.rot.y;
     }

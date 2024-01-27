@@ -188,13 +188,13 @@ if (WIN32)
         ${sdl2_SOURCE_DIR}/lib/x64
     )
 
-    # Copy SDL2 DLL to output folder as post build step
-    if (WIN32)
-        add_custom_command(TARGET MMRecomp POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
-                $<TARGET_FILE_DIR:MMRecomp>)
-    endif()
+    # Copy SDL2 and dxc DLLs to output folder as post build step
+    add_custom_command(TARGET MMRecomp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
+            "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxil.dll"
+            "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxcompiler.dll"
+            $<TARGET_FILE_DIR:MMRecomp>)
 endif()
 
 target_link_libraries(MMRecomp PRIVATE
