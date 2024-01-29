@@ -28,19 +28,27 @@
     background-color: $color-bg-shadow;
 }
 
-.config__footer {
-    @include border-top($color-border-soft);
+.config__header, .config__footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: space(20) space(20);
     background-color: $color-bg-shadow;
+}
+
+.config__header {
+    @include border-bottom($color-border-soft);
+    padding: space(12) space(20);
+}
+
+.config__footer {
+    @include border-top($color-border-soft);
+    padding: space(20) space(20);
     border-bottom-left-radius: $border-radius-modal;
     border-bottom-right-radius: $border-radius-modal;
 }
 
-.config__footer-left {
+.config__header-left {
     display: flex;
     flex-direction: row;
     flex: 1 1 auto;

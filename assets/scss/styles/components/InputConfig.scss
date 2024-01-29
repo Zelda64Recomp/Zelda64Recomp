@@ -55,10 +55,12 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     display: flex;
     flex-direction: column;
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    top: space(16);
+    right: space(16);
+    bottom: space(16);
+    left: space(16);
+    border-radius: space(108);
+    background-color: $color-white-a5;
 }
 
 .input-config__visual-half {

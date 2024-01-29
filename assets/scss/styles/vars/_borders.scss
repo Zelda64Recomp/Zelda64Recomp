@@ -18,3 +18,8 @@ $border-width-thickness: space($border-width-thickness-num);
     border-top-color: $col;
     border-top-width: $border-width-thickness;
 }
+
+@mixin border-bottom($col: $color-border) {
+    border-bottom-color: $col;
+    border-bottom-width: $border-width-thickness;
+}

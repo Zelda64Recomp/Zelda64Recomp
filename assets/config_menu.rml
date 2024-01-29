@@ -128,6 +128,27 @@
 						</tab>
 						<panel class="config" data-model="controls_model">
 							<form class="config__form" data-attr-cur-input="cur_input_row">
+								<div class="config__header">
+									<div class="config__header-left">
+										<button
+											class="button button--primary"
+										>
+											<div class="button__label">Controller</div>
+										</button>
+										<button
+											class="button button--secondary"
+										>
+											<div class="button__label">Keyboard</div>
+										</button>
+									</div>
+									<div>
+										<button
+											class="button button--warning"
+										>
+											<div class="button__label">Reset to defaults</div>
+										</button>
+									</div>
+								</div>
 								<div class="config__wrapper input-config">
 									<div class="input-config__horizontal-split">
 										<div class="input-config__mappings" data-event-mouseout="set_input_row_focus(-1)">
@@ -294,27 +315,6 @@
 												</div>
 											</div>
 										</div>
-									</div>
-								</div>
-								<div class="config__footer">
-									<div class="config__footer-left">
-										<button
-											class="button button--primary"
-										>
-											<div class="button__label">Controller</div>
-										</button>
-										<button
-											class="button button--secondary"
-										>
-											<div class="button__label">Keyboard</div>
-										</button>
-									</div>
-									<div>
-										<button
-											class="button button--warning"
-										>
-											<div class="button__label">Reset to defaults</div>
-										</button>
 									</div>
 								</div>
 							</form>
