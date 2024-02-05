@@ -14,6 +14,7 @@ namespace ultramodern {
 
 RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle);
 void RT64UpdateConfig(RT64::Application* application, const ultramodern::GraphicsConfig& old_config, const ultramodern::GraphicsConfig& new_config);
+void RT64EnableInstantPresent(RT64::Application* application);
 void RT64SendDL(uint8_t* rdram, const OSTask* task);
 void RT64UpdateScreen(uint32_t vi_origin);
 void RT64ChangeWindow();

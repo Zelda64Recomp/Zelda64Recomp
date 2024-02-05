@@ -201,6 +201,13 @@ RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHan
 
     device_max_msaa = compute_max_supported_aa(common_sample_counts);
 
+    // Force gbi depth branches to prevent LODs from kicking in.
+    ret->enhancementConfig.f3dex.forceBranch = true;
+    // Scale LODs based on the output resolution.
+    ret->enhancementConfig.textureLOD.scale = true;
+
+    ret->updateEnhancementConfig();
+
     return ret;
 }
 
@@ -258,6 +265,13 @@ void RT64UpdateConfig(RT64::Application* application, const ultramodern::Graphic
     if (new_config.msaa_option != old_config.msaa_option) {
         application->updateMultisampling();
     }
+}
+
+void RT64EnableInstantPresent(RT64::Application* application) {
+    // Enable the present early presentation mode for minimal latency.
+    application->enhancementConfig.presentation.mode = RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;
+
+    application->updateEnhancementConfig();
 }
 
 RT64::UserConfiguration::Antialiasing RT64MaxMSAA() {

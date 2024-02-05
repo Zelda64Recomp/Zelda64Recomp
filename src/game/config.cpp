@@ -114,7 +114,7 @@ void recomp::reset_graphics_options() {
     new_config.wm_option = ultramodern::WindowMode::Windowed;
     new_config.ar_option = RT64::UserConfiguration::AspectRatio::Expand;
     new_config.msaa_option = RT64::UserConfiguration::Antialiasing::MSAA4X;
-    new_config.rr_option = RT64::UserConfiguration::RefreshRate::Original;
+    new_config.rr_option = RT64::UserConfiguration::RefreshRate::Display;
     new_config.rr_manual_value = 60;
     ultramodern::set_graphics_config(new_config);
 }

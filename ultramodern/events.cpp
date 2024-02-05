@@ -268,6 +268,7 @@ ultramodern::GraphicsConfig ultramodern::get_graphics_config() {
 }
 
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
+    bool enabled_instant_present = false;
     using namespace std::chrono_literals;
 
     ultramodern::set_native_thread_name("Gfx Thread");
@@ -293,6 +294,11 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
         if (events_context.action_queue.wait_dequeue_timed(action, 1ms)) {
             // Determine the action type and act on it
             if (const auto* task_action = std::get_if<SpTaskAction>(&action)) {
+                // Turn on instant present if the game has been started and it hasn't been turned on yet.
+                if (ultramodern::is_game_started() && !enabled_instant_present) {
+                    RT64EnableInstantPresent(application);
+                    enabled_instant_present = true;
+                }
                 // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
                 // start another graphics task until the RDP is also complete. Games usually preserve the RSP inputs until the RDP
                 // is finished as well, so sending this early shouldn't be an issue in most cases.

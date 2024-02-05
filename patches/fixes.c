@@ -31,8 +31,6 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
     s32 cur_y;
     u32 row;
 
-    gSegments[0x0D] = OS_K0_TO_PHYSICAL(play->pauseCtx.iconItemLangSegment);
-
     cur_y = PAGE_BG_HEIGHT / 2;
 
     // 2 verts per row plus 2 extra verts at the start and the end.
@@ -74,10 +72,10 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
     
     // These are overlay symbols, so their addresses need to be offset to get their actual loaded vram address.
     // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
-    s16** sVtxPageQuadsXRelocated =      (s16**)((u8*)&sVtxPageQuadsX[0]      + gKaleidoMgrOverlayTable[0].offset);
-    s16** sVtxPageQuadsWidthRelocated =  (s16**)((u8*)&sVtxPageQuadsWidth[0]  + gKaleidoMgrOverlayTable[0].offset);
-    s16** sVtxPageQuadsYRelocated =      (s16**)((u8*)&sVtxPageQuadsY[0]      + gKaleidoMgrOverlayTable[0].offset);
-    s16** sVtxPageQuadsHeightRelocated = (s16**)((u8*)&sVtxPageQuadsHeight[0] + gKaleidoMgrOverlayTable[0].offset);
+    s16** sVtxPageQuadsXRelocated =      (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsX);
+    s16** sVtxPageQuadsWidthRelocated =  (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsWidth);
+    s16** sVtxPageQuadsYRelocated =      (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsY);
+    s16** sVtxPageQuadsHeightRelocated = (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsHeight);
     
     s16 k = 60;
 
@@ -128,8 +126,7 @@ typedef u8 bg_image_t[(2 + PAGE_BG_WIDTH) * (2 + PAGE_BG_HEIGHT)];
 
 #define BG_IMAGE_COUNT 4
 TexturePtr* bg_pointers[BG_IMAGE_COUNT];
-bg_image_t bg_images[BG_IMAGE_COUNT];
-u32 bg_image_count = 0;
+bg_image_t bg_images[BG_IMAGE_COUNT] __attribute__((aligned(8)));
 
 void assemble_image(TexturePtr* textures, bg_image_t* image_out) {
     u8* pixels_out_start = *image_out;
@@ -165,6 +162,58 @@ void assemble_image(TexturePtr* textures, bg_image_t* image_out) {
     }
 }
 
+static bool assembled_kaleido_images = false;
+
+extern TexturePtr sMaskPageBgTextures[];
+extern TexturePtr sItemPageBgTextures[];
+extern TexturePtr sMapPageBgTextures[];
+extern TexturePtr sQuestPageBgTextures[];
+
+extern void (*sKaleidoScopeUpdateFunc)(PlayState* play);
+extern void (*sKaleidoScopeDrawFunc)(PlayState* play);
+
+extern void KaleidoScope_Update(PlayState* play);
+extern void KaleidoScope_Draw(PlayState* play);
+
+void KaleidoUpdateWrapper(PlayState* play) {
+    KaleidoScope_Update(play);
+}
+
+void KaleidoDrawWrapper(PlayState* play) {
+    // @recomp Update the background image pointers to reflect the overlay's load address.
+    bg_pointers[0] = KaleidoManager_GetRamAddr(sMaskPageBgTextures);
+    bg_pointers[1] = KaleidoManager_GetRamAddr(sItemPageBgTextures);
+    bg_pointers[2] = KaleidoManager_GetRamAddr(sMapPageBgTextures);
+    bg_pointers[3] = KaleidoManager_GetRamAddr(sQuestPageBgTextures);
+
+    KaleidoScope_Draw(play);
+
+    // @recomp Check if this is the first time kaleido has been drawn. If so, assemble the background textures
+    // into the full seamless image.
+    if (!assembled_kaleido_images) {
+        assembled_kaleido_images = true;
+        // Record the old value for segments 0x08 and 0x0D, then update them with the correct values so that segmented addresses
+        // can be converted in assemble_image.
+        uintptr_t old_segment_08 = gSegments[0x08];
+        uintptr_t old_segment_0D = gSegments[0x0D];
+        gSegments[0x08] = OS_K0_TO_PHYSICAL(play->pauseCtx.iconItemSegment);
+        gSegments[0x0D] = OS_K0_TO_PHYSICAL(play->pauseCtx.iconItemLangSegment);
+        assemble_image(KaleidoManager_GetRamAddr(sMaskPageBgTextures), &bg_images[0]);
+        assemble_image(KaleidoManager_GetRamAddr(sItemPageBgTextures), &bg_images[1]);
+        assemble_image(KaleidoManager_GetRamAddr(sMapPageBgTextures), &bg_images[2]);
+        assemble_image(KaleidoManager_GetRamAddr(sQuestPageBgTextures), &bg_images[3]);
+        gSegments[0x08] = old_segment_08;
+        gSegments[0x0D] = old_segment_0D;
+    }
+}
+
+void KaleidoScopeCall_Init(PlayState* play) {
+    // @recomp Set the update and draw func pointers to the wrappers instead of the actual functions.
+    sKaleidoScopeUpdateFunc = KaleidoUpdateWrapper;
+    sKaleidoScopeDrawFunc = KaleidoDrawWrapper;
+    KaleidoSetup_Init(play);
+}
+
 // @recomp patched to fix bilerp seams.
 Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures) {
     s32 i;
@@ -172,24 +221,17 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures
 
     bg_image_t* cur_image = NULL;
 
-    // Check if this texture set has already been assembled into an image.
+    // Check if this texture set has been assembled into a full image.
     u32 image_index;
-    for (image_index = 0; image_index < bg_image_count; image_index++) {
+    for (image_index = 0; image_index < BG_IMAGE_COUNT; image_index++) {
         if (bg_pointers[image_index] == textures) {
             cur_image = &bg_images[image_index];
+            break;
         }
     }
 
-    // If no image was found and there's a free image slot, assemble the image.
-    if (cur_image == NULL && image_index < BG_IMAGE_COUNT) {
-        assemble_image(textures, &bg_images[image_index]);
-        bg_pointers[image_index] = textures;
-        cur_image = &bg_images[image_index];
-        bg_image_count++;
-    }
-
     if (cur_image == NULL) {
-        // No image was found and there are no free slots.
+        // No image was found.
         return gfx;
     }
 

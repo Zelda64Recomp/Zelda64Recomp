@@ -24,7 +24,7 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         static float filtered_gyro_x, filtered_gyro_y;
         static int applied_gyro_x, applied_gyro_y;
 
-        const float filter_factor = 0.50f;
+        const float filter_factor = 0.00f;
 
         // TODO remappable gyro reset button
         if (play->state.input[0].press.button & BTN_L) {

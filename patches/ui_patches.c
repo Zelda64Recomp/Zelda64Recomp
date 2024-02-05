@@ -394,17 +394,16 @@ void Interface_Draw(PlayState* play) {
         gEXSetScissorAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, -margin_reduction, -SCREEN_WIDTH, margin_reduction, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // @recomp Move the item being equipped from the center of the screen to the right edge as the timer counts down
-        if (gKaleidoMgrOverlayTable[0].loadedRamAddr != NULL) {
-            // These are overlay symbols, so their addresses need to be offset to get their actual loaded vram address.
-            // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
+        if ((pauseCtx->state == PAUSE_STATE_MAIN) && ((pauseCtx->mainState == PAUSE_MAIN_STATE_EQUIP_ITEM) ||
+                                                    (pauseCtx->mainState == PAUSE_MAIN_STATE_EQUIP_MASK))) {
             extern s16 sEquipAnimTimer;
             extern s16 sMaskEquipAnimTimer;
             extern s16 sEquipState;
             extern s16 sMaskEquipState;
-            s16 equip_timer =      *(s16*)((u8*)&sEquipAnimTimer     + gKaleidoMgrOverlayTable[0].offset);
-            s16 mask_equip_timer = *(s16*)((u8*)&sMaskEquipAnimTimer + gKaleidoMgrOverlayTable[0].offset);
-            s16 equip_state =      *(s16*)((u8*)&sEquipState         + gKaleidoMgrOverlayTable[0].offset);
-            s16 mask_equip_state = *(s16*)((u8*)&sMaskEquipState     + gKaleidoMgrOverlayTable[0].offset);
+            s16 equip_timer =      *(s16*)KaleidoManager_GetRamAddr(&sEquipAnimTimer);
+            s16 mask_equip_timer = *(s16*)KaleidoManager_GetRamAddr(&sMaskEquipAnimTimer);
+            s16 equip_state =      *(s16*)KaleidoManager_GetRamAddr(&sEquipState);
+            s16 mask_equip_state = *(s16*)KaleidoManager_GetRamAddr(&sMaskEquipState);
 
             s16 timer = MIN(equip_timer, mask_equip_timer);
             s32 max_timer = 10;
