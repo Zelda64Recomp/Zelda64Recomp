@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss",
+    "start": "npm run watch",
     "watch": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss --watch",
     "watch-debug": "sass --no-source-map main.scss ..\\recomp.rcss --watch",
+    "build": "sass --no-source-map --style=compressed main.scss ..\\recomp.rcss",
     "lint": "stylelint '.\\**\\*.scss'"
   },
   "author": "",
