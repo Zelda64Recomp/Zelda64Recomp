@@ -847,6 +847,268 @@ void SkelAnime_DrawTransformFlexOpa(PlayState* play, void** skeleton, Vec3s* joi
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
+/*
+ * Draws the Skeleton `skeleton`'s limb at index `limbIndex`.  Appends all generated graphics commands to
+ * `gfx`.  Returns a pointer to the next gfx to be appended to.
+ */
+Gfx* SkelAnime_DrawLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+                        OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
+    StandardLimb* limb;
+    Gfx* dList;
+    Vec3f pos;
+    Vec3s rot;
+
+    Matrix_Push();
+
+    limb = Lib_SegmentedToVirtual(skeleton[limbIndex]);
+    limbIndex++;
+
+    rot = jointTable[limbIndex];
+    pos.x = limb->jointPos.x;
+    pos.y = limb->jointPos.y;
+    pos.z = limb->jointPos.z;
+
+    dList = limb->dList;
+
+    // @recomp Push the limb's matrix group.
+    gfx = push_limb_matrix_group(gfx, actor, limbIndex);
+
+    if ((overrideLimbDraw == NULL) || !overrideLimbDraw(play, limbIndex, &dList, &pos, &rot, actor, &gfx)) {
+        Matrix_TranslateRotateZYX(&pos, &rot);
+        if (dList != NULL) {
+            gSPMatrix(&gfx[0], Matrix_NewMtx(play->state.gfxCtx), G_MTX_LOAD);
+            gSPDisplayList(&gfx[1], dList);
+            gfx = &gfx[2];
+        }
+    }
+
+    // @recomp Pop the limb's matrix group and push the post-limb matrix group.
+    gfx = pop_limb_matrix_group(gfx, actor);
+    gfx = push_post_limb_matrix_group(gfx, actor, limbIndex);
+
+    if (postLimbDraw != NULL) {
+        postLimbDraw(play, limbIndex, &dList, &rot, actor, &gfx);
+    }
+
+    // @recomp Pop the post-limb matrix group.
+    gfx = pop_post_limb_matrix_group(gfx, actor);
+
+    if (limb->child != LIMB_DONE) {
+        gfx = SkelAnime_DrawLimb(play, limb->child, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor, gfx);
+    }
+
+    Matrix_Pop();
+
+    if (limb->sibling != LIMB_DONE) {
+        gfx = SkelAnime_DrawLimb(play, limb->sibling, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor, gfx);
+    }
+
+    return gfx;
+}
+
+/*
+ * Draws the Skeleton `skeleton`  Appends all generated graphics to `gfx`, and returns a pointer to the
+ * next gfx to be appended to.
+ */
+Gfx* SkelAnime_Draw(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDraw overrideLimbDraw,
+                    PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
+    StandardLimb* rootLimb;
+    s32 pad;
+    Gfx* dList;
+    Vec3f pos;
+    Vec3s rot;
+
+    if (skeleton == NULL) {
+        return NULL;
+    }
+
+    Matrix_Push();
+
+    rootLimb = Lib_SegmentedToVirtual(skeleton[0]);
+
+    pos.x = jointTable[0].x;
+    pos.y = jointTable[0].y;
+    pos.z = jointTable[0].z;
+
+    rot = jointTable[1];
+
+    dList = rootLimb->dList;
+
+    // @recomp Push the limb's matrix group.
+    gfx = push_limb_matrix_group(gfx, actor, 0);
+
+    if ((overrideLimbDraw == NULL) || !overrideLimbDraw(play, 1, &dList, &pos, &rot, actor, &gfx)) {
+        Matrix_TranslateRotateZYX(&pos, &rot);
+        if (dList != NULL) {
+            gSPMatrix(&gfx[0], Matrix_NewMtx(play->state.gfxCtx), G_MTX_LOAD);
+            gSPDisplayList(&gfx[1], dList);
+            gfx = &gfx[2];
+        }
+    }
+
+    // @recomp Pop the limb's matrix group and push the post-limb matrix group.
+    gfx = pop_limb_matrix_group(gfx, actor);
+    gfx = push_post_limb_matrix_group(gfx, actor, 0);
+
+    if (postLimbDraw != NULL) {
+        postLimbDraw(play, 1, &dList, &rot, actor, &gfx);
+    }
+
+    // @recomp Pop the post-limb matrix group.
+    gfx = pop_post_limb_matrix_group(gfx, actor);
+
+    if (rootLimb->child != LIMB_DONE) {
+        gfx =
+            SkelAnime_DrawLimb(play, rootLimb->child, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor, gfx);
+    }
+
+    Matrix_Pop();
+
+    return gfx;
+}
+
+/**
+ * Draw a limb of type `StandardLimb` contained within a flexible skeleton to the specified display buffer
+ */
+Gfx* SkelAnime_DrawFlexLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+                            OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Mtx** mtx,
+                            Gfx* gfx) {
+    StandardLimb* limb;
+    Gfx* newDList;
+    Gfx* limbDList;
+    Vec3f pos;
+    Vec3s rot;
+
+    Matrix_Push();
+
+    limb = Lib_SegmentedToVirtual(skeleton[limbIndex]);
+    limbIndex++;
+    rot = jointTable[limbIndex];
+
+    pos.x = limb->jointPos.x;
+    pos.y = limb->jointPos.y;
+    pos.z = limb->jointPos.z;
+
+    newDList = limbDList = limb->dList;
+    
+    // @recomp Push the limb's matrix group.
+    gfx = push_limb_matrix_group(gfx, actor, limbIndex);
+
+    if ((overrideLimbDraw == NULL) || !overrideLimbDraw(play, limbIndex, &newDList, &pos, &rot, actor, &gfx)) {
+        Matrix_TranslateRotateZYX(&pos, &rot);
+        if (newDList != NULL) {
+            gSPMatrix(&gfx[0], Matrix_ToMtx(*mtx), G_MTX_LOAD);
+            gSPDisplayList(&gfx[1], newDList);
+            gfx = &gfx[2];
+            (*mtx)++;
+        } else {
+            if (limbDList != NULL) {
+                Matrix_ToMtx(*mtx);
+                (*mtx)++;
+            }
+        }
+    }
+
+    // @recomp Pop the limb's matrix group and push the post-limb matrix group.
+    gfx = pop_limb_matrix_group(gfx, actor);
+    gfx = push_post_limb_matrix_group(gfx, actor, limbIndex);
+
+    if (postLimbDraw != NULL) {
+        postLimbDraw(play, limbIndex, &limbDList, &rot, actor, &gfx);
+    }
+
+    // @recomp Pop the post-limb matrix group.
+    gfx = pop_post_limb_matrix_group(gfx, actor);
+
+    if (limb->child != LIMB_DONE) {
+        gfx = SkelAnime_DrawFlexLimb(play, limb->child, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor,
+                                     mtx, gfx);
+    }
+
+    Matrix_Pop();
+
+    if (limb->sibling != LIMB_DONE) {
+        gfx = SkelAnime_DrawFlexLimb(play, limb->sibling, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor,
+                                     mtx, gfx);
+    }
+
+    return gfx;
+}
+
+/**
+ * Draw all limbs of type `StandardLimb` in a given flexible skeleton to the specified display buffer
+ * Limbs in a flexible skeleton have meshes that can stretch to line up with other limbs.
+ * An array of matrices is dynamically allocated so each limb can access any transform to ensure its meshes line up.
+ */
+Gfx* SkelAnime_DrawFlex(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
+                        OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
+    StandardLimb* rootLimb;
+    s32 pad;
+    Gfx* newDList;
+    Gfx* limbDList;
+    Vec3f pos;
+    Vec3s rot;
+    Mtx* mtx;
+
+    if (skeleton == NULL) {
+        return NULL;
+    }
+
+    mtx = GRAPH_ALLOC(play->state.gfxCtx, dListCount * sizeof(Mtx));
+
+    gSPSegment(gfx++, 0x0D, mtx);
+
+    Matrix_Push();
+
+    rootLimb = Lib_SegmentedToVirtual(skeleton[0]);
+
+    pos.x = jointTable[0].x;
+    pos.y = jointTable[0].y;
+    pos.z = jointTable[0].z;
+
+    rot = jointTable[1];
+
+    newDList = limbDList = rootLimb->dList;
+
+    // @recomp Push the limb's matrix group.
+    gfx = push_limb_matrix_group(gfx, actor, 0);
+
+    if ((overrideLimbDraw == NULL) || !overrideLimbDraw(play, 1, &newDList, &pos, &rot, actor, &gfx)) {
+        Matrix_TranslateRotateZYX(&pos, &rot);
+        if (newDList != NULL) {
+            gSPMatrix(&gfx[0], Matrix_ToMtx(mtx), G_MTX_LOAD);
+            gSPDisplayList(&gfx[1], newDList);
+            gfx = &gfx[2];
+            mtx++;
+        } else {
+            if (limbDList != NULL) {
+                Matrix_ToMtx(mtx);
+                mtx++;
+            }
+        }
+    }
+
+    // @recomp Pop the limb's matrix group and push the post-limb matrix group.
+    gfx = pop_limb_matrix_group(gfx, actor);
+    gfx = push_post_limb_matrix_group(gfx, actor, 0);
+
+    if (postLimbDraw != NULL) {
+        postLimbDraw(play, 1, &limbDList, &rot, actor, &gfx);
+    }
+
+    // @recomp Pop the post-limb matrix group.
+    gfx = pop_post_limb_matrix_group(gfx, actor);
+
+    if (rootLimb->child != LIMB_DONE) {
+        gfx = SkelAnime_DrawFlexLimb(play, rootLimb->child, skeleton, jointTable, overrideLimbDraw, postLimbDraw, actor,
+                                     &mtx, gfx);
+    }
+
+    Matrix_Pop();
+
+    return gfx;
+}
+
 extern MtxF gSkinLimbMatrices[];
 
 void Skin_DrawImpl(Actor* actor, PlayState* play, Skin* skin, SkinPostDraw postDraw,
@@ -907,4 +1169,156 @@ void Skin_DrawImpl(Actor* actor, PlayState* play, Skin* skin, SkinPostDraw postD
 
 close_disps:;
     CLOSE_DISPS(gfxCtx);
+}
+
+__attribute__((noinline)) s32 scan_for_matrices(Gfx* start, Gfx* end) {
+    s32 matrix_count = 0;
+    Gfx* cur = start;
+    // Count any G_MTX commands between the start and end commands.
+    while (cur != end) {
+        if ((cur->words.w0 >> 24) == G_MTX) {
+            matrix_count++;
+        }
+        cur++;
+    }
+    return matrix_count;
+}
+
+void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* xlu_start) {
+    OPEN_DISPS(play->state.gfxCtx);
+
+    // Scan the commands written by the actor to see how many matrices were added.
+    s32 opa_matrices = scan_for_matrices(opa_start, POLY_OPA_DISP);
+    s32 xlu_matrices = scan_for_matrices(xlu_start, POLY_XLU_DISP);
+
+    // If the actor wrote at least one matrix in total and at most one matrix to each list, tag that matrix with the actor's id.
+    if ((opa_matrices == 1 || xlu_matrices == 1) && opa_matrices <= 1 && xlu_matrices <= 1) {
+        u32 cur_transform_id = 
+            (actorIdByte0(actor) <<  0) |
+            (actorIdByte1(actor) <<  8) |
+            (actorIdByte2(actor) << 16) |
+            (actorIdByte3(actor) << 24);
+        
+        if (opa_matrices == 1) {
+            // Fill in the slot that was reserved for a transform id.
+            gEXMatrixGroup(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+            
+            // Pop the matrix group.
+            gEXPopMatrixGroup(POLY_OPA_DISP++);
+        }
+
+        // if (xlu_matrices == 1) {
+        //     // Fill in the slot that was reserved for a transform id.
+        //     gEXMatrixGroup(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+
+        //     // Pop the matrix groups.
+        //     gEXPopMatrixGroup(POLY_XLU_DISP++);
+        // }
+    }
+
+    CLOSE_DISPS();
+}
+
+// @recomp Patched to automatically add transform tagging to actor matrices based on what DL commands they write in their draw function
+void Actor_Draw(PlayState* play, Actor* actor) {
+    Lights* light;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    light = LightContext_NewLights(&play->lightCtx, play->state.gfxCtx);
+    if ((actor->flags & ACTOR_FLAG_10000000) && (play->roomCtx.curRoom.enablePosLights || (MREG(93) != 0))) {
+        light->enablePosLights = true;
+    }
+
+    Lights_BindAll(light, play->lightCtx.listHead,
+                   (actor->flags & (ACTOR_FLAG_10000000 | ACTOR_FLAG_400000)) ? NULL : &actor->world.pos, play);
+    Lights_Draw(light, play->state.gfxCtx);
+
+    if (actor->flags & ACTOR_FLAG_IGNORE_QUAKE) {
+        Matrix_SetTranslateRotateYXZ(actor->world.pos.x + play->mainCamera.quakeOffset.x,
+                                     actor->world.pos.y +
+                                         ((actor->shape.yOffset * actor->scale.y) + play->mainCamera.quakeOffset.y),
+                                     actor->world.pos.z + play->mainCamera.quakeOffset.z, &actor->shape.rot);
+    } else {
+        Matrix_SetTranslateRotateYXZ(actor->world.pos.x, actor->world.pos.y + (actor->shape.yOffset * actor->scale.y),
+                                     actor->world.pos.z, &actor->shape.rot);
+    }
+
+    Matrix_Scale(actor->scale.x, actor->scale.y, actor->scale.z, MTXMODE_APPLY);
+    Actor_SetObjectDependency(play, actor);
+
+    gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[actor->objectSlot].segment);
+    gSPSegment(POLY_XLU_DISP++, 0x06, play->objectCtx.slots[actor->objectSlot].segment);
+
+    if (actor->colorFilterTimer != 0) {
+        s32 colorFlag = COLORFILTER_GET_COLORFLAG(actor->colorFilterParams);
+        Color_RGBA8 actorDefaultHitColor = { 0, 0, 0, 255 };
+
+        if (colorFlag == COLORFILTER_COLORFLAG_GRAY) {
+            actorDefaultHitColor.r = actorDefaultHitColor.g = actorDefaultHitColor.b =
+                COLORFILTER_GET_COLORINTENSITY(actor->colorFilterParams) | 7;
+        } else if (colorFlag == COLORFILTER_COLORFLAG_RED) {
+            actorDefaultHitColor.r = COLORFILTER_GET_COLORINTENSITY(actor->colorFilterParams) | 7;
+        } else if (colorFlag == COLORFILTER_COLORFLAG_NONE) {
+            actorDefaultHitColor.b = actorDefaultHitColor.g = actorDefaultHitColor.r = 0;
+        } else {
+            actorDefaultHitColor.b = COLORFILTER_GET_COLORINTENSITY(actor->colorFilterParams) | 7;
+        }
+
+        if (actor->colorFilterParams & COLORFILTER_BUFFLAG_XLU) {
+            func_800AE778(play, &actorDefaultHitColor, actor->colorFilterTimer,
+                          COLORFILTER_GET_DURATION(actor->colorFilterParams));
+        } else {
+            func_800AE434(play, &actorDefaultHitColor, actor->colorFilterTimer,
+                          COLORFILTER_GET_DURATION(actor->colorFilterParams));
+        }
+    }
+
+    // @recomp Add two noops into the opa and xlu displaylists to reserve space for a transform tag before the actor is drawn.
+    Gfx* opa_tag_slot = POLY_OPA_DISP;
+    Gfx* xlu_tag_slot = POLY_XLU_DISP;
+    gDPNoOp(POLY_OPA_DISP++);
+    gDPNoOp(POLY_OPA_DISP++);
+    gDPNoOp(POLY_XLU_DISP++);
+    gDPNoOp(POLY_XLU_DISP++);
+
+    actor->draw(actor, play);
+
+    tag_actor_displaylists(actor, play, opa_tag_slot, xlu_tag_slot);
+
+    if (actor->colorFilterTimer != 0) {
+        if (actor->colorFilterParams & COLORFILTER_BUFFLAG_XLU) {
+            func_800AE8EC(play);
+        } else {
+            func_800AE5A0(play);
+        }
+    }
+
+    if (actor->shape.shadowDraw != NULL) {
+        actor->shape.shadowDraw(actor, light, play);
+    }
+    actor->isDrawn = true;
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+extern EffectSsInfo sEffectSsInfo;
+
+// @recomp Add transform tags to particles
+void EffectSS_DrawParticle(PlayState* play, s32 index) {
+    EffectSs* entry = &sEffectSsInfo.dataTable[index];
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    gEXMatrixGroup(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+    gEXMatrixGroup(POLY_XLU_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+    
+    if (entry->draw != NULL) {
+        entry->draw(play, index, entry);
+    }
+    
+    gEXPopMatrixGroup(POLY_OPA_DISP++);
+    gEXPopMatrixGroup(POLY_XLU_DISP++);
+
+    CLOSE_DISPS(play->state.gfxCtx);
 }
