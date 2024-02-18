@@ -877,6 +877,10 @@ struct {
 // TODO make this not be global
 extern SDL_Window* window;
 
+void recomp::get_window_size(int& width, int& height) {
+    SDL_GetWindowSizeInPixels(window, &width, &height);
+}
+
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     printf("RT64 hook init\n");
 

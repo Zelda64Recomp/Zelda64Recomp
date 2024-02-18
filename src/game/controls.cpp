@@ -4,6 +4,7 @@
 #include "recomp_input.h"
 #include "../ultramodern/ultramodern.hpp"
 #include "../patches/input.h"
+#include "../patches/graphics.h"
 
 // Arrays that hold the mappings for every input for keyboard and controller respectively.
 using input_mapping = std::array<recomp::InputField, recomp::bindings_per_input>;
@@ -126,4 +127,12 @@ extern "C" void recomp_get_gyro_deltas(uint8_t* rdram, recomp_context* ctx) {
     float* y_out = _arg<1, float*>(rdram, ctx);
 
     recomp::get_gyro_deltas(x_out, y_out);
+}
+
+#include "recomp_ui.h"
+extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
+    int width, height;
+    recomp::get_window_size(width, height);
+
+    _return(ctx, static_cast<float>(width) / height);
 }

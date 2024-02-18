@@ -8,3 +8,4 @@ recomp_handle_quicksave_actions_main = 0x8100000C;
 osRecvMesg_recomp = 0x81000010;
 osSendMesg_recomp = 0x81000014;
 recomp_get_gyro_deltas = 0x81000018;
+recomp_get_aspect_ratio = 0x8100001C;
