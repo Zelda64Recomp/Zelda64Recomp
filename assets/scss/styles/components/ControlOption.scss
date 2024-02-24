@@ -2,6 +2,7 @@
 
 .control-option {
     @include set-color($color-text-dim);
+    @include trans-colors-svg;
     display: flex;
     position: relative;
     flex-direction: row;
@@ -49,6 +50,7 @@
 
 .control-option__binding {
     @include set-color($color-text-dim);
+    @include trans-colors-border;
     display: flex;
     align-items: center;
     justify-content: center;

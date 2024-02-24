@@ -24,6 +24,7 @@
 .button {
     @extend %label-md;
     @include create-button-variation($color-primary);
+    @include trans-colors;
 
     display: block;
     // leave 1dp room for border expansion

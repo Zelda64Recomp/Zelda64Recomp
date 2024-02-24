@@ -47,7 +47,7 @@ static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
 
-constexpr recomp::InputDevice cur_device = recomp::InputDevice::Controller;
+static recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
 void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	recomp::set_input_binding(static_cast<recomp::GameInput>(scanned_input_index), scanned_binding_index, cur_device, scanned_field);
@@ -105,6 +105,15 @@ public:
 			[](const std::string& param, Rml::Event& event) {
 				close_config_menu();
 			});
+
+		recomp::register_event(listener, "toggle_input_device",
+			[](const std::string& param, Rml::Event& event) {
+				cur_device = cur_device == recomp::InputDevice::Controller
+					? recomp::InputDevice::Keyboard
+					: recomp::InputDevice::Controller;
+				controls_model_handle.DirtyVariable("input_device_is_keyboard");
+				controls_model_handle.DirtyVariable("inputs");
+			});
 	}
 	void make_graphics_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("graphics_model");
@@ -147,7 +156,8 @@ public:
 		}
 
 		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = recomp::get_num_inputs(); } );
-		
+		constructor.BindFunc("input_device_is_keyboard", [](Rml::Variant& out) { out = cur_device == recomp::InputDevice::Keyboard; } );
+
 		constructor.RegisterTransformFunc("get_input_name", [](const Rml::VariantList& inputs) {
 			return Rml::Variant{recomp::get_input_name(static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>()))};
 		});
@@ -205,7 +215,7 @@ public:
 			virtual int Size(void* ptr) override { return recomp::bindings_per_input; }
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
 				recomp::GameInput input = static_cast<recomp::GameInput>((uintptr_t)ptr);
-				return Rml::DataVariable{&input_field_definition_instance, &recomp::get_input_binding(input, address.index, recomp::InputDevice::Controller)};
+				return Rml::DataVariable{&input_field_definition_instance, &recomp::get_input_binding(input, address.index, cur_device)};
 			}
 		};
 		// Static instance of the InputField array variable definition to have a fixed pointer to return to RmlUi.

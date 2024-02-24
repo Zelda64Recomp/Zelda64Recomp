@@ -6,7 +6,8 @@ $border-radius-lg: 16dp;
 
 $border-radius-modal: $border-radius-lg;
 
-$border-width-thickness-num: 1.5;
+$border-width-thickness-num: 1.1;
+// $border-width-thickness-num: 1.5;
 $border-width-thickness: space($border-width-thickness-num);
 
 @mixin border($col: $color-border) {
@@ -22,4 +23,20 @@ $border-width-thickness: space($border-width-thickness-num);
 @mixin border-bottom($col: $color-border) {
     border-bottom-color: $col;
     border-bottom-width: $border-width-thickness;
+}
+
+@mixin inset-block($inset-amt) {
+    position: absolute;
+    top: $inset-amt;
+    right: $inset-amt;
+    bottom: $inset-amt;
+    left: $inset-amt;
+}
+
+// add this to a child of the container that needs a border.
+// parent must have `position: relative` 
+@mixin inner-border-block($col: $color-border) {
+    @include inset-block($border-width-thickness);
+    @include border($col);
+    display: block;
 }

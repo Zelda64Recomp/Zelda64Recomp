@@ -121,12 +121,14 @@
     }
 
     input.range slidertrack {
+        @include trans-colors;
         margin-top: 7dp;
         height: 2dp;
         background-color: $color-border;
     }
     
     input.range sliderbar {
+        @include trans-colors;
         margin-left: -8dp;
         margin-right: -6dp;
         width: space(16);

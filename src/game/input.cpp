@@ -6,6 +6,7 @@
 #include "recomp_ui.h"
 #include "SDL.h"
 #include "rt64_layer.h"
+#include "promptfont.h"
 #include "GamepadMotion.hpp"
 
 constexpr float axis_threshold = 0.5f;
@@ -497,6 +498,85 @@ std::string controller_button_to_string(SDL_GameControllerButton button) {
     }
 }
 
+std::unordered_map<SDL_Scancode, std::string> scancode_codepoints {
+    {SDL_SCANCODE_LEFT, PF_KEYBOARD_LEFT},
+    // NOTE: UP and RIGHT are swapped with promptfont.
+    {SDL_SCANCODE_UP, PF_KEYBOARD_RIGHT},
+    {SDL_SCANCODE_RIGHT, PF_KEYBOARD_UP},
+    {SDL_SCANCODE_DOWN, PF_KEYBOARD_DOWN},
+    {SDL_SCANCODE_A, PF_KEYBOARD_A},
+    {SDL_SCANCODE_B, PF_KEYBOARD_B},
+    {SDL_SCANCODE_C, PF_KEYBOARD_C},
+    {SDL_SCANCODE_D, PF_KEYBOARD_D},
+    {SDL_SCANCODE_E, PF_KEYBOARD_E},
+    {SDL_SCANCODE_F, PF_KEYBOARD_F},
+    {SDL_SCANCODE_G, PF_KEYBOARD_G},
+    {SDL_SCANCODE_H, PF_KEYBOARD_H},
+    {SDL_SCANCODE_I, PF_KEYBOARD_I},
+    {SDL_SCANCODE_J, PF_KEYBOARD_J},
+    {SDL_SCANCODE_K, PF_KEYBOARD_K},
+    {SDL_SCANCODE_L, PF_KEYBOARD_L},
+    {SDL_SCANCODE_M, PF_KEYBOARD_M},
+    {SDL_SCANCODE_N, PF_KEYBOARD_N},
+    {SDL_SCANCODE_O, PF_KEYBOARD_O},
+    {SDL_SCANCODE_P, PF_KEYBOARD_P},
+    {SDL_SCANCODE_Q, PF_KEYBOARD_Q},
+    {SDL_SCANCODE_R, PF_KEYBOARD_R},
+    {SDL_SCANCODE_S, PF_KEYBOARD_S},
+    {SDL_SCANCODE_T, PF_KEYBOARD_T},
+    {SDL_SCANCODE_U, PF_KEYBOARD_U},
+    {SDL_SCANCODE_V, PF_KEYBOARD_V},
+    {SDL_SCANCODE_W, PF_KEYBOARD_W},
+    {SDL_SCANCODE_X, PF_KEYBOARD_X},
+    {SDL_SCANCODE_Y, PF_KEYBOARD_Y},
+    {SDL_SCANCODE_Z, PF_KEYBOARD_Z},
+    {SDL_SCANCODE_0, PF_KEYBOARD_0},
+    {SDL_SCANCODE_1, PF_KEYBOARD_1},
+    {SDL_SCANCODE_2, PF_KEYBOARD_2},
+    {SDL_SCANCODE_3, PF_KEYBOARD_3},
+    {SDL_SCANCODE_4, PF_KEYBOARD_4},
+    {SDL_SCANCODE_5, PF_KEYBOARD_5},
+    {SDL_SCANCODE_6, PF_KEYBOARD_6},
+    {SDL_SCANCODE_7, PF_KEYBOARD_7},
+    {SDL_SCANCODE_8, PF_KEYBOARD_8},
+    {SDL_SCANCODE_9, PF_KEYBOARD_9},
+    {SDL_SCANCODE_ESCAPE, PF_KEYBOARD_ESCAPE},
+    {SDL_SCANCODE_F1, PF_KEYBOARD_F1},
+    {SDL_SCANCODE_F2, PF_KEYBOARD_F2},
+    {SDL_SCANCODE_F3, PF_KEYBOARD_F3},
+    {SDL_SCANCODE_F4, PF_KEYBOARD_F4},
+    {SDL_SCANCODE_F5, PF_KEYBOARD_F5},
+    {SDL_SCANCODE_F6, PF_KEYBOARD_F6},
+    {SDL_SCANCODE_F7, PF_KEYBOARD_F7},
+    {SDL_SCANCODE_F8, PF_KEYBOARD_F8},
+    {SDL_SCANCODE_F9, PF_KEYBOARD_F9},
+    {SDL_SCANCODE_F10, PF_KEYBOARD_F10},
+    {SDL_SCANCODE_F11, PF_KEYBOARD_F11},
+    {SDL_SCANCODE_F12, PF_KEYBOARD_F12},
+    {SDL_SCANCODE_PRINTSCREEN, PF_KEYBOARD_PRINT_SCREEN},
+    {SDL_SCANCODE_SCROLLLOCK, PF_KEYBOARD_SCROLL_LOCK},
+    {SDL_SCANCODE_PAUSE, PF_KEYBOARD_PAUSE},
+    {SDL_SCANCODE_INSERT, PF_KEYBOARD_INSERT},
+    {SDL_SCANCODE_HOME, PF_KEYBOARD_HOME},
+    {SDL_SCANCODE_PAGEUP, PF_KEYBOARD_PAGE_UP},
+    {SDL_SCANCODE_DELETE, PF_KEYBOARD_DELETE},
+    {SDL_SCANCODE_END, PF_KEYBOARD_END},
+    {SDL_SCANCODE_PAGEDOWN, PF_KEYBOARD_PAGE_DOWN},
+    {SDL_SCANCODE_SPACE, PF_KEYBOARD_SPACE},
+    {SDL_SCANCODE_BACKSPACE, PF_KEYBOARD_BACKSPACE},
+    {SDL_SCANCODE_TAB, PF_KEYBOARD_TAB},
+    {SDL_SCANCODE_RETURN, PF_KEYBOARD_ENTER},
+    {SDL_SCANCODE_CAPSLOCK, PF_KEYBOARD_CAPS},
+    {SDL_SCANCODE_NUMLOCKCLEAR, PF_KEYBOARD_NUM_LOCK},
+};
+
+std::string keyboard_input_to_string(SDL_Scancode key) {
+    if (scancode_codepoints.find(key) != scancode_codepoints.end()) {
+        return scancode_codepoints[key];
+    }
+    return std::to_string(key);
+}
+
 std::string controller_axis_to_string(int axis) {
     bool positive = axis > 0;
     SDL_GameControllerAxis actual_axis = SDL_GameControllerAxis(abs(axis) - 1);
@@ -526,6 +606,8 @@ std::string recomp::InputField::to_string() const {
             return controller_button_to_string((SDL_GameControllerButton)input_id);
         case InputType::ControllerAnalog:
             return controller_axis_to_string(input_id);
+        case InputType::Keyboard:
+            return keyboard_input_to_string((SDL_Scancode)input_id);
         default:
             return std::to_string(input_type) + "," + std::to_string(input_id);
     }

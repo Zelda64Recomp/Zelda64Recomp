@@ -131,14 +131,16 @@
 								<div class="config__header">
 									<div class="config__header-left">
 										<button
-											class="button button--primary"
+											class="toggle"
+											data-class-toggle--checked="input_device_is_keyboard"
+											onclick="toggle_input_device"
 										>
-											<div class="button__label">Controller</div>
-										</button>
-										<button
-											class="button button--secondary"
-										>
-											<div class="button__label">Keyboard</div>
+											<div class="toggle__border" />
+											<div class="toggle__floater" />
+											<div class="toggle__icons">
+												<div class="toggle__icon toggle__icon--left"><div>␼</div></div>
+												<div class="toggle__icon toggle__icon--right"><div>␽</div></div>
+											</div>
 										</button>
 									</div>
 									<div>
@@ -198,8 +200,53 @@
 													<!-- top half -->
 													<div class="input-config__visual-half">
 														<div class="input-config__visual-quarter-left">
-															<div>
-																dpad lmao
+															<div
+																class="input-viz input-viz__dpad"
+																visual-input="DPAD_UP DPAD_DOWN DPAD_LEFT DPAD_RIGHT"
+															>
+																<svg src="icons/VizMap/DPad.svg" />
+																<div class="input-viz__dpad-split input-viz__dpad-split--vertical">
+																	<div class="input-viz input-viz__mappings" visual-input="DPAD_UP">
+																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--up" src="icons/VizMap/DPadArrow.svg" />
+																		<div
+																			class="input-config__visual-mapping"
+																			data-for="cur_binding, i : inputs.DPAD_UP"
+																		>
+																			<div>{{cur_binding}}</div>
+																		</div>
+																	</div>
+																	<div class="input-viz__dpad-divider" />
+																	<div class="input-viz input-viz__mappings" visual-input="DPAD_DOWN">
+																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--down" src="icons/VizMap/DPadArrow.svg" />
+																		<div
+																			class="input-config__visual-mapping"
+																			data-for="cur_binding, i : inputs.DPAD_DOWN"
+																		>
+																			<div>{{cur_binding}}</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="input-viz__dpad-split input-viz__dpad-split--horizontal">
+																	<div class="input-viz input-viz__mappings" visual-input="DPAD_LEFT">
+																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--left" src="icons/VizMap/DPadArrow.svg" />
+																		<div
+																			class="input-config__visual-mapping"
+																			data-for="cur_binding, i : inputs.DPAD_LEFT"
+																		>
+																			<div>{{cur_binding}}</div>
+																		</div>
+																	</div>
+																	<div class="input-viz__dpad-divider" />
+																	<div class="input-viz input-viz__mappings" visual-input="DPAD_RIGHT">
+																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--right" src="icons/VizMap/DPadArrow.svg" />
+																		<div
+																			class="input-config__visual-mapping"
+																			data-for="cur_binding, i : inputs.DPAD_RIGHT"
+																		>
+																			<div>{{cur_binding}}</div>
+																		</div>
+																	</div>
+																</div>
 															</div>
 														</div>
 														<div class="input-config__visual-quarter-right">

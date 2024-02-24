@@ -51,6 +51,14 @@ $font-stack: chiaro;
 	font-weight: 400;
 }
 
+%prompt-font-lg {
+    font-family: promptfont;
+    font-style: normal;
+    font-weight: 400;
+    font-size: space(56);
+    line-height: space(56);
+}
+
 %prompt-font {
     font-family: promptfont;
     font-style: normal;

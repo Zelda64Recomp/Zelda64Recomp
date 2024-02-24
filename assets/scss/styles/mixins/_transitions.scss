@@ -1,0 +1,36 @@
+
+/*
+@include trans-colors;
+*/
+@mixin trans-colors {
+    transition: color $transition-quick, background-color $transition-quick;
+}
+
+/*
+@include trans-colors-opa;
+*/
+@mixin trans-colors-opa {
+    transition: color $transition-quick, background-color $transition-quick, opacity $transition-quick;
+}
+
+/*
+@include trans-colors-svg;
+*/
+@mixin trans-colors-svg {
+    transition: color $transition-quick, background-color $transition-quick, opacity $transition-quick;
+
+    svg {
+        transition: image-color $transition-quick, background-color $transition-quick;
+    }
+}
+
+/*
+@include trans-colors-border;
+*/
+@mixin trans-colors-border {
+    transition: color $transition-quick, background-color $transition-quick, opacity $transition-quick, border-color $transition-quick;
+
+    svg {
+        transition: image-color $transition-quick, background-color $transition-quick;
+    }
+}
