@@ -1,0 +1,7 @@
+<!-- Facing up by default, and positioned right against edge -->
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M27.4019 4.5C28.5566 2.5 31.4434 2.5 32.5981 4.5L53.3827 40.5C54.5374 42.5 53.094 45 50.7846 45H9.21539C6.90599 45 5.46261 42.5 6.61731 40.5L27.4019 4.5Z"
+        fill="#ffffff" fill-opacity="0.2" />
+</svg>
+    
