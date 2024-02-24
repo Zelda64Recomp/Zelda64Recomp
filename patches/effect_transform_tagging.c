@@ -32,8 +32,7 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
         }
         // func_80AF31D0 is an overlay symbol, so its addresses need to be offset to get the actual loaded vram address.
         // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
-        OverrideKeyframeDrawScaled func_80AF31D0_relocated = (OverrideKeyframeDrawScaled)((uintptr_t)func_80AF31D0 -
-            (intptr_t)((uintptr_t)thisx->overlayEntry->vramStart - (uintptr_t)thisx->overlayEntry->loadedRamAddr));
+        OverrideKeyframeDrawScaled func_80AF31D0_relocated = (OverrideKeyframeDrawScaled)actor_relocate(thisx, func_80AF31D0);
         
         // @recomp Push the matrix group for the song of soaring's wings.
         gEXMatrixGroup(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,

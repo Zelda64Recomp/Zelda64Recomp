@@ -1,0 +1,141 @@
+#include "patches.h"
+#include "transform_ids.h"
+#include "overlays/actors/ovl_Arms_Hook/z_arms_hook.h"
+
+// TODO replace these with externs when the recompiler can handle relocations in patches automatically.
+Vec3f D_808C1C10 = { 0.0f, 0.0f, 0.0f };
+Vec3f D_808C1C1C = { 0.0f, 0.0f, 900.0f };
+Vec3f D_808C1C28 = { 0.0f, 500.0f, -3000.0f };
+Vec3f D_808C1C34 = { 0.0f, -500.0f, -3000.0f };
+Vec3f D_808C1C40 = { 0.0f, 500.0f, 0.0f };
+Vec3f D_808C1C4C = { 0.0f, -500.0f, 0.0f };
+
+extern Gfx object_link_child_DL_01D960[];
+extern Gfx gHookshotChainDL[];
+
+#define THIS ((ArmsHook*)thisx)
+
+void ArmsHook_Shoot(ArmsHook* this, PlayState* play);
+
+void ArmsHook_Draw(Actor* thisx, PlayState* play) {
+    ArmsHook* this = THIS;
+    f32 f0;
+    Player* player = GET_PLAYER(play);
+
+    if ((player->actor.draw != NULL) && (player->rightHandType == PLAYER_MODELTYPE_RH_HOOKSHOT)) {
+        Vec3f sp68;
+        Vec3f sp5C;
+        Vec3f sp50;
+        f32 sp4C;
+        f32 sp48;
+
+        OPEN_DISPS(play->state.gfxCtx);
+
+
+        // @recomp Manually relocate ArmsHook_Shoot because it's an overlay symbol.
+        // TODO remove this when the recompiler handles relocations in patches automatically.
+        if (((ArmsHookActionFunc)actor_relocate(thisx, ArmsHook_Shoot) != this->actionFunc) || (this->timer <= 0)) {
+            Matrix_MultVec3f(&D_808C1C10, &this->unk1E0);
+            Matrix_MultVec3f(&D_808C1C28, &sp5C);
+            Matrix_MultVec3f(&D_808C1C34, &sp50);
+            this->weaponInfo.active = false;
+        } else {
+            Matrix_MultVec3f(&D_808C1C1C, &this->unk1E0);
+            Matrix_MultVec3f(&D_808C1C40, &sp5C);
+            Matrix_MultVec3f(&D_808C1C4C, &sp50);
+        }
+        func_80126440(play, &this->collider, &this->weaponInfo, &sp5C, &sp50);
+        Gfx_SetupDL25_Opa(play->state.gfxCtx);
+        func_80122868(play, player);
+
+        // @recomp Tag the matrices for the hookshot tip and chain.
+        u32 cur_transform_id = actor_transform_id(thisx);
+        gEXMatrixGroup(POLY_OPA_DISP++, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    
+        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gSPDisplayList(POLY_OPA_DISP++, object_link_child_DL_01D960);
+        Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, MTXMODE_NEW);
+        Math_Vec3f_Diff(&player->rightHandWorld.pos, &this->actor.world.pos, &sp68);
+        sp48 = SQXZ(sp68);
+        sp4C = sqrtf(SQXZ(sp68));
+        Matrix_RotateYS(Math_Atan2S(sp68.x, sp68.z), MTXMODE_APPLY);
+        Matrix_RotateXS(Math_Atan2S(-sp68.y, sp4C), MTXMODE_APPLY);
+        f0 = sqrtf(SQ(sp68.y) + sp48);
+        Matrix_Scale(0.015f, 0.015f, f0 * 0.01f, MTXMODE_APPLY);
+        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gSPDisplayList(POLY_OPA_DISP++, gHookshotChainDL);
+        func_801229A0(play, player);
+
+        // @recomp Pop the transform id.
+        gEXPopMatrixGroup(POLY_OPA_DISP++);
+
+        CLOSE_DISPS(play->state.gfxCtx);
+    }
+}
+
+#undef THIS
+
+
+extern Gfx object_link_child_DL_017818[];
+
+Gfx bowstring_start_hook_dl[] = {
+    // One command worth of space to copy the command that was overwritten.
+    gsDPNoOp(),
+    // Two commands worth of space for the gEXMatrixGroup.
+    gsDPNoOp(),
+    gsDPNoOp(),
+    
+    gsSPMatrix(&gIdentityMtx, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_MUL),
+    // Jump back to the original DL.
+    gsSPBranchList(object_link_child_DL_017818 + 1),
+};
+
+Gfx bowstring_end_hook_dl[] = {
+    // One command worth of space for the gEXPopMatrixGroup.
+    gsDPNoOp(),
+    // Return from the displaylist.
+    gsSPEndDisplayList(),
+};
+
+void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
+                         OverrideLimbDrawFlex overrideLimbDraw) {
+    OPEN_DISPS(play->state.gfxCtx);
+
+    gSPSegment(POLY_OPA_DISP++, 0x0C, cullDList);
+    gSPSegment(POLY_XLU_DISP++, 0x0C, cullDList);
+    
+    // @recomp Force the closest LOD
+    lod = 0;
+
+    // @recomp Patch object_link_child_DL_017818 (the DL for the bowstring) with a transform tag.
+    gSegments[0x0C] = OS_K0_TO_PHYSICAL(cullDList);
+    Gfx* dl_virtual_address = (Gfx*)Lib_SegmentedToVirtual(object_link_child_DL_017818);
+
+    // Check if the commands have already been overwritten.
+    if ((dl_virtual_address[0].words.w0 >> 24) != G_DL) {
+        // Copy the first command before overwriting.
+        bowstring_start_hook_dl[0] = dl_virtual_address[0];
+        // Overwrite the first command with a branch.
+        gSPBranchList(dl_virtual_address, OS_K0_TO_PHYSICAL(bowstring_start_hook_dl));
+        Gfx* enddl_command = dl_virtual_address;
+        while ((enddl_command->words.w0 >> 24) != G_ENDDL) {
+            enddl_command++;
+        }
+        // Overwrite the last command with a branch.
+        gSPBranchList(enddl_command, bowstring_end_hook_dl);
+        // Write the transform tag command.
+        gEXMatrixGroup(&bowstring_start_hook_dl[1], BOWSTRING_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        // Write the pop group command.
+        gEXPopMatrixGroup(&bowstring_end_hook_dl[0]);
+    }
+
+    // @recomp Manually relocate Player_PostLimbDrawGameplay.
+    // TODO remove this when the recompiler can relocate patch code.
+    Player_DrawImpl(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount, lod,
+                    this->transformation, 0, this->actor.shape.face, overrideLimbDraw, (PostLimbDrawFlex)actor_relocate(&this->actor, Player_PostLimbDrawGameplay),
+                    &this->actor);
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+

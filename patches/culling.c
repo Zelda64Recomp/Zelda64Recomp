@@ -71,24 +71,6 @@ s32 func_809A9110(PlayState* play, Vec3f* pos) {
     return false;
 }
 
-
-// Override LOD to 0
-void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
-                         OverrideLimbDrawFlex overrideLimbDraw) {
-    OPEN_DISPS(play->state.gfxCtx);
-
-    gSPSegment(POLY_OPA_DISP++, 0x0C, cullDList);
-    gSPSegment(POLY_XLU_DISP++, 0x0C, cullDList);
-    
-    lod = 0; // Force the closest LOD
-
-    Player_DrawImpl(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount, lod,
-                    this->transformation, 0, this->actor.shape.face, overrideLimbDraw, Player_PostLimbDrawGameplay,
-                    &this->actor);
-
-    CLOSE_DISPS(play->state.gfxCtx);
-}
-
 // Replace point light glow effect with RT64 point Z test so it works in widescreen
 
 void Lights_GlowCheck(PlayState* play) {
