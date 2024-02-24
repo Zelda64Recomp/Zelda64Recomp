@@ -1,7 +1,7 @@
 RAMBASE  = 0x80800100; /* Used to hold any new symbols */
 
 MEMORY {
-    extram : ORIGIN = RAMBASE, LENGTH = 1M
+    extram : ORIGIN = RAMBASE, LENGTH = 8M
     rom : ORIGIN = 0, LENGTH = 1M
 }
 

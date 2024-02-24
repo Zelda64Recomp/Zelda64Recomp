@@ -8,9 +8,22 @@ s32 margin_reduction = 8;
 
 extern s32 gFramerateDivisor;
 
-// Modified to enable RT64 extended GBI mode
+// 10 times bigger than the game's normal buffers.
+typedef struct {
+    GfxMasterList master;
+    Gfx polyXluBuffer[0x8000];
+    Gfx overlayBuffer[0x4000];
+    Gfx workBuffer[0x400];
+    Gfx debugBuffer[0x400];
+    Gfx polyOpaBuffer[0x33800];
+} BiggerGfxPool;
+
+BiggerGfxPool gBiggerGfxPools[2];
+
+// @recomp Use the bigger gfx pools and enable RT64 extended GBI mode.
 void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     GfxPool* pool = &gGfxPools[gfxCtx->gfxPoolIdx % 2];
+    BiggerGfxPool* bigger_pool = &gBiggerGfxPools[gfxCtx->gfxPoolIdx % 2];
 
     gGfxMasterDL = &pool->master;
     gSegments[0x0E] = (uintptr_t)gGfxMasterDL;
@@ -18,29 +31,29 @@ void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     pool->headMagic = GFXPOOL_HEAD_MAGIC;
     pool->tailMagic = GFXPOOL_TAIL_MAGIC;
 
-    Graph_InitTHGA(&gfxCtx->polyOpa, pool->polyOpaBuffer, sizeof(pool->polyOpaBuffer));
-    Graph_InitTHGA(&gfxCtx->polyXlu, pool->polyXluBuffer, sizeof(pool->polyXluBuffer));
-    Graph_InitTHGA(&gfxCtx->overlay, pool->overlayBuffer, sizeof(pool->overlayBuffer));
-    Graph_InitTHGA(&gfxCtx->work, pool->workBuffer, sizeof(pool->workBuffer));
-    Graph_InitTHGA(&gfxCtx->debug, pool->debugBuffer, sizeof(pool->debugBuffer));
+    Graph_InitTHGA(&gfxCtx->polyOpa, bigger_pool->polyOpaBuffer, sizeof(bigger_pool->polyOpaBuffer));
+    Graph_InitTHGA(&gfxCtx->polyXlu, bigger_pool->polyXluBuffer, sizeof(bigger_pool->polyXluBuffer));
+    Graph_InitTHGA(&gfxCtx->overlay, bigger_pool->overlayBuffer, sizeof(bigger_pool->overlayBuffer));
+    Graph_InitTHGA(&gfxCtx->work, bigger_pool->workBuffer, sizeof(bigger_pool->workBuffer));
+    Graph_InitTHGA(&gfxCtx->debug, bigger_pool->debugBuffer, sizeof(bigger_pool->debugBuffer));
 
-    gfxCtx->polyOpaBuffer = pool->polyOpaBuffer;
-    gfxCtx->polyXluBuffer = pool->polyXluBuffer;
-    gfxCtx->overlayBuffer = pool->overlayBuffer;
-    gfxCtx->workBuffer = pool->workBuffer;
-    gfxCtx->debugBuffer = pool->debugBuffer;
+    gfxCtx->polyOpaBuffer = bigger_pool->polyOpaBuffer;
+    gfxCtx->polyXluBuffer = bigger_pool->polyXluBuffer;
+    gfxCtx->overlayBuffer = bigger_pool->overlayBuffer;
+    gfxCtx->workBuffer = bigger_pool->workBuffer;
+    gfxCtx->debugBuffer = bigger_pool->debugBuffer;
 
     gfxCtx->curFrameBuffer = SysCfb_GetFramebuffer(gfxCtx->framebufferIndex % 2);
     gSegments[0x0F] = (uintptr_t)gfxCtx->curFrameBuffer;
 
     gfxCtx->zbuffer = SysCfb_GetZBuffer();
 
-    gSPBranchList(&gGfxMasterDL->disps[0], pool->polyOpaBuffer);
-    gSPBranchList(&gGfxMasterDL->disps[1], pool->polyXluBuffer);
-    gSPBranchList(&gGfxMasterDL->disps[2], pool->overlayBuffer);
-    gSPBranchList(&gGfxMasterDL->disps[3], pool->workBuffer);
+    gSPBranchList(&gGfxMasterDL->disps[0], bigger_pool->polyOpaBuffer);
+    gSPBranchList(&gGfxMasterDL->disps[1], bigger_pool->polyXluBuffer);
+    gSPBranchList(&gGfxMasterDL->disps[2], bigger_pool->overlayBuffer);
+    gSPBranchList(&gGfxMasterDL->disps[3], bigger_pool->workBuffer);
     gSPEndDisplayList(&gGfxMasterDL->disps[4]);
-    gSPBranchList(&gGfxMasterDL->debugDisp[0], pool->debugBuffer);
+    gSPBranchList(&gGfxMasterDL->debugDisp[0], bigger_pool->debugBuffer);
 
     // @recomp Enable RT64 extended GBI mode and set the current framerate
     OPEN_DISPS(gfxCtx);
@@ -49,6 +62,113 @@ void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     // gEXPrint(POLY_OPA_DISP++);
     CLOSE_DISPS(gfxCtx);
 }
+
+void recomp_crash(const char* err) {
+    recomp_printf("%s\n", err);
+    // TODO open a message box instead of a hard crash
+    *(volatile int*)0 = 0;
+}
+
+extern volatile OSTime gRSPGfxTimeTotal;
+extern volatile OSTime gRSPGfxTimeAcc;
+extern volatile OSTime gRSPAudioTimeTotal;
+extern volatile OSTime gRSPAudioTimeAcc;
+extern volatile OSTime gRDPTimeTotal;
+extern volatile OSTime gRDPTimeAcc;
+extern OSTime sGraphPrevUpdateEndTime;
+extern volatile OSTime gGraphUpdatePeriod;
+
+// @recomp Modified to report errors instead of skipping frames.
+/**
+ *  Run the game state logic, then finalize the gfx buffer
+ *  and run the graphics task for this frame.
+ */
+void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
+    u32 problem;
+
+    gameState->unk_A3 = 0;
+    Graph_SetNextGfxPool(gfxCtx);
+
+    GameState_Update(gameState);
+
+    OPEN_DISPS(gfxCtx);
+
+    gSPEndDisplayList(WORK_DISP++);
+    gSPEndDisplayList(POLY_OPA_DISP++);
+    gSPEndDisplayList(POLY_XLU_DISP++);
+    gSPEndDisplayList(OVERLAY_DISP++);
+    gSPEndDisplayList(DEBUG_DISP++);
+
+    CLOSE_DISPS(gfxCtx);
+
+    {
+        Gfx* gfx = gGfxMasterDL->taskStart;
+
+        gSPSegment(gfx++, 0x0E, gGfxMasterDL);
+        gSPDisplayList(gfx++, &D_0E000000.disps[3]);
+        gSPDisplayList(gfx++, &D_0E000000.disps[0]);
+        gSPDisplayList(gfx++, &D_0E000000.disps[1]);
+        gSPDisplayList(gfx++, &D_0E000000.disps[2]);
+        gSPDisplayList(gfx++, &D_0E000000.debugDisp[0]);
+
+        gDPPipeSync(gfx++);
+        gDPFullSync(gfx++);
+        gSPEndDisplayList(gfx++);
+    }
+
+    problem = false;
+
+    // @recomp Patch all error conditions to print to console and crash the application.
+    {
+        GfxPool* pool = &gGfxPools[gfxCtx->gfxPoolIdx % 2];
+
+        if (pool->headMagic != GFXPOOL_HEAD_MAGIC) {
+            recomp_crash("GfxPool headMagic integrity check failed!");
+        }
+        if (pool->tailMagic != GFXPOOL_TAIL_MAGIC) {
+            recomp_crash("GfxPool tailMagic integrity check failed!");
+        }
+    }
+
+    if (THGA_IsCrash(&gfxCtx->polyOpa)) {
+        recomp_crash("gfxCtx->polyOpa overflow!");
+    }
+    if (THGA_IsCrash(&gfxCtx->polyXlu)) {
+        recomp_crash("gfxCtx->polyXlu overflow!");
+    }
+    if (THGA_IsCrash(&gfxCtx->overlay)) {
+        recomp_crash("gfxCtx->overlay overflow!");
+    }
+    if (THGA_IsCrash(&gfxCtx->work)) {
+        recomp_crash("gfxCtx->work overflow!");
+    }
+    if (THGA_IsCrash(&gfxCtx->debug)) {
+        recomp_crash("gfxCtx->debug overflow!");
+    }
+
+    if (!problem) {
+        Graph_TaskSet00(gfxCtx, gameState);
+        gfxCtx->gfxPoolIdx++;
+        gfxCtx->framebufferIndex++;
+    }
+
+    {
+        OSTime time = osGetTime();
+
+        gRSPGfxTimeTotal = gRSPGfxTimeAcc;
+        gRSPAudioTimeTotal = gRSPAudioTimeAcc;
+        gRDPTimeTotal = gRDPTimeAcc;
+        gRSPGfxTimeAcc = 0;
+        gRSPAudioTimeAcc = 0;
+        gRDPTimeAcc = 0;
+
+        if (sGraphPrevUpdateEndTime != 0) {
+            gGraphUpdatePeriod = time - sGraphPrevUpdateEndTime;
+        }
+        sGraphPrevUpdateEndTime = time;
+    }
+}
+
 
 typedef enum {
     /* 0 */ PICTO_BOX_STATE_OFF,         // Not using the pictograph

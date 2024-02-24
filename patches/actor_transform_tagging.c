@@ -2,18 +2,7 @@
 #include "fault.h"
 #include "transform_ids.h"
 
-// Start after G_EX_ID_IGNORE to avoid assigning it to a group.
-u32 next_actor_transform = ACTOR_TRANSFORM_ID_START;
-
-// Use 32 bits of compiler-inserted padding to hold the actor's transform ID.
-// 0x22 between halfDaysBits and world
-#define actorIdByte0(actor) ((u8*)(&(actor)->halfDaysBits))[2]
-// 0x23 between halfDaysBits and world
-#define actorIdByte1(actor) ((u8*)(&(actor)->halfDaysBits))[3]
-// 0x3A between audioFlags and focus
-#define actorIdByte2(actor) ((u8*)(&(actor)->audioFlags))[1] 
-// 0x3B between audioFlags and focus
-#define actorIdByte3(actor) ((u8*)(&(actor)->audioFlags))[2]
+u16 next_actor_transform = 0;
 
 extern FaultClient sActorFaultClient;
 Actor* Actor_Delete(ActorContext* actorCtx, Actor* actor, PlayState* play);
@@ -45,7 +34,7 @@ void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
     }
 
     // @recomp Reset the actor transform IDs as all actors have been deleted.
-    next_actor_transform = ACTOR_TRANSFORM_ID_START;
+    next_actor_transform = 0;
 
     Play_SaveCycleSceneFlags(&play->state);
     ActorOverlayTable_Cleanup();
@@ -53,20 +42,7 @@ void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
 
 u32 create_actor_transform_id() {
     u32 ret = next_actor_transform;
-    next_actor_transform += ACTOR_TRANSFORM_ID_COUNT;
-
-    // If the actor transform ID has overflowed, wrap back to the starting ID.
-    if (next_actor_transform < ACTOR_TRANSFORM_ID_START) {
-        next_actor_transform = ACTOR_TRANSFORM_ID_START;
-        // Pick a new ID to make sure the actor has a valid range of IDs to use.
-        ret = next_actor_transform;
-        next_actor_transform += ACTOR_TRANSFORM_ID_COUNT;
-    }
-
-    // Skip ranges that include the special transform IDs.
-    while (G_EX_ID_IGNORE - next_actor_transform < ACTOR_TRANSFORM_ID_COUNT || G_EX_ID_AUTO - next_actor_transform < ACTOR_TRANSFORM_ID_COUNT) {
-        next_actor_transform += ACTOR_TRANSFORM_ID_COUNT;
-    }
+    next_actor_transform++;
 
     return ret;
 }
@@ -100,19 +76,13 @@ void Actor_Init(Actor* actor, PlayState* play) {
     // @recomp Pick a transform ID for this actor and encode it into struct padding
     u32 cur_transform_id = create_actor_transform_id();
     actorIdByte0(actor) = (cur_transform_id >>  0) & 0xFF;
-    actorIdByte1(actor) = (cur_transform_id >>  8) & 0xFF;
-    actorIdByte2(actor) = (cur_transform_id >> 16) & 0xFF;
-    actorIdByte3(actor) = (cur_transform_id >> 24) & 0xFF;
+    actorIdByte1(actor) = (cur_transform_id >>  8) & 0xFF;;
 }
 
 // Extract the transform ID for this actor, add the limb index and write that as the matrix group to POLY_OPA_DISP.
 Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
-        u32 cur_transform_id = 
-            (actorIdByte0(actor) <<  0) |
-            (actorIdByte1(actor) <<  8) |
-            (actorIdByte2(actor) << 16) |
-            (actorIdByte3(actor) << 24);
+        u32 cur_transform_id = actor_transform_id(actor);
         gEXMatrixGroup(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
     }
     return dlist;
@@ -121,11 +91,7 @@ Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 // Extract the transform ID for this actor, add the limb index and post-limb offset and write that as the matrix group to POLY_OPA_DISP.
 Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
-        u32 cur_transform_id = 
-            (actorIdByte0(actor) <<  0) |
-            (actorIdByte1(actor) <<  8) |
-            (actorIdByte2(actor) << 16) |
-            (actorIdByte3(actor) << 24);
+        u32 cur_transform_id = actor_transform_id(actor);
         gEXMatrixGroup(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
     }
     return dlist;
@@ -134,11 +100,7 @@ Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 // Extract the transform ID for this actor, add the limb index and write that as the matrix group to POLY_OPA_DISP.
 Gfx* push_skin_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
-        u32 cur_transform_id = 
-            (actorIdByte0(actor) <<  0) |
-            (actorIdByte1(actor) <<  8) |
-            (actorIdByte2(actor) << 16) |
-            (actorIdByte3(actor) << 24);
+        u32 cur_transform_id = actor_transform_id(actor);
         gEXMatrixGroup(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     }
     return dlist;
@@ -1193,11 +1155,7 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
 
     // If the actor wrote at least one matrix in total and at most one matrix to each list, tag that matrix with the actor's id.
     if ((opa_matrices == 1 || xlu_matrices == 1) && opa_matrices <= 1 && xlu_matrices <= 1) {
-        u32 cur_transform_id = 
-            (actorIdByte0(actor) <<  0) |
-            (actorIdByte1(actor) <<  8) |
-            (actorIdByte2(actor) << 16) |
-            (actorIdByte3(actor) << 24);
+        u32 cur_transform_id = actor_transform_id(actor);
         
         if (opa_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
@@ -1207,13 +1165,13 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
             gEXPopMatrixGroup(POLY_OPA_DISP++);
         }
 
-        // if (xlu_matrices == 1) {
-        //     // Fill in the slot that was reserved for a transform id.
-        //     gEXMatrixGroup(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+        if (xlu_matrices == 1) {
+            // Fill in the slot that was reserved for a transform id.
+            gEXMatrixGroup(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
 
-        //     // Pop the matrix groups.
-        //     gEXPopMatrixGroup(POLY_XLU_DISP++);
-        // }
+            // Pop the matrix groups.
+            gEXPopMatrixGroup(POLY_XLU_DISP++);
+        }
     }
 
     CLOSE_DISPS();
