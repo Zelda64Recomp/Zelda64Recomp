@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'sass:math';
 
 .control-option {
     @include set-color($color-text-dim);
@@ -22,6 +23,25 @@
 
     &:disabled, &[disabled] {
         opacity: 0.5;
+    }
+
+    &--active {
+        // while actively looking for inputs, set styles to the correct slots
+        $valid-binding-slots: 0, 1;
+        @each $slot in $valid-binding-slots {
+            // global attr -> this active row -> binding slot
+            [cur-binding-slot="#{$slot}"] & .control-option__binding[bind-slot="#{$slot}"] {
+                border-color: $color-error;
+
+                .control-option__binding-icon {
+                    opacity: 0;
+                }
+
+                .control-option__binding-recording {
+                    opacity: 1;
+                }
+            }
+        }
     }
 
     .icon-button {
@@ -52,6 +72,7 @@
     @include set-color($color-text-dim);
     @include trans-colors-border;
     display: flex;
+    position: relative;
     align-items: center;
     justify-content: center;
     margin: 0 space(4);
@@ -83,5 +104,65 @@
     &:not([disabled]) {
         @extend %nav-all;
         cursor: pointer;
+    }
+}
+
+.control-option__binding-icon {
+    @include trans-colors-opa;
+    opacity: 1;
+}
+
+@keyframes control-option__binding-recording-scale {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(0.85);
+	}
+	to { 
+		transform: scale(1);
+	}
+}
+
+.control-option__binding-recording {
+    @include trans-colors-opa;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0;
+
+    .control-option__binding-circle {
+        $rec-size: 24;
+
+        width: space($rec-size);
+        height: space($rec-size);
+        background-color: $color-error;
+        border-radius: space($rec-size);
+        animation: 1.5s sine-in-out infinite control-option__binding-recording-scale;
+    }
+
+    .control-option__binding-edge {
+        $edge-size: 36;
+        $h-edge-size: math.div($edge-size, 2);
+
+        position: absolute;
+
+        transform: translate(-50%, -50%);
+
+        top: 50%;
+        left: 50%;
+        width: space($edge-size);
+        height: space($edge-size);
+        
+        > svg.control-option__binding-edge-svg {
+            width: space($edge-size);
+            height: space($edge-size);
+            image-color: $color-error;
+        }
     }
 }

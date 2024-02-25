@@ -127,7 +127,7 @@
 							<div class="tab__indicator"></div>
 						</tab>
 						<panel class="config" data-model="controls_model">
-							<form class="config__form" data-attr-cur-input="cur_input_row">
+							<form class="config__form" data-attr-cur-input="cur_input_row" data-attr-cur-binding-slot="active_binding_slot">
 								<div class="config__header">
 									<div class="config__header-left">
 										<button
@@ -161,6 +161,7 @@
 														id="input_row"
 														data-for="input_bindings, i : inputs.array"
 														data-event-mouseover="set_input_row_focus(i)"
+														data-class-control-option--active="get_input_enum_name(i)==cur_input_row"
 													>
 														<label
 															class="control-option__label"
@@ -172,8 +173,15 @@
 																data-for="cur_binding, j : input_bindings"
 																data-event-click="set_input_binding(i,j)"
 																class="prompt-font control-option__binding"
+																data-attr-bind-slot="j"
 															>
-																<div>{{cur_binding}}</div>
+																<div class="control-option__binding-recording">
+																	<div class="control-option__binding-circle" />
+																	<div class="control-option__binding-edge">
+																		<svg class="control-option__binding-edge-svg" src="icons/RecordBorder.svg" />
+																	</div>
+																</div>
+																<div class="control-option__binding-icon">{{cur_binding}}</div>
 															</button>
 														</div>
 														<button
