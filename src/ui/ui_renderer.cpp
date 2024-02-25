@@ -731,7 +731,7 @@ void recomp::register_event(UiEventListenerInstancer& listener, const std::strin
     listener.register_event(name, handler);
 }
 
-struct {
+struct UIContext {
     struct UIRenderContext render;
     class {
         std::unordered_map<recomp::Menu, std::unique_ptr<recomp::MenuController>> menus;
@@ -745,7 +745,6 @@ struct {
         std::unique_ptr<Rml::ElementInstancer> svg_instancer;
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
-        std::mutex draw_mutex;
 
         void unload() {
             render_interface.reset();
@@ -872,7 +871,10 @@ struct {
             menus.emplace(menu, std::move(controller));
         }
     } rml;
-} UIContext;
+};
+
+std::unique_ptr<UIContext> ui_context;
+std::mutex ui_context_mutex{};
 
 // TODO make this not be global
 extern SDL_Window* window;
@@ -884,30 +886,32 @@ void recomp::get_window_size(int& width, int& height) {
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     printf("RT64 hook init\n");
 
-    UIContext.rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
-    UIContext.rml.add_menu(recomp::Menu::Launcher, recomp::create_launcher_menu());
+    ui_context = std::make_unique<UIContext>();
 
-    UIContext.render.interface = interface;
-    UIContext.render.device = device;
+    ui_context->rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
+    ui_context->rml.add_menu(recomp::Menu::Launcher, recomp::create_launcher_menu());
+
+    ui_context->render.interface = interface;
+    ui_context->render.device = device;
 
     // Setup RML
-    UIContext.rml.system_interface = std::make_unique<SystemInterface_SDL>();
-    UIContext.rml.system_interface->SetWindow(window);
-    UIContext.rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&UIContext.render);
-    UIContext.rml.make_event_listeners();
+    ui_context->rml.system_interface = std::make_unique<SystemInterface_SDL>();
+    ui_context->rml.system_interface->SetWindow(window);
+    ui_context->rml.render_interface = std::make_unique<RmlRenderInterface_RT64>(&ui_context->render);
+    ui_context->rml.make_event_listeners();
 
-    Rml::SetSystemInterface(UIContext.rml.system_interface.get());
-    Rml::SetRenderInterface(UIContext.rml.render_interface.get());
-    Rml::Factory::RegisterEventListenerInstancer(&UIContext.rml.event_listener_instancer);
+    Rml::SetSystemInterface(ui_context->rml.system_interface.get());
+    Rml::SetRenderInterface(ui_context->rml.render_interface.get());
+    Rml::Factory::RegisterEventListenerInstancer(&ui_context->rml.event_listener_instancer);
     
-    UIContext.rml.font_interface = std::make_unique<RecompRml::FontEngineInterfaceScaled>();
-    Rml::SetFontEngineInterface(UIContext.rml.font_interface.get());
+    ui_context->rml.font_interface = std::make_unique<RecompRml::FontEngineInterfaceScaled>();
+    Rml::SetFontEngineInterface(ui_context->rml.font_interface.get());
 
     Rml::Initialise();
     
-    UIContext.rml.svg_instancer = std::make_unique<Rml::ElementInstancerGeneric<RecompRml::ElementScaledSVG>>();
+    ui_context->rml.svg_instancer = std::make_unique<Rml::ElementInstancerGeneric<RecompRml::ElementScaledSVG>>();
 
-    Rml::Factory::RegisterElementInstancer("svg", UIContext.rml.svg_instancer.get());
+    Rml::Factory::RegisterElementInstancer("svg", ui_context->rml.svg_instancer.get());
 
     // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility
     recomp::apply_color_hack();
@@ -915,10 +919,10 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
-    UIContext.rml.context = Rml::CreateContext("main", Rml::Vector2i(width * RecompRml::global_font_scale, height * RecompRml::global_font_scale));
-    UIContext.rml.make_bindings();
+    ui_context->rml.context = Rml::CreateContext("main", Rml::Vector2i(width * RecompRml::global_font_scale, height * RecompRml::global_font_scale));
+    ui_context->rml.make_bindings();
 
-    Rml::Debugger::Initialise(UIContext.rml.context);
+    Rml::Debugger::Initialise(ui_context->rml.context);
 
     {
         const Rml::String directory = "assets/";
@@ -943,7 +947,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         }
     }
 
-    UIContext.rml.load_documents();
+    ui_context->rml.load_documents();
 }
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
@@ -960,7 +964,13 @@ std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
 std::atomic<recomp::ConfigSubmenu> open_config_submenu = recomp::ConfigSubmenu::Count;
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
-    std::lock_guard lock {UIContext.rml.draw_mutex};
+    std::lock_guard lock {ui_context_mutex};
+
+    // Return early if the ui context has been destroyed already.
+    if (!ui_context) {
+        return;
+    }
+
     int num_keys;
     const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
 
@@ -973,17 +983,17 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     recomp::Menu cur_menu = open_menu.load();
 
     if (reload_sheets) {
-        UIContext.rml.load_documents();
+        ui_context->rml.load_documents();
         prev_menu = recomp::Menu::None;
     }
 
     if (cur_menu != prev_menu) {
-        UIContext.rml.swap_document(cur_menu);
+        ui_context->rml.swap_document(cur_menu);
     }
 
     recomp::ConfigSubmenu config_submenu = open_config_submenu.load();
     if (config_submenu != recomp::ConfigSubmenu::Count) {
-        UIContext.rml.swap_config_menu(config_submenu);
+        ui_context->rml.swap_config_menu(config_submenu);
         open_config_submenu.store(recomp::ConfigSubmenu::Count);
     }
 
@@ -1018,10 +1028,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             }
             break;
         }
-        RmlSDL::InputEventHandler(UIContext.rml.context, cur_event);
 
-        // If a menu is open then implement some additional behavior for specific events on top of what RmlUi normally does with them.
+        // Send events to RmlUi if a menu is open.
         if (cur_menu != recomp::Menu::None) {
+            RmlSDL::InputEventHandler(ui_context->rml.context, cur_event);
+            // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION:
                 mouse_moved = true;
@@ -1048,7 +1059,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             if (open_config) {
                 cur_menu = recomp::Menu::Config;
                 open_menu.store(recomp::Menu::Config);
-                UIContext.rml.swap_document(cur_menu);
+                ui_context->rml.swap_document(cur_menu);
             }
         }
     }
@@ -1058,29 +1069,29 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         recomp::finish_scanning_input(scanned_field);
     }
 
-    UIContext.rml.update_focus(mouse_moved);
+    ui_context->rml.update_focus(mouse_moved);
 
     if (cur_menu != recomp::Menu::None) {
         int width = swap_chain_framebuffer->getWidth();
         int height = swap_chain_framebuffer->getHeight();
 
         // Scale the UI based on the window size with 1080 vertical resolution as the reference point.
-        UIContext.rml.context->SetDensityIndependentPixelRatio((height * RecompRml::global_font_scale) / 1080.0f);
+        ui_context->rml.context->SetDensityIndependentPixelRatio((height * RecompRml::global_font_scale) / 1080.0f);
 
-        UIContext.rml.render_interface->start(command_list, width, height);
+        ui_context->rml.render_interface->start(command_list, width, height);
 
         static int prev_width = 0;
         static int prev_height = 0;
 
         if (prev_width != width || prev_height != height) {
-            UIContext.rml.context->SetDimensions({ (int)(width * RecompRml::global_font_scale), (int)(height * RecompRml::global_font_scale) });
+            ui_context->rml.context->SetDimensions({ (int)(width * RecompRml::global_font_scale), (int)(height * RecompRml::global_font_scale) });
         }
         prev_width = width;
         prev_height = height;
 
-        UIContext.rml.context->Update();
-        UIContext.rml.context->Render();
-        UIContext.rml.render_interface->end(command_list, swap_chain_framebuffer);
+        ui_context->rml.context->Update();
+        ui_context->rml.context->Render();
+        ui_context->rml.render_interface->end(command_list, swap_chain_framebuffer);
     }
 }
 
@@ -1094,6 +1105,9 @@ void set_rt64_hooks() {
 
 void recomp::set_current_menu(Menu menu) {
     open_menu.store(menu);
+    if (menu == recomp::Menu::None) {
+        ui_context->rml.system_interface->SetMouseCursor("arrow");
+    }
 }
 
 void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
@@ -1101,10 +1115,11 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 }
 
 void recomp::destroy_ui() {
-    std::lock_guard lock {UIContext.rml.draw_mutex};
-    UIContext.rml.font_interface.reset();
+    std::lock_guard lock {ui_context_mutex};
+    ui_context->rml.font_interface.reset();
     Rml::Shutdown();
-    UIContext.rml.unload();
+    ui_context->rml.unload();
+    ui_context.reset();
 }
 
 recomp::Menu recomp::get_current_menu() {
