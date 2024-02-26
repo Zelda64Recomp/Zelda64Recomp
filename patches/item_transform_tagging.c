@@ -50,7 +50,8 @@ void ArmsHook_Draw(Actor* thisx, PlayState* play) {
 
         // @recomp Tag the matrices for the hookshot tip and chain.
         u32 cur_transform_id = actor_transform_id(thisx);
-        gEXMatrixGroup(POLY_OPA_DISP++, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupSimple(POLY_OPA_DISP++, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     
         gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(POLY_OPA_DISP++, object_link_child_DL_01D960);
@@ -123,8 +124,8 @@ void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
         }
         // Overwrite the last command with a branch.
         gSPBranchList(enddl_command, bowstring_end_hook_dl);
-        // Write the transform tag command.
-        gEXMatrixGroup(&bowstring_start_hook_dl[1], BOWSTRING_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+        // Write the transform tag command. Use simple interpolation to avoid issues from decomposition failure due to a scale of zero.
+        gEXMatrixGroupSimple(&bowstring_start_hook_dl[1], BOWSTRING_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
             G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
         // Write the pop group command.
         gEXPopMatrixGroup(&bowstring_end_hook_dl[0]);

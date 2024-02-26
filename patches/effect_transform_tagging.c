@@ -35,8 +35,8 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
         OverrideKeyframeDrawScaled func_80AF31D0_relocated = (OverrideKeyframeDrawScaled)actor_relocate(thisx, func_80AF31D0);
         
         // @recomp Push the matrix group for the song of soaring's wings.
-        gEXMatrixGroup(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposed(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
         
         func_8018450C(play, &this->skeletonInfo, mtx, func_80AF31D0_relocated, NULL, &this->actor);
         
@@ -47,8 +47,8 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
     // Draw windCapsule encasing that surrounds player after wings
     if (this->flags & OWL_WARP_FLAGS_DRAW_WIND_CAPSULE) {
         // @recomp Push the matrix group for the song of soaring's capsule.
-        gEXMatrixGroup(POLY_XLU_DISP++, SOARING_CAPSULE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SOARING_CAPSULE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
         
         Matrix_Push();
         Matrix_Translate(0.0f, 4000.0f, 0.0f, MTXMODE_APPLY);
