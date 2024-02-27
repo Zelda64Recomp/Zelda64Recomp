@@ -1,0 +1,12 @@
+<template name="config-menu__sound">
+    <head>
+    </head>
+    <body>
+        <form class="config__form">
+            <div class="config__wrapper">
+                Sound options!!!!!
+            </div>
+        </form>
+    </body>
+</template>
+    

@@ -89,86 +89,99 @@ table input.text {
 }
 
 select {
-    display: inline-block;
-    /* width: 175dp; */
-    /* height: 37dp; */
-    /* height: auto; */
-    text-align: left;
-    box-sizing:border-box;
-    /* padding: 4dp; */
-    vertical-align: center;
-    padding: 4dp;
-    border-radius: 5dp;
-    background-color: rgb(120, 120, 120);
-    width: 100%;
+    // display: inline-block;
+    // /* width: 175dp; */
+    // /* height: 37dp; */
+    // /* height: auto; */
+    // text-align: left;
+    // box-sizing:border-box;
+    // /* padding: 4dp; */
+    // vertical-align: center;
+    // padding: 4dp;
+    // border-radius: 5dp;
+    // background-color: rgb(120, 120, 120);
+    // width: 100%;
 }
+// select {
+//     @extend %body;
+//     display: flex;
+//     align-items: center;
+//     justify-content: flex-start;
+//     box-sizing: border-box;
+//     padding: space(16);
+//     flex: 1 1 100%;
+//     // width: auto;
+//     height: space(1000);
+//     border-radius: $border-radius-lg;
+//     background-color: $color-white-a20;
+// }
 
-select selectvalue {
-    height: auto;
-    /* padding: 4dp; */
-    /* margin-right: 30dp; */
-    /* height: 25dp; */
-    /* padding: 4dp; */
-    /* decorator: image(selectvalue) */
-}
+// select selectvalue {
+//     height: auto;
+//     /* padding: 4dp; */
+//     /* margin-right: 30dp; */
+//     /* height: 25dp; */
+//     /* padding: 4dp; */
+//     /* decorator: image(selectvalue) */
+// }
 
-select:hover selectvalue {
-    /* margin-right: 30dp; */
-    /* height: 25dp; */
-    /* padding: 4dp; */
-    background-color: rgb(150, 150, 150);
-    /* decorator: image(selectvalue) */
-}
+// select:hover selectvalue {
+//     /* margin-right: 30dp; */
+//     /* height: 25dp; */
+//     /* padding: 4dp; */
+//     background-color: rgb(150, 150, 150);
+//     /* decorator: image(selectvalue) */
+// }
 
-select selectarrow {
-    /* width: 30dp; */
-    /* height: 37dp; */
-    /* decorator: image(selectarrow) */
-    /* background-color: black; */
-    /* appearance: none; */
-}
+// select selectarrow {
+//     /* width: 30dp; */
+//     /* height: 37dp; */
+//     /* decorator: image(selectarrow) */
+//     /* background-color: black; */
+//     /* appearance: none; */
+// }
 
-select:hover selectarrow {
-    /* decorator: image(selectarrow-hover) */
-}
+// select:hover selectarrow {
+//     /* decorator: image(selectarrow-hover) */
+// }
 
-select:active selectarrow,
-select selectarrow:checked {
-    /* decorator: image(selectarrow-active) */
-}
+// select:active selectarrow,
+// select selectarrow:checked {
+//     /* decorator: image(selectarrow-active) */
+// }
 
-select selectbox {
-    /* margin-left: 1dp; */
-    /* margin-top: -7dp; */
-    /* margin-bottom: -10dp; */
-    /* width: 162dp; */
-    /* padding: 1dp 4dp 4dp 4dp */
-}
+// select selectbox {
+//     /* margin-left: 1dp; */
+//     /* margin-top: -7dp; */
+//     /* margin-bottom: -10dp; */
+//     /* width: 162dp; */
+//     /* padding: 1dp 4dp 4dp 4dp */
+// }
 
-select selectbox,
-tbody {
-    background-color: rgb(120,120,120);
-    /* decorator: tiled-box(selectbox-tl, selectbox-t, selectbox-tr, selectbox-l, selectbox-c, auto, selectbox-bl, selectbox-b, selectbox-br) */
-}
+// select selectbox,
+// tbody {
+//     background-color: rgb(120,120,120);
+//     /* decorator: tiled-box(selectbox-tl, selectbox-t, selectbox-tr, selectbox-l, selectbox-c, auto, selectbox-bl, selectbox-b, selectbox-br) */
+// }
 
-select selectbox option {
-    width: auto;
-    background-color: rgb(120, 120, 120)
-}
+// select selectbox option {
+//     width: auto;
+//     background-color: rgb(120, 120, 120)
+// }
 
-select selectbox option:nth-child(even),
-tr:nth-child(even) {
-    background-color: rgb(100, 100, 100)
-}
+// select selectbox option:nth-child(even),
+// tr:nth-child(even) {
+//     background-color: rgb(100, 100, 100)
+// }
 
-select selectbox option:checked {
-    font-weight:bold;
-    color:rgb(255,255,255);
-}
+// select selectbox option:checked {
+//     font-weight:bold;
+//     color:rgb(255,255,255);
+// }
 
-select selectbox option:hover {
-    background: rgb(150,150,150)
-}
+// select selectbox option:hover {
+//     background: rgb(150,150,150)
+// }
 
 input.radio,
 input.checkbox {

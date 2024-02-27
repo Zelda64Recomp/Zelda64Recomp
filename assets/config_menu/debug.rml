@@ -1,0 +1,54 @@
+<template name="config-menu__debug">
+    <head>
+    </head>
+    <body>
+        <form class="config__form">
+            <div class="config__wrapper">
+                <div class="config-debug">
+                    <div class="config-debug__scroll">
+                        <div class="config-debug-option">
+                            <label
+                                class="config-debug-option__label"
+                            >Warp</label>
+                            <div class="config-debug__option-controls">
+                                <label class="config-debug__select-wrapper">
+                                    <div class="config-debug__select-label"><div>Region</div></div>
+                                    <select>
+                                        <option selected>First</option>
+                                        <option>Second</option>
+                                        <option>Third</option>
+                                        <option>Fourth</option>
+                                    </select>
+                                </label>
+                                <label class="config-debug__select-wrapper">
+                                    <div class="config-debug__select-label"><div>Scene</div></div>
+                                    <select>
+                                        <option selected>First</option>
+                                        <option>Second</option>
+                                        <option>Third</option>
+                                        <option>Fourth</option>
+                                    </select>
+                                </label>
+                                <label class="config-debug__select-wrapper">
+                                    <div class="config-debug__select-label"><div>Entrance</div></div>
+                                    <select>
+                                        <option>First</option>
+                                        <option>Second</option>
+                                        <option>Third</option>
+                                        <option>Fourth</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <button
+                                class="icon-button icon-button--success"
+                            >
+                                <svg src="icons/Arrow.svg" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </body>
+</template>
+    

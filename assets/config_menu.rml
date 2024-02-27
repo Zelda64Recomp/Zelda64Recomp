@@ -26,6 +26,10 @@
 			nav-down:#res_auto;
 		}
 	</style>
+	<link type="text/template" href="config_menu/graphics.rml" />
+	<link type="text/template" href="config_menu/controls.rml" />
+	<link type="text/template" href="config_menu/sound.rml" />
+	<link type="text/template" href="config_menu/debug.rml" />
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
@@ -38,347 +42,28 @@
 							<div class="tab__indicator"></div>
 						</tab>
 						<panel class="config" data-model="graphics_model">
-							<form class="config__form">
-								<div class="config__wrapper">
-									<div class="config__row">
-										<div class="config-option">
-											<label class="config-option__title">Resolution</label>
-											<div class="config-option__list config-option__list">
-												<input type="radio" name="resolution" data-checked="res_option" value="Original" id="res_original" style="nav-left:none;nav-up:#tab_graphics"/>
-												<label class="config-option__tab-label" for="res_original">Original</label>
-												<input type="radio" name="resolution" data-checked="res_option" value="Original2x" id="res_2x" style="nav-up:#tab_graphics"/>
-												<label class="config-option__tab-label" for="res_2x">Original 2x</label>
-												<input type="radio" name="resolution" data-checked="res_option" value="Auto" id="res_auto" style="nav-down:#ar_expand;nav-up:#tab_graphics"/>
-												<label class="config-option__tab-label" for="res_auto">Auto</label>
-											</div>
-										</div>
-										<div class="config-option">
-											<label class="config-option__title">Window Mode</label>
-											<div class="config-option__list config-option__list">
-												<input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" style="nav-up:#tab_graphics"/>
-												<label class="config-option__tab-label" for="wm_windowed">Windowed</label>
-												<input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none;nav-up:#tab_graphics"/>
-												<label class="config-option__tab-label" for="wm_fullscreen">Fullscreen</label>
-											</div>
-										</div>
-									</div>
-									<div class="config__row">
-										<div class="config-option">
-											<label class="config-option__title">Aspect Ratio</label>
-											<div class="config-option__list config-option__list">
-												<input type="radio" name="aspectratio" data-checked="ar_option" value="Original" id="ar_original" style="nav-left:none"/>
-												<label class="config-option__tab-label" for="ar_original">Original</label>
-												<input type="radio" name="aspectratio" data-checked="ar_option" value="Expand" id="ar_expand" style="nav-up:#res_2x"/>
-												<label class="config-option__tab-label" for="ar_expand">Expand</label>
-											</div>
-										</div>
-										<div class="config-option">
-											<label class="config-option__title">MS Anti-Aliasing</label>
-											<div class="config-option__list config-option__list">
-												<input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="msaa_none">None</label>
-												<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="msaa_2x">2x</label>
-												<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="msaa_4x">4x</label>
-												<input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="msaa_8x">8x</label>
-											</div>
-										</div>
-									</div>
-									
-									<div class="config__row">
-										<div class="config-option">
-											<label class="config-option__title">Framerate</label>
-											<div class="config-option__list config-option__list">
-												<input type="radio" name="refreshrate" data-checked="rr_option" value="Original" id="rr_original" style="nav-left:none;nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="rr_original">Original</label>
-												<input type="radio" name="refreshrate" data-checked="rr_option" value="Display" id="rr_display" style="nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="rr_display">Display</label>
-												<input type="radio" name="refreshrate" data-checked="rr_option" value="Manual" id="rr_manual" style="nav-up:#ar_expand;nav-down:#apply_button"/>
-												<label class="config-option__tab-label" for="rr_manual">Manual</label>
-											</div>
-											<div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
-												<label class="config-option__range-label">{{rr_manual_value}}</label>
-												<input id="rr_manual_input" type="range" min="20" max="360" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rr_manual_value"/>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="config__footer">
-									<!-- this empty div makes sure Apply button gets right aligned -->
-									<div/>
-									<div>
-										<button
-											class="button button--secondary"
-											nav-return="rr_manual"
-											data-attrif-disabled="!options_changed"
-											onclick="apply_options"
-											id="apply_button"
-										>
-											<div class="button__label">Apply</div>
-										</button>
-									</div>
-								</div>
-							</form>
+							<template src="config-menu__graphics" />
 						</panel>
 						<tab class="tab">
 							<div>Controls</div>
 							<div class="tab__indicator"></div>
 						</tab>
 						<panel class="config" data-model="controls_model">
-							<form class="config__form" data-attr-cur-input="cur_input_row" data-attr-cur-binding-slot="active_binding_slot">
-								<div class="config__header">
-									<div class="config__header-left">
-										<button
-											class="toggle"
-											data-class-toggle--checked="input_device_is_keyboard"
-											onclick="toggle_input_device"
-										>
-											<div class="toggle__border" />
-											<div class="toggle__floater" />
-											<div class="toggle__icons">
-												<div class="toggle__icon toggle__icon--left"><div>␼</div></div>
-												<div class="toggle__icon toggle__icon--right"><div>␽</div></div>
-											</div>
-										</button>
-									</div>
-									<div>
-										<button
-											class="button button--warning"
-										>
-											<div class="button__label">Reset to defaults</div>
-										</button>
-									</div>
-								</div>
-								<div class="config__wrapper input-config">
-									<div class="input-config__horizontal-split">
-										<div class="input-config__mappings" data-event-mouseout="set_input_row_focus(-1)">
-											<div class="input-config__mappings-scroll">
-												<div class="input-config__mappings-wrapper">
-													<div
-														class="control-option"
-														id="input_row"
-														data-for="input_bindings, i : inputs.array"
-														data-event-mouseover="set_input_row_focus(i)"
-														data-class-control-option--active="get_input_enum_name(i)==cur_input_row"
-													>
-														<label
-															class="control-option__label"
-														>{{get_input_name(i)}}</label>
-														<div class="control-option__bindings">
-															<button
-																data-event-blur="set_input_row_focus(-1)"
-																data-event-focus="set_input_row_focus(i)"
-																data-for="cur_binding, j : input_bindings"
-																data-event-click="set_input_binding(i,j)"
-																class="prompt-font control-option__binding"
-																data-attr-bind-slot="j"
-															>
-																<div class="control-option__binding-recording">
-																	<div class="control-option__binding-circle" />
-																	<div class="control-option__binding-edge">
-																		<svg class="control-option__binding-edge-svg" src="icons/RecordBorder.svg" />
-																	</div>
-																</div>
-																<div class="control-option__binding-icon">{{cur_binding}}</div>
-															</button>
-														</div>
-														<button
-															data-event-blur="set_input_row_focus(-1)"
-															data-event-focus="set_input_row_focus(i)"
-															data-event-click="clear_input_bindings(i)"
-															class="icon-button icon-button--danger"
-														>
-															<svg src="icons/Trash.svg" />
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="input-config__visual-wrapper">
-											<div class="input-config__visual-aspect">
-												<div class="input-config__visual">
-													<!-- stick only -->
-													<div class="input-config__visual-stick-wrapper">
-														<div class="input-config__visual-stick">
-															<div>stick!!</div>
-														</div>
-													</div>
-													<!-- top half -->
-													<div class="input-config__visual-half">
-														<div class="input-config__visual-quarter-left">
-															<div
-																class="input-viz input-viz__dpad"
-																visual-input="DPAD_UP DPAD_DOWN DPAD_LEFT DPAD_RIGHT"
-															>
-																<svg src="icons/VizMap/DPad.svg" />
-																<div class="input-viz__dpad-split input-viz__dpad-split--vertical">
-																	<div class="input-viz input-viz__mappings" visual-input="DPAD_UP">
-																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--up" src="icons/VizMap/DPadArrow.svg" />
-																		<div
-																			class="input-config__visual-mapping"
-																			data-for="cur_binding, i : inputs.DPAD_UP"
-																		>
-																			<div>{{cur_binding}}</div>
-																		</div>
-																	</div>
-																	<div class="input-viz__dpad-divider" />
-																	<div class="input-viz input-viz__mappings" visual-input="DPAD_DOWN">
-																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--down" src="icons/VizMap/DPadArrow.svg" />
-																		<div
-																			class="input-config__visual-mapping"
-																			data-for="cur_binding, i : inputs.DPAD_DOWN"
-																		>
-																			<div>{{cur_binding}}</div>
-																		</div>
-																	</div>
-																</div>
-																<div class="input-viz__dpad-split input-viz__dpad-split--horizontal">
-																	<div class="input-viz input-viz__mappings" visual-input="DPAD_LEFT">
-																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--left" src="icons/VizMap/DPadArrow.svg" />
-																		<div
-																			class="input-config__visual-mapping"
-																			data-for="cur_binding, i : inputs.DPAD_LEFT"
-																		>
-																			<div>{{cur_binding}}</div>
-																		</div>
-																	</div>
-																	<div class="input-viz__dpad-divider" />
-																	<div class="input-viz input-viz__mappings" visual-input="DPAD_RIGHT">
-																		<svg class="input-viz__dpad-arrow input-viz__dpad-arrow--right" src="icons/VizMap/DPadArrow.svg" />
-																		<div
-																			class="input-config__visual-mapping"
-																			data-for="cur_binding, i : inputs.DPAD_RIGHT"
-																		>
-																			<div>{{cur_binding}}</div>
-																		</div>
-																	</div>
-																</div>
-															</div>
-														</div>
-														<div class="input-config__visual-quarter-right">
-															<div class="input-config__c-buttons">
-																<div class="input-config__c-buttons-lr">
-																	<div
-																		class="input-viz input-viz__button input-viz__button--md input-viz__button--C"
-																		visual-input="C_LEFT"
-																	>
-																		<svg src="icons/VizMap/ButtonMedium.svg" />
-																		<div class="input-viz__mappings">
-																			<div
-																				class="input-config__visual-mapping"
-																				data-for="cur_binding, i : inputs.C_LEFT"
-																			>
-																				<div>{{cur_binding}}</div>
-																			</div>
-																		</div>
-																	</div>
-																	<div
-																		class="input-viz input-viz__button input-viz__button--md input-viz__button--C"
-																		visual-input="C_RIGHT"
-																	>
-																		<svg src="icons/VizMap/ButtonMedium.svg" />
-																		<div class="input-viz__mappings">
-																			<div
-																				class="input-config__visual-mapping"
-																				data-for="cur_binding, i : inputs.C_RIGHT"
-																			>
-																				<div>{{cur_binding}}</div>
-																			</div>
-																		</div>
-																	</div>
-																</div>
-																<div class="input-config__c-buttons-du">
-																	<div
-																		class="input-viz input-viz__button input-viz__button--md input-viz__button--C"
-																		visual-input="C_DOWN"
-																	>
-																		<svg src="icons/VizMap/ButtonMedium.svg" />
-																		<div class="input-viz__mappings">
-																			<div
-																				class="input-config__visual-mapping"
-																				data-for="cur_binding, i : inputs.C_DOWN"
-																			>
-																				<div>{{cur_binding}}</div>
-																			</div>
-																		</div>
-																	</div>
-																	<div
-																		class="input-viz input-viz__button input-viz__button--sm input-viz__button--C"
-																		visual-input="C_UP"
-																	>
-																		<svg src="icons/VizMap/ButtonMedium.svg" />
-																		<div class="input-viz__mappings">
-																			<div
-																				class="input-config__visual-mapping"
-																				data-for="cur_binding, i : inputs.C_UP"
-																			>
-																				<div>{{cur_binding}}</div>
-																			</div>
-																		</div>
-																	</div>
-																</div>
-															</div>
-														</div>
-													</div>
-													<!-- bottom half -->
-													<div class="input-config__visual-half input-config__visual-half--bottom">
-														<div
-															class="input-viz input-viz__Z"
-															visual-input="Z"
-														>
-															<svg src="icons/VizMap/Target.svg" />
-															<div class="input-viz__mappings">
-																<div
-																	class="input-config__visual-mapping"
-																	data-for="cur_binding, i : inputs.Z"
-																>
-																	<div>{{cur_binding}}</div>
-																</div>
-															</div>
-														</div>
-														<div
-															class="input-viz input-viz__R"
-															visual-input="R"
-														>
-															<svg src="icons/VizMap/Shield.svg" />
-															<div class="input-viz__mappings">
-																<div
-																	class="input-config__visual-mapping"
-																	data-for="cur_binding, i : inputs.R"
-																>
-																	<div>{{cur_binding}}</div>
-																</div>
-															</div>
-														</div>
-														<div
-															class="input-viz input-viz__L"
-															visual-input="L"
-														>
-															<svg src="icons/VizMap/Map.svg" />
-															<div class="input-viz__mappings">
-																<div
-																	class="input-config__visual-mapping"
-																	data-for="cur_binding, i : inputs.L"
-																>
-																	<div>{{cur_binding}}</div>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</form>
+							<template src="config-menu__controls" />
 						</panel>
 						<tab class="tab">
 							<div>Sound</div>
 							<div class="tab__indicator"></div>
 						</tab>
 						<panel class="config" >
+							<template src="config-menu__sound" />
+						</panel>
+						<tab class="tab">
+							<div>Debug</div>
+							<div class="tab__indicator"></div>
+						</tab>
+						<panel class="config" >
+							<template src="config-menu__debug" />
 						</panel>
 					</tabset>
 					<!-- Close button absolutely positioned on top right of modal -->

@@ -1,0 +1,140 @@
+
+.config-debug {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-height: 100%;
+    padding: space(8);
+}
+
+.config-debug__scroll {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.config-debug-option {
+    @include set-color($color-text-dim);
+    @include trans-colors-svg;
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: auto;
+    padding: space(4) space(16) space(4) space(20);
+    border-radius: $border-radius-sm;
+    background-color: rgba(0, 0, 0, 0);
+
+    &:focus-visible:not(:disabled, [disabled]),
+    &:hover:not(:disabled, [disabled]) {
+        @include set-color($color-text);
+        background-color: $color-bg-overlay;
+    }
+
+    &:disabled, &[disabled] {
+        opacity: 0.5;
+    }
+
+    .icon-button {
+        flex: 1 1 auto;
+    }
+}
+
+.config-debug-option__label {
+    @extend %label-md;
+    flex: 1 1 auto;
+    height: auto;
+    white-space: nowrap;
+}
+
+.config-debug__option-controls {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1 1 100%;
+    height: space(56);
+    padding: 0 space(12) 0 space(12);
+}
+
+.config-debug__select-wrapper {
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1 1 100%;
+    width: auto;
+    height: auto;
+    padding: 0 space(8);
+
+    .config-debug__select-label {
+        @extend %label-sm;
+        padding-right: space(16);
+        flex: auto;
+        width: auto;
+
+        > div {
+            display: inline;
+            width: auto;
+            height: auto;
+        }
+    }
+
+    select {
+        @extend %body;
+        @include trans-colors-border;
+        @include border($color-white-a50);
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+        padding: 0;
+        flex: 1 1 100%;
+        width: auto;
+        height: space(40);
+        border-radius: $border-radius-md;
+        background-color: $color-white-a5;
+        
+        &:hover {
+            background-color: $color-white-a20;
+        }
+
+        selectvalue {
+            display: inline;
+            align-items: center;
+            justify-content: flex-start;
+            padding: space(12);
+            margin: auto 0;
+            height: auto;
+        }
+
+        selectbox {
+            @include border($color-white-a80);
+            background-color: $color-background-3;
+            padding: space(4) 0;
+            margin-top: space(2);
+            border-radius: $border-radius-md;
+            
+            option {
+                @include trans-colors;
+                padding: space(8) space(12);
+                background-color: $color-transparent;
+                color: $color-text-dim;
+                font-weight: 400;
+
+                &:hover {
+                    background-color: $color-bg-overlay;
+                }
+
+                &:checked {
+                    color: $color-white;
+                }
+            }
+        }
+    }
+}
