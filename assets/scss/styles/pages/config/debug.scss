@@ -88,6 +88,7 @@
 
     select {
         @extend %body;
+        @extend %nav-all;
         @include trans-colors-border;
         @include border($color-white-a50);
         display: block;
@@ -121,6 +122,7 @@
             border-radius: $border-radius-md;
             
             option {
+                @extend %nav-all;
                 @include trans-colors;
                 padding: space(8) space(12);
                 background-color: $color-transparent;

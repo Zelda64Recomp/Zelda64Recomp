@@ -62,7 +62,7 @@
 							<div>Debug</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" >
+						<panel class="config" data-model="debug_model">
 							<template src="config-menu__debug" />
 						</panel>
 					</tabset>

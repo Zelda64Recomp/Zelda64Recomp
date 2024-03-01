@@ -1,6 +1,7 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
 #include "recomp_config.h"
+#include "recomp_debug.h"
 #include "../../ultramodern/config.hpp"
 #include "../../ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
@@ -69,6 +70,34 @@ void close_config_menu() {
 	}
 }
 
+struct DebugContext {
+	Rml::DataModelHandle model_handle;
+	std::vector<std::string> area_names;
+	std::vector<std::string> scene_names;
+	std::vector<std::string> entrance_names; 
+	int area_index = 0;
+	int scene_index = 0;
+	int entrance_index = 0;
+
+	DebugContext() {
+		for (const auto& area : recomp::game_warps) {
+			area_names.emplace_back(area.name);
+		}
+		update_warp_names();
+	}
+
+	void update_warp_names() {
+		scene_names.clear();
+		for (const auto& scene : recomp::game_warps[area_index].scenes) {
+			scene_names.emplace_back(scene.name);
+		}
+		
+		entrance_names = recomp::game_warps[area_index].scenes[scene_index].entrances;
+	}
+};
+
+DebugContext debug_context;
+
 class ConfigMenu : public recomp::MenuController {
 public:
 	ConfigMenu() {
@@ -113,6 +142,32 @@ public:
 					: recomp::InputDevice::Controller;
 				controls_model_handle.DirtyVariable("input_device_is_keyboard");
 				controls_model_handle.DirtyVariable("inputs");
+			});
+			
+		recomp::register_event(listener, "area_index_changed",
+			[](const std::string& param, Rml::Event& event) {
+				debug_context.area_index = event.GetParameter<int>("value", 0);
+				debug_context.scene_index = 0;
+				debug_context.entrance_index = 0;
+				debug_context.update_warp_names();
+				debug_context.model_handle.DirtyVariable("scene_index");
+				debug_context.model_handle.DirtyVariable("entrance_index");
+				debug_context.model_handle.DirtyVariable("scene_names");
+				debug_context.model_handle.DirtyVariable("entrance_names");
+			});
+			
+		recomp::register_event(listener, "scene_index_changed",
+			[](const std::string& param, Rml::Event& event) {
+				debug_context.scene_index = event.GetParameter<int>("value", 0);
+				debug_context.entrance_index = 0;
+				debug_context.update_warp_names();
+				debug_context.model_handle.DirtyVariable("entrance_index");
+				debug_context.model_handle.DirtyVariable("entrance_names");
+			});
+
+		recomp::register_event(listener, "do_warp",
+			[](const std::string& param, Rml::Event& event) {
+				recomp::do_warp(debug_context.area_index, debug_context.scene_index, debug_context.entrance_index);
 			});
 	}
 	void make_graphics_bindings(Rml::Context* context) {
@@ -290,9 +345,32 @@ public:
 		controls_model_handle = constructor.GetModelHandle();
 	}
 
+	void make_debug_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("debug_model");
+		if (!constructor) {
+			throw std::runtime_error("Failed to make RmlUi data model for the debug menu");
+		}
+		
+		// Register the array type for string vectors.
+		constructor.RegisterArray<std::vector<std::string>>();
+		
+		// Bind the warp parameter indices
+		constructor.Bind("area_index", &debug_context.area_index);
+		constructor.Bind("scene_index", &debug_context.scene_index);
+		constructor.Bind("entrance_index", &debug_context.entrance_index);
+
+		// Bind the vectors for warp names
+		constructor.Bind("area_names", &debug_context.area_names);
+		constructor.Bind("scene_names", &debug_context.scene_names);
+		constructor.Bind("entrance_names", &debug_context.entrance_names);
+
+		debug_context.model_handle = constructor.GetModelHandle();
+	}
+
 	void make_bindings(Rml::Context* context) override {
 		make_graphics_bindings(context);
 		make_controls_bindings(context);
+		make_debug_bindings(context);
 	}
 };
 
