@@ -33,7 +33,7 @@
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
-		<div id="window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
+		<div id="window" class="rmlui-window rmlui-window--hidden" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
 			<div class="centered-page" onclick="close_config_menu_backdrop">
 				<div class="centered-page__modal">
 					<tabset class="tabs" id="config_tabset">

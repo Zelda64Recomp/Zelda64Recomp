@@ -797,9 +797,12 @@ struct UIContext {
                 current_document = find_it->second;
                 Rml::Element* window_el = current_document->GetElementById("window");
                 if (window_el != nullptr) {
-                    window_el->SetClassNames("rmlui-window");
+                    window_el->SetClassNames("rmlui-window rmlui-window--hidden");
                 }
                 current_document->Show();
+                if (window_el != nullptr) {
+                    window_el->SetClassNames("rmlui-window");
+                }
             }
             else {
                 current_document = nullptr;
