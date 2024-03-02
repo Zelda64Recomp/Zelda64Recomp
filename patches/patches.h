@@ -7,6 +7,10 @@
 #include "global.h"
 #include "rt64_extended_gbi.h"
 
+#define gEXMatrixGroupInterpolateOnlyTiles(cmd, push, proj) \
+    gEXMatrixGroup(cmd, G_EX_ID_IGNORE, G_EX_INTERPOLATE_SIMPLE, push, proj, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR)
+
+
 int recomp_printf(const char* fmt, ...);
 
 static inline void* actor_relocate(Actor* actor, void* addr) {

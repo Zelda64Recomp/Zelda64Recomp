@@ -83,7 +83,7 @@ void Actor_Init(Actor* actor, PlayState* play) {
 Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     }
     return dlist;
 }
@@ -92,7 +92,7 @@ Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     }
     return dlist;
 }
@@ -101,7 +101,7 @@ Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_skin_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     }
     return dlist;
 }
@@ -1159,7 +1159,7 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
         
         if (opa_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposed(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposed(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
             
             // Pop the matrix group.
             gEXPopMatrixGroup(POLY_OPA_DISP++);
@@ -1167,7 +1167,7 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
 
         if (xlu_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposed(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposed(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
 
             // Pop the matrix groups.
             gEXPopMatrixGroup(POLY_XLU_DISP++);
@@ -1268,8 +1268,8 @@ void EffectSS_DrawParticle(PlayState* play, s32 index) {
 
     OPEN_DISPS(play->state.gfxCtx);
 
-    gEXMatrixGroupDecomposed(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
-    gEXMatrixGroupDecomposed(POLY_XLU_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+    gEXMatrixGroupDecomposed(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    gEXMatrixGroupDecomposed(POLY_XLU_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     
     if (entry->draw != NULL) {
         entry->draw(play, index, entry);
