@@ -16,6 +16,7 @@
 
 #include "RmlUi/Core.h"
 #include "RmlUi/Debugger.h"
+#include "RmlUi/../../Source/Core/Elements/ElementLabel.h"
 #include "RmlUi_Platform_SDL.h"
 
 #include "InterfaceVS.hlsl.spirv.h"
@@ -668,19 +669,50 @@ bool can_focus(Rml::Element* element) {
     return element->GetOwnerDocument() != nullptr && element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Style::TabIndex::None;
 }
 
+//! Copied from lib\RmlUi\Source\Core\Elements\ElementLabel.cpp
+// Get the first descending element whose tag name matches one of tags.
+static Rml::Element* TagMatchRecursive(const Rml::StringList& tags, Rml::Element* element)
+{
+	const int num_children = element->GetNumChildren();
+
+	for (int i = 0; i < num_children; i++)
+	{
+		Rml::Element* child = element->GetChild(i);
+
+		for (const Rml::String& tag : tags)
+		{
+			if (child->GetTagName() == tag)
+				return child;
+		}
+
+		Rml::Element* matching_element = TagMatchRecursive(tags, child);
+		if (matching_element)
+			return matching_element;
+	}
+
+	return nullptr;
+}
+
 Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
     // Labels can have targets, so check if this element is a label.
     if (element->GetTagName() == "label") {
-        // Check if the label has a "for" property.
-        Rml::String for_value = element->GetAttribute<Rml::String>("for", "");
+        Rml::ElementLabel* labelElement = (Rml::ElementLabel*)element;
+        const Rml::String target_id = labelElement->GetAttribute<Rml::String>("for", "");
 
-        // If there is a value for the "for" property, find that element and return it if it exists.
-        if (!for_value.empty()) {
-            Rml::Element* target_element = document->GetElementById(for_value);
-            if (target_element) {
-                return target_element;
-            }
+        if (target_id.empty())
+        {
+            const Rml::StringList matching_tags = {"button", "input", "textarea", "progress", "progressbar", "select"};
+
+            return TagMatchRecursive(matching_tags, element);
         }
+        else
+        {
+            Rml::Element* target = labelElement->GetElementById(target_id);
+            if (target != element)
+                return target;
+        }
+
+        return nullptr;
     }
     // Return the element directly if no target exists.
     return element;
