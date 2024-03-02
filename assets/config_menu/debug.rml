@@ -9,32 +9,38 @@
                         <div class="config-debug-option">
                             <label
                                 class="config-debug-option__label"
-                            >Warp</label>
-                            <div class="config-debug__option-controls">
-                                <div class="config-debug__select-wrapper">
-                                    <div class="config-debug__select-label"><div>Region</div></div>
-                                    <select data-value="area_index" onchange="area_index_changed">
-                                        <option data-for="area, i : area_names" data-attr-value="i">{{area}}</option>
-                                    </select>
+                            >
+                                <div>Warp</div>
+                            </label>
+                            <div class="config-debug__option-split">
+                                <div class="config-debug__option-controls">
+                                    <div class="config-debug__select-wrapper">
+                                        <div class="config-debug__select-label"><div>Region</div></div>
+                                        <select data-value="area_index" onchange="area_index_changed">
+                                            <option data-for="area, i : area_names" data-attr-value="i">{{area}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="config-debug__select-wrapper">
+                                        <div class="config-debug__select-label"><div>Scene</div></div>
+                                        <select data-value="scene_index" onchange="scene_index_changed">
+                                            <option data-for="scene, i : scene_names" data-attr-value="i">{{scene}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="config-debug__select-wrapper">
+                                        <div class="config-debug__select-label"><div>Entrance</div></div>
+                                        <select data-value="entrance_index">
+                                            <option data-for="entrance, i : entrance_names" data-attr-value="i">{{entrance}}</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="config-debug__select-wrapper">
-                                    <div class="config-debug__select-label"><div>Scene</div></div>
-                                    <select data-value="scene_index" onchange="scene_index_changed">
-                                        <option data-for="scene, i : scene_names" data-attr-value="i">{{scene}}</option>
-                                    </select>
-                                </div>
-                                <div class="config-debug__select-wrapper">
-                                    <div class="config-debug__select-label"><div>Entrance</div></div>
-                                    <select data-value="entrance_index">
-                                        <option data-for="entrance, i : entrance_names" data-attr-value="i">{{entrance}}</option>
-                                    </select>
+                                <div class="config-debug__option-trigger">
+                                    <button
+                                        class="icon-button icon-button--success" onclick="do_warp"
+                                    >
+                                        <svg src="icons/Arrow.svg" />
+                                    </button>
                                 </div>
                             </div>
-                            <button
-                                class="icon-button icon-button--success" onclick="do_warp"
-                            >
-                                <svg src="icons/Arrow.svg" />
-                            </button>
                         </div>
                     </div>
                 </div>

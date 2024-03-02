@@ -18,15 +18,13 @@
 .config-debug-option {
     @include set-color($color-text-dim);
     @include trans-colors-svg;
-    display: flex;
+    @include border-bottom($color-border-soft);
+    display: block;
     position: relative;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     width: 100%;
     height: auto;
-    padding: space(4) space(16) space(4) space(20);
-    border-radius: $border-radius-sm;
+    padding: space(12) space(4);
     background-color: rgba(0, 0, 0, 0);
 
     &:focus-visible:not(:disabled, [disabled]),
@@ -40,26 +38,41 @@
     }
 
     .icon-button {
-        flex: 1 1 auto;
+        margin-left: space(8);
     }
+}
+
+.config-debug__option-split {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .config-debug-option__label {
     @extend %label-md;
-    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: space(4) space(16) space(12);
+    width: auto;
     height: auto;
     white-space: nowrap;
 }
 
 .config-debug__option-controls {
-    display: flex;
+    display: block;
     position: relative;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1 1 100%;
-    height: space(56);
-    padding: 0 space(12) 0 space(12);
+    flex: 1 1 auto;
+    height: auto;
+    width: auto;
+    max-width: space(600);
+    padding: 0 space(12);
+}
+
+.config-debug__option-trigger {
+    flex: 1 1 auto;
 }
 
 .config-debug__select-wrapper {
@@ -70,14 +83,15 @@
     justify-content: flex-start;
     flex: 1 1 100%;
     width: auto;
+    max-width: space(600);
     height: auto;
-    padding: 0 space(8);
+    padding: space(4);
 
     .config-debug__select-label {
         @extend %label-sm;
         padding-right: space(16);
         flex: auto;
-        width: auto;
+        width: space(144);
 
         > div {
             display: inline;
@@ -100,8 +114,14 @@
         height: space(40);
         border-radius: $border-radius-md;
         background-color: $color-white-a5;
-        
-        &:hover {
+        cursor: pointer;
+
+        &:hover:not(:focus) {
+            @include border($color-white-a80);
+        }
+
+        &:hover:focus, &:focus {
+            @include border($color-white-a80);
             background-color: $color-white-a20;
         }
 
@@ -129,12 +149,17 @@
                 color: $color-text-dim;
                 font-weight: 400;
 
-                &:hover {
-                    background-color: $color-bg-overlay;
+                &:hover, &:focus {
+                    background-color: $color-white-a20;
+                }
+
+                &:hover:not(:checked) {
+                    cursor: pointer;
                 }
 
                 &:checked {
                     color: $color-white;
+                    background-color: $color-white-a5;
                 }
             }
         }
