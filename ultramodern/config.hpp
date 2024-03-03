@@ -23,6 +23,7 @@ namespace ultramodern {
 		RT64::UserConfiguration::Antialiasing msaa_option;
 		RT64::UserConfiguration::RefreshRate rr_option;
 		int rr_manual_value;
+		bool developer_mode;
 
 		auto operator<=>(const GraphicsConfig& rhs) const = default;
 	};

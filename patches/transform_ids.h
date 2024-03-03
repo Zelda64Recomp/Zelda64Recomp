@@ -34,4 +34,7 @@ static inline u32 actor_transform_id(Actor* actor) {
     return (actor_id * ACTOR_TRANSFORM_ID_COUNT) + ACTOR_TRANSFORM_ID_START;
 }
 
+void force_camera_interpolation();
+void force_camera_skip_interpolation();
+
 #endif

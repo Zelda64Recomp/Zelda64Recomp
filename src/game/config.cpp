@@ -15,6 +15,14 @@
 constexpr std::u8string_view graphics_filename = u8"graphics.json";
 constexpr std::u8string_view controls_filename = u8"controls.json";
 
+constexpr auto res_default            = ultramodern::Resolution::Auto;
+constexpr auto wm_default             = ultramodern::WindowMode::Windowed;
+constexpr auto ar_default             = RT64::UserConfiguration::AspectRatio::Expand;
+constexpr auto msaa_default           = RT64::UserConfiguration::Antialiasing::MSAA4X;
+constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Display;
+constexpr int rr_manual_default       = 60;
+constexpr bool developer_mode_default = false;
+
 namespace ultramodern {
     void to_json(json& j, const GraphicsConfig& config) {
         j = json{
@@ -24,16 +32,29 @@ namespace ultramodern {
             {"msaa_option",     config.msaa_option},
             {"rr_option",       config.rr_option},
             {"rr_manual_value", config.rr_manual_value},
+            {"developer_mode",  config.developer_mode},
         };
     }
 
+    template <typename T>
+    void from_or_default(const json& j, const std::string& key, T& out, T default_value) {
+        auto find_it = j.find(key);
+        if (find_it != j.end()) {
+            find_it->get_to(out);
+        }
+        else {
+            out = default_value;
+        }
+    }
+
     void from_json(const json& j, GraphicsConfig& config) {
-        j.at("res_option")     .get_to(config.res_option);
-        j.at("wm_option")      .get_to(config.wm_option);
-        j.at("ar_option")      .get_to(config.ar_option);
-        j.at("msaa_option")    .get_to(config.msaa_option);
-        j.at("rr_option")      .get_to(config.rr_option);
-        j.at("rr_manual_value").get_to(config.rr_manual_value);
+        from_or_default(j, "res_option",      config.res_option, res_default);
+        from_or_default(j, "wm_option",       config.wm_option, wm_default);
+        from_or_default(j, "ar_option",       config.ar_option, ar_default);
+        from_or_default(j, "msaa_option",     config.msaa_option, msaa_default);
+        from_or_default(j, "rr_option",       config.rr_option, rr_default);
+        from_or_default(j, "rr_manual_value", config.rr_manual_value, rr_manual_default);
+        from_or_default(j, "developer_mode",  config.developer_mode, developer_mode_default);
     }
 }
 
@@ -110,12 +131,13 @@ void recomp::reset_input_bindings() {
 
 void recomp::reset_graphics_options() {
     ultramodern::GraphicsConfig new_config{};
-    new_config.res_option = ultramodern::Resolution::Auto;
-    new_config.wm_option = ultramodern::WindowMode::Windowed;
-    new_config.ar_option = RT64::UserConfiguration::AspectRatio::Expand;
-    new_config.msaa_option = RT64::UserConfiguration::Antialiasing::MSAA4X;
-    new_config.rr_option = RT64::UserConfiguration::RefreshRate::Display;
-    new_config.rr_manual_value = 60;
+    new_config.res_option = res_default;
+    new_config.wm_option = wm_default;
+    new_config.ar_option = ar_default;
+    new_config.msaa_option = msaa_default;
+    new_config.rr_option = rr_default;
+    new_config.rr_manual_value = rr_manual_default;
+    new_config.developer_mode = developer_mode_default;
     ultramodern::set_graphics_config(new_config);
 }
 

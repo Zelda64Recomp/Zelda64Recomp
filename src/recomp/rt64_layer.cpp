@@ -61,11 +61,11 @@ typedef struct {
 #endif
 
 #if defined(_WIN32)
-extern "C" RT64::Application* InitiateGFXWindows(GFX_INFO Gfx_Info, HWND hwnd, DWORD threadId);
+extern "C" RT64::Application* InitiateGFXWindows(GFX_INFO Gfx_Info, HWND hwnd, DWORD threadId, uint8_t debug);
 #elif defined(__ANDROID__)
 static_assert(false && "Unimplemented");
 #elif defined(__linux__)
-extern "C" RT64::Application* InitiateGFXLinux(GFX_INFO Gfx_Info, Window window, Display *display);
+extern "C" RT64::Application* InitiateGFXLinux(GFX_INFO Gfx_Info, Window window, Display *display, uint8_t debug);
 #else
 static_assert(false && "Unimplemented");
 #endif
@@ -130,22 +130,10 @@ RT64::UserConfiguration::Antialiasing compute_max_supported_aa(RT64::RenderSampl
     return RT64::UserConfiguration::Antialiasing::None;
 }
 
-RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle) {
+RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle, bool debug) {
     set_rt64_hooks();
-    // Dynamic loading
-    //auto RT64 = LoadLibrary("RT64.dll");
-    //if (RT64 == 0) {
-    //    fprintf(stdout, "Failed to load RT64\n");
-    //    std::exit(EXIT_FAILURE);
-    //}
-    //GET_FUNC(RT64, InitiateGFX);
-    //GET_FUNC(RT64, ProcessRDPList);
-    //GET_FUNC(RT64, ProcessDList);
-    //GET_FUNC(RT64, UpdateScreen);
 
     GFX_INFO gfx_info{};
-    // gfx_info.hWnd = window_handle;
-    // gfx_info.hStatusBar = nullptr;
 
     gfx_info.HEADER = rom;
     gfx_info.RDRAM = rdram;
@@ -185,11 +173,11 @@ RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHan
     gfx_info.RDRAM_SIZE = &RDRAM_SIZE;
 
 #if defined(_WIN32)
-    RT64::Application* ret = InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id);
+    RT64::Application* ret = InitiateGFXWindows(gfx_info, window_handle.window, window_handle.thread_id, debug);
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
-	RT64::Application* ret = InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display);
+	RT64::Application* ret = InitiateGFXLinux(gfx_info, window_handle.window, window_handle.display, debug);
 #else
     static_assert(false && "Unimplemented");
 #endif

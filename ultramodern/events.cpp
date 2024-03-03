@@ -276,7 +276,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
 
     ultramodern::GraphicsConfig old_config;
 
-    RT64::Application* application = RT64Init(rom, rdram, window_handle);
+    RT64::Application* application = RT64Init(rom, rdram, window_handle, cur_config.load().developer_mode);
 
     if (application == nullptr) {
         throw std::runtime_error("Failed to initialize RT64!");
