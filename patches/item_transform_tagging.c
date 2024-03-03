@@ -76,6 +76,55 @@ void ArmsHook_Draw(Actor* thisx, PlayState* play) {
 
 #undef THIS
 
+extern Gfx gHookshotReticleDL[];
+void Player_DrawHookshotReticle(PlayState* play, Player* player, f32 hookshotDistance) {
+    static Vec3f D_801C094C = { -500.0f, -100.0f, 0.0f };
+    CollisionPoly* poly;
+    s32 bgId;
+    Vec3f sp7C;
+    Vec3f sp70;
+    Vec3f pos;
+
+    D_801C094C.z = 0.0f;
+    Matrix_MultVec3f(&D_801C094C, &sp7C);
+    D_801C094C.z = hookshotDistance;
+    Matrix_MultVec3f(&D_801C094C, &sp70);
+
+    if (BgCheck_AnyLineTest3(&play->colCtx, &sp7C, &sp70, &pos, &poly, true, true, true, true, &bgId)) {
+        if (!func_800B90AC(play, &player->actor, poly, bgId, &pos) ||
+            BgCheck_ProjectileLineTest(&play->colCtx, &sp7C, &sp70, &pos, &poly, true, true, true, true, &bgId)) {
+            Vec3f sp58;
+            f32 sp54;
+            f32 scale;
+
+            OPEN_DISPS(play->state.gfxCtx);
+
+            OVERLAY_DISP = Gfx_SetupDL(OVERLAY_DISP, SETUPDL_7);
+
+            SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &pos, &sp58, &sp54);
+
+            scale = (sp54 < 200.0f) ? 0.08f : (sp54 / 200.0f) * 0.08f;
+
+            Matrix_Translate(pos.x, pos.y, pos.z, MTXMODE_NEW);
+            Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
+
+            // @recomp Tag the reticle's transform.
+            gEXMatrixGroupSimple(OVERLAY_DISP++, HOOKSHOT_RETICLE_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+
+            gSPMatrix(OVERLAY_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+            gSPSegment(OVERLAY_DISP++, 0x06, play->objectCtx.slots[player->actor.objectSlot].segment);
+            gSPDisplayList(OVERLAY_DISP++, gHookshotReticleDL);
+
+            // @recomp Pop the reticle's transform tag.
+            gEXPopMatrixGroup(OVERLAY_DISP);
+
+            CLOSE_DISPS(play->state.gfxCtx);
+        }
+    }
+}
+
 
 extern Gfx object_link_child_DL_017818[];
 
