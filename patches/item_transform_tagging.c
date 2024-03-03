@@ -109,7 +109,7 @@ void Player_DrawHookshotReticle(PlayState* play, Player* player, f32 hookshotDis
             Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
 
             // @recomp Tag the reticle's transform.
-            gEXMatrixGroupSimple(OVERLAY_DISP++, HOOKSHOT_RETICLE_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            gEXMatrixGroupSimple(OVERLAY_DISP++, HOOKSHOT_RETICLE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
             G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
 
             gSPMatrix(OVERLAY_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
