@@ -102,17 +102,6 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     left: 0;
 }
 
-.input-config__visual-stick {
-    display: flex;
-    position: relative;
-    align-items: center;
-    justify-content: center;
-    width: space(200);
-    height: space(200);
-    border-radius: space(100);
-    background-color: $color-white-a5;
-}
-
 .input-viz {
     @include trans-colors-opa;
     position: relative;
@@ -220,11 +209,23 @@ $dpad-size: 192;
 .input-viz.input-viz__dpad {
     @include set-svgs-color($color-text);
     @include set-sizes($dpad-size);
-    $edge-dist: space(32);
     position: relative;
 }
 
-.input-viz__dpad-split {
+$stick-size: 200;
+.input-config__visual-stick {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: space($stick-size);
+    height: space($stick-size);
+    border-radius: space(math.div($stick-size, 2));
+    background-color: $color-white-a5;
+}
+
+.input-viz__dpad-split,
+.input-viz__stick-split {
     @include inset-block(0);
     display: flex;
     width: 100%;
@@ -245,16 +246,20 @@ $dpad-size: 192;
     > div {
         display: flex;
         flex: 1 1 100%;
-        width: space(math.div($dpad-size, 3));
-        height: space(math.div($dpad-size, 3));
         align-items: center;
         justify-content: center;
         flex-direction: row;
-
-        // .input-config__visual-mapping {
-        //     display: block;
-        // }
     }
+}
+
+.input-viz__dpad-split > div {
+    width: space(math.div($dpad-size, 3));
+    height: space(math.div($dpad-size, 3));
+}
+
+.input-viz__stick-split > div {
+    width: space(math.div($stick-size, 3));
+    height: space(math.div($stick-size, 3));
 }
 
 .input-viz__dpad-arrow {

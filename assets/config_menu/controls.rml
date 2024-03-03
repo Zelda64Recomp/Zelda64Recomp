@@ -76,8 +76,52 @@
                             <div class="input-config__visual">
                                 <!-- stick only -->
                                 <div class="input-config__visual-stick-wrapper">
-                                    <div class="input-config__visual-stick">
-                                        <div>stick!!</div>
+                                    <div
+                                        class="input-viz input-config__visual-stick"
+                                        visual-input="X_AXIS_NEG X_AXIS_POS Y_AXIS_NEG Y_AXIS_POS"
+                                    >
+                                        <div class="input-viz__stick-split input-viz__stick-split--vertical">
+                                            <div class="input-viz input-viz__mappings" visual-input="Y_AXIS_POS">
+                                                <svg class="input-viz__dpad-arrow input-viz__dpad-arrow--up" src="icons/VizMap/DPadArrow.svg" />
+                                                <div
+                                                    class="input-config__visual-mapping"
+                                                    data-for="cur_binding, i : inputs.Y_AXIS_POS"
+                                                >
+                                                    <div>{{cur_binding}}</div>
+                                                </div>
+                                            </div>
+                                            <div class="input-viz__dpad-divider" />
+                                            <div class="input-viz input-viz__mappings" visual-input="Y_AXIS_NEG">
+                                                <svg class="input-viz__dpad-arrow input-viz__dpad-arrow--down" src="icons/VizMap/DPadArrow.svg" />
+                                                <div
+                                                    class="input-config__visual-mapping"
+                                                    data-for="cur_binding, i : inputs.Y_AXIS_NEG"
+                                                >
+                                                    <div>{{cur_binding}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="input-viz__stick-split input-viz__stick-split--horizontal">
+                                            <div class="input-viz input-viz__mappings" visual-input="X_AXIS_NEG">
+                                                <svg class="input-viz__dpad-arrow input-viz__dpad-arrow--left" src="icons/VizMap/DPadArrow.svg" />
+                                                <div
+                                                    class="input-config__visual-mapping"
+                                                    data-for="cur_binding, i : inputs.X_AXIS_NEG"
+                                                >
+                                                    <div>{{cur_binding}}</div>
+                                                </div>
+                                            </div>
+                                            <div class="input-viz__dpad-divider" />
+                                            <div class="input-viz input-viz__mappings" visual-input="X_AXIS_POS">
+                                                <svg class="input-viz__dpad-arrow input-viz__dpad-arrow--right" src="icons/VizMap/DPadArrow.svg" />
+                                                <div
+                                                    class="input-config__visual-mapping"
+                                                    data-for="cur_binding, i : inputs.X_AXIS_POS"
+                                                >
+                                                    <div>{{cur_binding}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- top half -->
