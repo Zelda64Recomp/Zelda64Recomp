@@ -3,9 +3,10 @@ $font-stack: chiaro;
 
 @mixin set-font-sizing($sz, $spacing) {
     // font-family: $font-stack;
-    font-size: space($sz);
-    letter-spacing: space($sz * $spacing);
-    line-height: space($sz);
+    $sz-add: $sz + 4;
+    font-size: space($sz-add);
+    letter-spacing: space($sz-add * $spacing);
+    line-height: space($sz-add);
 }
 
 %header-1 {

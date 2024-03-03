@@ -75,13 +75,24 @@
 						<svg src="icons/X.svg" />
 					</button>
 				</div>
-			</div>
-			<div style="flex:0 1 80dp;display:flex; justify-content: space-between; width:100%; max-width:800dp; align-self:center;">
-				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x2424;&#x242B;</span><span style="font-size:24dp;">Navigate</span></label>
-				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x242E;</span><span style="font-size:24dp;">Accept</span></label>
-				<label style="text-align:center; font-size:24dp;"><span style="font-family:promptfont; font-size:40dp">&#x242F;</span><span style="font-size:24dp;">Exit</span></label>
-				<!-- <label><span style="font-family:promptfont;">&#x21F3;</span> Navigate</label>
-				<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
+				<div
+					class="centered-page__controls"
+				>
+					<label>
+						<span>Navigate</span>
+						<span class="prompt-font-sm">&#x2424;&#x242B;</span>
+					</label>
+					<label>
+						<span>Accept</span>
+						<span class="prompt-font-sm">&#x242E;</span>
+					</label>
+					<label>
+						<span>Exit</span>
+						<span class="prompt-font-sm">&#x242F;</span>
+					</label>
+					<!-- <label><span style="font-family:promptfont;">&#x21F3;</span> Navigate</label>
+					<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
+				</div>
 			</div>
 		</div>
 	<!-- </handle> -->

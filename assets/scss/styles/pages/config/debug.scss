@@ -67,7 +67,7 @@
     flex: 1 1 auto;
     height: auto;
     width: auto;
-    max-width: space(600);
+    max-width: space(800);
     padding: 0 space(12);
 }
 
@@ -83,7 +83,7 @@
     justify-content: flex-start;
     flex: 1 1 100%;
     width: auto;
-    max-width: space(600);
+    max-width: space(800);
     height: auto;
     padding: space(4);
 
@@ -91,7 +91,7 @@
         @extend %label-sm;
         padding-right: space(16);
         flex: auto;
-        width: space(144);
+        width: space(196);
 
         > div {
             display: inline;
@@ -111,7 +111,7 @@
         padding: 0;
         flex: 1 1 100%;
         width: auto;
-        height: space(40);
+        height: space(48);
         border-radius: $border-radius-md;
         background-color: $color-white-a5;
         cursor: pointer;
@@ -129,7 +129,7 @@
             display: inline;
             align-items: center;
             justify-content: flex-start;
-            padding: space(12);
+            padding: space(14);
             margin: auto 0;
             height: auto;
         }

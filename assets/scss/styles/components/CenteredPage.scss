@@ -42,3 +42,33 @@
         flex: 1 1 100%;
     }
 }
+
+.centered-page__controls {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    bottom: space(24);
+    margin: 0 auto;
+    width: 100%;
+    max-width: space($base-modal-max-width);
+
+    > label {
+        @extend %label-sm;
+        display: inline-block;
+        align-items: center;
+        justify-content: space-between;
+        width: auto;
+        height: space(24);
+
+        &:not(:last-child) {
+            margin-right: space(40);
+        }
+
+        > span:first-child {
+            margin-right: space(4);
+        }
+    }
+}

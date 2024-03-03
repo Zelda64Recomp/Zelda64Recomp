@@ -60,6 +60,10 @@ h3 {
     @extend %prompt-font;
 }
 
+.prompt-font-sm {
+    @extend %prompt-font-sm;
+}
+
 button {
     background-color: $color-primary-d;
 }
