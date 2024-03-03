@@ -133,6 +133,50 @@
                                         </div>
                                     </div>
                                     <div class="input-config__visual-quarter-right">
+                                        <div class="input-config__main-buttons">
+                                            <div
+                                                class="input-viz input-viz__button input-viz__button--sm input-viz__button--Start"
+                                                visual-input="START"
+                                            >
+                                                <svg src="icons/VizMap/ButtonSmall.svg" />
+                                                <div class="input-viz__mappings">
+                                                    <div
+                                                        class="input-config__visual-mapping"
+                                                        data-for="cur_binding, i : inputs.START"
+                                                    >
+                                                        <div>{{cur_binding}}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="input-viz input-viz__button input-viz__button--lg input-viz__button--B"
+                                                visual-input="B"
+                                            >
+                                                <svg src="icons/VizMap/ButtonLarge.svg" />
+                                                <div class="input-viz__mappings">
+                                                    <div
+                                                        class="input-config__visual-mapping"
+                                                        data-for="cur_binding, i : inputs.B"
+                                                    >
+                                                        <div>{{cur_binding}}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="input-viz input-viz__button input-viz__button--lg input-viz__button--A"
+                                                visual-input="A"
+                                            >
+                                                <svg src="icons/VizMap/ButtonLarge.svg" />
+                                                <div class="input-viz__mappings">
+                                                    <div
+                                                        class="input-config__visual-mapping"
+                                                        data-for="cur_binding, i : inputs.A"
+                                                    >
+                                                        <div>{{cur_binding}}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="input-config__c-buttons">
                                             <div class="input-config__c-buttons-lr">
                                                 <div

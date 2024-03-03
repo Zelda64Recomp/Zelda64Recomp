@@ -199,10 +199,15 @@ $all-inputs:
 
     &--A {
         @include set-svgs-color($color-a);
+        margin-top: auto;
     }
 
     &--B {
         @include set-svgs-color($color-success);
+    }
+
+    &--Start {
+        @include set-svgs-color($color-error);
     }
 }
 
@@ -323,4 +328,14 @@ $dpad-size: 192;
             margin-top: space(-32);
         }
     }
+}
+
+.input-config__main-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: space(268);
+    height: space(128);
+    position: relative;
+    margin-right: space(10);
 }
