@@ -37,7 +37,7 @@ namespace RecompRml {
 
 using namespace Rml;
 
-constexpr int global_font_scale = 4;
+constexpr int global_font_scale = 1;
 
 using FontFaceHandleFreetype = uintptr_t;
 
