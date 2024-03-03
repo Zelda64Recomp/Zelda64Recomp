@@ -265,3 +265,7 @@ void RT64EnableInstantPresent(RT64::Application* application) {
 RT64::UserConfiguration::Antialiasing RT64MaxMSAA() {
     return device_max_msaa;
 }
+
+uint32_t RT64GetDisplayFramerate(RT64::Application* application) {
+    return application->presentQueue->ext.sharedResources->swapChainRate;
+}

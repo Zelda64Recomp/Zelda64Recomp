@@ -267,6 +267,23 @@ ultramodern::GraphicsConfig ultramodern::get_graphics_config() {
     return cur_config;
 }
 
+std::atomic_uint32_t display_refresh_rate = 60;
+
+uint32_t ultramodern::get_target_framerate(uint32_t original) {
+    ultramodern::GraphicsConfig graphics_config = ultramodern::get_graphics_config();
+
+    switch (graphics_config.rr_option) {
+        case RT64::UserConfiguration::RefreshRate::Original:
+        case RT64::UserConfiguration::RefreshRate::OriginalDelay:
+        default:
+            return original;
+        case RT64::UserConfiguration::RefreshRate::Manual:
+            return graphics_config.rr_manual_value;
+        case RT64::UserConfiguration::RefreshRate::Display:
+            return display_refresh_rate.load();
+    }
+}
+
 void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;
@@ -310,6 +327,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
             else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
                 RT64UpdateScreen(swap_action->origin);
+                display_refresh_rate = RT64GetDisplayFramerate(application);
             }
             else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
                 ultramodern::GraphicsConfig new_config = cur_config;

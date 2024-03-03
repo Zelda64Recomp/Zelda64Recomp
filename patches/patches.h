@@ -12,6 +12,7 @@
 
 
 int recomp_printf(const char* fmt, ...);
+float recomp_powf(float, float);
 
 static inline void* actor_relocate(Actor* actor, void* addr) {
     return (void*)((uintptr_t)addr -

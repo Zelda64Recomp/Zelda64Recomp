@@ -13,3 +13,5 @@ osSendMesg_recomp = 0x81000014;
 recomp_get_gyro_deltas = 0x81000018;
 recomp_get_aspect_ratio = 0x8100001C;
 recomp_get_pending_warp = 0x81000020;
+recomp_powf = 0x81000024;
+recomp_get_target_framerate = 0x81000028;

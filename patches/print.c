@@ -1,5 +1,5 @@
 #include "patches.h"
-#include "input.h"
+#include "misc_funcs.h"
 
 void* proutPrintf(void* dst, const char* fmt, size_t size) {
     recomp_puts(fmt, size);

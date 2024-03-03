@@ -3,8 +3,6 @@
 #include "recomp_helpers.h"
 #include "recomp_input.h"
 #include "../ultramodern/ultramodern.hpp"
-#include "../patches/input.h"
-#include "../patches/graphics.h"
 
 // Arrays that hold the mappings for every input for keyboard and controller respectively.
 using input_mapping = std::array<recomp::InputField, recomp::bindings_per_input>;
@@ -102,37 +100,4 @@ void recomp::get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out) {
     *buttons_out = cur_buttons;
     *x_out = std::clamp(cur_x, -1.0f, 1.0f);
     *y_out = std::clamp(cur_y, -1.0f, 1.0f);
-}
-
-extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
-    recomp::poll_inputs();
-}
-
-// TODO move these
-extern "C" void recomp_puts(uint8_t* rdram, recomp_context* ctx) {
-    PTR(char) cur_str = _arg<0, PTR(char)>(rdram, ctx);
-    u32 length = _arg<1, u32>(rdram, ctx);
-
-    for (u32 i = 0; i < length; i++) {
-        fputc(MEM_B(i, (gpr)cur_str), stdout);
-    }
-}
-
-extern "C" void recomp_exit(uint8_t* rdram, recomp_context* ctx) {
-    ultramodern::quit();
-}
-
-extern "C" void recomp_get_gyro_deltas(uint8_t* rdram, recomp_context* ctx) {
-    float* x_out = _arg<0, float*>(rdram, ctx);
-    float* y_out = _arg<1, float*>(rdram, ctx);
-
-    recomp::get_gyro_deltas(x_out, y_out);
-}
-
-#include "recomp_ui.h"
-extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
-    int width, height;
-    recomp::get_window_size(width, height);
-
-    _return(ctx, static_cast<float>(width) / height);
 }

@@ -3,6 +3,7 @@
 
 #include "patch_helpers.h"
 
-DECLARE_FUNC(float, recomp_get_aspect_ratio);
+DECLARE_FUNC(float, recomp_get_aspect_ratio, float);
+DECLARE_FUNC(s32, recomp_get_target_framerate, s32);
 
 #endif

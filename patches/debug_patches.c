@@ -1,5 +1,5 @@
 #include "patches.h"
-#include "input.h"
+#include "misc_funcs.h"
 
 void Message_FindMessage(PlayState* play, u16 textId);
 extern SceneEntranceTableEntry sSceneEntranceTable[];

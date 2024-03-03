@@ -1,5 +1,5 @@
 #include "patches.h"
-#include "input.h"
+#include "misc_funcs.h"
 #include "z64shrink_window.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
 
