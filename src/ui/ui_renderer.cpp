@@ -775,6 +775,8 @@ struct UIContext {
     public:
         bool mouse_is_active_initialized = false;
         bool mouse_is_active = false;
+        bool await_stick_return_x = false;
+        bool await_stick_return_y = false;
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         std::unique_ptr<Rml::FontEngineInterface> font_interface;
@@ -1044,6 +1046,36 @@ bool recomp::try_deque_event(SDL_Event& out) {
 std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
 std::atomic<recomp::ConfigSubmenu> open_config_submenu = recomp::ConfigSubmenu::Count;
 
+int cont_button_to_key(SDL_ControllerButtonEvent& button) {
+    switch (button.button) {
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP:
+            return SDLK_UP;
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+            return SDLK_DOWN;
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+            return SDLK_LEFT;
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+            return SDLK_RIGHT;
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A:
+            return SDLK_RETURN;
+    }
+    return 0;
+}
+
+
+int cont_axis_to_key(SDL_ControllerAxisEvent& axis, float value) {
+    switch (axis.axis) {
+    case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY:
+        if (value < 0) return SDLK_UP;
+        return SDLK_DOWN;
+    case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX:
+        if (value >= 0) return SDLK_RIGHT;
+        return SDLK_LEFT;
+    }
+    return 0;
+}
+
+
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
     std::lock_guard lock {ui_context_mutex};
 
@@ -1111,8 +1143,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             break;
         }
 
-        // Send events to RmlUi if a menu is open.
-        if (cur_menu != recomp::Menu::None) {
+        if (cur_menu != recomp::Menu::None && !recomp::all_input_disabled()) {
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION:
@@ -1124,15 +1155,39 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 mouse_moved = true;
                 break;
                 
-            case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
+            case SDL_EventType::SDL_CONTROLLERBUTTONDOWN: {
+                int rml_key = cont_button_to_key(cur_event.cbutton);
+                if (rml_key) {
+                    ui_context->rml.context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
+                }
+            }
+            // fallthrough
             case SDL_EventType::SDL_KEYDOWN:
                 non_mouse_interacted = true;
                 break;
             case SDL_EventType::SDL_CONTROLLERAXISMOTION:
                 SDL_ControllerAxisEvent* axis_event = &cur_event.caxis;
+                if (axis_event->axis != SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY && axis_event->axis != SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) {
+                    break;
+                }
+
                 float axis_value = axis_event->value * (1 / 32768.0f);
-                if (fabsf(axis_value) > 0.2f) {
+                bool* await_stick_return = axis_event->axis == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY
+                        ? &ui_context->rml.await_stick_return_y
+                        : &ui_context->rml.await_stick_return_x;
+                if (fabsf(axis_value) > 0.5f) {
+                    if (!*await_stick_return) {
+                        *await_stick_return = true;
+                        non_mouse_interacted = true;
+                        int rml_key = cont_axis_to_key(cur_event.caxis, axis_value);
+                        if (rml_key) {
+                            ui_context->rml.context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
+                        }
+                    }
                     non_mouse_interacted = true;
+                }
+                else if (*await_stick_return && fabsf(axis_value) < 0.15f) {
+                    *await_stick_return = false;
                 }
                 break;
             }

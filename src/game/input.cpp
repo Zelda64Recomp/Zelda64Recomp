@@ -77,9 +77,10 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             }
             if (scanning_device == recomp::InputDevice::Keyboard) {
                 set_scanned_input({(uint32_t)InputType::Keyboard, keyevent->keysym.scancode});
+            } else {
+                queue_if_enabled(event);
             }
         }
-        queue_if_enabled(event);
         break;
     case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
         {
@@ -119,8 +120,9 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         if (scanning_device == recomp::InputDevice::Controller) {
             SDL_ControllerButtonEvent* button_event = &event->cbutton;
             set_scanned_input({(uint32_t)InputType::ControllerDigital, button_event->button});
+        } else {
+            queue_if_enabled(event);
         }
-        queue_if_enabled(event);
         break;
     case SDL_EventType::SDL_CONTROLLERAXISMOTION:
         if (scanning_device == recomp::InputDevice::Controller) {
@@ -132,8 +134,9 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             else if (axis_value < -axis_threshold) {
                 set_scanned_input({(uint32_t)InputType::ControllerAnalog, -axis_event->axis - 1});
             }
+        } else {
+            queue_if_enabled(event);
         }
-        queue_if_enabled(event);
         break;
     case SDL_EventType::SDL_CONTROLLERSENSORUPDATE:
         if (event->csensor.sensor == SDL_SensorType::SDL_SENSOR_ACCEL) {
