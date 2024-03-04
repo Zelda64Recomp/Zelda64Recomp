@@ -915,7 +915,6 @@ struct UIContext {
                     if (hovered) {
                         Rml::Element* hover_target = get_target(current_document, hovered);
                         if (hover_target && can_focus(hover_target)) {
-                            // hover_target->Focus();
                             prev_focused = hover_target;
                         }
                     }
