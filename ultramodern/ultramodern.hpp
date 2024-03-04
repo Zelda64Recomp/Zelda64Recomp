@@ -116,8 +116,10 @@ struct audio_callbacks_t {
 struct input_callbacks_t {
     using poll_input_t = void(void);
     using get_input_t = void(uint16_t*, float*, float*);
+    using set_rumble_t = void(bool);
     poll_input_t* poll_input;
     get_input_t* get_input;
+    set_rumble_t* set_rumble;
 };
 
 struct gfx_callbacks_t {
