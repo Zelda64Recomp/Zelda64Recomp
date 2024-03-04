@@ -770,6 +770,8 @@ struct UIContext {
         std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
         Rml::Element* prev_focused;
+        bool mouse_is_active = true;
+        bool mouse_is_active_changed = false;
     public:
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
@@ -862,43 +864,73 @@ struct UIContext {
             }
         }
 
+        void update_primary_input(bool mouse_moved, bool non_mouse_interacted) {
+            if (current_document == nullptr) {
+                return;
+            }
+            mouse_is_active_changed = false;
+            if (non_mouse_interacted) {
+                // controller newly interacted with
+                if (mouse_is_active) {
+                    mouse_is_active = false;
+                    mouse_is_active_changed = true;
+                }
+            }
+            else if (mouse_moved) {
+                // mouse newly interacted with
+                if (!mouse_is_active) {
+                    mouse_is_active = true;
+                    mouse_is_active_changed = true;
+                }
+            }
+
+            // TODO: Figure out why this only works if the mouse is moving
+            SDL_ShowCursor(mouse_is_active ? SDL_ENABLE : SDL_DISABLE);
+
+            Rml::Element* window_el = current_document->GetElementById("window");
+            if (window_el != nullptr) {
+                if (mouse_is_active) {
+                    if (!window_el->HasAttribute("mouse-active")) {
+                        window_el->SetAttribute("mouse-active", true);
+                    }
+                }
+                else if (window_el->HasAttribute("mouse-active")) {
+                    window_el->RemoveAttribute("mouse-active");
+                }
+            }
+        }
+
         void update_focus(bool mouse_moved) {
             if (current_document == nullptr) {
                 return;
             }
-            Rml::Element* focused = current_document->GetFocusLeafNode();
 
             // If there was mouse motion, get the current hovered element (or its target if it points to one) and focus that if applicable.
-            if (mouse_moved) {
-                Rml::Element* hovered = context->GetHoverElement();
-                if (hovered) {
-                    Rml::Element* hover_target = get_target(current_document, hovered);
-                    if (hover_target && can_focus(hover_target)) {
-                        hover_target->Focus();
-                    }
-                }
-            }
-
-            // Revert focus to the previous element if focused on anything without a tab index.
-            // This should prevent the user from losing focus on something that has no navigation.
-            if (focused && !can_focus(focused)) {
-                // If the previously focused element is still accepting focus, return focus to it.
-                if (prev_focused && can_focus(prev_focused)) {
-                    prev_focused->Focus();
-                }
-                // Otherwise, check if the currently focused element has a "nav-return" attribute and focus that attribute's value if so.
-                else {
-                    Rml::Variant* nav_return = focused->GetAttribute("nav-return");
-                    if (nav_return && nav_return->GetType() == Rml::Variant::STRING) {
-                        Rml::Element* return_element = current_document->GetElementById(nav_return->Get<std::string>());
-                        if (return_element) {
-                            return_element->Focus();
+            if (mouse_is_active) {
+                if (mouse_is_active_changed) {
+                    Rml::Element* focused = current_document->GetFocusLeafNode();
+                    if (focused) focused->Blur();
+                } else if (mouse_moved) {
+                    Rml::Element* hovered = context->GetHoverElement();
+                    if (hovered) {
+                        Rml::Element* hover_target = get_target(current_document, hovered);
+                        if (hover_target && can_focus(hover_target)) {
+                            // hover_target->Focus();
+                            prev_focused = hover_target;
                         }
                     }
                 }
             }
-            else {
-                prev_focused = current_document->GetFocusLeafNode();
+
+            if (!mouse_is_active) {
+                if (!prev_focused) {
+                    // get current focus and set to prev
+                    prev_focused = current_document->GetFocusLeafNode();
+                }
+
+                if (mouse_is_active_changed && prev_focused && can_focus(prev_focused)) {
+                    prev_focused->Focus();
+                }
             }
         }
 
@@ -1037,6 +1069,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     SDL_Event cur_event{};
 
     bool mouse_moved = false;
+    bool non_mouse_interacted = false;
 
     while (recomp::try_deque_event(cur_event)) {
         // Scale coordinates for mouse and window events based on the UI scale
@@ -1066,14 +1099,28 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 
         // Send events to RmlUi if a menu is open.
         if (cur_menu != recomp::Menu::None) {
-            RmlSDL::InputEventHandler(ui_context->rml.context, cur_event);
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION:
                 mouse_moved = true;
                 break;
+                
+            case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
+            case SDL_EventType::SDL_KEYDOWN:
+                non_mouse_interacted = true;
+                break;
+            case SDL_EventType::SDL_CONTROLLERAXISMOTION:
+                SDL_ControllerAxisEvent* axis_event = &cur_event.caxis;
+                float axis_value = axis_event->value * (1 / 32768.0f);
+                if (fabsf(axis_value) > 0.2f) {
+                    non_mouse_interacted = true;
+                }
+                break;
             }
+
+            RmlSDL::InputEventHandler(ui_context->rml.context, cur_event);
         }
+
         // If no menu is open and the game has been started and either the escape key or select button are pressed, open the config menu.
         if (cur_menu == recomp::Menu::None && ultramodern::is_game_started()) {
             bool open_config = false;
@@ -1104,6 +1151,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         recomp::finish_scanning_input(scanned_field);
     }
 
+    ui_context->rml.update_primary_input(mouse_moved, non_mouse_interacted);
     ui_context->rml.update_focus(mouse_moved);
 
     if (cur_menu != recomp::Menu::None) {

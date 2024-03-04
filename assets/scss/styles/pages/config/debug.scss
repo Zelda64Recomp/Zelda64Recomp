@@ -27,6 +27,7 @@
     padding: space(12) space(4);
     background-color: rgba(0, 0, 0, 0);
 
+    &:focus:not(:disabled, [disabled]),
     &:focus-visible:not(:disabled, [disabled]),
     &:hover:not(:disabled, [disabled]) {
         @include set-color($color-text);
@@ -116,11 +117,7 @@
         background-color: $color-white-a5;
         cursor: pointer;
 
-        &:hover:not(:focus) {
-            @include border($color-white-a80);
-        }
-
-        &:hover:focus, &:focus {
+        &:hover, &:focus {
             @include border($color-white-a80);
             background-color: $color-white-a20;
         }

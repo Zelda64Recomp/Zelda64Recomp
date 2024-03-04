@@ -37,12 +37,8 @@
         }
     }
 
-    &:hover {
+    &:focus, &:hover {
         cursor: pointer;
-        opacity: 1;
-    }
-
-    &:focus {
         color: $color-text;
         opacity: 1;
     }

@@ -5,7 +5,7 @@
     color: $color-text-dim;
     border-color: rgba($base-col, 0.8);
 
-    &:focus {
+    &:focus, &:hover {
         color: $color-text;
         border-color: $base-col;
         background-color: rgba($base-col, 0.3);

@@ -115,7 +115,8 @@
             }
         }
 
-        &:focus + .config-option__tab-label {
+        &:focus + .config-option__tab-label,
+        &:hover + .config-option__tab-label {
             color: $color-text;
         }
     }
