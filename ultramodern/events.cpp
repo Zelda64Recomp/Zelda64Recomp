@@ -218,7 +218,7 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
 }
 
 
-void task_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready) {
+void task_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready) {
     ultramodern::set_native_thread_name("SP Task Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
@@ -284,7 +284,7 @@ uint32_t ultramodern::get_target_framerate(uint32_t original) {
     }
 }
 
-void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
+void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;
 
@@ -293,7 +293,7 @@ void gfx_thread_func(uint8_t* rdram, uint8_t* rom, std::atomic_flag* thread_read
 
     ultramodern::GraphicsConfig old_config;
 
-    RT64::Application* application = RT64Init(rom, rdram, window_handle, cur_config.load().developer_mode);
+    RT64::Application* application = RT64Init(rdram, window_handle, cur_config.load().developer_mode);
 
     if (application == nullptr) {
         throw std::runtime_error("Failed to initialize RT64!");
@@ -511,12 +511,12 @@ void ultramodern::send_si_message() {
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
-void ultramodern::init_events(uint8_t* rdram, uint8_t* rom, ultramodern::WindowHandle window_handle) {
+void ultramodern::init_events(uint8_t* rdram, ultramodern::WindowHandle window_handle) {
     std::atomic_flag gfx_thread_ready;
     std::atomic_flag task_thread_ready;
     events_context.rdram = rdram;
-    events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, rom, &gfx_thread_ready, window_handle };
-    events_context.sp.task_thread = std::thread{ task_thread_func, rdram, rom, &task_thread_ready };
+    events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, &gfx_thread_ready, window_handle };
+    events_context.sp.task_thread = std::thread{ task_thread_func, rdram, &task_thread_ready };
     
     // Wait for the two sp threads to be ready before continuing to prevent the game from
     // running before we're able to handle RSP tasks.

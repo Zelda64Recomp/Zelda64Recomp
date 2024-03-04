@@ -20,6 +20,7 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
 #include "recomp_config.h"
+#include "recomp_game.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -229,13 +230,12 @@ int main(int argc, char** argv) {
     std::setlocale(LC_ALL, "en_US.UTF-8");
 #endif
 
-    printf("Current dir: %ls\n", std::filesystem::current_path().c_str());
+    //printf("Current dir: %ls\n", std::filesystem::current_path().c_str());
 
     // Initialize SDL audio and set the output frequency.
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     reset_audio(48000);
 
-    init();
     recomp::load_config();
 
     ultramodern::gfx_callbacks_t gfx_callbacks{
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
         .get_input = recomp::get_n64_input,
     };
 
-    ultramodern::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
+    recomp::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
 
     return EXIT_SUCCESS;
 }

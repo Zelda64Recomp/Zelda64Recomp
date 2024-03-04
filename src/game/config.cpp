@@ -69,7 +69,7 @@ namespace recomp {
     }
 }
 
-std::filesystem::path get_config_folder_path() {
+std::filesystem::path recomp::get_app_folder_path() {
    std::filesystem::path recomp_dir{};
 
 #if defined(_WIN32)
@@ -232,7 +232,7 @@ void load_controls_config(const std::filesystem::path& path) {
 }
 
 void recomp::load_config() {
-    std::filesystem::path recomp_dir = get_config_folder_path();
+    std::filesystem::path recomp_dir = recomp::get_app_folder_path();
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;
     std::filesystem::path controls_path = recomp_dir / controls_filename;
 
@@ -254,7 +254,7 @@ void recomp::load_config() {
 }
 
 void recomp::save_config() {
-    std::filesystem::path recomp_dir = get_config_folder_path();
+    std::filesystem::path recomp_dir = recomp::get_app_folder_path();
 
     if (recomp_dir.empty()) {
         return;

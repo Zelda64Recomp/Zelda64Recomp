@@ -130,12 +130,13 @@ RT64::UserConfiguration::Antialiasing compute_max_supported_aa(RT64::RenderSampl
     return RT64::UserConfiguration::Antialiasing::None;
 }
 
-RT64::Application* RT64Init(uint8_t* rom, uint8_t* rdram, ultramodern::WindowHandle window_handle, bool debug) {
+RT64::Application* RT64Init(uint8_t* rdram, ultramodern::WindowHandle window_handle, bool debug) {
+    static unsigned char dummy_rom_header[0x40];
     set_rt64_hooks();
 
     GFX_INFO gfx_info{};
 
-    gfx_info.HEADER = rom;
+    gfx_info.HEADER = dummy_rom_header;
     gfx_info.RDRAM = rdram;
     gfx_info.DMEM = DMEM;
     gfx_info.IMEM = IMEM;

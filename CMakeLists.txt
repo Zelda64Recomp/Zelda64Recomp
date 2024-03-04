@@ -166,6 +166,7 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/render
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
+    ${CMAKE_SOURCE_DIR}/lib/lib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
 )
 

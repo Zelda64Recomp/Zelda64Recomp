@@ -3,8 +3,19 @@
 #include <array>
 #include <cstring>
 #include "recomp.h"
+#include "recomp_game.h"
 #include "../ultramodern/ultra64.h"
 #include "../ultramodern/ultramodern.hpp"
+
+static std::vector<uint8_t> rom;
+
+bool recomp::is_rom_loaded() {
+    return !rom.empty();
+}
+
+void recomp::set_rom_contents(std::vector<uint8_t>&& new_rom) {
+    rom = std::move(new_rom);
+}
 
 // Flashram occupies the same physical address as sram, but that issue is avoided because libultra exposes
 // a high-level interface for flashram. Because that high-level interface is reimplemented, low level accesses
@@ -20,9 +31,6 @@ constexpr uint32_t phys_to_k1(uint32_t addr) {
     return addr | 0xA0000000;
 }
 
-extern std::unique_ptr<uint8_t[]> rom;
-extern size_t rom_size;
-
 extern "C" void osCartRomInit_recomp(uint8_t* rdram, recomp_context* ctx) {
     OSPiHandle* handle = TO_PTR(OSPiHandle, ultramodern::cart_handle);
     handle->type = 0; // cart
@@ -36,14 +44,14 @@ extern "C" void osCreatePiManager_recomp(uint8_t* rdram, recomp_context* ctx) {
     ;
 }
 
-void do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr, size_t num_bytes) {
+void recomp::do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr, size_t num_bytes) {
     // TODO use word copies when possible
 
     // TODO handle misaligned DMA
     assert((physical_addr & 0x1) == 0 && "Only PI DMA from aligned ROM addresses is currently supported");
     assert((ram_address & 0x7) == 0 && "Only PI DMA to aligned RDRAM addresses is currently supported");
     assert((num_bytes & 0x1) == 0 && "Only PI DMA with aligned sizes is currently supported");
-    uint8_t* rom_addr = rom.get() + physical_addr - rom_base;
+    uint8_t* rom_addr = rom.data() + physical_addr - rom_base;
     for (size_t i = 0; i < num_bytes; i++) {
         MEM_B(i, ram_address) = *rom_addr;
         rom_addr++;
@@ -110,7 +118,7 @@ void do_dma(uint8_t* rdram, PTR(OSMesgQueue) mq, gpr rdram_address, uint32_t phy
     if (direction == 0) {
         if (physical_addr >= rom_base) {
             // read cart rom
-            do_rom_read(rdram, rdram_address, physical_addr, size);
+            recomp::do_rom_read(rdram, rdram_address, physical_addr, size);
 
             // Send a message to the mq to indicate that the transfer completed
             osSendMesg(rdram, mq, 0, OS_MESG_NOBLOCK);
@@ -181,7 +189,7 @@ extern "C" void osEPiReadIo_recomp(uint8_t * rdram, recomp_context * ctx) {
 
     if (physical_addr > rom_base) {
         // cart rom
-        do_rom_read(rdram, dramAddr, physical_addr, sizeof(uint32_t));
+        recomp::do_rom_read(rdram, dramAddr, physical_addr, sizeof(uint32_t));
     } else {
         // sram
         assert(false && "SRAM ReadIo unimplemented");

@@ -165,7 +165,6 @@ void View_Apply(View* view, s32 mask) {
     // Force skipping interpolation if the previous view was kaleido and this one isn't.
     if (prev_in_kaleido && !in_kaleido) {
         camera_skip_interpolation_forced = true;
-        recomp_printf("exited kaleido\n");
     }
 
     // @recomp Apply camera interpolation overrides.

@@ -7,6 +7,7 @@
 
 #include "recomp_ui.h"
 #include "recomp_input.h"
+#include "recomp_game.h"
 
 #include "concurrentqueue.h"
 
@@ -950,8 +951,6 @@ void recomp::get_window_size(int& width, int& height) {
 }
 
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
-    printf("RT64 hook init\n");
-
     ui_context = std::make_unique<UIContext>();
 
     ui_context->rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
@@ -1206,4 +1205,8 @@ void recomp::destroy_ui() {
 
 recomp::Menu recomp::get_current_menu() {
     return open_menu.load();
+}
+
+void recomp::message_box(const char* msg) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", msg, nullptr);
 }

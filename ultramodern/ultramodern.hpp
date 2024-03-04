@@ -51,10 +51,10 @@ constexpr int32_t cart_handle = 0x80800000;
 constexpr int32_t flash_handle = (int32_t)(cart_handle + sizeof(OSPiHandle));
 constexpr uint32_t save_size = 1024 * 1024 / 8; // Maximum save size, 1Mbit for flash
 
-void preinit(uint8_t* rdram, uint8_t* rom, WindowHandle window_handle);
+void preinit(uint8_t* rdram, WindowHandle window_handle);
 void save_init();
 void init_scheduler();
-void init_events(uint8_t* rdram, uint8_t* rom, WindowHandle window_handle);
+void init_events(uint8_t* rdram, WindowHandle window_handle);
 void init_timers(RDRAM_ARG1);
 void set_self_paused(RDRAM_ARG1);
 void yield_self(RDRAM_ARG1);
@@ -129,8 +129,6 @@ struct gfx_callbacks_t {
     create_window_t* create_window;
     update_gfx_t* update_gfx;
 };
-void start(WindowHandle window_handle, const audio_callbacks_t& audio_callbacks, const input_callbacks_t& input_callbacks, const gfx_callbacks_t& gfx_callbacks);
-void start_game(int game);
 bool is_game_started();
 void quit();
 void join_event_threads();
