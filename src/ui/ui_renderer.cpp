@@ -773,6 +773,7 @@ struct UIContext {
         Rml::Element* prev_focused;
         bool mouse_is_active_changed = false;
     public:
+        bool mouse_is_active_initialized = false;
         bool mouse_is_active = false;
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
@@ -813,6 +814,7 @@ struct UIContext {
             prev_focused = nullptr;
             mouse_is_active = false;
             mouse_is_active_changed = false;
+            mouse_is_active_initialized = false;
         }
 
         void swap_config_menu(recomp::ConfigSubmenu submenu) {
@@ -825,6 +827,7 @@ struct UIContext {
                         prev_focused = nullptr;
                         mouse_is_active = false;
                         mouse_is_active_changed = false;
+                        mouse_is_active_initialized = false;
                     }
                 }
             }
@@ -857,6 +860,7 @@ struct UIContext {
             prev_focused = nullptr;
             mouse_is_active = false;
             mouse_is_active_changed = false;
+            mouse_is_active_initialized = false;
         }
 
         void make_event_listeners() {
@@ -891,8 +895,14 @@ struct UIContext {
                 }
             }
 
-            // TODO: Figure out why this only works if the mouse is moving
-            SDL_ShowCursor(mouse_is_active ? SDL_ENABLE : SDL_DISABLE);
+            if (mouse_moved || non_mouse_interacted) {
+                mouse_is_active_initialized = true;
+            }
+
+            if (mouse_is_active_initialized) {
+                // TODO: Figure out why this only works if the mouse is moving
+                SDL_ShowCursor(mouse_is_active ? SDL_ENABLE : SDL_DISABLE);
+            }
 
             Rml::Element* window_el = current_document->GetElementById("window");
             if (window_el != nullptr) {
@@ -1106,7 +1116,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION:
-                if (!ui_context->rml.mouse_is_active) {
+                if (!ui_context->rml.mouse_is_active && ui_context->rml.mouse_is_active_initialized) {
                     break;
                 }
                 // fallthrough
