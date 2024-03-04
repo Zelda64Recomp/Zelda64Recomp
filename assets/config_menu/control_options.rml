@@ -18,7 +18,7 @@
                         <label class="config-option__title">Rumble Strength</label>
                         <div class="config-option__list config-option__list">
                             <label class="config-option__range-label">{{rumble_strength}}</label>
-                            <input id="rumble_strength_input" type="range" min="0" max="100" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rumble_strength"/>
+                            <input class="nav-vert" id="rumble_strength_input" type="range" min="0" max="100" style="flex: 1; margin: 0dp;" data-value="rumble_strength"/>
                         </div>
                     </div>
                 </div>

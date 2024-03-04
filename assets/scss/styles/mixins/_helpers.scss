@@ -1,9 +1,17 @@
 
-%nav-dir {
+%nav-vert {
     nav-up: auto;
     nav-down: auto;
+}
+
+%nav-horiz {
     nav-right: auto;
     nav-left: auto;
+}
+
+%nav-dir {
+    @extend %nav-vert;
+    @extend %nav-horiz;
 }
 
 %nav-foc {

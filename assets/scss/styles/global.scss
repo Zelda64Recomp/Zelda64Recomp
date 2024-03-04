@@ -27,6 +27,21 @@ body
         pointer-events: none;
     }
 }
+.nav-vert {
+    @extend %nav-vert;
+}
+.nav-horiz {
+    @extend %nav-horiz;
+}
+.nav-dir {
+    @extend %nav-dir;
+}
+.nav-foc {
+    @extend %nav-foc;
+}
+.nav-all {
+    @extend %nav-all;
+}
 
 *, *:before, *:after {
     box-sizing: border-box;

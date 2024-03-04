@@ -771,9 +771,9 @@ struct UIContext {
         std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
         Rml::Element* prev_focused;
-        bool mouse_is_active = true;
         bool mouse_is_active_changed = false;
     public:
+        bool mouse_is_active = false;
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         std::unique_ptr<Rml::FontEngineInterface> font_interface;
@@ -811,6 +811,8 @@ struct UIContext {
                 current_document = nullptr;
             }
             prev_focused = nullptr;
+            mouse_is_active = false;
+            mouse_is_active_changed = false;
         }
 
         void swap_config_menu(recomp::ConfigSubmenu submenu) {
@@ -821,6 +823,8 @@ struct UIContext {
                     if (config_tabset != nullptr) {
                         config_tabset->SetActiveTab(static_cast<int>(submenu));
                         prev_focused = nullptr;
+                        mouse_is_active = false;
+                        mouse_is_active_changed = false;
                     }
                 }
             }
@@ -851,6 +855,8 @@ struct UIContext {
             }
 
             prev_focused = nullptr;
+            mouse_is_active = false;
+            mouse_is_active_changed = false;
         }
 
         void make_event_listeners() {
@@ -1100,6 +1106,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION:
+                if (!ui_context->rml.mouse_is_active) {
+                    break;
+                }
+                // fallthrough
+            case SDL_EventType::SDL_MOUSEBUTTONDOWN:
                 mouse_moved = true;
                 break;
                 
