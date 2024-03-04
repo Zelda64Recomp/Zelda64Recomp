@@ -253,6 +253,7 @@ int main(int argc, char** argv) {
     ultramodern::input_callbacks_t input_callbacks{
         .poll_input = recomp::poll_inputs,
         .get_input = recomp::get_n64_input,
+        .set_rumble = recomp::set_rumble,
     };
 
     recomp::start({}, audio_callbacks, input_callbacks, gfx_callbacks);

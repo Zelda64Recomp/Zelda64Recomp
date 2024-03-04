@@ -1,7 +1,12 @@
 #include "play_patches.h"
 #include "z64debug_display.h"
+#include "input.h"
 
 extern Input D_801F6C18;
+
+void controls_play_update(PlayState* play) {
+    gSaveContext.options.zTargetSetting = recomp_get_targeting_mode();
+}
 
 // @recomp Patched to add hooks for various added functionality.
 void Play_Main(GameState* thisx) {
@@ -10,6 +15,7 @@ void Play_Main(GameState* thisx) {
 
     // @recomp
     debug_play_update(this);
+    controls_play_update(this);
     
     // @recomp avoid unused variable warning
     (void)prevInput;

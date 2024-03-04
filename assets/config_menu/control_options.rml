@@ -1,0 +1,28 @@
+<template name="config-menu__control-options">
+    <head>
+    </head>
+    <body>
+        <form class="config__form">
+            <div class="config__wrapper">
+                <div class="config__row">
+                    <div class="config-option">
+                        <label class="config-option__title">Targeting Mode</label>
+                        <div class="config-option__list config-option__list">
+                            <input type="radio" name="targeting_mode" data-checked="targeting_mode" value="Switch" id="tm_switch"/>
+                            <label class="config-option__tab-label" for="tm_switch">Switch</label>
+                            <input type="radio" name="targeting_mode" data-checked="targeting_mode" value="Hold" id="tm_hold"/>
+                            <label class="config-option__tab-label" for="tm_hold">Hold</label>
+                        </div>
+                    </div>
+                    <div class="config-option">
+                        <label class="config-option__title">Rumble Strength</label>
+                        <div class="config-option__list config-option__list">
+                            <label class="config-option__range-label">{{rumble_strength}}</label>
+                            <input id="rumble_strength_input" type="range" min="0" max="100" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rumble_strength"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </body>
+</template>

@@ -9,6 +9,7 @@
 ultramodern::GraphicsConfig new_options;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle controls_model_handle;
+Rml::DataModelHandle control_options_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false; 
 
@@ -67,6 +68,35 @@ void close_config_menu() {
 	}
 	else {
 		recomp::set_current_menu(recomp::Menu::Launcher);
+	}
+}
+
+struct ControlOptionsContext {
+	int rumble_strength = 50; // 0 to 100
+	recomp::TargetingMode targeting_mode = recomp::TargetingMode::Switch;
+};
+
+ControlOptionsContext control_options_context;
+
+int recomp::get_rumble_strength() {
+	return control_options_context.rumble_strength;
+}
+
+void recomp::set_rumble_strength(int strength) {
+	control_options_context.rumble_strength = strength;
+	if (control_options_model_handle) {
+		control_options_model_handle.DirtyVariable("rumble_strength");
+	}
+}
+
+recomp::TargetingMode recomp::get_targeting_mode() {
+	return control_options_context.targeting_mode;
+}
+
+void recomp::set_targeting_mode(recomp::TargetingMode mode) {
+	control_options_context.targeting_mode = mode;
+	if (control_options_model_handle) {
+		control_options_model_handle.DirtyVariable("targeting_mode");
 	}
 }
 
@@ -345,6 +375,18 @@ public:
 		controls_model_handle = constructor.GetModelHandle();
 	}
 
+	void make_control_options_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("control_options_model");
+		if (!constructor) {
+			throw std::runtime_error("Failed to make RmlUi data model for the control options menu");
+		}
+		
+		constructor.Bind("rumble_strength", &control_options_context.rumble_strength);
+		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
+
+		control_options_model_handle = constructor.GetModelHandle();
+	}
+
 	void make_debug_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("debug_model");
 		if (!constructor) {
@@ -370,6 +412,7 @@ public:
 	void make_bindings(Rml::Context* context) override {
 		make_graphics_bindings(context);
 		make_controls_bindings(context);
+		make_control_options_bindings(context);
 		make_debug_bindings(context);
 	}
 };

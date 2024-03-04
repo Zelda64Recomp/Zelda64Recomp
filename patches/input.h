@@ -11,5 +11,6 @@ typedef enum {
 extern RecompCameraMode recomp_camera_mode;
 
 DECLARE_FUNC(void, recomp_get_gyro_deltas, float* x, float* y);
+DECLARE_FUNC(int, recomp_get_targeting_mode);
 
 #endif

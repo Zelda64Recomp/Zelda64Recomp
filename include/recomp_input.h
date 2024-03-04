@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 
+#include "json/json.hpp"
+
 namespace recomp {
     // x-macros to build input enums and arrays.
     // First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
@@ -112,7 +114,26 @@ namespace recomp {
     void set_input_binding(GameInput input, size_t binding_index, InputDevice device, InputField value);
 
     void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
+    void set_rumble(bool);
     void handle_events();
+    
+    // Rumble strength ranges from 0 to 100.
+    int get_rumble_strength();
+    void set_rumble_strength(int strength);
+
+    enum class TargetingMode {
+        Switch,
+        Hold,
+		OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::TargetingMode, {
+        {recomp::TargetingMode::Switch, "Switch"},
+        {recomp::TargetingMode::Hold, "Hold"}
+    });
+
+    TargetingMode get_targeting_mode();
+    void set_targeting_mode(TargetingMode mode);
 
     bool game_input_disabled();
     bool all_input_disabled();

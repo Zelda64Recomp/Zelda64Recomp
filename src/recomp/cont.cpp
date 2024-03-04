@@ -75,7 +75,7 @@ extern "C" void osContGetQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
 
     // Mark controller 0 as present
     MEM_H(0, status) = 0x0005; // type: CONT_TYPE_NORMAL (from joybus)
-    MEM_B(2, status) = 0x00; // status: 0 (from joybus)
+    MEM_B(2, status) = 0x01; // status: 0x01 (from joybus, indicates that a pak is plugged into the controller)
     MEM_B(3, status) = 0x00; // errno: 0 (from libultra)
 
     // Mark controllers 1-3 as not connected
@@ -91,17 +91,46 @@ extern "C" void osContSetCh_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void __osMotorAccess_recomp(uint8_t* rdram, recomp_context* ctx) {
+    PTR(void) pfs = _arg<0, PTR(void)>(rdram, ctx);
+    s32 flag = _arg<1, s32>(rdram, ctx);
+    s32 channel = MEM_W(8, pfs);
 
+    // Only respect accesses to controller 0.
+    if (channel == 0) {
+        input_callbacks.set_rumble(flag);
+    }
+
+    _return<s32>(ctx, 0);
 }
 
 extern "C" void osMotorInit_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    PTR(void) pfs = _arg<1, PTR(void)>(rdram, ctx);
+    s32 channel = _arg<2, s32>(rdram, ctx);
+    MEM_W(8, pfs) = channel;
+
+    _return<s32>(ctx, 0);
 }
 
 extern "C" void osMotorStart_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    PTR(void) pfs = _arg<0, PTR(void)>(rdram, ctx);
+    s32 channel = MEM_W(8, pfs);
+
+    // Only respect accesses to controller 0.
+    if (channel == 0) {
+        input_callbacks.set_rumble(true);
+    }
+
+    _return<s32>(ctx, 0);
 }
 
 extern "C" void osMotorStop_recomp(uint8_t* rdram, recomp_context* ctx) {
-    ;
+    PTR(void) pfs = _arg<0, PTR(void)>(rdram, ctx);
+    s32 channel = MEM_W(8, pfs);
+
+    // Only respect accesses to controller 0.
+    if (channel == 0) {
+        input_callbacks.set_rumble(false);
+    }
+
+    _return<s32>(ctx, 0);
 }

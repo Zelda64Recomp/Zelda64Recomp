@@ -345,6 +345,14 @@ void recomp::poll_inputs() {
     #endif
 }
 
+void recomp::set_rumble(bool on) {
+    uint16_t rumble_strength = recomp::get_rumble_strength() * 0xFFFF / 100;
+    uint32_t duration = 1000000; // Dummy duration value that lasts long enough to matter as the game will reset rumble on its own.
+    for (const auto& controller : InputState.cur_controllers) {
+        SDL_GameControllerRumble(controller, 0, on ? rumble_strength : 0, duration);
+    }
+}
+
 bool controller_button_state(int32_t input_id) {
     if (input_id >= 0 && input_id < SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_MAX) {
         SDL_GameControllerButton button = (SDL_GameControllerButton)input_id;

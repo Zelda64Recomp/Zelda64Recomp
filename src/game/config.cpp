@@ -23,6 +23,17 @@ constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Di
 constexpr int rr_manual_default       = 60;
 constexpr bool developer_mode_default = false;
 
+template <typename T>
+void from_or_default(const json& j, const std::string& key, T& out, T default_value) {
+    auto find_it = j.find(key);
+    if (find_it != j.end()) {
+        find_it->get_to(out);
+    }
+    else {
+        out = default_value;
+    }
+}
+
 namespace ultramodern {
     void to_json(json& j, const GraphicsConfig& config) {
         j = json{
@@ -34,17 +45,6 @@ namespace ultramodern {
             {"rr_manual_value", config.rr_manual_value},
             {"developer_mode",  config.developer_mode},
         };
-    }
-
-    template <typename T>
-    void from_or_default(const json& j, const std::string& key, T& out, T default_value) {
-        auto find_it = j.find(key);
-        if (find_it != j.end()) {
-            find_it->get_to(out);
-        }
-        else {
-            out = default_value;
-        }
     }
 
     void from_json(const json& j, GraphicsConfig& config) {
@@ -171,6 +171,11 @@ void add_input_bindings(nlohmann::json& out, recomp::GameInput input, recomp::In
 
 void save_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
+
+    config_json["options"] = {};
+    recomp::to_json(config_json["options"]["targeting_mode"], recomp::get_targeting_mode());
+    config_json["options"]["rumble_strength"] = recomp::get_rumble_strength();
+
     config_json["keyboard"] = {};
     config_json["controller"] = {};
 
@@ -221,6 +226,14 @@ void load_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     config_file >> config_json;
+    
+    recomp::TargetingMode targeting_mode;
+    from_or_default(config_json["options"], "targeting_mode", targeting_mode, recomp::TargetingMode::Switch);
+    recomp::set_targeting_mode(targeting_mode);
+
+    int rumble_strength;
+    from_or_default(config_json["options"], "rumble_strength", rumble_strength, 25);
+    recomp::set_rumble_strength(rumble_strength);
 
     if (!load_input_device_from_json(config_json, recomp::InputDevice::Keyboard, "keyboard")) {
         assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);

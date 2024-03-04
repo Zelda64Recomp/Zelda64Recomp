@@ -62,3 +62,7 @@ extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
             return;
     }
 }
+
+extern "C" void recomp_get_targeting_mode(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, static_cast<int>(recomp::get_targeting_mode()));
+}
