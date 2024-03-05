@@ -19,4 +19,27 @@ static inline void* actor_relocate(Actor* actor, void* addr) {
             (intptr_t)((uintptr_t)actor->overlayEntry->vramStart - (uintptr_t)actor->overlayEntry->loadedRamAddr));
 }
 
+typedef enum {
+    /* 0 */ PICTO_BOX_STATE_OFF,         // Not using the pictograph
+    /* 1 */ PICTO_BOX_STATE_LENS,        // Looking through the lens of the pictograph
+    /* 2 */ PICTO_BOX_STATE_SETUP_PHOTO, // Looking at the photo currently taken
+    /* 3 */ PICTO_BOX_STATE_PHOTO
+} PictoBoxState;
+
+
+#define INCBIN(identifier, filename)          \
+    asm(".pushsection .rodata\n"              \
+        "\t.local " #identifier "\n"          \
+        "\t.type " #identifier ", @object\n"  \
+        "\t.balign 8\n"                       \
+        #identifier ":\n"                     \
+        "\t.incbin \"" filename "\"\n\n"      \
+                                              \
+        "\t.balign 8\n"                       \
+        "\t.popsection\n");                   \
+    extern u8 identifier[]
+
+void draw_dpad(PlayState* play);
+void draw_dpad_icons(PlayState* play);
+
 #endif

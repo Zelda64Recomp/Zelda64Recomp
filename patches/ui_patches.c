@@ -169,14 +169,6 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     }
 }
 
-
-typedef enum {
-    /* 0 */ PICTO_BOX_STATE_OFF,         // Not using the pictograph
-    /* 1 */ PICTO_BOX_STATE_LENS,        // Looking through the lens of the pictograph
-    /* 2 */ PICTO_BOX_STATE_SETUP_PHOTO, // Looking at the photo currently taken
-    /* 3 */ PICTO_BOX_STATE_PHOTO
-} PictoBoxState;
-
 extern s16 sPictoState;
 
 // Modify interface drawing (rupees, key counter, etc.)
@@ -472,6 +464,12 @@ void Interface_Draw(PlayState* play) {
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT, -margin_reduction * 4, -margin_reduction * 4, -margin_reduction * 4, -margin_reduction * 4);
 
         Magic_DrawMeter(play);
+        
+        // @recomp Draw the D-Pad and its item icons
+        if (pauseCtx->state != PAUSE_STATE_MAIN) {
+            draw_dpad(play);
+            draw_dpad_icons(play);
+        }
 
         // @recomp Right align and shift right/down for minimap
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_RIGHT, G_EX_ORIGIN_RIGHT,
