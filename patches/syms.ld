@@ -16,3 +16,5 @@ recomp_get_pending_warp = 0x8F000020;
 recomp_powf = 0x8F000024;
 recomp_get_target_framerate = 0x8F000028;
 recomp_get_targeting_mode = 0x8F00002C;
+recomp_get_bgm_volume = 0x8F000030;
+recomp_get_low_health_beeps_enabled = 0x8F000034;

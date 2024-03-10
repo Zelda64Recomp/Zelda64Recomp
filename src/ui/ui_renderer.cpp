@@ -1273,6 +1273,7 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 
 void recomp::destroy_ui() {
     std::lock_guard lock {ui_context_mutex};
+    Rml::Debugger::Shutdown();
     ui_context->rml.font_interface.reset();
     Rml::Shutdown();
     ui_context->rml.unload();

@@ -3,9 +3,11 @@
 #include "recomp.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
+#include "recomp_sound.h"
 #include "recomp_helpers.h"
 #include "../patches/input.h"
 #include "../patches/graphics.h"
+#include "../patches/sound.h"
 #include "../ultramodern/ultramodern.hpp"
 #include "../ultramodern/config.hpp"
 
@@ -65,4 +67,13 @@ extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
 
 extern "C" void recomp_get_targeting_mode(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<int>(recomp::get_targeting_mode()));
+}
+
+
+extern "C" void recomp_get_bgm_volume(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, recomp::get_bgm_volume() / 100.0f);
+}
+
+extern "C" void recomp_get_low_health_beeps_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, static_cast<u32>(recomp::get_low_health_beeps_enabled()));
 }

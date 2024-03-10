@@ -154,7 +154,7 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
                 "From Laundry Pool",
                 "From East Clock Town (South entrance)",
                 "Clock Tower balcony",
-                "From Song of Soaring",
+                "Owl Statue",
                 "First song of time cutscene"
             }
         },
@@ -168,17 +168,17 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
     { "Swamp", {
         {
             12, "Southern Swamp (After Woodfall Temple)", {
-                "-swamp road",
-                "-boat house",
-                "-woodfall",
-                "-lower deku palace",
-                "-upper deku palace",
-                "-hags potion shop",
-                "-boat cruise",
-                "-woods of mystery",
-                "-swamp spider house",
-                "-ikana canyon",
-                "-owl statue",
+                "From Road",
+                "In Front of Boat House",
+                "Froom Woodfall",
+                "From Lower Deku Palace",
+                "From Upper Deku Palace",
+                "From Magic Hags' Potion Shop",
+                "Boat Ride",
+                "From Woods of Mistery",
+                "From Swamp Spider House",
+                "From Ikanya Canyon",
+                "Owl Statue",
             }
         },
         {
@@ -212,67 +212,67 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
             80, "Deku Palace", {
                 "From Southern Swamp",
                 "After getting caught",
-                "-deku king chamber",
-                "-deku king chamber (upper)",
-                "-deku shrine",
-                "From Southern Swamp (Alternate)",
-                "-jp grotto left, first room",
-                "-jp grotto left, second room",
-                "-jp grotto right, second room",
+                "From Deku King Chamber",
+                "From Upper Deku King Chamber",
+                "From Deku Shrine",
+                "From Southern Swamp (Upper tunnel)",
+                "From Left Grotto (Japanese)",
+                "From Left Grotto Second Room (Japanese)",
+                "From Right Grotto Second Room (Japanese)",
                 "From Bean Seller Grotto",
-                "-jp grotto right, first room",
+                "From Right Grotto First Room (Japanese)",
             }
         },
         {
             118, "Deku Palace Royal Chamber", {
-                "-deku palace",
-                "-deku palace (upper)",
-                "-monkey released",
-                "-front of king",
+                "From Deku Palace",
+                "From Upper Deku Palace",
+                "After Releasing Monkey",
+                "In Front of the King",
             }
         },
         {
             122, "Road to Southern Swamp", {
-                "-termina field",
-                "-southern swamp",
-                "-swamp shooting gallery",
+                "From Termina Field",
+                "From Southern Swamp",
+                "From Swamp Shooting Gallery",
             }
         },
         {
             132, "Southern Swamp (Before Woodfall Temple)", {
-                "-road to southern swamp",
-                "-boat house",
-                "-woodfall",
-                "-deku palace",
-                "-deku palace (shortcut)",
-                "-hags potion shop",
-                "-boat ride",
-                "-woods of mystery",
-                "-swamp spider house",
-                "-ikana canyon",
-                "-owl statue",
+                "From Road to Southern Swamp",
+                "In Front of Boat House",
+                "From Woodfall",
+                "From Deku Palace",
+                "From Deku Palace (Shortcut)",
+                "From Hags' Potion Shop",
+                "Boat Ride",
+                "From Woods of Mistery",
+                "From Swamp Spider House",
+                "From Ikana Canyon",
+                "Owl Statue",
             }
         },
         {
             134, "Woodfall", {
-                "-southern swamp",
-                "-unknown",
-                "-fairy fountain",
-                "-unknown",
-                "-owl statue",
+                "From Southern Swamp",
+                "In Mid-Air",
+                "-From Fairy Mountain",
+                "In Mid-Air (alternate)",
+                "Owl Statue",
             }
         },
         {
             158, "Deku Shrine", {
-                "-deku palace",
-                "-deku palace"
+                "From Deku Palace",
+                "From Deku Palace"
             }
         },
         {
             168, "Swamp Tourist Center", {
                 "Entrance",
-                "-koume",
-                "-tingle's dad",
+                "Talking to Koume",
+                "Talking to Tingle's Dad",
             }
         },
         {
@@ -319,117 +319,117 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             138, "Goron Village (After Snowhead Temple)", {
-                "-path to goron village (spring)",
-                "-unknown",
-                "-goron shrine",
-                "-lens of truth",
-                "-void out",
+                "From Path to Goron Village",
+                "In Mid-Air",
+                "From Goron Shrine",
+                "Over the Void",
+                "In Front of Invisible Platforms",
             }
         },
         {
             148, "Goron Village (Before Snowhead Temple)", {
-                "-path to goron village (winter)",
-                "-deku flower",
-                "-goron shrine",
-                "-lens of truth",
-                "-void out",
+                "From Path to Goron Village",
+                "In Front of Deku Flower",
+                "From Goron Shrine",
+                "From Lens of Truth",
+                "In Front of Invisible Platforms",
             }
         },
         {
             150, "Goron Graveyard", {
-                "-mountain village",
-                "-receiving goron mask",
+                "-From Mountain Village",
+                "-After Receiving Goron Mask",
             }
         },
         {
             154, "Mountain Village (Before Snowhead Temple)", {
-                "-after snowhead",
-                "-mountain smithy",
-                "-path to goron village (winter)",
-                "-goron graveyard",
-                "-path to snowhead",
-                "-on ice",
-                "-path to mountain village",
-                "-unknown",
-                "-owl statue",
+                "In Front of Mountain Smithy",
+                "Mountain Smithy",
+                "From Path to Goron Village",
+                "From Goron Graveyard",
+                "From Path to Snowhead",
+                "On the lake",
+                "From Path to Mountain Village",
+                "On the Lake (alternate)",
+                "Owl Statue",
             }
         },
         {
             174, "Mountain Village (After Snowhead Temple)", {
-                "-after snowhead",
-                "-mountain smithy",
-                "-path to goron village (spring)",
-                "-goron graveyard",
-                "-path to snowhead",
-                "-behind waterfall",
-                "-path to mountain village",
-                "-after snowhead (cutscene)",
-                "-owl statue",
+                "Next to Lake",
+                "From Mountain Smithy",
+                "From Path to Goron Village",
+                "From Goron Graveyard",
+                "From Path to Snowhead",
+                "Behind Waterfall",
+                "From Path to Mountain Village",
+                "Next to Lake (After Snowhead Cutscene)",
+                "Owl Statue",
             }
         },
         {
             178, "Snowhead", {
-                "-path to snowhead",
-                "-snowhead temple",
-                "-fairy fountain",
-                "-owl statue",
+                "From Path to Snowhead",
+                "From Snowhead Temple",
+                "From Fairy Fountain",
+                "Owl Statue",
             }
         },
         {
             180, "Road to Goron Village (Before Snowhead Temple)", {
-                "-mountain village (winter)",
-                "-goron village (winter)",
-                "-goron racetrack",
+                "From Mountain Village",
+                "From Goron Village",
+                "From Goron Racetrack",
             }
         },
         {
             182, "Road to Goron Village (After Snowhead Temple)", {
-                "-mountain village (spring)",
-                "-goron village (spring)",
-                "-goron racetrack",
+                "From Mountain Village",
+                "From Goron Village",
+                "From Goron Racetrack",
             }
         },
         {
             208, "Goron Racetrack", {
-                "-path to mountain village",
-                "-race start",
-                "-race end",
+                "From Path to Mountain Village",
+                "Race Start",
+                "Race End",
             }
         }
     }},
     { "Great Bay", {
         {
             34, "Pirates' Fortress (Outdoors)", {
-                "-exterior pirates fortress",
-                "-lower hookshot room",
-                "-upper hookshot room",
-                "-silver rupee room",
-                "-silver rupee room exit",
-                "-barrel room",
-                "-barrel room exit",
-                "-twin barrel room",
-                "-twin barrel room exit",
-                "-oob near twin barrel",
-                "-telescope",
-                "-oob hookshot room",
-                "-balcony",
-                "-upper hookshot room",
+                "From Exterior Pirate Fortress",
+                "From Lower Hookshoot Room",
+                "From Upper Hookshoot Room",
+                "From Silver Rupee Room",
+                "From Silver Rupee Room (alternate)",
+                "From Room with Barrels",
+                "From Room with Barrels (alternate)",
+                "From Room with Barrels and Bridge",
+                "From Room with Barrels and Bridge (alternate)",
+                "Out of bounds",
+                "Telescope",
+                "Out of bounds (alternate)",
+                "From Balcony in Exterior Pirate Fortress",
+                "From Upper Hookshoot Room",
             }
         },
         {
             64, "Pirates' Fortress (Indoors)", {
-                "-hookshot room",
-                "-hookshot room upper",
-                "-100 rupee room",
-                "-100 rupee room (egg)",
-                "-barrel room",
-                "-barrel room (egg)",
-                "-twin barrel room",
-                "-twin barrel room (egg)",
-                "-telescope",
-                "-outside, underwater",
-                "-outside, telescope",
-                "-unknown",
+                "Hookshoot Room",
+                "Upper Hookshoot Room",
+                "Silver Rupee Room",
+                "100 Rupee Room (Next to Egg)",
+                "Barrel Room",
+                "Barrel Room (Next to Egg)",
+                "Room with Barrels and Bridge",
+                "Room with Barrels and Bridge (next to egg)",
+                "Telescope",
+                "Hidden Entrance ",
+                "Telescope",
+                "Unloaded Room",
             }
         },
         {
@@ -450,58 +450,58 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             96, "Zora Hall", {
-                "-zora cape",
-                "-zora cape (turtle)",
-                "-zora shop",
-                "-lulu's room",
-                "-evan's room",
-                "-japa's room",
-                "-mikau & tijo's room",
-                "-stage",
-                "-after rehearsal",
+                "From Zora Cape",
+                "From Zora Cape with Turtle",
+                "From Zora Shop",
+                "From Lulu's Room",
+                "From Evan's Room",
+                "From Japa's Room",
+                "From Mikau's & Tijo's Room",
+                "Stage",
+                "Stage (After Rehearsal)",
             }
         },
         {
             104, "Great Bay Coast", {
-                "-termina field",
+                "From Termina Field",
                 "-zora cape",
-                "-void respawn",
-                "-pinnacle rock",
-                "-fisherman hut",
-                "-pirates fortress",
-                "-void resapwn (murky water)",
-                "-marine lab",
-                "-oceanside spider house",
-                "-during zora mask",
-                "-after zora mask",
-                "-owl statue",
-                "-thrown out",
-                "-after jumping game",
+                "From Zora Cape",
+                "From Pinnacle Rock",
+                "From Fisherman's Hut",
+                "From Pirates' Fortress",
+                "Next to Chuchu",
+                "From Marine Lab",
+                "From Oceanside Spider House",
+                "Beach (Zora Mask Cutscene)",
+                "Beach (After Zora Mask Cutscene)",
+                "Owl Statue",
+                "Thrown Out Pirates' Fortress",
+                "Island (After jumping game)",
             }
         },
         {
             106, "Zora Cape", {
-                "-great bay coast",
-                "-zora hall",
-                "-zora hall (turtle)",
-                "-void respawn",
-                "-waterfall",
-                "-fairy fountain",
-                "-owl statue",
-                "-great bay temple",
-                "-after great bay temple",
-                "-unknown",
+                "From Great Bay Coast",
+                "From Zora Hall",
+                "From Zora Hall with Turtle",
+                "Next to Zora Game Site",
+                "From Waterfall Rapids",
+                "From Fairy Fountain",
+                "From Owl Statue",
+                "From Great Bay Temple",
+                "After Beating Great Bay Temple",
+                "After Beating Great Bay Temple",
             }
         },
         {
             112, "Pirates' Fortress (Entrance)", {
-                "-great bay coast",
-                "-pirates fortress",
-                "-underwater passage",
-                "-underwater jet",
-                "-kicked out",
-                "-hookshot platform",
-                "-passage door",
+                "From Great Bay Coast",
+                "From Pirates' Fortress",
+                "From Secret Entrance",
+                "From Underwater Jet",
+                "Kicked out",
+                "From Hookshot Platform in Pirates' Fortress",
+                "From Telescope Room",
             }
         },
         {
@@ -517,53 +517,53 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             142, "Waterfall Rapids", {
-                "-zora cape",
-                "-race start",
-                "-race end",
-                "-game won",
+                "From Zora Cape",
+                "Race Start",
+                "Race End",
+                "Race Won",
             }
         },
         {
             146, "Zora Hall (Room)", {
-                "-mikau from zora hall",
-                "-japas from zora hall",
-                "-lulu from zora hall",
-                "-evan from zora hall",
-                "-japa after jam session",
-                "-zora shop from zora hall",
-                "-evan after composing song",
+                "Mikau's Room",
+                "Japas' Room",
+                "Lulu's Room",
+                "Evan's Room",
+                "Japa's Room (after jam session)",
+                "Zora's Shop",
+                "Evan's Room (after composing song)",
             }
         },
         {
             184, "Gyorg Arena", {
-                "-great bay temple",
-                "-falling cutscene",
+                "Entrance",
+                "Falling Cutscene",
             }
         },
         {
-            190, "-great bay (cutscene)", {
-                "zora cape",
+            190, "Great Bay (Pirate and Turtle Cutscene)", {
+                "From Zora Cape",
             }
         }
     }},
     { "Ikana", {
         {
             32, "Ikana Canyon", {
-                "-ikana road",
-                "-ghost hut",
-                "-music box house",
-                "-stone tower",
-                "-owl statue",
-                "-beneath the well",
-                "-sakon's hideout",
-                "-after stone tower",
-                "-ikana castle",
-                "-after house opens",
-                "-song of storms cave (house open)",
-                "-fairy fountain",
-                "-secret shrine",
-                "-from song of storms cave",
-                "-song of storms cave (house closed) ",
+                "From Ikana Road",
+                "From Ghost Hut",
+                "From Music Box House",
+                "From Stone Tower",
+                "Owl Statue",
+                "From Beneath the Well",
+                "From Sakon's Hideout",
+                "After Beating Stone Tower Temple",
+                "From Ikana Castle",
+                "House Opening Cutscene",
+                "Spring Water Cave (played Song of Storms)",
+                "From Fairy Fountain",
+                "From Secret Shrine",
+                "From Spring Water Cave",
+                "Spring Water Cave",
             }
         },
         {
@@ -609,18 +609,18 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             128, "Ikana Graveyard", {
-                "-road to ikana",
-                "-grave 1",
-                "-grave 2",
-                "-grave 3",
-                "-dampe's house",
-                "-after keeta defeated",
+                "Road to Ikana",
+                "From Grave 1 ",
+                "From Grave 2",
+                "From Grave 3",
+                "From Dampe's House",
+                "Keeta Defeated Cutscene",
             }
         },
         {
             144, "Beneath the Well", {
-                "-ikana canyon",
-                "-ikana castle",
+                "From Ikana Canyon",
+                "From Ikana Castle",
             }
         },
         {
@@ -631,15 +631,15 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         {
             156, "Spirit House", {
                 "Entrance",
-                "-after minigame",
-                "-beat minigame",
+                "Minigame start",
+                "After minigame",
             }
         },
         {
             160, "Road to Ikana", {
-                "-termina field",
-                "-ikana canyon",
-                "-ikana graveyard",
+                "From Termina Field",
+                "From Ikana Canyon",
+                "From Ikana Graveyard",
             }
         },
         {
@@ -654,16 +654,16 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             170, "Stone Tower", {
-                "-ikana canyon",
-                "-unknown",
-                "-stone tower temple",
-                "-owl statue",
+                "From Ikana Canyon",
+                "In Front of Temple",
+                "From Stone Tower Temple",
+                "Owl Statue",
             }
         },
         {
             172, "Stone Tower (Inverted)", {
-                "-after inverting",
-                "-stone tower temple",
+                "In Front of Temple (Inverting Cutscene)",
+                "From Stone Tower Temple",
             }
         },
         {
@@ -682,22 +682,21 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             84, "Termina Field", {
-                "-west clock town",
-                "-road to southern swamp",
-                "-great bay coast",
-                "-path to mountain village",
-                "-road to ikana",
-                "-milk road",
-                "-south clock town",
-                "-east clock town",
-                "-north clock town",
-                "-observatory",
-                "-observatory (telescope)",
-                "-near ikana",
-                "-moon crash",
-                "-cremia hug",
-                "-skullkid cutscene",
-                "-west clock town",
+                "From West Clock Town",
+                "From Road to Southern Swapm",
+                "From Great Bay Coast",
+                "From Path to Mountain Village",
+                "From Road to Ikana",
+                "From Milk Road",
+                "From South Clock Town",
+                "From East Clock Town",
+                "From North Clock Town",
+                "From Observatory",
+                "Use Telescope",
+                "Near Ikana",
+                "Moon Crash Cutscene (Game Over)",
+                "Next to Ikana (After Cremia's Hug)",
+                "Next to Road to Southern Swamp (After Skull Kid Cutscene)"
             }
         }
     }},
@@ -712,11 +711,11 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
             62, "Milk Road", {
                 "From Termina Field",
                 "From Romani Ranch",
-                "-gorman track (track exit)",
-                "-gorman track (main exit)",
+                "From Gorman's Track (Track Exit)",
+                "From Gorman's Track (Main Exit)",
                 "At Owl Statue",
-                "5?",
-                "6?",
+                "Behind Giant Rock",
+                "Next to Owl Statue",
             }
         },
         {
@@ -737,25 +736,24 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
         },
         {
             124, "Doggy Racetrack", {
-                "-romani ranch",
-                "-after race",
+                "From Romani Ranch",
+                "Next to Track (After Race)",
             }
         },
         {
             126, "Cucco Shack", {
-                "-romani ranch",
-                "-after bunny hood",
+                "From Romani Ranch",
+                "Talking to Grog (Getting Bunny Hood)",
             }
         },
         {
             206, "Gorman Track", {
-                "-milk road",
-                "-unknown",
-                "-beat minigame",
-                "-milk road behind fence",
-                "-milk road fence cutscene",
-                "-unknown",
-                "-start minigame",
+                "From Milk Road",
+                "Next to Gorman",
+                "Next to Gorman (After Beating Race)",
+                "From Milk Road (Behind Fence)",
+                "From Milk Road (After Fence Cutscene)",
+                "In the Middle of the Track"
             }
         }
     }},
@@ -815,12 +813,12 @@ std::vector<recomp::AreaWarps> recomp::game_warps {
             }
         },
         {
-            46, "-before clock town", {
-                "-falling from cliff",
-                "-inside clock tower",
-                "-transformed to deku",
-                "-void respawn",
-                "-song of time flashback",
+            46, "Intro Areas", {
+                "Falling from Cliff Cutscene",
+                "Before Entering Clock Tower",
+                "After Being Transformed into Deku",
+                "Before Entering Clock Tower (Void Respawn)",
+                "South Clock Town (After First Song of Time)",
             }
         },
         {

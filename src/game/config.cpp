@@ -1,5 +1,6 @@
 #include "recomp_config.h"
 #include "recomp_input.h"
+#include "recomp_sound.h"
 #include "../../ultramodern/config.hpp"
 #include <filesystem>
 #include <fstream>
@@ -14,6 +15,7 @@
 
 constexpr std::u8string_view graphics_filename = u8"graphics.json";
 constexpr std::u8string_view controls_filename = u8"controls.json";
+constexpr std::u8string_view sound_filename = u8"sound.json";
 
 constexpr auto res_default            = ultramodern::Resolution::Auto;
 constexpr auto wm_default             = ultramodern::WindowMode::Windowed;
@@ -24,13 +26,26 @@ constexpr int rr_manual_default       = 60;
 constexpr bool developer_mode_default = false;
 
 template <typename T>
-void from_or_default(const json& j, const std::string& key, T& out, T default_value) {
+T from_or_default(const json& j, const std::string& key, T default_value) {
+    T ret;
     auto find_it = j.find(key);
     if (find_it != j.end()) {
-        find_it->get_to(out);
+        find_it->get_to(ret);
     }
     else {
-        out = default_value;
+        ret = default_value;
+    }
+    
+    return ret;
+}
+
+template <typename T>
+void call_if_key_exists(void (*func)(T), const json& j, const std::string& key) {
+    auto find_it = j.find(key);
+    if (find_it != j.end()) {
+        T val;
+        find_it->get_to(val);
+        func(val);
     }
 }
 
@@ -48,13 +63,13 @@ namespace ultramodern {
     }
 
     void from_json(const json& j, GraphicsConfig& config) {
-        from_or_default(j, "res_option",      config.res_option, res_default);
-        from_or_default(j, "wm_option",       config.wm_option, wm_default);
-        from_or_default(j, "ar_option",       config.ar_option, ar_default);
-        from_or_default(j, "msaa_option",     config.msaa_option, msaa_default);
-        from_or_default(j, "rr_option",       config.rr_option, rr_default);
-        from_or_default(j, "rr_manual_value", config.rr_manual_value, rr_manual_default);
-        from_or_default(j, "developer_mode",  config.developer_mode, developer_mode_default);
+        config.res_option       = from_or_default(j, "res_option",      res_default);
+        config.wm_option        = from_or_default(j, "wm_option",       wm_default);
+        config.ar_option        = from_or_default(j, "ar_option",       ar_default);
+        config.msaa_option      = from_or_default(j, "msaa_option",     msaa_default);
+        config.rr_option        = from_or_default(j, "rr_option",       rr_default);
+        config.rr_manual_value  = from_or_default(j, "rr_manual_value", rr_manual_default);
+        config.developer_mode   = from_or_default(j, "developer_mode",  developer_mode_default);
     }
 }
 
@@ -227,13 +242,8 @@ void load_controls_config(const std::filesystem::path& path) {
 
     config_file >> config_json;
     
-    recomp::TargetingMode targeting_mode;
-    from_or_default(config_json["options"], "targeting_mode", targeting_mode, recomp::TargetingMode::Switch);
-    recomp::set_targeting_mode(targeting_mode);
-
-    int rumble_strength;
-    from_or_default(config_json["options"], "rumble_strength", rumble_strength, 25);
-    recomp::set_rumble_strength(rumble_strength);
+    recomp::set_targeting_mode(from_or_default(config_json["options"], "targeting_mode", recomp::TargetingMode::Switch));
+    recomp::set_rumble_strength(from_or_default(config_json["options"], "rumble_strength", 25));
 
     if (!load_input_device_from_json(config_json, recomp::InputDevice::Keyboard, "keyboard")) {
         assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
@@ -244,10 +254,33 @@ void load_controls_config(const std::filesystem::path& path) {
     }
 }
 
+void save_sound_config(const std::filesystem::path& path) {
+    nlohmann::json config_json{};
+
+    config_json["bgm_volume"] = recomp::get_bgm_volume();
+    config_json["low_health_beeps"] = recomp::get_low_health_beeps_enabled();
+    
+    std::ofstream config_file{path};
+    config_file << std::setw(4) << config_json;
+}
+
+void load_sound_config(const std::filesystem::path& path) {
+    std::ifstream config_file{path};
+    nlohmann::json config_json{};
+
+    config_file >> config_json;
+
+    
+    recomp::reset_sound_settings();
+    call_if_key_exists(recomp::set_bgm_volume, config_json, "bgm_volume");
+    call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "set_low_health_beeps_enabled");
+}
+
 void recomp::load_config() {
     std::filesystem::path recomp_dir = recomp::get_app_folder_path();
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;
     std::filesystem::path controls_path = recomp_dir / controls_filename;
+    std::filesystem::path sound_path = recomp_dir / sound_filename;
 
     if (std::filesystem::exists(graphics_path)) {
         load_graphics_config(graphics_path);
@@ -264,6 +297,14 @@ void recomp::load_config() {
         recomp::reset_input_bindings();
         save_controls_config(controls_path);
     }
+
+    if (std::filesystem::exists(sound_path)) {
+        load_sound_config(sound_path);
+    }
+    else {
+        recomp::reset_sound_settings();
+        save_sound_config(sound_path);
+    }
 }
 
 void recomp::save_config() {
@@ -277,4 +318,5 @@ void recomp::save_config() {
 
     save_graphics_config(recomp_dir / graphics_filename);
     save_controls_config(recomp_dir / controls_filename);
+    save_sound_config(recomp_dir / sound_filename);
 }

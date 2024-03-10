@@ -63,7 +63,7 @@
 							<div>Sound</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" >
+						<panel class="config" data-model="sound_options_model">
 							<template src="config-menu__sound" />
 						</panel>
 						<tab class="tab">

@@ -1,5 +1,6 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
+#include "recomp_sound.h"
 #include "recomp_config.h"
 #include "recomp_debug.h"
 #include "../../ultramodern/config.hpp"
@@ -10,6 +11,7 @@ ultramodern::GraphicsConfig new_options;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle controls_model_handle;
 Rml::DataModelHandle control_options_model_handle;
+Rml::DataModelHandle sound_options_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false; 
 
@@ -44,6 +46,21 @@ void bind_option(Rml::DataModelConstructor& constructor, const std::string& name
 		[option](const Rml::Variant& in) { set_option(*option, in); graphics_model_handle.DirtyVariable("options_changed"); }
 	);
 };
+
+template <typename T>
+void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle handle, const char* name, std::atomic<T>* atomic_val) {
+	constructor.BindFunc(name,
+		[atomic_val](Rml::Variant& out) {
+			out = atomic_val->load();
+			printf("out: %s\n", out.Get<std::string>().c_str());
+		},
+		[atomic_val, handle, name](const Rml::Variant& in) mutable {
+			printf("in: %s\n", in.Get<std::string>().c_str());
+			atomic_val->store(in.Get<T>());
+			handle.DirtyVariable(name);
+		}
+	);
+}
 
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
@@ -98,6 +115,49 @@ void recomp::set_targeting_mode(recomp::TargetingMode mode) {
 	if (control_options_model_handle) {
 		control_options_model_handle.DirtyVariable("targeting_mode");
 	}
+}
+
+struct SoundOptionsContext {
+	std::atomic<int> bgm_volume;
+	std::atomic<int> low_health_beeps_enabled; // RmlUi doesn't seem to like "true"/"false" strings for setting variants so an int is used here instead.
+	void reset() {
+		bgm_volume = 100;
+		low_health_beeps_enabled = (int)true;
+	}
+	SoundOptionsContext() {
+		reset();
+	}
+};
+
+SoundOptionsContext sound_options_context;
+
+void recomp::reset_sound_settings() {
+	sound_options_context.reset();
+	if (sound_options_model_handle) {
+		sound_options_model_handle.DirtyAllVariables();
+	}
+}
+
+void recomp::set_bgm_volume(int volume) {
+    sound_options_context.bgm_volume.store(volume);
+	if (sound_options_model_handle) {
+		sound_options_model_handle.DirtyVariable("bgm_volume");
+	}
+}
+
+int recomp::get_bgm_volume() {
+    return sound_options_context.bgm_volume.load();
+}
+
+void recomp::set_low_health_beeps_enabled(bool enabled) {
+    sound_options_context.low_health_beeps_enabled.store((int)enabled);
+	if (sound_options_model_handle) {
+		sound_options_model_handle.DirtyVariable("low_health_beeps_enabled");
+	}
+}
+
+bool recomp::get_low_health_beeps_enabled() {
+    return (bool)sound_options_context.low_health_beeps_enabled.load();
 }
 
 struct DebugContext {
@@ -386,6 +446,18 @@ public:
 
 		control_options_model_handle = constructor.GetModelHandle();
 	}
+	
+	void make_sound_options_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("sound_options_model");
+		if (!constructor) {
+			throw std::runtime_error("Failed to make RmlUi data model for the sound options menu");
+		}
+		
+		sound_options_model_handle = constructor.GetModelHandle();
+
+		bind_atomic(constructor, sound_options_model_handle, "bgm_volume", &sound_options_context.bgm_volume);
+		bind_atomic(constructor, sound_options_model_handle, "low_health_beeps_enabled", &sound_options_context.low_health_beeps_enabled);
+	}
 
 	void make_debug_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("debug_model");
@@ -413,6 +485,7 @@ public:
 		make_graphics_bindings(context);
 		make_controls_bindings(context);
 		make_control_options_bindings(context);
+		make_sound_options_bindings(context);
 		make_debug_bindings(context);
 	}
 };
