@@ -52,10 +52,8 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 	constructor.BindFunc(name,
 		[atomic_val](Rml::Variant& out) {
 			out = atomic_val->load();
-			printf("out: %s\n", out.Get<std::string>().c_str());
 		},
 		[atomic_val, handle, name](const Rml::Variant& in) mutable {
-			printf("in: %s\n", in.Get<std::string>().c_str());
 			atomic_val->store(in.Get<T>());
 			handle.DirtyVariable(name);
 		}

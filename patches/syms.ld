@@ -2,6 +2,7 @@ __start = 0x80000000;
 
 /* Static symbols that aren't in the elf */
 sSceneEntranceTable = 0x801C5720;
+D_808DE5B0 = 0x808DE5B0;
 
 /* Dummy addresses that get recompiled into function calls */
 recomp_puts = 0x8F000000;
@@ -18,3 +19,5 @@ recomp_get_target_framerate = 0x8F000028;
 recomp_get_targeting_mode = 0x8F00002C;
 recomp_get_bgm_volume = 0x8F000030;
 recomp_get_low_health_beeps_enabled = 0x8F000034;
+__sinf_recomp = 0x8F000038;
+__cosf_recomp = 0x8F00003C;
