@@ -16,11 +16,9 @@ body
 
 .rmlui-window {
     opacity: 1;
-    transition: opacity 0.1s quadratic-in-out;
 
     &--hidden {
         opacity: 0;
-        transition: none;
     }
 
     &:not([mouse-active]) {
