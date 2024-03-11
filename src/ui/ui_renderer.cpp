@@ -777,6 +777,7 @@ struct UIContext {
         bool mouse_is_active = false;
         bool await_stick_return_x = false;
         bool await_stick_return_y = false;
+        int last_active_mouse_position[2] = {0, 0};
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         std::unique_ptr<Rml::FontEngineInterface> font_interface;
@@ -878,9 +879,6 @@ struct UIContext {
         }
 
         void update_primary_input(bool mouse_moved, bool non_mouse_interacted) {
-            if (current_document == nullptr) {
-                return;
-            }
             mouse_is_active_changed = false;
             if (non_mouse_interacted) {
                 // controller newly interacted with
@@ -904,6 +902,10 @@ struct UIContext {
             if (mouse_is_active_initialized) {
                 // TODO: Figure out why this only works if the mouse is moving
                 SDL_ShowCursor(mouse_is_active ? SDL_ENABLE : SDL_DISABLE);
+            }
+
+            if (current_document == nullptr) {
+                return;
             }
 
             Rml::Element* window_el = current_document->GetElementById("window");
@@ -1118,6 +1120,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool non_mouse_interacted = false;
 
     while (recomp::try_deque_event(cur_event)) {
+        bool menu_is_open = cur_menu != recomp::Menu::None;
+
         // Scale coordinates for mouse and window events based on the UI scale
         switch (cur_event.type) {
         case SDL_EventType::SDL_MOUSEMOTION:
@@ -1143,21 +1147,30 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             break;
         }
 
-        if (cur_menu != recomp::Menu::None && !recomp::all_input_disabled()) {
+        if (!recomp::all_input_disabled()) {
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
-            case SDL_EventType::SDL_MOUSEMOTION:
-                if (!ui_context->rml.mouse_is_active && ui_context->rml.mouse_is_active_initialized) {
-                    break;
+            case SDL_EventType::SDL_MOUSEMOTION: {
+                int *last_mouse_pos = ui_context->rml.last_active_mouse_position;
+
+                if (!ui_context->rml.mouse_is_active) {
+                    float xD = cur_event.motion.x - last_mouse_pos[0];
+                    float yD = cur_event.motion.y - last_mouse_pos[1];
+                    if (sqrt(xD * xD + yD * yD) < 100) {
+                        break;
+                    }
                 }
-                // fallthrough
+                last_mouse_pos[0] = cur_event.motion.x;
+                last_mouse_pos[1] = cur_event.motion.y;
+            }
+            // fallthrough
             case SDL_EventType::SDL_MOUSEBUTTONDOWN:
                 mouse_moved = true;
                 break;
                 
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN: {
                 int rml_key = cont_button_to_key(cur_event.cbutton);
-                if (rml_key) {
+                if (menu_is_open && rml_key) {
                     ui_context->rml.context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
                 }
             }
@@ -1180,7 +1193,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                         *await_stick_return = true;
                         non_mouse_interacted = true;
                         int rml_key = cont_axis_to_key(cur_event.caxis, axis_value);
-                        if (rml_key) {
+                        if (menu_is_open && rml_key) {
                             ui_context->rml.context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
                         }
                     }
@@ -1192,11 +1205,13 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 break;
             }
 
-            RmlSDL::InputEventHandler(ui_context->rml.context, cur_event);
+            if (menu_is_open) {
+                RmlSDL::InputEventHandler(ui_context->rml.context, cur_event);
+            }
         }
 
         // If no menu is open and the game has been started and either the escape key or select button are pressed, open the config menu.
-        if (cur_menu == recomp::Menu::None && ultramodern::is_game_started()) {
+        if (!menu_is_open && ultramodern::is_game_started()) {
             bool open_config = false;
 
             switch (cur_event.type) {
@@ -1218,7 +1233,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 ui_context->rml.swap_document(cur_menu);
             }
         }
-    }
+    } // end dequeue event loop
 
     recomp::InputField scanned_field = recomp::get_scanned_input();
     if (scanned_field != recomp::InputField{}) {
