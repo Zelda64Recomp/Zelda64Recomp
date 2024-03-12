@@ -900,8 +900,7 @@ struct UIContext {
             }
 
             if (mouse_is_active_initialized) {
-                // TODO: Figure out why this only works if the mouse is moving
-                SDL_ShowCursor(mouse_is_active ? SDL_ENABLE : SDL_DISABLE);
+                recomp::set_cursor_visible(mouse_is_active);
             }
 
             if (current_document == nullptr) {

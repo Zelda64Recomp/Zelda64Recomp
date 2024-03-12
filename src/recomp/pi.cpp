@@ -2,8 +2,10 @@
 #include <fstream>
 #include <array>
 #include <cstring>
+#include <string>
 #include "recomp.h"
 #include "recomp_game.h"
+#include "recomp_config.h"
 #include "../ultramodern/ultra64.h"
 #include "../ultramodern/ultramodern.hpp"
 
@@ -59,10 +61,15 @@ void recomp::do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr
 }
 
 std::array<char, 0x20000> save_buffer;
-const char save_filename[] = "save.bin";
+const std::u8string save_folder = u8"saves";
+const std::u8string save_filename = std::u8string{recomp::mm_game_id} + u8".bin";
+
+std::filesystem::path get_save_file_path() {
+    return recomp::get_app_folder_path() / save_folder / save_filename;
+}
 
 void update_save_file() {
-    std::ofstream save_file{ save_filename, std::ios_base::binary };
+    std::ofstream save_file{ get_save_file_path(), std::ios_base::binary };
 
     if (save_file.good()) {
         save_file.write(save_buffer.data(), save_buffer.size());
@@ -92,7 +99,7 @@ void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t coun
 
 void save_clear(uint32_t start, uint32_t size, char value) {
     std::fill_n(save_buffer.begin() + start, size, value);
-    std::ofstream save_file{ save_filename, std::ios_base::binary };
+    std::ofstream save_file{ get_save_file_path(), std::ios_base::binary };
 
     if (save_file.good()) {
         save_file.write(save_buffer.data(), save_buffer.size());
@@ -103,11 +110,17 @@ void save_clear(uint32_t start, uint32_t size, char value) {
 }
 
 void ultramodern::save_init() {
-    std::ifstream save_file{ save_filename, std::ios_base::binary };
+    std::filesystem::path save_file_path = get_save_file_path();
 
+    // Ensure the save file directory exists.
+    std::filesystem::create_directories(save_file_path.parent_path());
+
+    // Read the save file if it exists.
+    std::ifstream save_file{ save_file_path, std::ios_base::binary };
     if (save_file.good()) {
         save_file.read(save_buffer.data(), save_buffer.size());
     } else {
+        // Otherwise clear the save file to all zeroes.
         save_buffer.fill(0);
     }
 }

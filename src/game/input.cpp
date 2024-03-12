@@ -66,6 +66,12 @@ void queue_if_enabled(SDL_Event* event) {
     }
 }
 
+static std::atomic_bool cursor_enabled = true;
+
+void recomp::set_cursor_visible(bool visible) {
+    cursor_enabled.store(visible);
+}
+
 bool sdl_event_filter(void* userdata, SDL_Event* event) {
     switch (event->type) {
     case SDL_EventType::SDL_KEYDOWN:
@@ -185,6 +191,7 @@ void recomp::handle_events() {
     static bool exited = false;
     while (SDL_PollEvent(&cur_event) && !exited) {
         exited = sdl_event_filter(nullptr, &cur_event);
+        SDL_ShowCursor(cursor_enabled ? SDL_ENABLE : SDL_DISABLE);
     }
 }
 

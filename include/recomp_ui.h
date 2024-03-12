@@ -56,6 +56,7 @@ namespace recomp {
 	void destroy_ui();
 	void apply_color_hack();
 	void get_window_size(int& width, int& height);
+	void set_cursor_visible(bool visible);
 }
 
 #endif

@@ -216,7 +216,6 @@ EquipSlot func_8082FDC4(void) {
 
     for (int extra_slot_index = 0; extra_slot_index < ARRAY_COUNT(buttons_to_extra_slot); extra_slot_index++) {
         if (CHECK_BTN_ALL(sPlayerControlInput_reloc->press.button, buttons_to_extra_slot[extra_slot_index].button)) {
-            recomp_printf("Pressed extra item button %d\n", extra_slot_index);
             return (EquipSlot)buttons_to_extra_slot[extra_slot_index].slot;
         }
     }
@@ -237,7 +236,6 @@ ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
 
     // @recomp Check for extra item slots.
     if (slot <= -EQUIP_SLOT_EX_START) {
-        recomp_printf("Checking extra item slot %d\n", -slot);
         ItemId item = EXTRA_BTN_ITEM(-slot);
 
         // Ensure the item was valid and has been obtained.
