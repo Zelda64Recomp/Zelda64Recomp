@@ -1059,6 +1059,9 @@ int cont_button_to_key(SDL_ControllerButtonEvent& button) {
             return SDLK_RIGHT;
         case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A:
             return SDLK_RETURN;
+        // Allows closing the menu
+        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK:
+            return SDLK_ESCAPE;
     }
     return 0;
 }
