@@ -60,6 +60,10 @@ void recomp::start_scanning_input(recomp::InputDevice device) {
     scanning_device.store(device);
 }
 
+void recomp::stop_scanning_input() {
+    scanning_device.store(recomp::InputDevice::COUNT);
+}
+
 void queue_if_enabled(SDL_Event* event) {
     if (!recomp::all_input_disabled()) {
         recomp::queue_event(*event);
@@ -81,8 +85,12 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) {
                 RT64ChangeWindow();
             }
-            if (scanning_device == recomp::InputDevice::Keyboard) {
-                set_scanned_input({(uint32_t)InputType::Keyboard, keyevent->keysym.scancode});
+            if (scanning_device != recomp::InputDevice::COUNT) {
+                if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+                    recomp::cancel_scanning_input();
+                } else if (scanning_device == recomp::InputDevice::Keyboard) {
+                    set_scanned_input({(uint32_t)InputType::Keyboard, keyevent->keysym.scancode});
+                }
             } else {
                 queue_if_enabled(event);
             }
@@ -123,9 +131,13 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         queue_if_enabled(event);
         break;
     case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
-        if (scanning_device == recomp::InputDevice::Controller) {
-            SDL_ControllerButtonEvent* button_event = &event->cbutton;
-            set_scanned_input({(uint32_t)InputType::ControllerDigital, button_event->button});
+        if (scanning_device != recomp::InputDevice::COUNT) {
+            if (event->cbutton.button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK) {
+                recomp::cancel_scanning_input();
+            } else if (scanning_device == recomp::InputDevice::Controller) {
+                SDL_ControllerButtonEvent* button_event = &event->cbutton;
+                set_scanned_input({(uint32_t)InputType::ControllerDigital, button_event->button});
+            }
         } else {
             queue_if_enabled(event);
         }

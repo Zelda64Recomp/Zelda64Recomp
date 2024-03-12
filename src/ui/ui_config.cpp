@@ -75,6 +75,15 @@ void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	controls_model_handle.DirtyVariable("active_binding_slot");
 }
 
+void recomp::cancel_scanning_input() {
+	recomp::stop_scanning_input();
+	scanned_input_index = -1;
+	scanned_binding_index = -1;
+	controls_model_handle.DirtyVariable("inputs");
+	controls_model_handle.DirtyVariable("active_binding_input");
+	controls_model_handle.DirtyVariable("active_binding_slot");
+}
+
 void close_config_menu() {
 	recomp::save_config();
 

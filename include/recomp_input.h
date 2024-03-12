@@ -74,7 +74,9 @@ namespace recomp {
     };
 
     void start_scanning_input(InputDevice device);
+    void stop_scanning_input();
     void finish_scanning_input(InputField scanned_field);
+    void cancel_scanning_input();
     InputField get_scanned_input();
     
     struct DefaultN64Mappings {
