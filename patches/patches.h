@@ -6,6 +6,7 @@
 #define osSendMesg osSendMesg_recomp
 #define sinf __sinf_recomp
 #define cosf __cosf_recomp
+#define gRandFloat sRandFloat
 #include "global.h"
 #include "rt64_extended_gbi.h"
 
@@ -43,5 +44,7 @@ typedef enum {
 
 void draw_dpad(PlayState* play);
 void draw_dpad_icons(PlayState* play);
+
+void View_ApplyInterpolate(View* view, s32 mask, bool reset_interpolation_state);
 
 #endif
