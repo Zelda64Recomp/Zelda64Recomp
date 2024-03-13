@@ -282,6 +282,118 @@ ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
     return C_BTN_ITEM(EQUIP_SLOT_C_RIGHT);
 }
 
+typedef struct struct_8085D910 {
+    /* 0x0 */ u8 unk_0;
+    /* 0x1 */ u8 unk_1;
+    /* 0x2 */ u8 unk_2;
+    /* 0x3 */ u8 unk_3;
+} struct_8085D910; // size = 0x4
+
+u16 D_8085D908[] = {
+    WEEKEVENTREG_30_80, // PLAYER_FORM_FIERCE_DEITY
+    WEEKEVENTREG_30_20, // PLAYER_FORM_GORON
+    WEEKEVENTREG_30_40, // PLAYER_FORM_ZORA
+    WEEKEVENTREG_30_10, // PLAYER_FORM_DEKU
+};
+struct_8085D910 D_8085D910[] = {
+    { 0x10, 0xA, 0x3B, 0x3F },
+    { 9, 0x32, 0xA, 0xD },
+};
+
+bool func_808323C0(Player *this, s16 csId);
+void func_80855218(PlayState *play, Player *this, struct_8085D910 **arg2);
+void func_808550D0(PlayState *play, Player *this, f32 arg2, f32 arg3, s32 arg4);
+
+void Player_Action_86(Player *this, PlayState *play) {
+    struct_8085D910 *sp4C = D_8085D910;
+    s32 sp48 = false;
+
+    func_808323C0(this, play->playerCsIds[PLAYER_CS_ID_MASK_TRANSFORMATION]);
+    sPlayerControlInput = play->state.input;
+
+    Camera_ChangeMode(GET_ACTIVE_CAM(play),
+        (this->transformation == PLAYER_FORM_HUMAN) ? CAM_MODE_NORMAL : CAM_MODE_JUMP);
+    this->stateFlags2 |= PLAYER_STATE2_40;
+    this->actor.shape.rot.y = Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x8000;
+
+    func_80855218(play, this, &sp4C);
+
+    if (this->av1.actionVar1 == 0x14) {
+        Play_EnableMotionBlurPriority(100);
+    }
+
+    if (R_PLAY_FILL_SCREEN_ON != 0) {
+        R_PLAY_FILL_SCREEN_ALPHA += R_PLAY_FILL_SCREEN_ON;
+        if (R_PLAY_FILL_SCREEN_ALPHA > 255) {
+            R_PLAY_FILL_SCREEN_ALPHA = 255;
+            this->actor.update = func_8012301C;
+            this->actor.draw = NULL;
+            this->av1.actionVar1 = 0;
+            Play_DisableMotionBlurPriority();
+            SET_WEEKEVENTREG(D_8085D908[GET_PLAYER_FORM]);
+        }
+    }
+    else if ((this->av1.actionVar1++ > ((this->transformation == PLAYER_FORM_HUMAN) ? 0x53 : 0x37)) ||
+        ((this->av1.actionVar1 >= 5) &&
+            (sp48 =
+                ((this->transformation != PLAYER_FORM_HUMAN) || CHECK_WEEKEVENTREG(D_8085D908[GET_PLAYER_FORM])) &&
+                // @recomp Patched to also check for d-pad buttons for skipping the transformation cutscene.
+                CHECK_BTN_ANY(sPlayerControlInput->press.button,
+                    BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_B | BTN_A | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)))) {
+        R_PLAY_FILL_SCREEN_ON = 45;
+        R_PLAY_FILL_SCREEN_R = 220;
+        R_PLAY_FILL_SCREEN_G = 220;
+        R_PLAY_FILL_SCREEN_B = 220;
+        R_PLAY_FILL_SCREEN_ALPHA = 0;
+
+        if (sp48) {
+            if (CutsceneManager_GetCurrentCsId() == this->csId) {
+                func_800E0348(Play_GetCamera(play, CutsceneManager_GetCurrentSubCamId(this->csId)));
+            }
+
+            if (this->transformation == PLAYER_FORM_HUMAN) {
+                AudioSfx_StopById(NA_SE_PL_TRANSFORM_VOICE);
+                AudioSfx_StopById(NA_SE_IT_TRANSFORM_MASK_BROKEN);
+            }
+            else {
+                AudioSfx_StopById(NA_SE_PL_FACE_CHANGE);
+            }
+        }
+
+        Player_PlaySfx(this, NA_SE_SY_TRANSFORM_MASK_FLASH);
+    }
+
+    if (this->av1.actionVar1 >= sp4C->unk_0) {
+        if (this->av1.actionVar1 < sp4C->unk_2) {
+            Math_StepToF(&this->unk_B10[4], 1.0f, sp4C->unk_1 / 100.0f);
+        }
+        else if (this->av1.actionVar1 < sp4C->unk_3) {
+            if (this->av1.actionVar1 == sp4C->unk_2) {
+                Lib_PlaySfx_2(NA_SE_EV_LIGHTNING_HARD);
+            }
+
+            Math_StepToF(&this->unk_B10[4], 2.0f, 0.5f);
+        }
+        else {
+            Math_StepToF(&this->unk_B10[4], 3.0f, 0.2f);
+        }
+    }
+
+    if (this->av1.actionVar1 >= 0x10) {
+        if (this->av1.actionVar1 < 0x40) {
+            Math_StepToF(&this->unk_B10[5], 1.0f, 0.2f);
+        }
+        else if (this->av1.actionVar1 < 0x37) {
+            Math_StepToF(&this->unk_B10[5], 2.0f, 1.0f);
+        }
+        else {
+            Math_StepToF(&this->unk_B10[5], 3.0f, 0.55f);
+        }
+    }
+
+    func_808550D0(play, this, this->unk_B10[4], this->unk_B10[5], (this->transformation == PLAYER_FORM_HUMAN) ? 0 : 1);
+}
+
 extern s16 sPictoState;
 extern s16 sPictoPhotoBeingTaken;
 extern void* gWorkBuffer;

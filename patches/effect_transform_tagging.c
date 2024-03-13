@@ -2,6 +2,7 @@
 #include "transform_ids.h"
 #include "overlays/actors/ovl_En_Test7/z_en_test7.h"
 #include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
+#include "z64effect.h"
 
 // Decomp renames, TODO update decomp and remove these
 #define gSoaringWarpCsWindCapsuleTexAnim gameplay_keep_Matanimheader_0815D0
@@ -324,4 +325,143 @@ void func_808DD3C8(Actor* thisx, PlayState* play2) {
     }
 
     CLOSE_DISPS(play->state.gfxCtx);
+}
+
+#define SPARK_COUNT 3
+#define BLURE_COUNT 25
+#define SHIELD_PARTICLE_COUNT 3
+#define TIRE_MARK_COUNT 15
+
+#define TOTAL_EFFECT_COUNT SPARK_COUNT + BLURE_COUNT + SHIELD_PARTICLE_COUNT + TIRE_MARK_COUNT
+
+typedef struct EffectStatus {
+    /* 0x0 */ u8 active;
+    /* 0x1 */ u8 unk1;
+    /* 0x2 */ u8 unk2;
+} EffectStatus; // size = 0x3
+
+typedef struct EffectContext {
+    /* 0x0000 */ struct PlayState* play;
+    struct {
+        EffectStatus status;
+        EffectSpark effect;
+    } /* 0x0004 */ sparks[SPARK_COUNT];
+    struct {
+        EffectStatus status;
+        EffectBlure effect;
+    } /* 0x0E5C */ blures[BLURE_COUNT];
+    struct {
+        EffectStatus status;
+        EffectShieldParticle effect;
+    } /* 0x388C */ shieldParticles[SHIELD_PARTICLE_COUNT];
+    struct {
+        EffectStatus status;
+        EffectTireMark effect;
+    } /* 0x3DF0 */ tireMarks[TIRE_MARK_COUNT];
+} EffectContext; // size = 0x98E0
+
+typedef struct EffectInfo {
+    /* 0x00 */ u32 size;
+    /* 0x04 */ void (*init)(void* effect, void* initParams);
+    /* 0x08 */ void (*destroy)(void* effect);
+    /* 0x0C */ s32 (*update)(void* effect);
+    /* 0x10 */ void (*draw)(void* effect, struct GraphicsContext* gfxCtx);
+} EffectInfo; // size = 0x14
+
+extern EffectContext sEffectContext;
+extern EffectInfo sEffectInfoTable[];
+
+static inline void tag_interpolate_effect(GraphicsContext* gfxCtx, u32 id) {
+    OPEN_DISPS(gfxCtx);
+
+    gEXMatrixGroupDecomposed(POLY_OPA_DISP++, id, G_EX_PUSH, G_MTX_MODELVIEW,
+        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
+        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    
+    gEXMatrixGroupDecomposed(POLY_XLU_DISP++, id + EFFECT_TRANSFORM_ID_COUNT, G_EX_PUSH, G_MTX_MODELVIEW,
+        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
+        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+
+    CLOSE_DISPS();
+}
+
+static inline void tag_skip_effect(GraphicsContext* gfxCtx, u32 id) {
+    OPEN_DISPS(gfxCtx);
+
+    gEXMatrixGroupSimple(POLY_OPA_DISP++, id, G_EX_PUSH, G_MTX_MODELVIEW,
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP,
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    
+    gEXMatrixGroupSimple(POLY_XLU_DISP++, id + EFFECT_TRANSFORM_ID_COUNT, G_EX_PUSH, G_MTX_MODELVIEW,
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP,
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+
+    CLOSE_DISPS();
+}
+
+static inline void pop_effect_tag(GraphicsContext* gfxCtx) {
+    OPEN_DISPS(gfxCtx);
+
+    gEXPopMatrixGroup(POLY_OPA_DISP++);
+    gEXPopMatrixGroup(POLY_XLU_DISP++);
+
+    CLOSE_DISPS();
+}
+
+// @recomp Patched to tag effects.
+void Effect_DrawAll(GraphicsContext* gfxCtx) {
+    s32 i;
+
+
+    for (i = 0; i < SPARK_COUNT; i++) {
+        if (!sEffectContext.sparks[i].status.active) {
+            continue;
+        }
+        // @recomp Tag transform.
+        tag_interpolate_effect(gfxCtx, EFFECT_SPARK_TRANSFORM_ID_START + i);
+
+        sEffectInfoTable[EFFECT_SPARK].draw(&sEffectContext.sparks[i].effect, gfxCtx);
+
+        // @recomp Pop tag.
+        pop_effect_tag(gfxCtx);
+    }
+
+    for (i = 0; i < BLURE_COUNT; i++) {
+        if (!sEffectContext.blures[i].status.active) {
+            continue;
+        }
+        // @recomp Tag transform to skip interpolation as this effect doesn't work well with it.
+        tag_skip_effect(gfxCtx, EFFECT_BLURE_TRANSFORM_ID_START + i);
+
+        sEffectInfoTable[EFFECT_BLURE1].draw(&sEffectContext.blures[i].effect, gfxCtx);
+
+        // @recomp Pop tag.
+        pop_effect_tag(gfxCtx);
+    }
+
+    for (i = 0; i < SHIELD_PARTICLE_COUNT; i++) {
+        if (!sEffectContext.shieldParticles[i].status.active) {
+            continue;
+        }
+        // @recomp Tag transform.
+        tag_interpolate_effect(gfxCtx, EFFECT_SHIELD_PARTICLE_TRANSFORM_ID_START + i);
+
+        sEffectInfoTable[EFFECT_SHIELD_PARTICLE].draw(&sEffectContext.shieldParticles[i].effect, gfxCtx);
+
+        // @recomp Pop tag.
+        pop_effect_tag(gfxCtx);
+    }
+
+    for (i = 0; i < TIRE_MARK_COUNT; i++) {
+        if (!sEffectContext.tireMarks[i].status.active) {
+            continue;
+        }
+        // @recomp Tag transform to skip interpolation as this effect doesn't work well with it.
+        tag_skip_effect(gfxCtx, EFFECT_TIRE_MARK_TRANSFORM_ID_START + i);
+
+        sEffectInfoTable[EFFECT_TIRE_MARK].draw(&sEffectContext.tireMarks[i].effect, gfxCtx);
+
+        // @recomp Pop tag.
+        pop_effect_tag(gfxCtx);
+    }
 }

@@ -157,27 +157,29 @@ void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
     // @recomp Force the closest LOD
     lod = 0;
 
-    // @recomp Patch object_link_child_DL_017818 (the DL for the bowstring) with a transform tag.
-    gSegments[0x0C] = OS_K0_TO_PHYSICAL(cullDList);
-    Gfx* dl_virtual_address = (Gfx*)Lib_SegmentedToVirtual(object_link_child_DL_017818);
+    // @recomp If the player is a human, patch object_link_child_DL_017818 (the DL for the bowstring) with a transform tag.
+    if (this->transformation == PLAYER_FORM_HUMAN) {
+        gSegments[0x0C] = OS_K0_TO_PHYSICAL(cullDList);
+        Gfx* dl_virtual_address = (Gfx*)Lib_SegmentedToVirtual(object_link_child_DL_017818);
 
-    // Check if the commands have already been overwritten.
-    if ((dl_virtual_address[0].words.w0 >> 24) != G_DL) {
-        // Copy the first command before overwriting.
-        bowstring_start_hook_dl[0] = dl_virtual_address[0];
-        // Overwrite the first command with a branch.
-        gSPBranchList(dl_virtual_address, OS_K0_TO_PHYSICAL(bowstring_start_hook_dl));
-        Gfx* enddl_command = dl_virtual_address;
-        while ((enddl_command->words.w0 >> 24) != G_ENDDL) {
-            enddl_command++;
+        // Check if the commands have already been overwritten.
+        if ((dl_virtual_address[0].words.w0 >> 24) != G_DL) {
+            // Copy the first command before overwriting.
+            bowstring_start_hook_dl[0] = dl_virtual_address[0];
+            // Overwrite the first command with a branch.
+            gSPBranchList(dl_virtual_address, OS_K0_TO_PHYSICAL(bowstring_start_hook_dl));
+            Gfx* enddl_command = dl_virtual_address;
+            while ((enddl_command->words.w0 >> 24) != G_ENDDL) {
+                enddl_command++;
+            }
+            // Overwrite the last command with a branch.
+            gSPBranchList(enddl_command, bowstring_end_hook_dl);
+            // Write the transform tag command. Use simple interpolation to avoid issues from decomposition failure due to a scale of zero.
+            gEXMatrixGroupSimple(&bowstring_start_hook_dl[1], BOWSTRING_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            // Write the pop group command.
+            gEXPopMatrixGroup(&bowstring_end_hook_dl[0]);
         }
-        // Overwrite the last command with a branch.
-        gSPBranchList(enddl_command, bowstring_end_hook_dl);
-        // Write the transform tag command. Use simple interpolation to avoid issues from decomposition failure due to a scale of zero.
-        gEXMatrixGroupSimple(&bowstring_start_hook_dl[1], BOWSTRING_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
-        // Write the pop group command.
-        gEXPopMatrixGroup(&bowstring_end_hook_dl[0]);
     }
 
     // @recomp Manually relocate Player_PostLimbDrawGameplay.
