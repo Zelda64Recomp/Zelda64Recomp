@@ -620,9 +620,9 @@ std::string controller_axis_to_string(int axis) {
     case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY:
         return positive ? "\u21C3" : "\u21BF";
     case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-        return positive ? "\u219A" : "\u21DC";
+        return positive ? "\u2196" : "\u21DC";
     case SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-        return positive ? "\u219B" : "\u21DD";
+        return positive ? "\u2197" : "\u21DD";
     default:
         return "Axis " + std::to_string(actual_axis) + (positive ? '+' : '-');
     }

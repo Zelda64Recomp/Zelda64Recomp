@@ -60,7 +60,7 @@ extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
             _return(ctx, original);
             return;
         case RT64::UserConfiguration::AspectRatio::Expand:
-            _return(ctx, static_cast<float>(width) / height);
+            _return(ctx, std::max(static_cast<float>(width) / height, original));
             return;
     }
 }

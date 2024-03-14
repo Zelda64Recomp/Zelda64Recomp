@@ -1,5 +1,6 @@
 #include "patches.h"
 #include "graphics.h"
+#include "sys_cfb.h"
 
 extern TransitionOverlay gTransitionOverlayTable[];
 extern Gfx sTransWipe3DL[];
@@ -109,4 +110,79 @@ void Play_DrawMotionBlur(PlayState* this) {
 
         CLOSE_DISPS(gfxCtx);
     }
+}
+
+// @recomp Patched to increase the scale based on the aspect ratio.
+void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
+    // @recomp Calculate the increase in aspect ratio.
+    f32 original_aspect_ratio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
+    f32 aspect_ratio_scale = recomp_get_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
+
+    // @recomp Increase the circle's scale based on the aspect ratio scale. Also increase the base scaling
+    // from 0.003f to 0.004f to account for overscan removal.
+    TransitionCircle_LoadAndSetTexture(gfxP, gCircleTex, 4, 0, 6, 6,
+                                       ((LENS_MASK_ACTIVE_SIZE - lensMaskSize) * 0.004f * aspect_ratio_scale) + 1.0f);
+}
+
+
+// @recomp Patched to prevent the telescope and lens effects from getting stretched wide.
+void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt, s32 arg3, s32 masks, s32 maskt,
+                                        f32 arg6) {
+    Gfx* gfx = *gfxp;
+    s32 xh = gCfbWidth;
+    s32 yh = gCfbHeight;
+    s32 width = 1 << masks;
+    s32 height = 1 << maskt;
+    f32 s;
+    f32 t;
+    s32 dtdy;
+    s32 dsdx;
+
+    gDPLoadTextureBlock_4b(gfx++, texture, fmt, width, height, 0, G_TX_MIRROR | G_TX_CLAMP, G_TX_MIRROR | G_TX_CLAMP,
+                           masks, maskt, G_TX_NOLOD, G_TX_NOLOD);
+    gDPSetTileSize(gfx++, G_TX_RENDERTILE, ((SCREEN_WIDTH / 2) - width) << 2, ((SCREEN_HEIGHT / 2) - height) << 2,
+                   ((SCREEN_WIDTH / 2) + (width - 1)) << 2, ((SCREEN_HEIGHT / 2) + (height - 1)) << 2);
+
+    s = ((1.0f - (1.0f / arg6)) * (SCREEN_WIDTH / 2)) + 70.0f;
+    t = ((1.0f - (1.0f / arg6)) * (SCREEN_HEIGHT / 2)) + 50.0f;
+
+    if (s < -1023.0f) {
+        s = -1023.0f;
+    }
+    if (t < -1023.0f) {
+        t = -1023.0f;
+    }
+
+    if ((s <= -1023.0f) || (t <= -1023.0f)) {
+        dsdx = 0;
+        dtdy = 0;
+    } else {
+        dsdx = ((SCREEN_WIDTH - (2.0f * s)) / gScreenWidth) * (1 << 10);
+        dtdy = ((SCREEN_HEIGHT - (2.0f * t)) / gScreenHeight) * (1 << 10);
+    }
+
+    // @recomp Calculate a new width for the rect to cover the entire widescreen contents.
+    // Add a little extra to prevent RT64 misalignment adjustment from making the rect smaller than the screen.
+    const u32 rt64_margin = 16;
+    s32 full_width = (s32)(recomp_get_aspect_ratio((float)xh / yh) * yh + rt64_margin);
+
+    // @recomp Adjust the S-coordinate to account for the extra screen size on the left edge.
+    s32 extra_pixels = (full_width - SCREEN_WIDTH) / 2;
+    f32 extra_texcoords = (float)extra_pixels * dsdx / (1 << 10);
+    s -= (s32)extra_texcoords;
+
+    // @recomp Patch the original rectangle to use the center as the origin to avoid getting stretched wide.
+    gEXSetScissorAlign(gfx++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, 0, -gCfbWidth, 0, 0, 0, gCfbWidth, gCfbHeight);
+    gDPSetScissor(gfx++, G_SC_NON_INTERLACE, 0, 0, gCfbWidth, gCfbHeight);
+    gEXTextureRectangle(gfx++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT,
+        -rt64_margin / 2 * 4, 0,
+        full_width * 4, yh * 4,
+        G_TX_RENDERTILE, (s32)(s * (1 << 5)), (s32)(t * (1 << 5)), dsdx, dtdy);
+    // @recomp Reset scissor.
+    gEXSetScissorAlign(gfx++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0, 0, 0, gCfbWidth, gCfbHeight);
+    gDPSetScissor(gfx++, G_SC_NON_INTERLACE, 0, 0, gCfbWidth, gCfbHeight);
+
+    gDPPipeSync(gfx++);
+
+    *gfxp = gfx;
 }
