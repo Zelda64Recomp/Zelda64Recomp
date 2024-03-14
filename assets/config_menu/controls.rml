@@ -7,8 +7,10 @@
                 <div class="config__header-left">
                     <button
                         class="toggle"
+                        id="cont_kb_toggle"
                         data-class-toggle--checked="input_device_is_keyboard"
                         onclick="toggle_input_device"
+                        style="nav-down:#input_row_button_0_0"
                     >
                         <div class="toggle__border" />
                         <div class="toggle__floater" />
@@ -21,6 +23,7 @@
                 <div>
                     <button
                         class="button button--warning"
+                        style="nav-down:#input_row_button_0_0"
                     >
                         <div class="button__label">Reset to defaults</div>
                     </button>
@@ -33,7 +36,7 @@
                             <div class="input-config__mappings-wrapper">
                                 <div
                                     class="control-option"
-                                    id="input_row"
+                                    data-attr-id="'input_row_' + i"
                                     data-for="input_bindings, i : inputs.array"
                                     data-event-mouseover="set_input_row_focus(i)"
                                     data-class-control-option--active="get_input_enum_name(i)==cur_input_row"
@@ -43,12 +46,14 @@
                                     >{{get_input_name(i)}}</label>
                                     <div class="control-option__bindings">
                                         <button
+                                            data-attr-id="'input_row_button_' + i + '_' + j"
                                             data-event-blur="set_input_row_focus(-1)"
                                             data-event-focus="set_input_row_focus(i)"
                                             data-for="cur_binding, j : input_bindings"
                                             data-event-click="set_input_binding(i,j)"
                                             class="prompt-font control-option__binding"
                                             data-attr-bind-slot="j"
+                                            data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
                                         >
                                             <div class="control-option__binding-recording">
                                                 <div class="control-option__binding-circle" />
@@ -64,6 +69,7 @@
                                         data-event-focus="set_input_row_focus(i)"
                                         data-event-click="clear_input_bindings(i)"
                                         class="icon-button icon-button--danger"
+                                        data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
                                     >
                                         <svg src="icons/Trash.svg" />
                                     </button>

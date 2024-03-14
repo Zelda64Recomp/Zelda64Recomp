@@ -79,6 +79,7 @@
                         data-attrif-disabled="!options_changed"
                         onclick="apply_options"
                         id="apply_button"
+                        style="nav-up:#rr_original"
                     >
                         <div class="button__label">Apply</div>
                     </button>

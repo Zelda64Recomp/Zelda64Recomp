@@ -23,6 +23,7 @@
 
 .button {
     @extend %label-md;
+    @extend %nav-all;
     @include create-button-variation($color-primary);
     @include trans-colors;
 
