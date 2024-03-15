@@ -45,8 +45,8 @@
                             <label class="config-option__tab-label" for="msaa_2x">2x</label>
                             <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
                             <label class="config-option__tab-label" for="msaa_4x">4x</label>
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_8x">8x</label>
+                            <!-- <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
+                            <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
                         </div>
                     </div>
                 </div>

@@ -206,6 +206,17 @@ if (WIN32)
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxil.dll"
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxcompiler.dll"
             $<TARGET_FILE_DIR:Zelda64Recompiled>)
+            
+    set_target_properties(
+        Zelda64Recompiled
+        PROPERTIES
+            LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
+            LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+            LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+            LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+    )
+
+    target_sources(Zelda64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
 endif()
 
 target_link_libraries(Zelda64Recompiled PRIVATE

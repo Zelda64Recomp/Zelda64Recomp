@@ -6,6 +6,8 @@
 #include "nfd.h"
 #include <filesystem>
 
+std::string version_number = "v0.9.0";
+
 Rml::DataModelHandle model_handle;
 bool mm_rom_valid = false;
 
@@ -101,6 +103,7 @@ public:
 		Rml::DataModelConstructor constructor = context->CreateDataModel("launcher_model");
 
 		constructor.Bind("mm_rom_valid", &mm_rom_valid);
+		constructor.Bind("version_number", &version_number);
 
 		model_handle = constructor.GetModelHandle();
 	}

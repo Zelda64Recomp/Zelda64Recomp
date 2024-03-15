@@ -57,6 +57,9 @@
 						</button>
 					</div>
 				</div>
+				<div class="bottom-left">
+					<label>{{version_number}}</label>
+				</div>
 			</div>
 		</div>
 	</body>

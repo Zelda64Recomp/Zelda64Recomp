@@ -70,7 +70,7 @@
 							<div>Debug</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" data-model="debug_model" data-if="debug_enabled">
+						<panel class="config" data-model="debug_model">
 							<template src="config-menu__debug" />
 						</panel>
 					</tabset>
