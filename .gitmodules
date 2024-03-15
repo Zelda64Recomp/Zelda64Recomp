@@ -6,7 +6,7 @@
 	url = https://github.com/btzy/nativefiledialog-extended
 [submodule "lib/RT64-HLE"]
 	path = lib/RT64-HLE
-	url = https://github.com/DarioSamo/RT64-HLE/
+	url = https://github.com/rt64/rt64
 [submodule "lib/freetype-windows-binaries"]
 	path = lib/freetype-windows-binaries
 	url = https://github.com/ubawurinna/freetype-windows-binaries
