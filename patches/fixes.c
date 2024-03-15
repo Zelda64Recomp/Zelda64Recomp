@@ -1,5 +1,6 @@
 #include "patches.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
+#include "overlays/actors/ovl_En_Fall/z_en_fall.h"
 
 #define PAGE_BG_WIDTH (PAGE_BG_COLS * PAGE_BG_QUAD_WIDTH)
 #define PAGE_BG_HEIGHT (PAGE_BG_ROWS * PAGE_BG_QUAD_HEIGHT)
@@ -256,4 +257,44 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures
     }
 
     return gfx;
+}
+
+typedef void (*CutsceneHandler)(PlayState* play, CutsceneContext* csCtx);
+extern CutsceneHandler sScriptedCutsceneHandlers[];
+void Cutscene_SetupScripted(PlayState* play, CutsceneContext* csCtx);
+
+int extra_vis = 0;
+
+// @recomp Patch the giants cutscene to make certain frames take longer to mimic performance on console.
+// This prevents the music from desyncing from the cutscene as it was designed around the console's frame times.
+void Cutscene_UpdateScripted(PlayState* play, CutsceneContext* csCtx) {
+    if ((gSaveContext.cutsceneTrigger != 0) && (play->transitionTrigger == TRANS_TRIGGER_START)) {
+        gSaveContext.cutsceneTrigger = 0;
+    }
+
+    if ((gSaveContext.cutsceneTrigger != 0) && (csCtx->state == CS_STATE_IDLE)) {
+        gSaveContext.save.cutsceneIndex = 0xFFFD;
+        gSaveContext.cutsceneTrigger = 1;
+    }
+
+    if (gSaveContext.save.cutsceneIndex >= 0xFFF0) {
+        Cutscene_SetupScripted(play, csCtx);
+        sScriptedCutsceneHandlers[csCtx->state](play, csCtx);
+    }
+
+    // @recomp Insert extra VI interrupt delays on certain frames of the giants cutscene to match console
+    // framerates. This prevents the music from desyncing with the cutscene.
+    if (play->sceneId == SCENE_00KEIKOKU && gSaveContext.sceneLayer == 1) {
+        s32 curFrame = play->csCtx.curFrame;
+        s32 scriptIndex = play->csCtx.scriptIndex;
+        // These regions of lag were determined by measuring framerate on console, though they pretty clearly
+        // correspond to specific camera angles and effects active during the cutscene.
+        if (
+            (scriptIndex == 0 && curFrame >= 1123 && curFrame <= 1381) ||
+            (scriptIndex != 0 && curFrame >= 4 && curFrame <= 85) ||
+            (scriptIndex != 0 && curFrame >= 431 && curFrame <= 490)
+        ) {
+            extra_vis = 1;
+        }
+    }
 }

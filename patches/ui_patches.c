@@ -58,8 +58,6 @@ void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     // @recomp Enable RT64 extended GBI mode and set the current framerate
     OPEN_DISPS(gfxCtx);
     gEXEnable(POLY_OPA_DISP++);
-    gEXSetRefreshRate(POLY_OPA_DISP++, 60 / gFramerateDivisor);
-    // gEXPrint(POLY_OPA_DISP++);
     CLOSE_DISPS(gfxCtx);
 }
 
@@ -78,6 +76,9 @@ extern volatile OSTime gRDPTimeAcc;
 extern OSTime sGraphPrevUpdateEndTime;
 extern volatile OSTime gGraphUpdatePeriod;
 
+
+extern int extra_vis;
+
 // @recomp Modified to report errors instead of skipping frames.
 /**
  *  Run the game state logic, then finalize the gfx buffer
@@ -92,6 +93,9 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     GameState_Update(gameState);
 
     OPEN_DISPS(gfxCtx);
+    
+    // @recomp Send the current framerate to RT64, including any extra VI interrupt periods. 
+    gEXSetRefreshRate(POLY_OPA_DISP++, 60 / (gameState->framerateDivisor + extra_vis));
 
     gSPEndDisplayList(WORK_DISP++);
     gSPEndDisplayList(POLY_OPA_DISP++);
@@ -147,10 +151,17 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     }
 
     if (!problem) {
+        // @recomp Temporarily adjust the framerate divisor to include any extra VI interrupt periods.
+        u8 old_divisor = gameState->framerateDivisor;
+        gameState->framerateDivisor += extra_vis;
         Graph_TaskSet00(gfxCtx, gameState);
+        // @recomp Restore the old framerate divisor.
+        gameState->framerateDivisor = old_divisor;
         gfxCtx->gfxPoolIdx++;
         gfxCtx->framebufferIndex++;
     }
+    // @recomp Clear any extra VI interrupt periods.
+    extra_vis = 0;
 
     {
         OSTime time = osGetTime();
