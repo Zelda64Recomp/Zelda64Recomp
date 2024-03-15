@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(MMRecomp)
+project(Zelda64Recompiled)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,6 +66,7 @@ target_include_directories(PatchesLib PRIVATE
 
 target_sources(PatchesLib PRIVATE
     ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
+    ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
 )
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
@@ -75,6 +76,12 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.elf
     COMMAND make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
+)
+
+# Generate patches_bin.c from patches.bin
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
+    COMMAND file_to_c ${CMAKE_SOURCE_DIR}/patches/patches.bin mm_patches_bin ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h 
+    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Recompile patches elf into patches.c
@@ -89,7 +96,7 @@ add_custom_command(OUTPUT
 )
 
 # Main executable
-add_executable(MMRecomp)
+add_executable(Zelda64Recompiled)
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/audio.cpp
@@ -153,7 +160,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
 
-target_include_directories(MMRecomp PRIVATE
+target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/lib/concurrentqueue
     ${CMAKE_SOURCE_DIR}/lib/GamepadMotionHelpers
@@ -170,7 +177,7 @@ target_include_directories(MMRecomp PRIVATE
     ${CMAKE_BINARY_DIR}/shaders
 )
 
-target_compile_options(MMRecomp PRIVATE
+target_compile_options(Zelda64Recompiled PRIVATE
     -march=nehalem
     -fno-strict-aliasing
     -fms-extensions
@@ -185,23 +192,23 @@ if (WIN32)
         URL_HASH MD5=d8173db078e54040c666f411c5a6afff
     )
     FetchContent_MakeAvailable(sdl2)
-    target_include_directories(MMRecomp PRIVATE
+    target_include_directories(Zelda64Recompiled PRIVATE
         ${sdl2_SOURCE_DIR}/include
     )
-    target_link_directories(MMRecomp PRIVATE
+    target_link_directories(Zelda64Recompiled PRIVATE
         ${sdl2_SOURCE_DIR}/lib/x64
     )
 
     # Copy SDL2 and dxc DLLs to output folder as post build step
-    add_custom_command(TARGET MMRecomp POST_BUILD
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
             "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxil.dll"
             "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxcompiler.dll"
-            $<TARGET_FILE_DIR:MMRecomp>)
+            $<TARGET_FILE_DIR:Zelda64Recompiled>)
 endif()
 
-target_link_libraries(MMRecomp PRIVATE
+target_link_libraries(Zelda64Recompiled PRIVATE
     PatchesLib
     RecompiledFuncs
     SDL2
@@ -230,14 +237,14 @@ else()
     set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/RT64-HLE/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
 endif()
 
-build_vertex_shader(MMRecomp "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
-build_pixel_shader (MMRecomp "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
+build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
+build_pixel_shader (Zelda64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
 
-target_sources(MMRecomp PRIVATE ${SOURCES})
+target_sources(Zelda64Recompiled PRIVATE ${SOURCES})
 
-set_property(TARGET MMRecomp PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set_property(TARGET Zelda64Recompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-add_custom_command(TARGET MMRecomp POST_BUILD
+add_custom_command(TARGET Zelda64Recompiled POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_BINARY_DIR}/${RT64_DLL}
         ${CMAKE_SOURCE_DIR}

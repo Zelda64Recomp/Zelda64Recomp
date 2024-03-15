@@ -15,6 +15,7 @@
 #include "recomp_config.h"
 #include "xxHash/xxh3.h"
 #include "../ultramodern/ultramodern.hpp"
+#include "../../RecompiledPatches/patches_bin.h"
 
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
@@ -310,24 +311,8 @@ extern "C" void load_overlays(uint32_t rom, int32_t ram_addr, uint32_t size);
 extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
 
 void read_patch_data(uint8_t* rdram, gpr patch_data_address) {
-    const char patches_data_file_path[] = "patches/patches.bin";
-    std::ifstream patches_data_file{ patches_data_file_path, std::ios::binary };
-
-    if (!patches_data_file) {
-        fprintf(stderr, "Failed to open patches data file: %s\n", patches_data_file_path);
-        exit(EXIT_FAILURE);
-    }
-
-    patches_data_file.seekg(0, std::ios::end);
-    size_t patches_data_size = patches_data_file.tellg();
-    patches_data_file.seekg(0, std::ios::beg);
-
-    std::unique_ptr<uint8_t[]> patches_data = std::make_unique<uint8_t[]>(patches_data_size);
-
-    patches_data_file.read(reinterpret_cast<char*>(patches_data.get()), patches_data_size);
-
-    for (size_t i = 0; i < patches_data_size; i++) {
-        MEM_B(i, patch_data_address) = patches_data[i];
+    for (size_t i = 0; i < sizeof(mm_patches_bin); i++) {
+        MEM_B(i, patch_data_address) = mm_patches_bin[i];
     }
 }
 
