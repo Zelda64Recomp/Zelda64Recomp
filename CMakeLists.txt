@@ -20,7 +20,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RT64-HLE ${CMAKE_BINARY_DIR}/rt64)
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 # set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
 set(BUILD_SHARED_LIBS OFF)
@@ -72,7 +72,7 @@ target_sources(PatchesLib PRIVATE
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
-add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.elf
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.bin
     COMMAND make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
@@ -81,7 +81,7 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.elf
 # Generate patches_bin.c from patches.bin
 add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
     COMMAND file_to_c ${CMAKE_SOURCE_DIR}/patches/patches.bin mm_patches_bin ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h 
-    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Recompile patches elf into patches.c
@@ -92,7 +92,7 @@ add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
                    COMMAND RecompPort patches.toml && ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                   DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf
+                   DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Main executable
@@ -166,12 +166,12 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/GamepadMotionHelpers
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Include
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/hlslpp/include
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/inc
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/rhi
-    ${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/render
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/hlslpp/include
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/inc
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/rhi
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_SOURCE_DIR}/lib/lib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
@@ -203,8 +203,8 @@ if (WIN32)
     add_custom_command(TARGET Zelda64Recompiled POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
-            "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxil.dll"
-            "${CMAKE_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxcompiler.dll"
+            "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxil.dll"
+            "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxcompiler.dll"
             $<TARGET_FILE_DIR:Zelda64Recompiled>)
 endif()
 
@@ -219,7 +219,7 @@ target_link_libraries(Zelda64Recompiled PRIVATE
     lunasvg
 )
 
-# TODO fix the RT64 CMake script so that this doesn't need to be duplicated here
+# TODO fix the rt64 CMake script so that this doesn't need to be duplicated here
 # For DXC
 set (DXC_COMMON_OPTS "-I${PROJECT_SOURCE_DIR}/src")
 set (DXC_DXIL_OPTS "-Wno-ignored-attributes")
@@ -231,10 +231,10 @@ set (DXC_GS_OPTS "${DXC_COMMON_OPTS}" "-E" "GSMain" "-T gs_6_0")
 set (DXC_RT_OPTS "${DXC_COMMON_OPTS}" "-D" "RT_SHADER" "-T" "lib_6_3" "-fspv-target-env=vulkan1.1spirv1.4" "-fspv-extension=SPV_KHR_ray_tracing" "-fspv-extension=SPV_EXT_descriptor_indexing")
 
 if (${WIN32})
-    set (DXC "${PROJECT_SOURCE_DIR}/lib/RT64-HLE/src/contrib/dxc/bin/x64/dxc.exe")
+    set (DXC "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/RT64-HLE/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
+    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
 endif()
 
 build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
