@@ -13,6 +13,7 @@
 #include <pwd.h>
 #endif
 
+constexpr std::u8string_view general_filename = u8"general.json";
 constexpr std::u8string_view graphics_filename = u8"graphics.json";
 constexpr std::u8string_view controls_filename = u8"controls.json";
 constexpr std::u8string_view sound_filename = u8"sound.json";
@@ -111,6 +112,28 @@ std::filesystem::path recomp::get_app_folder_path() {
     return recomp_dir;
 }
 
+void save_general_config(const std::filesystem::path& path) {
+    std::ofstream config_file{path};
+    
+    nlohmann::json config_json{};
+
+    recomp::to_json(config_json["targeting_mode"], recomp::get_targeting_mode());
+    config_json["rumble_strength"] = recomp::get_rumble_strength();
+    config_json["debug_mode"] = recomp::get_debug_mode_enabled();
+    config_file << std::setw(4) << config_json;
+}
+
+void load_general_config(const std::filesystem::path& path) {
+    std::ifstream config_file{path};
+    nlohmann::json config_json{};
+
+    config_file >> config_json;
+    
+    recomp::set_targeting_mode(from_or_default(config_json, "targeting_mode", recomp::TargetingMode::Switch));
+    recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
+    recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
+}
+
 void assign_mapping(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
     for (size_t binding_index = 0; binding_index < std::min(value.size(), recomp::bindings_per_input); binding_index++) {
         recomp::set_input_binding(input, binding_index, device, value[binding_index]);
@@ -187,10 +210,6 @@ void add_input_bindings(nlohmann::json& out, recomp::GameInput input, recomp::In
 void save_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
-    config_json["options"] = {};
-    recomp::to_json(config_json["options"]["targeting_mode"], recomp::get_targeting_mode());
-    config_json["options"]["rumble_strength"] = recomp::get_rumble_strength();
-
     config_json["keyboard"] = {};
     config_json["controller"] = {};
 
@@ -241,9 +260,6 @@ void load_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     config_file >> config_json;
-    
-    recomp::set_targeting_mode(from_or_default(config_json["options"], "targeting_mode", recomp::TargetingMode::Switch));
-    recomp::set_rumble_strength(from_or_default(config_json["options"], "rumble_strength", 25));
 
     if (!load_input_device_from_json(config_json, recomp::InputDevice::Keyboard, "keyboard")) {
         assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
@@ -278,9 +294,17 @@ void load_sound_config(const std::filesystem::path& path) {
 
 void recomp::load_config() {
     std::filesystem::path recomp_dir = recomp::get_app_folder_path();
+    std::filesystem::path general_path = recomp_dir / general_filename;
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;
     std::filesystem::path controls_path = recomp_dir / controls_filename;
     std::filesystem::path sound_path = recomp_dir / sound_filename;
+
+    if (std::filesystem::exists(general_path)) {
+        load_general_config(general_path);
+    }
+    else {
+        save_general_config(general_path);
+    }
 
     if (std::filesystem::exists(graphics_path)) {
         load_graphics_config(graphics_path);
@@ -316,6 +340,7 @@ void recomp::save_config() {
 
     std::filesystem::create_directories(recomp_dir);
 
+    save_general_config(recomp_dir / general_filename);
     save_graphics_config(recomp_dir / graphics_filename);
     save_controls_config(recomp_dir / controls_filename);
     save_sound_config(recomp_dir / sound_filename);

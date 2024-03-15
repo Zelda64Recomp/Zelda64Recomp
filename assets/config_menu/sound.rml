@@ -14,7 +14,7 @@
                     </div>
                     <div class="config-option">
                         <label class="config-option__title">Low Health Beeps</label>
-                        <div class="config-option__list config-option__list">
+                        <div class="config-option__list">
                             <input type="radio" name="lhb" data-checked="low_health_beeps_enabled" value="1" id="lhb_on"/>
                             <label class="config-option__tab-label" for="lhb_on">On</label>
                             <input type="radio" name="lhb" data-checked="low_health_beeps_enabled" value="0" id="lhb_off"/>

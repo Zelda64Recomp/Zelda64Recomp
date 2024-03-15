@@ -26,9 +26,9 @@
 			nav-down:#res_auto;
 		}
 	</style>
-	<link type="text/template" href="config_menu/graphics.rml" />
+	<link type="text/template" href="config_menu/general.rml" />
 	<link type="text/template" href="config_menu/controls.rml" />
-	<link type="text/template" href="config_menu/control_options.rml" />
+	<link type="text/template" href="config_menu/graphics.rml" />
 	<link type="text/template" href="config_menu/sound.rml" />
 	<link type="text/template" href="config_menu/debug.rml" />
 </head>
@@ -38,12 +38,12 @@
 			<div class="centered-page" onclick="close_config_menu_backdrop">
 				<div class="centered-page__modal">
 					<tabset class="tabs" id="config_tabset">
-						<tab class="tab" id="tab_graphics" autofocus>
-							<div>Graphics</div>
+						<tab class="tab" autofocus>
+							<div>General</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" data-model="graphics_model">
-							<template src="config-menu__graphics" />
+						<panel class="config" data-model="general_model">
+							<template src="config-menu__general" />
 						</panel>
 						<tab class="tab">
 							<div>Controls</div>
@@ -52,12 +52,12 @@
 						<panel class="config" data-model="controls_model">
 							<template src="config-menu__controls" />
 						</panel>
-						<tab class="tab">
-							<div>Control Options</div>
+						<tab class="tab" id="tab_graphics">
+							<div>Graphics</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" data-model="control_options_model">
-							<template src="config-menu__control-options" />
+						<panel class="config" data-model="graphics_model">
+							<template src="config-menu__graphics" />
 						</panel>
 						<tab class="tab">
 							<div>Sound</div>
@@ -66,11 +66,11 @@
 						<panel class="config" data-model="sound_options_model">
 							<template src="config-menu__sound" />
 						</panel>
-						<tab class="tab">
+						<tab class="tab" data-model="debug_model" data-if="debug_enabled">
 							<div>Debug</div>
 							<div class="tab__indicator"></div>
 						</tab>
-						<panel class="config" data-model="debug_model">
+						<panel class="config" data-model="debug_model" data-if="debug_enabled">
 							<template src="config-menu__debug" />
 						</panel>
 					</tabset>

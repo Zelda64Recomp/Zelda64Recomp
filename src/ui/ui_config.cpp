@@ -8,12 +8,12 @@
 #include "RmlUi/Core.h"
 
 ultramodern::GraphicsConfig new_options;
-Rml::DataModelHandle graphics_model_handle;
+Rml::DataModelHandle general_model_handle;
 Rml::DataModelHandle controls_model_handle;
-Rml::DataModelHandle control_options_model_handle;
+Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle sound_options_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
-bool configuring_controller = false; 
+bool configuring_controller = false;
 
 template <typename T>
 void get_option(const T& input, Rml::Variant& output) {
@@ -108,8 +108,8 @@ int recomp::get_rumble_strength() {
 
 void recomp::set_rumble_strength(int strength) {
 	control_options_context.rumble_strength = strength;
-	if (control_options_model_handle) {
-		control_options_model_handle.DirtyVariable("rumble_strength");
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("rumble_strength");
 	}
 }
 
@@ -119,8 +119,8 @@ recomp::TargetingMode recomp::get_targeting_mode() {
 
 void recomp::set_targeting_mode(recomp::TargetingMode mode) {
 	control_options_context.targeting_mode = mode;
-	if (control_options_model_handle) {
-		control_options_model_handle.DirtyVariable("targeting_mode");
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("targeting_mode");
 	}
 }
 
@@ -175,6 +175,7 @@ struct DebugContext {
 	int area_index = 0;
 	int scene_index = 0;
 	int entrance_index = 0;
+	bool debug_enabled = false;
 
 	DebugContext() {
 		for (const auto& area : recomp::game_warps) {
@@ -442,8 +443,8 @@ public:
 		controls_model_handle = constructor.GetModelHandle();
 	}
 
-	void make_control_options_bindings(Rml::Context* context) {
-		Rml::DataModelConstructor constructor = context->CreateDataModel("control_options_model");
+	void make_general_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("general_model");
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the control options menu");
 		}
@@ -451,7 +452,7 @@ public:
 		constructor.Bind("rumble_strength", &control_options_context.rumble_strength);
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
 
-		control_options_model_handle = constructor.GetModelHandle();
+		general_model_handle = constructor.GetModelHandle();
 	}
 	
 	void make_sound_options_bindings(Rml::Context* context) {
@@ -471,6 +472,9 @@ public:
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the debug menu");
 		}
+
+		// Bind the debug mode enabled flag.
+		constructor.Bind("debug_enabled", &debug_context.debug_enabled);
 		
 		// Register the array type for string vectors.
 		constructor.RegisterArray<std::vector<std::string>>();
@@ -489,9 +493,9 @@ public:
 	}
 
 	void make_bindings(Rml::Context* context) override {
-		make_graphics_bindings(context);
+		make_general_bindings(context);
 		make_controls_bindings(context);
-		make_control_options_bindings(context);
+		make_graphics_bindings(context);
 		make_sound_options_bindings(context);
 		make_debug_bindings(context);
 	}
@@ -499,4 +503,15 @@ public:
 
 std::unique_ptr<recomp::MenuController> recomp::create_config_menu() {
 	return std::make_unique<ConfigMenu>();
+}
+
+bool recomp::get_debug_mode_enabled() {
+	return debug_context.debug_enabled;
+}
+
+void recomp::set_debug_mode_enabled(bool enabled) {
+	debug_context.debug_enabled = enabled;
+	if (debug_context.model_handle) {
+		debug_context.model_handle.DirtyVariable("debug_enabled");
+	}
 }

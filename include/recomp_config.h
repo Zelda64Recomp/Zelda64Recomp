@@ -16,6 +16,9 @@ namespace recomp {
     void reset_graphics_options();
 
     std::filesystem::path get_app_folder_path();
+    
+    bool get_debug_mode_enabled();
+    void set_debug_mode_enabled(bool enabled);
 };
 
-#endif 
+#endif

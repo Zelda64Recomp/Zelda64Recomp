@@ -45,9 +45,11 @@ namespace recomp {
 	Menu get_current_menu();
 
 	enum class ConfigSubmenu {
-		Graphics,
+		General,
 		Controls,
+		Graphics,
 		Audio,
+		Debug,
 		Count
 	};
 

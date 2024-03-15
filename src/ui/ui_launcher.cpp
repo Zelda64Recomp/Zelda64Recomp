@@ -88,6 +88,7 @@ public:
 		recomp::register_event(listener, "open_settings",
 			[](const std::string& param, Rml::Event& event) {
 				recomp::set_current_menu(recomp::Menu::Config);
+				recomp::set_config_submenu(recomp::ConfigSubmenu::General);
 			}
 		);
 		recomp::register_event(listener, "exit_game",
