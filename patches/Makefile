@@ -7,7 +7,7 @@ OBJCOPY := llvm-objcopy
 CFLAGS   := -target mips -mips2 -mabi=32 -O2 -mno-abicalls -mno-odd-spreg -fomit-frame-pointer -ffast-math -fno-unsafe-math-optimizations -mno-check-zero-division -G0 -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-parameter -Wno-unknown-pragmas -Wno-unused-variable -Wno-missing-braces -Wno-unsupported-floating-point-opt
 CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -I. -I ../lib/mm-decomp/include -I ../lib/mm-decomp/src -I ../lib/mm-decomp/assets -I../lib/rt64/include
 LDFLAGS  := -nostdlib -T patches.ld -T syms.ld --just-symbols=../mm.us.rev1.elf --allow-multiple-definition
-BINFLAGS := -O binary
+BINFLAGS := -O binary --remove-section=.bss --remove-section=.pad --remove-section=.text
 
 C_SRCS := $(wildcard *.c)
 C_OBJS := $(C_SRCS:.c=.o)
