@@ -53,7 +53,7 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
 
         temp3 = ((play->state.input[0].rel.stick_y >= 0) ? 1 : -1) *
             (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_y * 0xC8)) * 1500.0f);
-        this->actor.focus.rot.x += temp3 + (s32)((target_gyro_x - applied_gyro_x) * -3.0f);
+        this->actor.focus.rot.x += temp3 + (s32)((target_gyro_x - applied_gyro_x) * -1.5f);
         applied_gyro_x = target_gyro_x;
 
         if (this->stateFlags1 & PLAYER_STATE1_800000) {
@@ -66,7 +66,7 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         var_s0 = this->actor.focus.rot.y - this->actor.shape.rot.y;
         temp3 = ((play->state.input[0].rel.stick_x >= 0) ? 1 : -1) *
             (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_x * 0xC8)) * -1500.0f);
-        var_s0 += temp3 + (s32)((target_gyro_y - applied_gyro_y) * 3.0f);
+        var_s0 += temp3 + (s32)((target_gyro_y - applied_gyro_y) * 1.5f);
         applied_gyro_y = target_gyro_y;
 
         this->actor.focus.rot.y = CLAMP(var_s0, -0x4AAA, 0x4AAA) + this->actor.shape.rot.y;

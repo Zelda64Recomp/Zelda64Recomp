@@ -96,6 +96,7 @@ std::chrono::system_clock::time_point get_start();
 std::chrono::system_clock::duration time_since_start();
 void get_window_size(uint32_t& width, uint32_t& height);
 uint32_t get_target_framerate(uint32_t original);
+void measure_input_latency();
 
 // Audio
 void init_audio();

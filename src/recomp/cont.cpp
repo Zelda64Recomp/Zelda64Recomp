@@ -3,6 +3,24 @@
 
 static ultramodern::input_callbacks_t input_callbacks;
 
+constexpr size_t num_poll_ids = 8;
+std::chrono::system_clock::time_point input_poll_times[num_poll_ids];
+s32 cur_poll_id = 0;
+s32 cur_frame_poll_id = 0;
+
+void update_poll_time() {
+    cur_poll_id = (cur_poll_id + 1) % num_poll_ids;
+    input_poll_times[cur_poll_id] = std::chrono::system_clock::now();
+}
+
+extern "C" void recomp_set_current_frame_poll_id(uint8_t* rdram, recomp_context* ctx) {
+    cur_frame_poll_id = cur_poll_id;
+}
+
+void ultramodern::measure_input_latency() {
+    // printf("Delta: %ld micros\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - input_poll_times[cur_frame_poll_id]));    
+}
+
 void set_input_callbacks(const ultramodern::input_callbacks_t& callbacks) {
     input_callbacks = callbacks;
 }
@@ -36,6 +54,7 @@ extern "C" void osContStartReadData_recomp(uint8_t* rdram, recomp_context* ctx) 
     if (input_callbacks.poll_input) {
         input_callbacks.poll_input();
     }
+    update_poll_time();
 
     ultramodern::send_si_message();
 }

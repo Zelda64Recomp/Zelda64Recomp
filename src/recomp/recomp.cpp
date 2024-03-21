@@ -330,7 +330,7 @@ void init(uint8_t* rdram, recomp_context* ctx) {
     recomp::do_rom_read(rdram, entrypoint, 0x10001000, 0x100000);
 
     // Read in any extra data from patches
-    read_patch_data(rdram, (gpr)(s32)0x80800100);
+    read_patch_data(rdram, (gpr)(s32)0x80801000);
 
     // Set up stack pointer
     ctx->r29 = 0xFFFFFFFF803FFFF0u;

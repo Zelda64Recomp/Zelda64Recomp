@@ -21,3 +21,6 @@ recomp_get_bgm_volume = 0x8F000030;
 recomp_get_low_health_beeps_enabled = 0x8F000034;
 __sinf_recomp = 0x8F000038;
 __cosf_recomp = 0x8F00003C;
+osCreateMesgQueue_recomp = 0x8F000048;
+recomp_set_current_frame_poll_id = 0x8F00004C;
+

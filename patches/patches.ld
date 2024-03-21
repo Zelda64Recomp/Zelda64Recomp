@@ -1,4 +1,4 @@
-RAMBASE  = 0x80800100; /* Used to hold any new symbols */
+RAMBASE  = 0x80801000; /* Used to hold any new symbols */
 EXTRA_RAM_SIZE = 0x01000000; /* Amount of extra ram allocated by recomp */
 
 MEMORY {

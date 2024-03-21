@@ -2,6 +2,7 @@
 #define __PATCHES_H__
 
 // TODO fix renaming symbols in patch recompilation
+#define osCreateMesgQueue osCreateMesgQueue_recomp
 #define osRecvMesg osRecvMesg_recomp
 #define osSendMesg osSendMesg_recomp
 #define sinf __sinf_recomp
