@@ -17,12 +17,14 @@
                         </div>
                     </div>
                     <div class="config-option">
-                        <label class="config-option__title">Window Mode</label>
+                        <label class="config-option__title">Downsampling Quality</label>
                         <div class="config-option__list">
-                            <input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" style="nav-up:#tab_graphics"/>
-                            <label class="config-option__tab-label" for="wm_windowed">Windowed</label>
-                            <input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none;nav-up:#tab_graphics"/>
-                            <label class="config-option__tab-label" for="wm_fullscreen">Fullscreen</label>
+                            <input type="radio" name="downsampling" data-checked="ds_option" value="1" id="ds_windowed" style="nav-up:#tab_graphics"/>
+                            <label class="config-option__tab-label" for="ds_windowed">Off</label>
+                            <input type="radio" name="downsampling" data-checked="ds_option" value="2" id="ds_2x" style="nav-up:#tab_graphics"/>
+                            <label class="config-option__tab-label" for="ds_2x">2x</label>
+                            <input type="radio" name="downsampling" data-checked="ds_option" value="4" id="ds_4x" style="nav-right:none;nav-up:#tab_graphics"/>
+                            <label class="config-option__tab-label" for="ds_4x">4x</label>
                         </div>
                     </div>
                 </div>
@@ -37,16 +39,12 @@
                         </div>
                     </div>
                     <div class="config-option">
-                        <label class="config-option__title">MS Anti-Aliasing</label>
+                        <label class="config-option__title">Window Mode</label>
                         <div class="config-option__list">
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_none">None</label>
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_2x">2x</label>
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_4x">4x</label>
-                            <!-- <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
+                            <input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" />
+                            <label class="config-option__tab-label" for="wm_windowed">Windowed</label>
+                            <input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none"/>
+                            <label class="config-option__tab-label" for="wm_fullscreen">Fullscreen</label>
                         </div>
                     </div>
                 </div>
@@ -83,6 +81,19 @@
                         <div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
                             <label class="config-option__range-label">{{rr_manual_value}}</label>
                             <input id="rr_manual_input" type="range" min="20" max="360" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rr_manual_value"/>
+                        </div>
+                    </div>
+                    <div class="config-option">
+                        <label class="config-option__title">MS Anti-Aliasing</label>
+                        <div class="config-option__list">
+                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-down:#apply_button"/>
+                            <label class="config-option__tab-label" for="msaa_none">None</label>
+                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#apply_button"/>
+                            <label class="config-option__tab-label" for="msaa_2x">2x</label>
+                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
+                            <label class="config-option__tab-label" for="msaa_4x">4x</label>
+                            <!-- <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
+                            <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
                         </div>
                     </div>
                 </div>

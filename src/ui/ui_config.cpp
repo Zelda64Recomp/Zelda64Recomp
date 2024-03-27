@@ -65,6 +65,7 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
+
 static bool cont_active = true;
 
 static recomp::InputDevice cur_device = recomp::InputDevice::Controller;
@@ -303,6 +304,14 @@ public:
 			},
 			[](const Rml::Variant& in) {
 				new_options.rr_manual_value = in.Get<int>();
+				graphics_model_handle.DirtyVariable("options_changed");
+			});
+		constructor.BindFunc("ds_option",
+			[](Rml::Variant& out) {
+				out = new_options.ds_option;
+			},
+			[](const Rml::Variant& in) {
+				new_options.ds_option = in.Get<int>();
 				graphics_model_handle.DirtyVariable("options_changed");
 			});
 

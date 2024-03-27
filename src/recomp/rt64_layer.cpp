@@ -234,13 +234,17 @@ void RT64UpdateConfig(RT64::Application* application, const ultramodern::Graphic
         default:
         case ultramodern::Resolution::Auto:
             application->userConfig.resolution = RT64::UserConfiguration::Resolution::WindowIntegerScale;
+            application->userConfig.downsampleMultiplier = 1;
             break;
         case ultramodern::Resolution::Original:
-            application->userConfig.resolution = RT64::UserConfiguration::Resolution::Original;
+            application->userConfig.resolution = RT64::UserConfiguration::Resolution::Manual;
+            application->userConfig.resolutionMultiplier = new_config.ds_option;
+            application->userConfig.downsampleMultiplier = new_config.ds_option;
             break;
         case ultramodern::Resolution::Original2x:
             application->userConfig.resolution = RT64::UserConfiguration::Resolution::Manual;
-            application->userConfig.resolutionMultiplier = 2.0;
+            application->userConfig.resolutionMultiplier = 2.0 * new_config.ds_option;
+            application->userConfig.downsampleMultiplier = new_config.ds_option;
             break;
     }
 
