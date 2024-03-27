@@ -55,11 +55,29 @@
                     <div class="config-option">
                         <label class="config-option__title">Framerate</label>
                         <div class="config-option__list">
-                            <input type="radio" name="refreshrate" data-checked="rr_option" value="Original" id="rr_original" style="nav-left:none;nav-down:#apply_button"/>
+                            <input type="radio"
+                                name="refreshrate"
+                                data-checked="rr_option"
+                                value="Original"
+                                id="rr_original"
+                                data-attr-style="rr_option=='Manual' ? 'nav-left:none;nav-down:#rr_manual_input' : 'nav-left:none;nav-down:#apply_button'"
+                            />
                             <label class="config-option__tab-label" for="rr_original">Original</label>
-                            <input type="radio" name="refreshrate" data-checked="rr_option" value="Display" id="rr_display" style="nav-down:#apply_button"/>
+                            <input type="radio"
+                                name="refreshrate"
+                                data-checked="rr_option"
+                                value="Display"
+                                id="rr_display"
+                                data-attr-style="rr_option=='Manual' ? 'nav-down:#rr_manual_input' : 'nav-down:#apply_button'"
+                            />
                             <label class="config-option__tab-label" for="rr_display">Display</label>
-                            <input type="radio" name="refreshrate" data-checked="rr_option" value="Manual" id="rr_manual" style="nav-up:#ar_expand;nav-down:#apply_button"/>
+                            <input type="radio"
+                                name="refreshrate"
+                                data-checked="rr_option"
+                                value="Manual"
+                                id="rr_manual"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up:#ar_expand;nav-down:#rr_manual_input' : 'nav-up:#ar_expand;nav-down:#apply_button'"
+                            />
                             <label class="config-option__tab-label" for="rr_manual">Manual</label>
                         </div>
                         <div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
@@ -80,6 +98,7 @@
                         onclick="apply_options"
                         id="apply_button"
                         style="nav-up:#rr_original"
+                        data-attr-style="rr_option=='Manual' ? 'nav-up:#rr_manual_input' : 'nav-up:#rr_original'"
                     >
                         <div class="button__label">Apply</div>
                     </button>

@@ -138,6 +138,11 @@
         border-radius: 8dp;
         transition: background-color $transition-quick;
         
+        .rmlui-window:not([mouse-active]) &:focus {
+            @include border($color-a);
+            background-color: $color-secondary;
+        }
+
         &:hover {
             cursor: pointer;
             background-color: $color-text;
