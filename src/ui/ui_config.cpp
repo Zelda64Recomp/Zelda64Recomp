@@ -3,11 +3,13 @@
 #include "recomp_sound.h"
 #include "recomp_config.h"
 #include "recomp_debug.h"
+#include "promptfont.h"
 #include "../../ultramodern/config.hpp"
 #include "../../ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
 
 ultramodern::GraphicsConfig new_options;
+Rml::DataModelHandle nav_help_model_handle;
 Rml::DataModelHandle general_model_handle;
 Rml::DataModelHandle controls_model_handle;
 Rml::DataModelHandle graphics_model_handle;
@@ -63,6 +65,7 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
+static bool cont_active = true;
 
 static recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
@@ -82,6 +85,15 @@ void recomp::cancel_scanning_input() {
 	controls_model_handle.DirtyVariable("inputs");
 	controls_model_handle.DirtyVariable("active_binding_input");
 	controls_model_handle.DirtyVariable("active_binding_slot");
+}
+
+void recomp::set_cont_or_kb(bool cont_interacted) {
+	if (nav_help_model_handle && cont_active != cont_interacted) {
+		cont_active = cont_interacted;
+		nav_help_model_handle.DirtyVariable("nav_help__navigate");
+		nav_help_model_handle.DirtyVariable("nav_help__accept");
+		nav_help_model_handle.DirtyVariable("nav_help__exit");
+	}
 }
 
 void close_config_menu() {
@@ -443,6 +455,39 @@ public:
 		controls_model_handle = constructor.GetModelHandle();
 	}
 
+	void make_nav_help_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("nav_help_model");
+		if (!constructor) {
+			throw std::runtime_error("Failed to make RmlUi data model for nav help");
+		}
+
+		constructor.BindFunc("nav_help__navigate", [](Rml::Variant& out) {
+			if (cont_active) {
+				out = PF_DPAD;
+			} else {
+				out = PF_KEYBOARD_ARROWS PF_KEYBOARD_TAB;
+			}
+		});
+
+		constructor.BindFunc("nav_help__accept", [](Rml::Variant& out) {
+			if (cont_active) {
+				out = PF_GAMEPAD_A;
+			} else {
+				out = PF_KEYBOARD_ENTER;
+			}
+		});
+
+		constructor.BindFunc("nav_help__exit", [](Rml::Variant& out) {
+			if (cont_active) {
+				out = PF_XBOX_VIEW;
+			} else {
+				out = PF_KEYBOARD_ESCAPE;
+			}
+		});
+
+		nav_help_model_handle = constructor.GetModelHandle();
+	}
+
 	void make_general_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("general_model");
 		if (!constructor) {
@@ -493,6 +538,7 @@ public:
 	}
 
 	void make_bindings(Rml::Context* context) override {
+		make_nav_help_bindings(context);
 		make_general_bindings(context);
 		make_controls_bindings(context);
 		make_graphics_bindings(context);

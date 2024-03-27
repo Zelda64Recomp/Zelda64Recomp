@@ -85,18 +85,19 @@
 				</div>
 				<div
 					class="centered-page__controls"
+					data-model="nav_help_model"
 				>
 					<label>
 						<span>Navigate</span>
-						<span class="prompt-font-sm">&#x2424;&#x242B;</span>
+						<span class="prompt-font-sm">{{nav_help__navigate}}</span>
 					</label>
 					<label>
 						<span>Accept</span>
-						<span class="prompt-font-sm">&#x242E;</span>
+						<span class="prompt-font-sm">{{nav_help__accept}}</span>
 					</label>
 					<label>
 						<span>Exit</span>
-						<span class="prompt-font-sm">&#x242F;</span>
+						<span class="prompt-font-sm">{{nav_help__exit}}</span>
 					</label>
 					<!-- <label><span style="font-family:promptfont;">&#x21F3;</span> Navigate</label>
 					<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->

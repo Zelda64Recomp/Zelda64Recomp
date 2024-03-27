@@ -1120,6 +1120,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 
     bool mouse_moved = false;
     bool non_mouse_interacted = false;
+    bool cont_interacted = false;
+    bool kb_interacted = false;
 
     while (recomp::try_deque_event(cur_event)) {
         bool menu_is_open = cur_menu != recomp::Menu::None;
@@ -1175,10 +1177,13 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 if (menu_is_open && rml_key) {
                     ui_context->rml.context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
                 }
+                non_mouse_interacted = true;
+                cont_interacted = true;
+                break;
             }
-            // fallthrough
             case SDL_EventType::SDL_KEYDOWN:
                 non_mouse_interacted = true;
+                kb_interacted = true;
                 break;
             case SDL_EventType::SDL_CONTROLLERAXISMOTION:
                 SDL_ControllerAxisEvent* axis_event = &cur_event.caxis;
@@ -1200,6 +1205,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                         }
                     }
                     non_mouse_interacted = true;
+                    cont_interacted = true;
                 }
                 else if (*await_stick_return && fabsf(axis_value) < 0.15f) {
                     *await_stick_return = false;
@@ -1236,6 +1242,10 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             }
         }
     } // end dequeue event loop
+
+    if (cont_interacted || kb_interacted) {
+        recomp::set_cont_or_kb(cont_interacted);
+    }
 
     recomp::InputField scanned_field = recomp::get_scanned_input();
     if (scanned_field != recomp::InputField{}) {
