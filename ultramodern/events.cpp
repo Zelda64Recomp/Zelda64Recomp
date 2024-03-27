@@ -274,7 +274,6 @@ uint32_t ultramodern::get_target_framerate(uint32_t original) {
 
     switch (graphics_config.rr_option) {
         case RT64::UserConfiguration::RefreshRate::Original:
-        case RT64::UserConfiguration::RefreshRate::OriginalDelay:
         default:
             return original;
         case RT64::UserConfiguration::RefreshRate::Manual:

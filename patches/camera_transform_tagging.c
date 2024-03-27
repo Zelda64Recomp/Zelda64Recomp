@@ -10,6 +10,20 @@ static bool camera_ignore_tracking = false;
 static bool in_kaleido = false;
 static bool prev_in_kaleido = false;
 
+static bool camera_skipped = false;
+
+void set_camera_skipped(bool skipped) {
+    camera_skipped = skipped;
+}
+
+void clear_camera_skipped() {
+    camera_skipped = false;
+}
+
+bool camera_was_skipped() {
+    return camera_skipped;
+}
+
 void camera_pre_play_update(PlayState* play) {
 }
 
@@ -126,15 +140,13 @@ bool should_interpolate_perspective(Vec3f* eye, Vec3f* at) {
         return true;
     }
 
-    if (velocity_diff > 50.0f) {
-        return false;
-    }
-
-    if (at_dist > 50.0f) {
-        return false;
-    }
-
-    if (eye_dist > 300.0f) {
+    if (velocity_diff > 50.0f || at_dist > 50.0f || eye_dist > 300.0f) {
+        eye_velocity.x = 0.0f;
+        eye_velocity.y = 0.0f;
+        eye_velocity.z = 0.0f;
+        at_velocity.x = 0.0f;
+        at_velocity.y = 0.0f;
+        at_velocity.z = 0.0f;
         return false;
     }
 
@@ -193,6 +205,9 @@ void View_Apply(View* view, s32 mask) {
         gEXMatrixGroupSimple(POLY_XLU_DISP++, CAMERA_TRANSFORM_ID, G_EX_NOPUSH, G_MTX_PROJECTION,
             G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
     }
+
+    // Record whether the camera was skipped for later use.
+    set_camera_skipped(!interpolate_camera);
 
     camera_interpolation_forced = false;
     camera_skip_interpolation_forced = false;

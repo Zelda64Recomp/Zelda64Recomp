@@ -97,6 +97,9 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     // @recomp Send the current framerate to RT64, including any extra VI interrupt periods. 
     gEXSetRefreshRate(POLY_OPA_DISP++, 60 / (gameState->framerateDivisor + extra_vis));
 
+    // @recomp Clear the camera skip state.
+    clear_camera_skipped();
+
     gSPEndDisplayList(WORK_DISP++);
     gSPEndDisplayList(POLY_OPA_DISP++);
     gSPEndDisplayList(POLY_XLU_DISP++);
