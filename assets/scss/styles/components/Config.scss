@@ -68,7 +68,7 @@
     flex-direction: column;
     flex: 1;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin: space(8) 0 space(16);
 }
 
@@ -82,6 +82,7 @@
     padding: 0;
     flex-direction: row;
     width: 100%;
+    height: auto;
     align-items: flex-start;
     justify-content: flex-start;
 
@@ -158,6 +159,13 @@
     input.range sliderarrowinc {
         display: none;
     }
+}
+
+.config-option__details {
+    @extend %label-xs;
+    color: $color-secondary;
+    margin: space(8) space(12) 0;
+    height: space(18);
 }
 
 .config-option__range-wrapper {

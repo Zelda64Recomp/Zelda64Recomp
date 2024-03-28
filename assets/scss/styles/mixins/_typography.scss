@@ -46,6 +46,12 @@ $font-stack: chiaro;
     text-transform: uppercase;
 }
 
+%label-xs {
+    @include set-font-sizing(14, 0.14);
+    font-style: normal;
+	font-weight: 400;
+}
+
 %body {
     @include set-font-sizing(16, 0.0);
     font-style: normal;

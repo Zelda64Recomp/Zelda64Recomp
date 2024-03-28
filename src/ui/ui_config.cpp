@@ -45,7 +45,7 @@ template <typename T>
 void bind_option(Rml::DataModelConstructor& constructor, const std::string& name, T* option) {
 	constructor.BindFunc(name,
 		[option](Rml::Variant& out) { get_option(*option, out); },
-		[option](const Rml::Variant& in) { set_option(*option, in); graphics_model_handle.DirtyVariable("options_changed"); }
+		[option](const Rml::Variant& in) { set_option(*option, in); graphics_model_handle.DirtyVariable("options_changed"); graphics_model_handle.DirtyVariable("ds_info"); }
 	);
 };
 
@@ -313,11 +313,35 @@ public:
 			[](const Rml::Variant& in) {
 				new_options.ds_option = in.Get<int>();
 				graphics_model_handle.DirtyVariable("options_changed");
+				graphics_model_handle.DirtyVariable("ds_info");
 			});
 
 		constructor.BindFunc("options_changed",
 			[](Rml::Variant& out) {
 				out = (ultramodern::get_graphics_config() != new_options);
+			});
+		constructor.BindFunc("ds_info",
+			[](Rml::Variant& out) {
+				switch (new_options.res_option) {
+					case ultramodern::Resolution::Auto:
+						out = "Downsampling is not available at auto resolution";
+						return;
+					case ultramodern::Resolution::Original:
+						if (new_options.ds_option == 2) {
+							out = "Rendered in 480p and scaled to 240p";
+						} else if (new_options.ds_option == 4) {
+							out = "Rendered in 960p and scaled to 240p";
+						}
+						return;
+					case ultramodern::Resolution::Original2x:
+						if (new_options.ds_option == 2) {
+							out = "Rendered in 960p and scaled to 480p";
+						} else if (new_options.ds_option == 4) {
+							out = "Rendered in 4K and scaled to 480p";
+						}
+						return;
+				}
+				out = "";
 			});
 
 		graphics_model_handle = constructor.GetModelHandle();
