@@ -51,6 +51,7 @@ void View_ApplyInterpolate(View* view, s32 mask, bool reset_interpolation_state)
 void set_camera_skipped(bool skipped);
 void clear_camera_skipped();
 bool camera_was_skipped();
+void room_load_hook(PlayState* play, Room* room);
 
 void recomp_crash(const char* err);
 
