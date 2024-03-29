@@ -35,20 +35,18 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
         OverrideKeyframeDrawScaled func_80AF31D0_relocated = (OverrideKeyframeDrawScaled)actor_relocate(thisx, func_80AF31D0);
         
         // @recomp Push the matrix group for the song of soaring's wings.
-        gEXMatrixGroupDecomposed(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         
         func_8018450C(play, &this->skeletonInfo, mtx, func_80AF31D0_relocated, NULL, &this->actor);
         
         // @recomp Pop the wings matrix group.
-        gEXPopMatrixGroup(POLY_OPA_DISP++);
+        gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
     }
 
     // Draw windCapsule encasing that surrounds player after wings
     if (this->flags & OWL_WARP_FLAGS_DRAW_WIND_CAPSULE) {
         // @recomp Push the matrix group for the song of soaring's capsule.
-        gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SOARING_CAPSULE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SOARING_CAPSULE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         
         Matrix_Push();
         Matrix_Translate(0.0f, 4000.0f, 0.0f, MTXMODE_APPLY);
@@ -60,7 +58,7 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
         Gfx_DrawDListXlu(play, gSoaringWarpCsWindCapsuleDL);
 
         // @recomp Pop the capsule matrix group.
-        gEXPopMatrixGroup(POLY_XLU_DISP++);
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         Matrix_Pop();
     }
 
@@ -306,18 +304,17 @@ void func_808DD3C8(Actor* thisx, PlayState* play2) {
             // @recomp Check if the particle's interpolation should be skipped this frame.
             if (particle_skipped(this->unk_14C[i])) {
                 // @recomp Tag the particle's transform to skip interpolation.
-                gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_MTX_MODELVIEW);
+                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
                 // @recomp Tag the particle's matrix to interpolate normally.
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW,
-                    G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
             }
             
             gSPDisplayList(POLY_XLU_DISP++, gEffDustDL);
 
             // @recomp Pop the particle transform tag.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
 
         // @recomp Reset the particle's skip flag.
@@ -374,13 +371,9 @@ extern EffectInfo sEffectInfoTable[];
 static inline void tag_interpolate_effect(GraphicsContext* gfxCtx, u32 id) {
     OPEN_DISPS(gfxCtx);
 
-    gEXMatrixGroupDecomposed(POLY_OPA_DISP++, id, G_EX_PUSH, G_MTX_MODELVIEW,
-        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
     
-    gEXMatrixGroupDecomposed(POLY_XLU_DISP++, id + EFFECT_TRANSFORM_ID_COUNT, G_EX_PUSH, G_MTX_MODELVIEW,
-        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-        G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+    gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, id + EFFECT_TRANSFORM_ID_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
 
     CLOSE_DISPS();
 }
@@ -390,11 +383,11 @@ static inline void tag_skip_effect(GraphicsContext* gfxCtx, u32 id) {
 
     gEXMatrixGroupSimple(POLY_OPA_DISP++, id, G_EX_PUSH, G_MTX_MODELVIEW,
         G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP,
-        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
     
     gEXMatrixGroupSimple(POLY_XLU_DISP++, id + EFFECT_TRANSFORM_ID_COUNT, G_EX_PUSH, G_MTX_MODELVIEW,
         G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP,
-        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
     CLOSE_DISPS();
 }
@@ -402,8 +395,8 @@ static inline void tag_skip_effect(GraphicsContext* gfxCtx, u32 id) {
 static inline void pop_effect_tag(GraphicsContext* gfxCtx) {
     OPEN_DISPS(gfxCtx);
 
-    gEXPopMatrixGroup(POLY_OPA_DISP++);
-    gEXPopMatrixGroup(POLY_XLU_DISP++);
+    gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+    gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
 
     CLOSE_DISPS();
 }

@@ -14,10 +14,10 @@ void Room_Draw(PlayState* play, Room* room, u32 flags) {
         // @recomp Tag the room's matrices if applicable.
         // Tag terrain as being ignored for interpolation, which prevents interpolation glitches where some pieces of terrain swap places when one comes into view.
         if (flags & ROOM_DRAW_OPA) {
-            gEXMatrixGroupInterpolateOnlyTiles(POLY_OPA_DISP++, G_EX_PUSH, G_MTX_MODELVIEW);
+            gEXMatrixGroupInterpolateOnlyTiles(POLY_OPA_DISP++, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         }
         if (flags & ROOM_DRAW_XLU) {
-            gEXMatrixGroupInterpolateOnlyTiles(POLY_XLU_DISP++, G_EX_PUSH, G_MTX_MODELVIEW);
+            gEXMatrixGroupInterpolateOnlyTiles(POLY_XLU_DISP++, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         }
 
         CLOSE_DISPS(play->state.gfxCtx);
@@ -28,10 +28,10 @@ void Room_Draw(PlayState* play, Room* room, u32 flags) {
 
         // @recomp Pop the room's matrix tags if applicable.
         if (flags & ROOM_DRAW_OPA) {
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
         if (flags & ROOM_DRAW_XLU) {
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
 
         CLOSE_DISPS(play->state.gfxCtx);

@@ -49,8 +49,7 @@ void KaleidoScope_DrawCursor(PlayState* play) {
             Matrix_Translate(kaleido_f32(&sCursorCirclesX[i]), kaleido_f32(&sCursorCirclesY[i]), -50.0f, MTXMODE_APPLY);
 
             // @recomp Tag the current pause cursor segment.
-            gEXMatrixGroupDecomposed(POLY_OPA_DISP++, PAUSE_CURSOR_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, PAUSE_CURSOR_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gDPPipeSync(POLY_OPA_DISP++);
@@ -61,7 +60,7 @@ void KaleidoScope_DrawCursor(PlayState* play) {
             gSP1Quadrangle(POLY_OPA_DISP++, 0, 2, 3, 1, 0);
 
             // @recomp Pop the pause cursor segment's transform id.
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
 
             Matrix_Pop();
         }

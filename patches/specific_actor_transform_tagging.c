@@ -76,13 +76,13 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
             gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(&D_80BB8458_relocated[i]->actor) + 0,
                 G_EX_PUSH, G_MTX_MODELVIEW,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, gWartBubbleModelDL);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -104,13 +104,13 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
             gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(tanron2) + 1,
                 G_EX_PUSH, G_MTX_MODELVIEW,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, gWartShadowModelDL);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
         tanron2 = tanron2->next;
     }
@@ -137,13 +137,13 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
             gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(tanron2) + 2,
                 G_EX_PUSH, G_MTX_MODELVIEW,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, gEffWaterRippleDL);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
         tanron2 = tanron2->next;
     }
@@ -289,10 +289,10 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposed(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedSkip(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
-                gEXMatrixGroupDecomposed(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             special_effect_reset_states[i] = false;
             
@@ -300,7 +300,7 @@ void Boss03_DrawEffects(PlayState* play) {
             gSPDisplayList(POLY_OPA_DISP++, gGyorgBubbleModelDL);
 
             // @recomp Pop the effect's matrix group.
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -338,10 +338,10 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             special_effect_reset_states[i] = false;
 
@@ -349,7 +349,7 @@ void Boss03_DrawEffects(PlayState* play) {
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0042B0);
 
             // @recomp Pop the effect's matrix group.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -379,10 +379,10 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             special_effect_reset_states[i] = false;
 
@@ -390,7 +390,7 @@ void Boss03_DrawEffects(PlayState* play) {
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0042F8);
 
             // @recomp Pop the effect's matrix group.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -440,17 +440,14 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
             Matrix_Scale(this->unk_DC8[1].y, this->unk_DC8[1].z, this->unk_DC8[1].y, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + 0,
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, (u8)this->unk_E2C);
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_000420);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
 
         Matrix_Pop();
@@ -461,17 +458,14 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
             Matrix_Scale(this->unk_DC8[2].y, this->unk_DC8[2].z, this->unk_DC8[2].y, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + 1,
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, (u8)this->unk_E30);
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_000730);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
         Matrix_Pop();
     } else {
@@ -485,17 +479,14 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
         Matrix_Scale(this->unk_DC8[3].y, this->unk_DC8[3].z, this->unk_DC8[3].y, MTXMODE_APPLY);
 
         // @recomp Tag the transform.
-        gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + 2,
-            G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + 2, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, (u8)this->unk_E34);
         gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_000A48);
 
         // @recomp Pop the transform id.
-        gEXPopMatrixGroup(POLY_XLU_DISP++);
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
     }
 
     Matrix_Pop();
@@ -507,17 +498,14 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
         Matrix_Scale(this->unk_DC8[4].y, this->unk_DC8[4].z, this->unk_DC8[4].y, MTXMODE_APPLY);
 
         // @recomp Tag the transform.
-        gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + 3,
-            G_EX_PUSH, G_MTX_MODELVIEW,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + 3, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, (u8)this->unk_E38);
         gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_000CD8);
 
         // @recomp Pop the transform id.
-        gEXPopMatrixGroup(POLY_XLU_DISP++);
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
     }
 
     if (this->actor.params == ENWATEREFFECT_TYPE_GYORG_RIPPLES) {
@@ -542,17 +530,14 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
                 Matrix_RotateYF(ptr->unk_2C.z, MTXMODE_APPLY);
 
                 // @recomp Tag the transform.
-                gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + 4 + i,
-                    G_EX_PUSH, G_MTX_MODELVIEW,
-                    G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                    G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+                gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + 4 + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
                 gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
                           G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                 gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0042F8);
 
                 // @recomp Pop the transform id.
-                gEXPopMatrixGroup(POLY_XLU_DISP++);
+                gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
             }
         }
     }
@@ -603,16 +588,13 @@ void EnWaterEffect_Draw(Actor* thisx, PlayState* play2) {
             Matrix_RotateZF(ptr->unk_2C.z, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + i + 0 * (ARRAY_COUNT(this->unk_144) / 2),
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + i + 0 * (ARRAY_COUNT(this->unk_144) / 2), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0042B0);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -638,16 +620,13 @@ void EnWaterEffect_Draw(Actor* thisx, PlayState* play2) {
             Matrix_RotateYF(ptr->unk_2C.z, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_XLU_DISP++, actor_id + i + 1 * (ARRAY_COUNT(this->unk_144) / 2),
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_XLU_DISP++, actor_id + i + 1 * (ARRAY_COUNT(this->unk_144) / 2), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0042F8);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -675,16 +654,13 @@ void func_80B0C398(BossHakugin* this, PlayState* play) {
             Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->unk_9F8),
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtRockModelDL);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
     }
 
@@ -696,16 +672,13 @@ void func_80B0C398(BossHakugin* this, PlayState* play) {
             Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposed(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->unk_9F8),
-                G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtStalactiteModelDL);
 
             // @recomp Pop the transform id.
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
     }
 

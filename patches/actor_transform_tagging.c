@@ -83,7 +83,7 @@ void Actor_Init(Actor* actor, PlayState* play) {
 Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
     }
     return dlist;
 }
@@ -92,7 +92,7 @@ Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
     }
     return dlist;
 }
@@ -101,21 +101,21 @@ Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_skin_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposed(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+        gEXMatrixGroupDecomposedVerts(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
     }
     return dlist;
 }
 
 Gfx* pop_limb_matrix_group(Gfx* dlist, Actor* actor) {
     if (actor != NULL) {
-        gEXPopMatrixGroup(dlist++);
+        gEXPopMatrixGroup(dlist++, G_MTX_MODELVIEW);
     }
     return dlist;
 }
 
 Gfx* pop_post_limb_matrix_group(Gfx* dlist, Actor* actor) {
     if (actor != NULL) {
-        gEXPopMatrixGroup(dlist++);
+        gEXPopMatrixGroup(dlist++, G_MTX_MODELVIEW);
     }
     return dlist;
 }
@@ -1159,18 +1159,18 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
         
         if (opa_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposed(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedNormal(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
             
             // Pop the matrix group.
-            gEXPopMatrixGroup(POLY_OPA_DISP++);
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
 
         if (xlu_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposed(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR);
+            gEXMatrixGroupDecomposedNormal(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
 
             // Pop the matrix groups.
-            gEXPopMatrixGroup(POLY_XLU_DISP++);
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
     }
 
