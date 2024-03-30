@@ -103,22 +103,33 @@
 
     input.radio {
         @extend %nav-all;
+        @include trans-colors-opa;
         visibility: visible;
         width: 0;
         height: 0;
 
-        &:checked + .config-option__tab-label {
-            border-bottom: 1dp;
-            border-color: $color-border-hard;
+        &:not(:disabled) {
+            &:checked + .config-option__tab-label {
+                border-bottom: 1dp;
+                border-color: $color-border-hard;
+    
+                &:hover {
+                    cursor: default;
+                }
+            }
+    
+            &:focus + .config-option__tab-label,
+            &:hover + .config-option__tab-label {
+                color: $color-text;
+            }
+        }
+
+        &:disabled + .config-option__tab-label {
+            opacity: 0.5;
 
             &:hover {
                 cursor: default;
             }
-        }
-
-        &:focus + .config-option__tab-label,
-        &:hover + .config-option__tab-label {
-            color: $color-text;
         }
     }
 

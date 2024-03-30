@@ -21,9 +21,9 @@
                         <div class="config-option__list">
                             <input type="radio" name="downsampling" data-checked="ds_option" value="1" id="ds_windowed" style="nav-up:#tab_graphics"/>
                             <label class="config-option__tab-label" for="ds_windowed">Off</label>
-                            <input type="radio" name="downsampling" data-checked="ds_option" value="2" id="ds_2x" style="nav-up:#tab_graphics"/>
+                            <input type="radio" name="downsampling" data-attrif-disabled="res_option == 'Auto'" data-checked="ds_option" value="2" id="ds_2x" style="nav-up:#tab_graphics"/>
                             <label class="config-option__tab-label" for="ds_2x">2x</label>
-                            <input type="radio" name="downsampling" data-checked="ds_option" value="4" id="ds_4x" style="nav-right:none;nav-up:#tab_graphics"/>
+                            <input type="radio" name="downsampling" data-attrif-disabled="res_option == 'Auto'" data-checked="ds_option" value="4" id="ds_4x" style="nav-right:none;nav-up:#tab_graphics"/>
                             <label class="config-option__tab-label" for="ds_4x">4x</label>
                         </div>
                         <div class="config-option__details">{{ds_info}}</div>

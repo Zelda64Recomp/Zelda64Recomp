@@ -45,7 +45,11 @@ template <typename T>
 void bind_option(Rml::DataModelConstructor& constructor, const std::string& name, T* option) {
 	constructor.BindFunc(name,
 		[option](Rml::Variant& out) { get_option(*option, out); },
-		[option](const Rml::Variant& in) { set_option(*option, in); graphics_model_handle.DirtyVariable("options_changed"); graphics_model_handle.DirtyVariable("ds_info"); }
+		[option](const Rml::Variant& in) {
+			set_option(*option, in);
+			graphics_model_handle.DirtyVariable("options_changed");
+			graphics_model_handle.DirtyVariable("ds_info");
+		}
 	);
 };
 
@@ -293,7 +297,15 @@ public:
 		}
 		new_options = ultramodern::get_graphics_config();
 
-		bind_option(constructor, "res_option", &new_options.res_option);
+		constructor.BindFunc("res_option",
+			[](Rml::Variant& out) { get_option(new_options.res_option, out); },
+			[](const Rml::Variant& in) {
+				set_option(new_options.res_option, in);
+				graphics_model_handle.DirtyVariable("options_changed");
+				graphics_model_handle.DirtyVariable("ds_info");
+				graphics_model_handle.DirtyVariable("ds_option");
+			}
+		);
 		bind_option(constructor, "wm_option", &new_options.wm_option);
 		bind_option(constructor, "ar_option", &new_options.ar_option);
 		bind_option(constructor, "msaa_option", &new_options.msaa_option);
@@ -308,7 +320,11 @@ public:
 			});
 		constructor.BindFunc("ds_option",
 			[](Rml::Variant& out) {
-				out = new_options.ds_option;
+				if (new_options.res_option == ultramodern::Resolution::Auto) {
+					out = 1;
+				} else {
+					out = new_options.ds_option;
+				}
 			},
 			[](const Rml::Variant& in) {
 				new_options.ds_option = in.Get<int>();
