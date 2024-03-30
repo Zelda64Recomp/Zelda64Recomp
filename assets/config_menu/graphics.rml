@@ -3,104 +3,251 @@
     </head>
     <body>
         <form class="config__form">
-            <div class="config__wrapper">
-                <div class="config__row">
-                    <div class="config-option">
+            <div class="config__hz-wrapper">
+                <div class="config__wrapper" data-event-mouseout="set_current_gfx_description(-1)">
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(0)">
                         <label class="config-option__title">Resolution</label>
                         <div class="config-option__list">
-                            <input type="radio" name="resolution" data-checked="res_option" value="Original" id="res_original" style="nav-left:none;nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(0)"
+                                name="resolution"
+                                data-checked="res_option"
+                                value="Original"
+                                id="res_original"
+                                style="nav-up:#tab_graphics; nav-down: #ds_windowed"
+                                data-attr-style="res_option == 'Auto' ? 'nav-up:#tab_graphics; nav-down: #ar_original' : 'nav-up:#tab_graphics; nav-down: #ds_windowed'"
+                            />
                             <label class="config-option__tab-label" for="res_original">Original</label>
-                            <input type="radio" name="resolution" data-checked="res_option" value="Original2x" id="res_2x" style="nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(0)"
+                                name="resolution"
+                                data-checked="res_option"
+                                value="Original2x"
+                                id="res_2x"
+                                style="nav-up:#tab_graphics; nav-down: #ds_2x"
+                                data-attr-style="res_option == 'Auto' ? 'nav-up:#tab_graphics; nav-down: #ar_expand' : 'nav-up:#tab_graphics; nav-down: #ds_2x'"
+                            />
                             <label class="config-option__tab-label" for="res_2x">Original 2x</label>
-                            <input type="radio" name="resolution" data-checked="res_option" value="Auto" id="res_auto" style="nav-down:#ar_expand;nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(0)"
+                                name="resolution"
+                                data-checked="res_option"
+                                value="Auto"
+                                id="res_auto"
+                                style="nav-up:#tab_graphics; nav-down: #ds_4x"
+                                data-attr-style="res_option == 'Auto' ? 'nav-up:#tab_graphics; nav-down: #ar_expand' : 'nav-up:#tab_graphics; nav-down: #ds_4x'"
+                            />
                             <label class="config-option__tab-label" for="res_auto">Auto</label>
                         </div>
                     </div>
-                    <div class="config-option">
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(1)">
                         <label class="config-option__title">Downsampling Quality</label>
                         <div class="config-option__list">
-                            <input type="radio" name="downsampling" data-checked="ds_option" value="1" id="ds_windowed" style="nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(1)"
+                                name="downsampling"
+                                data-attrif-disabled="res_option == 'Auto'"
+                                data-checked="ds_option"
+                                value="1"
+                                id="ds_windowed"
+                                style="nav-up: #res_original; nav-down: #ar_original"
+                            />
                             <label class="config-option__tab-label" for="ds_windowed">Off</label>
-                            <input type="radio" name="downsampling" data-attrif-disabled="res_option == 'Auto'" data-checked="ds_option" value="2" id="ds_2x" style="nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(1)"
+                                name="downsampling"
+                                data-attrif-disabled="res_option == 'Auto'"
+                                data-checked="ds_option"
+                                value="2"
+                                id="ds_2x"
+                                style="nav-up: #res_2x; nav-down: #ar_expand"
+                            />
                             <label class="config-option__tab-label" for="ds_2x">2x</label>
-                            <input type="radio" name="downsampling" data-attrif-disabled="res_option == 'Auto'" data-checked="ds_option" value="4" id="ds_4x" style="nav-right:none;nav-up:#tab_graphics"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(1)"
+                                name="downsampling"
+                                data-attrif-disabled="res_option == 'Auto'"
+                                data-checked="ds_option"
+                                value="4"
+                                id="ds_4x"
+                                style="nav-up: #res_auto; nav-down: #ar_expand"
+                            />
                             <label class="config-option__tab-label" for="ds_4x">4x</label>
+                            <div class="config-option__details">{{ds_info}}</div>
                         </div>
-                        <div class="config-option__details">{{ds_info}}</div>
                     </div>
-                </div>
-                <div class="config__row">
-                    <div class="config-option">
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(2)">
                         <label class="config-option__title">Aspect Ratio</label>
                         <div class="config-option__list">
-                            <input type="radio" name="aspectratio" data-checked="ar_option" value="Original" id="ar_original" style="nav-left:none"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(2)"
+                                name="aspectratio"
+                                data-checked="ar_option"
+                                value="Original"
+                                id="ar_original"
+                                style="nav-up: #ds_windowed; nav-down: #wm_windowed"
+                                data-attr-style="res_option == 'Auto' ? 'nav-up:#res_original; nav-down: #wm_windowed' : 'nav-up:#ds_windowed; nav-down: #wm_windowed'"
+                            />
                             <label class="config-option__tab-label" for="ar_original">Original</label>
-                            <input type="radio" name="aspectratio" data-checked="ar_option" value="Expand" id="ar_expand" style="nav-up:#res_2x"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(2)"
+                                name="aspectratio"
+                                data-checked="ar_option"
+                                value="Expand"
+                                id="ar_expand"
+                                style="nav-up: #ds_2x; nav-down: #wm_fullscreen"
+                                data-attr-style="res_option == 'Auto' ? 'nav-up:#res_2x; nav-down: #wm_fullscreen' : 'nav-up:#ds_2x; nav-down: #wm_fullscreen'"
+                            />
                             <label class="config-option__tab-label" for="ar_expand">Expand</label>
                         </div>
-                        <div class="config-option__details"></div>
                     </div>
-                    <div class="config-option">
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(3)">
                         <label class="config-option__title">Window Mode</label>
                         <div class="config-option__list">
-                            <input type="radio" name="windowmode" data-checked="wm_option" value="Windowed" id="wm_windowed" />
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(3)"
+                                name="windowmode"
+                                data-checked="wm_option"
+                                value="Windowed"
+                                id="wm_windowed"
+                                style="nav-up: #ar_original; nav-down: #rr_original"
+                            />
                             <label class="config-option__tab-label" for="wm_windowed">Windowed</label>
-                            <input type="radio" name="windowmode" data-checked="wm_option" value="Fullscreen" id="wm_fullscreen" style="nav-right:none"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(3)"
+                                name="windowmode"
+                                data-checked="wm_option"
+                                value="Fullscreen"
+                                id="wm_fullscreen"
+                                style="nav-up: #ar_expand; nav-down: #rr_display"
+                            />
                             <label class="config-option__tab-label" for="wm_fullscreen">Fullscreen</label>
                         </div>
-                        <div class="config-option__details"></div>
                     </div>
-                </div>
-                
-                <div class="config__row">
-                    <div class="config-option">
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(4)">
                         <label class="config-option__title">Framerate</label>
                         <div class="config-option__list">
                             <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)" 
+                                data-event-focus="set_current_gfx_description(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Original"
                                 id="rr_original"
-                                data-attr-style="rr_option=='Manual' ? 'nav-left:none;nav-down:#rr_manual_input' : 'nav-left:none;nav-down:#apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #wm_windowed; nav-down: #rr_manual_input' : 'nav-up: #wm_windowed; nav-down: #msaa_none'"
                             />
                             <label class="config-option__tab-label" for="rr_original">Original</label>
                             <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)" 
+                                data-event-focus="set_current_gfx_description(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Display"
                                 id="rr_display"
-                                data-attr-style="rr_option=='Manual' ? 'nav-down:#rr_manual_input' : 'nav-down:#apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #wm_fullscreen; nav-down: #rr_manual_input' : 'nav-up: #wm_fullscreen; nav-down: #msaa_2x'"
                             />
                             <label class="config-option__tab-label" for="rr_display">Display</label>
                             <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)" 
+                                data-event-focus="set_current_gfx_description(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Manual"
                                 id="rr_manual"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up:#ar_expand;nav-down:#rr_manual_input' : 'nav-up:#ar_expand;nav-down:#apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #wm_fullscreen; nav-down: #rr_manual_input' : 'nav-up: #wm_fullscreen; nav-down: #msaa_4x'"
                             />
                             <label class="config-option__tab-label" for="rr_manual">Manual</label>
                         </div>
                         <div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
                             <label class="config-option__range-label">{{rr_manual_value}}</label>
-                            <input id="rr_manual_input" type="range" min="20" max="360" style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;" data-value="rr_manual_value"/>
+                            <input
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(4)"
+                                id="rr_manual_input"
+                                type="range"
+                                min="20"
+                                max="360"
+                                style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;"
+                                data-value="rr_manual_value"
+                            />
                         </div>
-                        <div class="config-option__details"></div>
                     </div>
-                    <div class="config-option">
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(5)">
                         <label class="config-option__title">MS Anti-Aliasing</label>
                         <div class="config-option__list">
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="None" id="msaa_none" style="nav-down:#apply_button"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(5)"
+                                name="antialiasing"
+                                data-checked="msaa_option"
+                                value="None"
+                                id="msaa_none"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_original; nav-down: #apply_button'"
+                            />
                             <label class="config-option__tab-label" for="msaa_none">None</label>
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA2X" id="msaa_2x" style="nav-down:#apply_button"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(5)"
+                                name="antialiasing"
+                                data-checked="msaa_option"
+                                value="MSAA2X"
+                                id="msaa_2x"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_display; nav-down: #apply_button'"
+                            />
                             <label class="config-option__tab-label" for="msaa_2x">2x</label>
-                            <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA4X" id="msaa_4x" style="nav-down:#apply_button"/>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(5)"
+                                name="antialiasing"
+                                data-checked="msaa_option"
+                                value="MSAA4X"
+                                id="msaa_4x"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_manual; nav-down: #apply_button'"
+                            />
                             <label class="config-option__tab-label" for="msaa_4x">4x</label>
-                            <!-- <input type="radio" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
+                            <!-- <input type="radio" data-event-blur="set_current_gfx_description(-1)" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
                             <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
                         </div>
-                        <div class="config-option__details"></div>
                     </div>
+
+                </div>
+                <div class="config__wrapper">
+                    <p data-if="cur_gfx_description == 0">
+                        Sets the output resolution of the game.
+                    </p>
+                    <p data-if="cur_gfx_description == 1">
+                        Renders at a higher resolution and scales it down to the output resolution for increased quality. Only available in Original and Original 2x resolution.
+                    </p>
+                    <p data-if="cur_gfx_description == 2">
+                        Sets the horizontal aspect ratio. Original limits the game to 4:3 (N64). Expand will adjust the game to match your display's horizontal resolution.
+                    </p>
+                    <p data-if="cur_gfx_description == 3">
+                        Sets whether the game should display on a Window or Fullscreen. You can also use Alt + Enter to toggle this option.
+                    </p>
+                    <p data-if="cur_gfx_description == 4">
+                        Doesn't affect gameplay. If you have issues on Display while using an external frame limiter, use Manual with that frame limit instead.
+                    </p>
+                    <p data-if="cur_gfx_description == 5">
+                        Sets the Multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.
+                        <br />
+                        <br />
+                        Note: This option won't be available if your GPU does not support MSAA Sample Positions during the time being as it is required to avoid rendering glitches.
+                    </p>
                 </div>
             </div>
             <div class="config__footer">
@@ -113,8 +260,7 @@
                         data-attrif-disabled="!options_changed"
                         onclick="apply_options"
                         id="apply_button"
-                        style="nav-up:#rr_original"
-                        data-attr-style="rr_option=='Manual' ? 'nav-up:#rr_manual_input' : 'nav-up:#rr_original'"
+                        style="nav-up:#msaa_none"
                     >
                         <div class="button__label">Apply</div>
                     </button>

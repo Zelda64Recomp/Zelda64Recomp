@@ -18,14 +18,28 @@
 }
 
 .config__wrapper {
-    display: flex;
-    flex-direction: column;
     border-radius: 0dp;
     flex: 1 1 100%;
     height: 100%;
     padding: space(16);
     text-align: left;
     background-color: $color-bg-shadow;
+
+    p {
+        @extend %body;
+        padding: space(16);
+        white-space: pre-line;
+        line-height: space(28);
+    }
+}
+
+.config__hz-wrapper {
+    display: flex;
+    flex-direction: row;
+    border-radius: 0dp;
+    flex: 1 1 100%;
+    height: 100%;
+    text-align: left;
 }
 
 .config__header, .config__footer {
@@ -69,7 +83,11 @@
     flex: 1;
     align-items: flex-start;
     justify-content: flex-start;
-    margin: space(8) 0 space(16);
+    margin: space(16) space(0) space(24);
+
+    &:last-child {
+        margin-top: space(16);
+    }
 }
 
 .config-option__title {
@@ -86,11 +104,20 @@
     align-items: flex-start;
     justify-content: flex-start;
 
+    input:first-of-type {
+        nav-left: none;
+    }
+
+    input:last-of-type {
+        nav-right: none;
+    }
+
     .config-option__tab-label {
         @extend %label-sm;
         display: block;
-        padding: 12dp 0;
-        margin: 0 12dp;
+        padding: space(12) 0 space(8);
+        height: auto;
+        margin: 0 space(12);
         margin-right: space(16);
         color: $color-text-inactive;
         tab-index: none;
@@ -175,7 +202,7 @@
 .config-option__details {
     @extend %label-xs;
     color: $color-secondary;
-    margin: space(8) space(12) 0;
+    margin: space(14) space(12) 0;
     height: space(18);
 }
 

@@ -69,6 +69,7 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
+static int focused_gfx_index = -1;
 
 static bool cont_active = true;
 
@@ -359,6 +360,18 @@ public:
 				}
 				out = "";
 			});
+		
+		constructor.BindEventCallback("set_current_gfx_description",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+				int gfx_index = inputs.at(0).Get<size_t>();
+				// watch for mouseout being overzealous during event bubbling, only clear if the event's attached element matches the current
+				if (gfx_index == -1 && event.GetType() == "mouseout" && event.GetCurrentElement() != event.GetTargetElement()) {
+					return;
+				}
+				focused_gfx_index = gfx_index;
+				model_handle.DirtyVariable("cur_gfx_description");
+			});
+		constructor.Bind("cur_gfx_description", &focused_gfx_index);
 
 		graphics_model_handle = constructor.GetModelHandle();
 	}
