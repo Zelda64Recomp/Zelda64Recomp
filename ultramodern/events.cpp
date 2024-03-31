@@ -320,6 +320,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
                 // is finished as well, so sending this early shouldn't be an issue in most cases.
                 // If this causes issues then the logic can be replaced with responding to yield requests.
                 sp_complete();
+                ultramodern::measure_input_latency();
 
                 auto rt64_start = std::chrono::system_clock::now();
                 RT64SendDL(rdram, &task_action->task);

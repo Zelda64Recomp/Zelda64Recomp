@@ -2,7 +2,12 @@
 #include "sys_cfb.h"
 #include "buffers.h"
 #include "fault.h"
+#include "audiomgr.h"
 #include "z64speed_meter.h"
+#include "z64vimode.h"
+#include "z64viscvg.h"
+#include "z64vismono.h"
+#include "z64viszbuf.h"
 
 void recomp_set_current_frame_poll_id();
 void PadMgr_HandleRetrace(void);
@@ -34,6 +39,7 @@ void PadMgr_GetInput2(Input* inputs, s32 gameRequest) {
 extern CfbInfo sGraphCfbInfos[3];
 u32 recomp_time_us();
 void recomp_measure_latency();
+void* osViGetCurrentFramebuffer_recomp();
 
 OSMesgQueue *rdp_queue_ptr = NULL;
 
@@ -51,13 +57,10 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     static IrqMgrClient irq_client = {0};
     static OSMesgQueue vi_queue = {0};
     static OSMesg vi_buf[8] = {0};
-    static OSMesgQueue rdp_queue = {0};
-    static OSMesg rdp_mesg = NULL;
     static bool created = false;
     if (!created) {
         created = true;
         osCreateMesgQueue(&vi_queue, vi_buf, ARRAY_COUNT(vi_buf));
-        osCreateMesgQueue(&rdp_queue, &rdp_mesg, 1);
         extern IrqMgr gIrqMgr;
         IrqMgr_AddClient(&gIrqMgr, &irq_client, &vi_queue);
     }
@@ -65,9 +68,7 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     // @recomp Disable the wait here so that it can be moved after task submission for minimizing latency.
 // retry:
 //     osSetTimer(&timer, OS_USEC_TO_CYCLES(3 * 1000 * 1000), 0, &gfxCtx->queue, (OSMesg)666);
-    u32 count_before = recomp_time_us();
-    osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
-    u32 count_after = recomp_time_us();
+//     osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
 //     osStopTimer(&timer);
 
 //     if (msg == (OSMesg)666) {
@@ -143,66 +144,51 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
         osRecvMesg(&gfxCtx->queue, NULL, OS_MESG_NOBLOCK);
     }
 
-    // @recomp Set up the dedicated RDP complete message queue pointer for the scheduler.
-    rdp_queue_ptr = &rdp_queue;
-
     gfxCtx->schedMsgQ = &gSchedContext.cmdQ;
-    recomp_measure_latency();
     osSendMesg(&gSchedContext.cmdQ, scTask, OS_MESG_BLOCK);
     Sched_SendEntryMsg(&gSchedContext);
     
-    // @recomp Wait for the RDP complete message to mitigate waiting between creating the next task and submitting it.
-    osRecvMesg(&rdp_queue, NULL, OS_MESG_BLOCK);
-    rdp_queue_ptr = NULL;
+    // @recomp Immediately wait on the task to complete to minimize latency for the next one.
+    osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
 
-    // @recomp Manually wait the required number of VI periods after submitting the task
-    // so that the next frame doesn't need to wait before submitting its task.
-    u32 vi_count_before = recomp_time_us();
-    for (int i = 0; i < cfb->updateRate; i++) {
+    // @recomp Wait on the VI framebuffer to change if this task has a framebuffer swap.
+    if (scTask->flags & OS_SC_SWAPBUFFER) {
+        while (osViGetCurrentFramebuffer_recomp() != cfb->fb1) {
+            osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
+        }
+        // Wait one extra VI afterwards.
         osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
     }
-
-    // @recomp Flush any excess VI messages that came in.
+    
+    // @recomp Flush any extra messages from the VI queue.
     while (osRecvMesg(&vi_queue, NULL, OS_MESG_NOBLOCK) == 0) {
         ;
     }
-    u32 vi_count_after = recomp_time_us();
-
-    // recomp_printf("recv wait added %d us\nVI wait: %d us\n", count_after - count_before, vi_count_after - vi_count_before);
 }
 
-extern OSTime sRDPStartTime;
+extern SpeedMeter sGameSpeedMeter;
+extern VisCvg sGameVisCvg;
+extern VisZbuf sGameVisZbuf;
+extern VisMono sGameVisMono;
+extern ViMode sGameViMode;
 
-// @recomp Patched to send a message to the dedicated RDP complete message queue.
-void Sched_HandleRDPDone(SchedContext* sched) {
-    OSScTask* curRDP;
-    OSScTask* nextRSP = NULL;
-    OSScTask* nextRDP = NULL;
-    s32 state;
+void GameState_Destroy(GameState* gameState) {
+    AudioMgr_StopAllSfxExceptSystem();
+    Audio_Update();
 
-    if (sched->curRDPTask == NULL) {
-        osSyncPrintf("__scHandleRDP:sc->curRDPTask == NULL\n");
-        return;
+    // @recomp The wait for the gfx task was moved to directly after submission, so it's not needed here.
+    // osRecvMesg(&gameState->gfxCtx->queue, NULL, OS_MESG_BLOCK);
+
+    if (gameState->destroy != NULL) {
+        gameState->destroy(gameState);
     }
 
-    // Log run time
-    gRDPTimeAcc = osGetTime() - sRDPStartTime;
-
-    // Mark task done
-    curRDP = sched->curRDPTask;
-    sched->curRDPTask = NULL;
-    curRDP->state &= ~OS_SC_DP;
-
-    // @recomp Send a message to the dedicated RDP complete message queue if it's currently set up.
-    if (rdp_queue_ptr) {
-        osSendMesg(rdp_queue_ptr, NULL, OS_MESG_BLOCK);
-    }
-
-    Sched_NotifyDone(sched, curRDP);
-
-    // Schedule and run next task
-    state = ((sched->curRSPTask == NULL) << 1) | (sched->curRDPTask == NULL);
-    if (Sched_Schedule(sched, &nextRSP, &nextRDP, state) != state) {
-        Sched_RunTask(sched, nextRSP, nextRDP);
-    }
+    Rumble_Destroy();
+    SpeedMeter_Destroy(&sGameSpeedMeter);
+    VisCvg_Destroy(&sGameVisCvg);
+    VisZbuf_Destroy(&sGameVisZbuf);
+    VisMono_Destroy(&sGameVisMono);
+    ViMode_Destroy(&sGameViMode);
+    THA_Destroy(&gameState->tha);
+    GameAlloc_Cleanup(&gameState->alloc);
 }
