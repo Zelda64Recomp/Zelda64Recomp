@@ -3,22 +3,22 @@
 
 static ultramodern::input_callbacks_t input_callbacks;
 
-constexpr size_t num_poll_ids = 8;
-std::chrono::system_clock::time_point input_poll_times[num_poll_ids];
-s32 cur_poll_id = 0;
-s32 cur_frame_poll_id = 0;
+std::chrono::system_clock::time_point input_poll_time;
 
 void update_poll_time() {
-    cur_poll_id = (cur_poll_id + 1) % num_poll_ids;
-    input_poll_times[cur_poll_id] = std::chrono::system_clock::now();
+    input_poll_time = std::chrono::system_clock::now();
 }
 
 extern "C" void recomp_set_current_frame_poll_id(uint8_t* rdram, recomp_context* ctx) {
-    cur_frame_poll_id = cur_poll_id;
+    // TODO reimplement the system for tagging polls with IDs to handle games with multithreaded input polling.
+}
+
+extern "C" void recomp_measure_latency(uint8_t* rdram, recomp_context* ctx) {
+    ultramodern::measure_input_latency();
 }
 
 void ultramodern::measure_input_latency() {
-    // printf("Delta: %ld micros\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - input_poll_times[cur_frame_poll_id]));    
+    // printf("Delta: %ld micros\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - input_poll_time));    
 }
 
 void set_input_callbacks(const ultramodern::input_callbacks_t& callbacks) {

@@ -23,4 +23,5 @@ __sinf_recomp = 0x8F000038;
 __cosf_recomp = 0x8F00003C;
 osCreateMesgQueue_recomp = 0x8F000048;
 recomp_set_current_frame_poll_id = 0x8F00004C;
-
+recomp_time_us = 0x8F000050;
+recomp_measure_latency = 0x8F000054;

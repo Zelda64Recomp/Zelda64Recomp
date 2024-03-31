@@ -315,14 +315,17 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
                     RT64EnableInstantPresent(application);
                     enabled_instant_present = true;
                 }
-                ultramodern::measure_input_latency();
                 // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
                 // start another graphics task until the RDP is also complete. Games usually preserve the RSP inputs until the RDP
                 // is finished as well, so sending this early shouldn't be an issue in most cases.
                 // If this causes issues then the logic can be replaced with responding to yield requests.
                 sp_complete();
+
+                auto rt64_start = std::chrono::system_clock::now();
                 RT64SendDL(rdram, &task_action->task);
+                auto rt64_end = std::chrono::system_clock::now();
                 dp_complete();
+                // printf("RT64 ProcessDList time: %d us\n", static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(rt64_end - rt64_start).count()));
             }
             else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
                 events_context.vi.current_buffer = events_context.vi.next_buffer;

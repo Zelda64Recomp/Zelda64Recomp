@@ -2,6 +2,7 @@
 #include "sys_cfb.h"
 #include "buffers.h"
 #include "fault.h"
+#include "z64speed_meter.h"
 
 void recomp_set_current_frame_poll_id();
 void PadMgr_HandleRetrace(void);
@@ -31,6 +32,10 @@ void PadMgr_GetInput2(Input* inputs, s32 gameRequest) {
 }
 
 extern CfbInfo sGraphCfbInfos[3];
+u32 recomp_time_us();
+void recomp_measure_latency();
+
+OSMesgQueue *rdp_queue_ptr = NULL;
 
 // @recomp Immediately sends the graphics task instead of queueing it in the scheduler.
 void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
@@ -41,11 +46,28 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     OSTimer timer;
     OSMesg msg;
     CfbInfo* cfb;
+    
+    // @recomp Additional static members for extra scheduling purposes.
+    static IrqMgrClient irq_client = {0};
+    static OSMesgQueue vi_queue = {0};
+    static OSMesg vi_buf[8] = {0};
+    static OSMesgQueue rdp_queue = {0};
+    static OSMesg rdp_mesg = NULL;
+    static bool created = false;
+    if (!created) {
+        created = true;
+        osCreateMesgQueue(&vi_queue, vi_buf, ARRAY_COUNT(vi_buf));
+        osCreateMesgQueue(&rdp_queue, &rdp_mesg, 1);
+        extern IrqMgr gIrqMgr;
+        IrqMgr_AddClient(&gIrqMgr, &irq_client, &vi_queue);
+    }
 
     // @recomp Disable the wait here so that it can be moved after task submission for minimizing latency.
 // retry:
 //     osSetTimer(&timer, OS_USEC_TO_CYCLES(3 * 1000 * 1000), 0, &gfxCtx->queue, (OSMesg)666);
-//     osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
+    u32 count_before = recomp_time_us();
+    osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
+    u32 count_after = recomp_time_us();
 //     osStopTimer(&timer);
 
 //     if (msg == (OSMesg)666) {
@@ -97,7 +119,6 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
 
     { s32 pad; }
 
-
     cfb = &sGraphCfbInfos[cfbIdx];
     cfbIdx = (cfbIdx + 1) % ARRAY_COUNT(sGraphCfbInfos);
 
@@ -122,26 +143,66 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
         osRecvMesg(&gfxCtx->queue, NULL, OS_MESG_NOBLOCK);
     }
 
+    // @recomp Set up the dedicated RDP complete message queue pointer for the scheduler.
+    rdp_queue_ptr = &rdp_queue;
+
     gfxCtx->schedMsgQ = &gSchedContext.cmdQ;
+    recomp_measure_latency();
     osSendMesg(&gSchedContext.cmdQ, scTask, OS_MESG_BLOCK);
     Sched_SendEntryMsg(&gSchedContext);
     
+    // @recomp Wait for the RDP complete message to mitigate waiting between creating the next task and submitting it.
+    osRecvMesg(&rdp_queue, NULL, OS_MESG_BLOCK);
+    rdp_queue_ptr = NULL;
+
     // @recomp Manually wait the required number of VI periods after submitting the task
     // so that the next frame doesn't need to wait before submitting its task.
-    static IrqMgrClient irq_client = {0};
-    static OSMesgQueue vi_queue = {0};
-    static OSMesg vi_buf[8] = {0};
-    static bool created = false;
-
-    // Create the message queue and install the VI irq manager
-    if (!created) {
-        created = true;
-        osCreateMesgQueue(&vi_queue, vi_buf, ARRAY_COUNT(vi_buf));
-        extern IrqMgr gIrqMgr;
-        IrqMgr_AddClient(&gIrqMgr, &irq_client, &vi_queue);
-    }
-
+    u32 vi_count_before = recomp_time_us();
     for (int i = 0; i < cfb->updateRate; i++) {
         osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
+    }
+
+    // @recomp Flush any excess VI messages that came in.
+    while (osRecvMesg(&vi_queue, NULL, OS_MESG_NOBLOCK) == 0) {
+        ;
+    }
+    u32 vi_count_after = recomp_time_us();
+
+    // recomp_printf("recv wait added %d us\nVI wait: %d us\n", count_after - count_before, vi_count_after - vi_count_before);
+}
+
+extern OSTime sRDPStartTime;
+
+// @recomp Patched to send a message to the dedicated RDP complete message queue.
+void Sched_HandleRDPDone(SchedContext* sched) {
+    OSScTask* curRDP;
+    OSScTask* nextRSP = NULL;
+    OSScTask* nextRDP = NULL;
+    s32 state;
+
+    if (sched->curRDPTask == NULL) {
+        osSyncPrintf("__scHandleRDP:sc->curRDPTask == NULL\n");
+        return;
+    }
+
+    // Log run time
+    gRDPTimeAcc = osGetTime() - sRDPStartTime;
+
+    // Mark task done
+    curRDP = sched->curRDPTask;
+    sched->curRDPTask = NULL;
+    curRDP->state &= ~OS_SC_DP;
+
+    // @recomp Send a message to the dedicated RDP complete message queue if it's currently set up.
+    if (rdp_queue_ptr) {
+        osSendMesg(rdp_queue_ptr, NULL, OS_MESG_BLOCK);
+    }
+
+    Sched_NotifyDone(sched, curRDP);
+
+    // Schedule and run next task
+    state = ((sched->curRSPTask == NULL) << 1) | (sched->curRDPTask == NULL);
+    if (Sched_Schedule(sched, &nextRSP, &nextRDP, state) != state) {
+        Sched_RunTask(sched, nextRSP, nextRDP);
     }
 }

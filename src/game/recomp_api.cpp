@@ -77,3 +77,7 @@ extern "C" void recomp_get_bgm_volume(uint8_t* rdram, recomp_context* ctx) {
 extern "C" void recomp_get_low_health_beeps_enabled(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<u32>(recomp::get_low_health_beeps_enabled()));
 }
+
+extern "C" void recomp_time_us(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(ultramodern::time_since_start()).count()));
+}
