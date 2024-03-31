@@ -5,6 +5,8 @@
 #include "overlays/actors/ovl_Boss_04/z_boss_04.h"
 #include "overlays/actors/ovl_Boss_Hakugin/z_boss_hakugin.h"
 #include "overlays/actors/ovl_En_Water_Effect/z_en_water_effect.h"
+#include "overlays/actors/ovl_En_Osn/z_en_osn.h"
+#include "overlays/actors/ovl_En_Fall2/z_en_fall2.h"
 
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
@@ -683,4 +685,234 @@ void func_80B0C398(BossHakugin* this, PlayState* play) {
     }
 
     CLOSE_DISPS(play->state.gfxCtx);
+}
+
+// @recomp Skip interpolation for the Happy Mask Salesman when his animation changes.
+extern AnimationInfo sHappyMaskSalesmanAnimationInfo[];
+
+typedef enum {
+    /*  0 */ OSN_ANIM_IDLE,
+    /*  1 */ OSN_ANIM_ARMS_OUT,
+    /*  2 */ OSN_ANIM_BOWING,
+    /*  3 */ OSN_ANIM_REMINISCE,
+    /*  4 */ OSN_ANIM_HANDS_CLASPED,
+    /*  5 */ OSN_ANIM_BELIEVE,
+    /*  6 */ OSN_ANIM_THINK,
+    /*  7 */ OSN_ANIM_SHAKE_HEAD,
+    /*  8 */ OSN_ANIM_ORGAN_TALK,
+    /*  9 */ OSN_ANIM_ORGAN_PLAY,
+    /* 10 */ OSN_ANIM_SHAKE,
+    /* 11 */ OSN_ANIM_CHOKE,
+    /* 12 */ OSN_ANIM_DESPAIR,
+    /* 13 */ OSN_ANIM_FAST_BOWS,
+    /* 14 */ OSN_ANIM_HAND_OUT,
+    /* 15 */ OSN_ANIM_LYING_DOWN_FACE_UP,
+    /* 16 */ OSN_ANIM_LYING_DOWN_FACE_DOWN,
+    /* 17 */ OSN_ANIM_MASK_LOOK_AT,
+    /* 18 */ OSN_ANIM_TURN_AROUND_START,
+    /* 19 */ OSN_ANIM_TURN_AROUND_LOOP,
+    /* 20 */ OSN_ANIM_WALK_AWAY,
+    /* 21 */ OSN_ANIM_MASK_LOOK_FROM_START,
+    /* 22 */ OSN_ANIM_MASK_LOOK_FROM_LOOP,
+    /* 23 */ OSN_ANIM_HAND_OUT_2,    // Exact same as OSN_ANIM_HAND_OUT
+    /* 24 */ OSN_ANIM_WALK_AWAY_END, // Only the last frame of OSN_ANIM_WALK_AWAY
+    /* 25 */ OSN_ANIM_MAX
+} OsnAnimation;
+
+void EnOsn_HandleCsAction(EnOsn* this, PlayState* play);
+void EnOsn_Idle(EnOsn* this, PlayState* play);
+
+// @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
+void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
+    // @recomp Manually relocate the static symbol.
+    AnimationInfo* sAnimationInfo = (AnimationInfo*)actor_relocate(&this->actor, sHappyMaskSalesmanAnimationInfo);
+
+    u32 isSwitchFlagSet = Flags_GetSwitch(play, 0);
+
+    this->csId = this->actor.csId;
+
+    Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, OSN_ANIM_IDLE);
+    if (!isSwitchFlagSet) {
+        // @recomp Manual relocation, TODO remove when automated by the recompiler.
+        this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_HandleCsAction);
+    } else {
+        // @recomp Manual relocation, TODO remove when automated by the recompiler.
+        this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_Idle);
+    }
+    
+    // @recomp Skip interpolation this frame.
+    actor_set_interpolation_skipped(&this->actor);
+}
+
+void EnOsn_TurnAround(EnOsn* this);
+void EnOsn_LookFromMask(EnOsn* this);
+void EnOsn_FadeOut(EnOsn* this);
+
+// @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
+void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
+    u8 pad;
+    s32 cueChannel;
+
+    if (Cutscene_IsCueInChannel(play, CS_CMD_ACTOR_CUE_130)) {
+        cueChannel = Cutscene_GetCueChannel(play, CS_CMD_ACTOR_CUE_130);
+        this->shouldRotateHead = false;
+        if (this->cueId != play->csCtx.actorCues[cueChannel]->id) {
+            this->cueId = play->csCtx.actorCues[cueChannel]->id;
+            switch (play->csCtx.actorCues[cueChannel]->id) {
+                case 1:
+                    this->animIndex = OSN_ANIM_BOWING;
+                    break;
+
+                case 2:
+                    this->animIndex = OSN_ANIM_ARMS_OUT;
+                    break;
+
+                case 3:
+                    this->animIndex = OSN_ANIM_SHAKE_HEAD;
+                    break;
+
+                case 4:
+                    this->animIndex = OSN_ANIM_REMINISCE;
+                    break;
+
+                case 5:
+                    this->animIndex = OSN_ANIM_THINK;
+                    break;
+
+                case 6:
+                    this->animIndex = OSN_ANIM_BELIEVE;
+                    break;
+
+                case 7:
+                    this->animIndex = OSN_ANIM_HANDS_CLASPED;
+                    break;
+
+                case 8:
+                    this->animIndex = OSN_ANIM_IDLE;
+                    break;
+
+                case 10:
+                    this->animIndex = OSN_ANIM_ORGAN_TALK;
+                    break;
+
+                case 11:
+                    this->animIndex = OSN_ANIM_ORGAN_PLAY;
+                    break;
+
+                case 13:
+                    this->animIndex = OSN_ANIM_SHAKE;
+                    break;
+
+                case 15:
+                    this->animIndex = OSN_ANIM_CHOKE;
+                    break;
+
+                case 16:
+                    this->animIndex = OSN_ANIM_DESPAIR;
+                    break;
+
+                case 17:
+                    this->animIndex = OSN_ANIM_FAST_BOWS;
+                    break;
+
+                case 18:
+                    this->animIndex = OSN_ANIM_HAND_OUT;
+                    break;
+
+                case 19:
+                    this->animIndex = OSN_ANIM_MASK_LOOK_AT;
+                    break;
+
+                case 20:
+                    this->animIndex = OSN_ANIM_TURN_AROUND_START;
+                    break;
+
+                case 21:
+                    this->animIndex = OSN_ANIM_WALK_AWAY;
+                    break;
+
+                case 22:
+                    this->animIndex = OSN_ANIM_MASK_LOOK_FROM_START;
+                    break;
+
+                case 23:
+                    this->animIndex = OSN_ANIM_HAND_OUT_2;
+                    break;
+
+                case 24:
+                    this->animIndex = OSN_ANIM_WALK_AWAY_END;
+                    break;
+
+                default:
+                    this->animIndex = OSN_ANIM_IDLE;
+                    break;
+            }
+            // @recomp Manually relocate the static symbol.
+            AnimationInfo* sAnimationInfo = (AnimationInfo*)actor_relocate(&this->actor, sHappyMaskSalesmanAnimationInfo);
+            
+            Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, this->animIndex);
+
+            // @recomp Skip interpolation this frame.
+            actor_set_interpolation_skipped(&this->actor);
+
+        }
+
+        if ((this->animIndex == OSN_ANIM_BELIEVE) && (play->sceneId == SCENE_SPOT00) &&
+            (gSaveContext.sceneLayer == 0xB) && (play->csCtx.curFrame == 400)) {
+            Actor_PlaySfx(&this->actor, NA_SE_VO_OMVO00);
+        }
+
+        if (this->animIndex == OSN_ANIM_TURN_AROUND_START) {
+            EnOsn_TurnAround(this);
+        }
+
+        if (this->animIndex == OSN_ANIM_MASK_LOOK_FROM_START) {
+            EnOsn_LookFromMask(this);
+        }
+
+        if (this->animIndex == OSN_ANIM_WALK_AWAY_END) {
+            EnOsn_FadeOut(this);
+        }
+
+        if ((this->animIndex == OSN_ANIM_WALK_AWAY) &&
+            (Animation_OnFrame(&this->skelAnime, 17.0f) || Animation_OnFrame(&this->skelAnime, 27.0f) ||
+             Animation_OnFrame(&this->skelAnime, 37.0f) || Animation_OnFrame(&this->skelAnime, 47.0f) ||
+             Animation_OnFrame(&this->skelAnime, 57.0f) || Animation_OnFrame(&this->skelAnime, 67.0f))) {
+            Actor_PlaySfx(&this->actor, NA_SE_EV_OMENYA_WALK);
+        }
+        Cutscene_ActorTranslateAndYaw(&this->actor, play, cueChannel);
+    } else {
+        this->shouldRotateHead = true;
+        this->cueId = 99;
+        EnOsn_ChooseAction(this, play);
+    }
+}
+
+// @recomp Patched to tag this actor's draws using linear order matching.
+void EnFall2_Draw(Actor* thisx, PlayState* play) {
+    s32 pad;
+    EnFall2* this = (EnFall2*)thisx;
+    Mtx* mtx;
+
+    if (!(this->alphaLevel <= 0.0f)) {
+        Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+        AnimatedMat_DrawXlu(play, Lib_SegmentedToVirtual(object_fall2_Matanimheader_008840));
+
+        mtx = GRAPH_ALLOC(play->state.gfxCtx, this->skeletonInfo.unk_18->unk_1 * sizeof(Mtx));
+
+        if (mtx != NULL) {
+            Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+            Matrix_RotateYS((s16)(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)) + 0x8000), MTXMODE_APPLY);
+
+            // @recomp Tag this actor's matrices.
+            OPEN_DISPS(play->state.gfxCtx);
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+
+            func_8018450C(play, &this->skeletonInfo, mtx, NULL, NULL, &this->actor);
+            
+            // @recomp Pop the matrix group.
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+            CLOSE_DISPS(play->state.gfxCtx);
+        }
+    }
 }

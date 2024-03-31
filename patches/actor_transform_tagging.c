@@ -83,7 +83,11 @@ void Actor_Init(Actor* actor, PlayState* play) {
 Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        if (actor_get_interpolation_skipped(actor)) {
+            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        } else {
+            gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        }
     }
     return dlist;
 }
@@ -92,7 +96,11 @@ Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        if (actor_get_interpolation_skipped(actor)) {
+            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        } else {
+            gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        }
     }
     return dlist;
 }
@@ -101,7 +109,11 @@ Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
 Gfx* push_skin_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
-        gEXMatrixGroupDecomposedVerts(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        if (actor_get_interpolation_skipped(actor)) {
+            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        } else {
+            gEXMatrixGroupDecomposedVerts(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+        }
     }
     return dlist;
 }
@@ -1256,6 +1268,9 @@ void Actor_Draw(PlayState* play, Actor* actor) {
         actor->shape.shadowDraw(actor, light, play);
     }
     actor->isDrawn = true;
+
+    // @recomp Clear the actor's interpolation skipped flag.
+    actor_clear_interpolation_skipped(actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

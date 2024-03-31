@@ -3,6 +3,7 @@ __start = 0x80000000;
 /* Static symbols that aren't in the elf */
 sSceneEntranceTable = 0x801C5720;
 D_808DE5B0 = 0x808DE5B0;
+sHappyMaskSalesmanAnimationInfo = 0x80AD22C0;
 
 /* Dummy addresses that get recompiled into function calls */
 recomp_puts = 0x8F000000;

@@ -28,7 +28,7 @@
 #define EFFECT_SHIELD_PARTICLE_TRANSFORM_ID_START (EFFECT_BLURE_TRANSFORM_ID_START + 2 * EFFECT_TRANSFORM_ID_COUNT)
 #define EFFECT_TIRE_MARK_TRANSFORM_ID_START       (EFFECT_SHIELD_PARTICLE_TRANSFORM_ID_START + 2 * EFFECT_TRANSFORM_ID_COUNT)
 
-#define ACTOR_TRANSFORM_LIMB_COUNT 128
+#define ACTOR_TRANSFORM_LIMB_COUNT 256
 #define ACTOR_TRANSFORM_ID_COUNT (ACTOR_TRANSFORM_LIMB_COUNT * 2) // One ID for each limb and another for each post-draw
 #define ACTOR_TRANSFORM_ID_START 0x1000000U
 
@@ -37,9 +37,10 @@
 #define actorIdByte0(actor) ((u8*)(actor))[0x22]
 // 0x23 between halfDaysBits and world
 #define actorIdByte1(actor) ((u8*)(actor))[0x23]
+// 0x3A between audioFlags and focus
+#define actorIdByte2(actor) ((u8*)(actor))[0x3A]
 
 // Other unused padding:
-// 0x3A between audioFlags and focus
 // 0x3B between audioFlags and focus
 
 static inline u32 actor_transform_id(Actor* actor) {
@@ -48,6 +49,22 @@ static inline u32 actor_transform_id(Actor* actor) {
         (actorIdByte1(actor) <<  8);
 
     return (actor_id * ACTOR_TRANSFORM_ID_COUNT) + ACTOR_TRANSFORM_ID_START;
+}
+
+typedef enum {
+    ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED = 1 << 0,
+} ActorTransformFlags;
+
+static inline u32 actor_get_interpolation_skipped(Actor* actor) {
+    return (actorIdByte2(actor) & ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED) != 0;
+}
+
+static inline void actor_set_interpolation_skipped(Actor* actor) {
+    actorIdByte2(actor) |= ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED;
+}
+
+static inline void actor_clear_interpolation_skipped(Actor* actor) {
+    actorIdByte2(actor) &= ~ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED;
 }
 
 void force_camera_interpolation();
