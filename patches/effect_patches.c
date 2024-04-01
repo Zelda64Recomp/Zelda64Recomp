@@ -144,8 +144,9 @@ void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt,
     s32 height = 1 << maskt;
     f32 s;
     f32 t;
-    s32 dtdy;
-    s32 dsdx;
+    // @recomp Use floats for dtdy and dsdx.
+    f32 dtdy;
+    f32 dsdx;
 
     gDPLoadTextureBlock_4b(gfx++, texture, fmt, width, height, 0, G_TX_MIRROR | G_TX_CLAMP, G_TX_MIRROR | G_TX_CLAMP,
                            masks, maskt, G_TX_NOLOD, G_TX_NOLOD);
@@ -154,22 +155,23 @@ void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt,
     s = ((1.0f - (1.0f / arg6)) * (SCREEN_WIDTH / 2)) + 70.0f;
     t = ((1.0f - (1.0f / arg6)) * (SCREEN_HEIGHT / 2)) + 50.0f;
 
-    if (s < -1023.0f) {
-        s = -1023.0f;
-    }
-    if (t < -1023.0f) {
-        t = -1023.0f;
-    }
+    // @recomp Uncap the s and t calculations as they go into a matrix now instead of being used as texture coordinates.
+    // if (s < -1023.0f) {
+    //     s = -1023.0f;
+    // }
+    // if (t < -1023.0f) {
+    //     t = -1023.0f;
+    // }
 
-    if ((s <= -1023.0f) || (t <= -1023.0f)) {
-        dsdx = 0;
-        dtdy = 0;
-    } else {
+    // if ((s <= -1023.0f) || (t <= -1023.0f)) {
+    //     dsdx = 0;
+    //     dtdy = 0;
+    // } else {
         dsdx = ((SCREEN_WIDTH - (2.0f * s)) / gScreenWidth) * (1 << 10);
         dtdy = ((SCREEN_HEIGHT - (2.0f * t)) / gScreenHeight) * (1 << 10);
-    }
+    // }
 
-    // Push the old RDP/RSP params.
+    // @recomp Push the old RDP/RSP params.
     gEXPushProjectionMatrix(gfx++);
     gEXPushGeometryMode(gfx++);
     gEXMatrixGroupSimple(gfx++, CIRCLE_OVERLAY_TRANSFORM_PROJECTION_ID, G_EX_PUSH, G_MTX_PROJECTION,
@@ -177,64 +179,68 @@ void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt,
     gEXMatrixGroupSimple(gfx++, CIRCLE_OVERLAY_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
         G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
-    // Allocate a matrix and vertices in the displaylist because there's no handle to the GfxContext here.
+    // @recomp Allocate a matrix and vertices in the displaylist because there's no handle to the GfxContext here.
     Mtx* ortho_matrix = (Mtx*)(gfx + 1);
     Mtx* model_matrix = ortho_matrix + 1;
     Gfx* after_matrix = (Gfx*)(model_matrix + 4);
     gSPBranchList(gfx++, after_matrix);
     gfx = after_matrix;
 
-    // Set up an ortho projection matrix.
+    // @recomp Set up an ortho projection matrix.
     guOrtho(ortho_matrix, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, -SCREEN_HEIGHT / 2, -1.0f, 1.0f, 1.0f);
     gSPMatrix(gfx++, ortho_matrix, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-    // Set up a scale model matrix, using the original texcoord scaling to calculate the matrix's scale.
-    guScale(model_matrix, 1024.0f / dsdx, 1024.0f / dtdy, 1.0f);
-    gSPMatrix(gfx++, model_matrix, G_MTX_PUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-    
-    // Enable texturing and set geometry mode.
+    // @recomp Set up a scale model matrix, using the original texcoord scaling to calculate the matrix's scale.
+    float scale_x = 1024.0f / MAX((float)dsdx, 0.1f);
+    float scale_y = 1024.0f / MAX((float)dtdy, 0.1f);
+
+    if (arg6 == 0) {
+        scale_x = 0.0f;
+        scale_y = 0.0f;
+    }
+
+    guScale(model_matrix, scale_x, scale_y, 1.0f);
+
+    // @recomp Enable texturing and set geometry mode.
     gSPTexture(gfx++, 0x8000 * width / 64, 0x8000 * height / 64, 0, G_TX_RENDERTILE, G_ON);
     gSPLoadGeometryMode(gfx++, 0);
 
+    // @recomp Static variable to hold the lens overlay vertices.
     static Vtx overlay_verts[] = {
         // The quad that holds the lens itself.
-        {{{  -64,   -64, 0}, 0, {       0,        0}, {0, 0, 0, 255}}},
-        {{{   64,   -64, 0}, 0, {512 << 5,        0}, {0, 0, 0, 255}}},
-        {{{  -64,    64, 0}, 0, {       0, 512 << 5}, {0, 0, 0, 255}}},
-        {{{   64,    64, 0}, 0, {512 << 5, 512 << 5}, {0, 0, 0, 255}}},
-        // The top verts of the quad above the lens.
-        {{{  -64, -1000, 0}, 0, {       0,        0}, {0, 0, 0, 255}}},
-        {{{   64, -1000, 0}, 0, {512 << 5,        0}, {0, 0, 0, 255}}},
-        // The bottom verts of the quad below the lens.
-        {{{  -64,  1000, 0}, 0, {       0, 512 << 5}, {0, 0, 0, 255}}},
-        {{{   64,  1000, 0}, 0, {512 << 5, 512 << 5}, {0, 0, 0, 255}}},
-        // The left verts of the quad to the left of the lens.
-        {{{-4000, -1000, 0}, 0, {       0,        0}, {0, 0, 0, 255}}},
-        {{{-4000,  1000, 0}, 0, {       0, 512 << 5}, {0, 0, 0, 255}}},
-        // The right verts of the quad to the right of the lens.
-        {{{ 4000, -1000, 0}, 0, {512 << 5,        0}, {0, 0, 0, 255}}},
-        {{{ 4000,  1000, 0}, 0, {512 << 5, 512 << 5}, {0, 0, 0, 255}}},
+        {{{   -64,   -64, 0}, 0, {       0,        0}, {0, 0, 0, 255}}},
+        {{{    64,   -64, 0}, 0, {512 << 5,        0}, {0, 0, 0, 255}}},
+        {{{   -64,    64, 0}, 0, {       0, 512 << 5}, {0, 0, 0, 255}}},
+        {{{    64,    64, 0}, 0, {512 << 5, 512 << 5}, {0, 0, 0, 255}}},
+        // The verts of the quad around the lens overlay to fill in the rest of the screen.
+        {{{-32000, -8000, 0}, 0, {       0,        0}, {0, 0, 0, 255}}},
+        {{{ 32000, -8000, 0}, 0, {512 << 5,        0}, {0, 0, 0, 255}}},
+        {{{-32000,  8000, 0}, 0, {       0, 512 << 5}, {0, 0, 0, 255}}},
+        {{{ 32000,  8000, 0}, 0, {512 << 5, 512 << 5}, {0, 0, 0, 255}}},
     };
 
-    // 8  4  5  10
+    // 4        5
     //    0  1
     //    2  3
-    // 9  6  7  11
+    // 6        7
 
-    // Load the verts.
-    gSPVertex(gfx++, overlay_verts, ARRAY_COUNT(overlay_verts), 0);
-    // Draw the quad containing the lens overlay.
+    // @recomp Load the verts.
+    gSPMatrix(gfx++, model_matrix, G_MTX_PUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPVertex(gfx++, &overlay_verts[0], 4, 0);
+    gSPMatrix(gfx++, &gIdentityMtx, G_MTX_PUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPVertex(gfx++, &overlay_verts[4], 4, 4);
+    // @recomp Draw the quad containing the lens overlay.
     gSP2Triangles(gfx++, 0, 1, 3, 0x0, 0, 3, 2, 0x0);
-    // Draw the quad above the lens overlay.
+    // @recomp Draw the quad above the lens overlay.
     gSP2Triangles(gfx++, 4, 5, 1, 0x0, 4, 1, 0, 0x0);
-    // Draw the quad below the lens overlay.
+    // @recomp Draw the quad below the lens overlay.
     gSP2Triangles(gfx++, 2, 3, 7, 0x0, 2, 7, 6, 0x0);
-    // Draw the quad to the left of the lens overlay.
-    gSP2Triangles(gfx++, 8, 4, 6, 0x0, 8, 6, 9, 0x0);
-    // Draw the quad to the right of the lens overlay.
-    gSP2Triangles(gfx++, 5, 10, 11, 0x0, 5, 11, 7, 0x0);
+    // @recomp Draw the quad to the left of the lens overlay.
+    gSP2Triangles(gfx++, 4, 0, 2, 0x0, 4, 2, 6, 0x0);
+    // @recomp Draw the quad to the right of the lens overlay.
+    gSP2Triangles(gfx++, 1, 5, 7, 0x0, 1, 7, 3, 0x0);
 
-    // Restore the old RDP/RSP params.
+    // @recomp Restore the old RDP/RSP params.
     gEXPopProjectionMatrix(gfx++);
     gEXPopGeometryMode(gfx++);
     gSPPopMatrix(gfx++, G_MTX_MODELVIEW);

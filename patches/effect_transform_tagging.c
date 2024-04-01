@@ -482,12 +482,10 @@ void EffStk_Draw(Actor* thisx, PlayState* play) {
     Matrix_Translate(0.0f, 0.0f, this->unk148, MTXMODE_APPLY);
 
     Mtx* mtx = Matrix_NewMtx(play->state.gfxCtx);
-    recomp_printf("EffStk_Draw matrix: %08X\n", (u32)mtx);
 
     // @recomp Tag the transform. Do not allow edits as this will get edited by the billboard detection and we'll want to skip position during a camera cut too.
     if (camera_was_skipped()) {
         gEXMatrixGroupDecomposedSkipPosRot(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-        recomp_printf("  Skipped EffStk_Draw matrix\n");
     }
     else {
         gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
