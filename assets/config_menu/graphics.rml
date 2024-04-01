@@ -260,7 +260,7 @@
                                 id="hr_full"
                                 style="nav-up: #msaa_4x; nav-down: #apply_button"
                             />
-                            <label class="config-option__tab-label" for="hr_full">Full</label>
+                            <label class="config-option__tab-label" for="hr_full">Expand</label>
                         </div>
                     </div>
 
