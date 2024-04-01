@@ -32,7 +32,7 @@ void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId
     
     // @recomp Tag the skybox's matrix, skipping interpolation if the camera's interpolation was also skipped.
     if (camera_was_skipped()) {
-        gEXMatrixGroupDecomposedSkip(POLY_OPA_DISP++, SKYBOX_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        gEXMatrixGroupDecomposedSkipAll(POLY_OPA_DISP++, SKYBOX_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
     }
     else {
         gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SKYBOX_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
@@ -247,9 +247,16 @@ void Environment_DrawSkyboxStarsImpl(PlayState* play, Gfx** gfxP) {
         viewProjectionMtxF = play->viewProjectionMtxF.mf;
 
         if (imgWidth >= 2) {
+
             // @recomp Tag the star.
-            gEXMatrixGroupSimple(gfx++, STAR_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW,
-                G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+            if (camera_was_skipped()) {
+                gEXMatrixGroupSimple(gfx++, STAR_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW,
+                    G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+            }
+            else {
+                gEXMatrixGroupSimple(gfx++, STAR_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW,
+                    G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+            }
 
             // @recomp Draw the star in 3D with a billboarded matrix.
             Environment_DrawSkyboxStarBillboard(play->state.gfxCtx, &billboard_mtx, &gfx, pos.x, pos.y, pos.z, imgWidth, imgWidth);

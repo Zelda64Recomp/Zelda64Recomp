@@ -97,6 +97,12 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     // @recomp Send the current framerate to RT64, including any extra VI interrupt periods. 
     gEXSetRefreshRate(POLY_OPA_DISP++, 60 / (gameState->framerateDivisor + extra_vis));
 
+    // @recomp Edit billboard groups to skip interpolation if the camera also skipped.
+    if (gameState->destroy == Play_Destroy) {
+        PlayState* play = (PlayState*)gameState;
+        edit_billboard_groups(play);
+    }
+
     // @recomp Clear the camera skip state.
     clear_camera_skipped();
 

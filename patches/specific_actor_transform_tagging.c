@@ -291,7 +291,7 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposedSkip(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                gEXMatrixGroupDecomposedSkipAll(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
                 gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
@@ -340,7 +340,7 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
                 gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
@@ -381,7 +381,7 @@ void Boss03_DrawEffects(PlayState* play) {
 
             // @recomp Tag this effect and clear its reset state.
             if (special_effect_reset_states[i]) {
-                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
                 gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SPECIAL_EFFECTS_TRANSFORM_ID_START + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);

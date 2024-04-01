@@ -84,7 +84,7 @@ Gfx* push_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
         if (actor_get_interpolation_skipped(actor)) {
-            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedSkipAll(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
         } else {
             gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         }
@@ -97,7 +97,7 @@ Gfx* push_post_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
         if (actor_get_interpolation_skipped(actor)) {
-            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedSkipAll(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
         } else {
             gEXMatrixGroupDecomposedNormal(dlist++, cur_transform_id + limb_index + ACTOR_TRANSFORM_LIMB_COUNT, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         }
@@ -110,7 +110,7 @@ Gfx* push_skin_limb_matrix_group(Gfx* dlist, Actor* actor, u32 limb_index) {
     if (actor != NULL) {
         u32 cur_transform_id = actor_transform_id(actor);
         if (actor_get_interpolation_skipped(actor)) {
-            gEXMatrixGroupDecomposedSkip(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedSkipAll(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
         } else {
             gEXMatrixGroupDecomposedVerts(dlist++, cur_transform_id + limb_index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         }

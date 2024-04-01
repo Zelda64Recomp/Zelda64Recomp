@@ -2,6 +2,7 @@
 #include "transform_ids.h"
 #include "overlays/actors/ovl_En_Test7/z_en_test7.h"
 #include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
+#include "overlays/actors/ovl_Eff_Stk/z_eff_stk.h"
 #include "z64effect.h"
 
 // Decomp renames, TODO update decomp and remove these
@@ -304,7 +305,7 @@ void func_808DD3C8(Actor* thisx, PlayState* play2) {
             // @recomp Check if the particle's interpolation should be skipped this frame.
             if (particle_skipped(this->unk_14C[i])) {
                 // @recomp Tag the particle's transform to skip interpolation.
-                gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                gEXMatrixGroupDecomposedSkipPosRot(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
             }
             else {
                 // @recomp Tag the particle's matrix to interpolate normally.
@@ -457,4 +458,50 @@ void Effect_DrawAll(GraphicsContext* gfxCtx) {
         // @recomp Pop tag.
         pop_effect_tag(gfxCtx);
     }
+}
+
+extern Gfx object_stk2_DL_008920[];
+extern Gfx object_stk2_DL_008A38[];
+extern AnimatedMaterial object_stk2_Matanimheader_009F60[];
+
+void EffStk_Draw(Actor* thisx, PlayState* play) {
+    EffStk* this = (EffStk*)thisx;
+    s32 pad;
+    Camera* activeCam = GET_ACTIVE_CAM(play);
+    Vec3f eye = activeCam->eye;
+    Vec3f quakeOffset;
+
+    quakeOffset = Camera_GetQuakeOffset(activeCam);
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+    Matrix_Translate(eye.x + quakeOffset.x, eye.y + quakeOffset.y, eye.z + quakeOffset.z, MTXMODE_NEW);
+    Matrix_Scale(0.2f, 0.2f, 0.2f, MTXMODE_APPLY);
+    Matrix_ReplaceRotation(&play->billboardMtxF);
+    Matrix_Translate(0.0f, 0.0f, this->unk148, MTXMODE_APPLY);
+
+    Mtx* mtx = Matrix_NewMtx(play->state.gfxCtx);
+    recomp_printf("EffStk_Draw matrix: %08X\n", (u32)mtx);
+
+    // @recomp Tag the transform. Do not allow edits as this will get edited by the billboard detection and we'll want to skip position during a camera cut too.
+    if (camera_was_skipped()) {
+        gEXMatrixGroupDecomposedSkipPosRot(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        recomp_printf("  Skipped EffStk_Draw matrix\n");
+    }
+    else {
+        gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+    }
+
+    gSPMatrix(POLY_XLU_DISP++, mtx, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    AnimatedMat_DrawAlphaStep(play, Lib_SegmentedToVirtual(object_stk2_Matanimheader_009F60), 1.0f, this->unk144);
+    gDPSetColorDither(POLY_XLU_DISP++, G_CD_NOISE);
+    gDPSetAlphaDither(POLY_XLU_DISP++, G_AD_NOISE);
+    gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008920);
+    gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008A38);
+
+    // @recomp Tag the transform.
+    gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+
+    CLOSE_DISPS(play->state.gfxCtx);
 }

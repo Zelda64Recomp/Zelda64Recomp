@@ -16,6 +16,7 @@ void Play_Main(GameState* thisx) {
     // @recomp
     debug_play_update(this);
     controls_play_update(this);
+    matrix_play_update(this);
     
     // @recomp avoid unused variable warning
     (void)prevInput;

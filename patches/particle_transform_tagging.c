@@ -71,8 +71,8 @@ void EffectSS_DrawParticle(PlayState* play, s32 index) {
 
     // @recomp If this particle was just reset then skip interpolation.
     if (particle_reset_list[index]) {
-        gEXMatrixGroupDecomposedSkip(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-        gEXMatrixGroupDecomposedSkip(POLY_XLU_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        gEXMatrixGroupDecomposedSkipAll(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
     }
     else {
         gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, PARTICLE_TRANSFORM_ID_START + index, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
@@ -138,7 +138,7 @@ void func_80B22FA8_patched(Actor* thisx, EnHanabiStruct* arg0, PlayState* play2)
 
         // @recomp Tag the matrix.
         gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
-        
+
         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
         if (sp53 != arg0->unk_02) {

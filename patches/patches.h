@@ -17,7 +17,10 @@
 #define gEXMatrixGroupDecomposedNormal(cmd, id, push, proj, edit) \
     gEXMatrixGroupDecomposed(cmd, id, push, proj, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, edit)
 
-#define gEXMatrixGroupDecomposedSkip(cmd, id, push, proj, edit) \
+#define gEXMatrixGroupDecomposedSkipPosRot(cmd, id, push, proj, edit) \
+    gEXMatrixGroupDecomposed(cmd, id, push, proj, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, edit)
+
+#define gEXMatrixGroupDecomposedSkipAll(cmd, id, push, proj, edit) \
     gEXMatrixGroupDecomposed(cmd, id, push, proj, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, edit)
 
 #define gEXMatrixGroupDecomposedVerts(cmd, id, push, proj, edit) \
@@ -59,6 +62,7 @@ void View_ApplyInterpolate(View* view, s32 mask, bool reset_interpolation_state)
 
 void set_camera_skipped(bool skipped);
 void clear_camera_skipped();
+void edit_billboard_groups(PlayState* play);
 bool camera_was_skipped();
 void room_load_hook(PlayState* play, Room* room);
 
