@@ -229,7 +229,7 @@
                     </div>
 
                     <div class="config-option" data-event-mouseover="set_current_gfx_description(6)">
-                        <label class="config-option__title">HUD Aspect Ratio</label>
+                        <label class="config-option__title">HUD Placement</label>
                         <div class="config-option__list">
                             <input type="radio"
                                 data-event-blur="set_current_gfx_description(-1)"
