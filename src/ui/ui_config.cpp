@@ -45,7 +45,11 @@ template <typename T>
 void bind_option(Rml::DataModelConstructor& constructor, const std::string& name, T* option) {
 	constructor.BindFunc(name,
 		[option](Rml::Variant& out) { get_option(*option, out); },
-		[option](const Rml::Variant& in) { set_option(*option, in); graphics_model_handle.DirtyVariable("options_changed"); graphics_model_handle.DirtyVariable("ds_info"); }
+		[option](const Rml::Variant& in) {
+			set_option(*option, in);
+			graphics_model_handle.DirtyVariable("options_changed");
+			graphics_model_handle.DirtyVariable("ds_info");
+		}
 	);
 };
 
@@ -65,6 +69,7 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
+static int focused_gfx_index = -1;
 
 static bool cont_active = true;
 
@@ -293,7 +298,15 @@ public:
 		}
 		new_options = ultramodern::get_graphics_config();
 
-		bind_option(constructor, "res_option", &new_options.res_option);
+		constructor.BindFunc("res_option",
+			[](Rml::Variant& out) { get_option(new_options.res_option, out); },
+			[](const Rml::Variant& in) {
+				set_option(new_options.res_option, in);
+				graphics_model_handle.DirtyVariable("options_changed");
+				graphics_model_handle.DirtyVariable("ds_info");
+				graphics_model_handle.DirtyVariable("ds_option");
+			}
+		);
 		bind_option(constructor, "wm_option", &new_options.wm_option);
 		bind_option(constructor, "ar_option", &new_options.ar_option);
 		bind_option(constructor, "msaa_option", &new_options.msaa_option);
@@ -308,7 +321,11 @@ public:
 			});
 		constructor.BindFunc("ds_option",
 			[](Rml::Variant& out) {
-				out = new_options.ds_option;
+				if (new_options.res_option == ultramodern::Resolution::Auto) {
+					out = 1;
+				} else {
+					out = new_options.ds_option;
+				}
 			},
 			[](const Rml::Variant& in) {
 				new_options.ds_option = in.Get<int>();
@@ -343,6 +360,18 @@ public:
 				}
 				out = "";
 			});
+		
+		constructor.BindEventCallback("set_current_gfx_description",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+				int gfx_index = inputs.at(0).Get<size_t>();
+				// watch for mouseout being overzealous during event bubbling, only clear if the event's attached element matches the current
+				if (gfx_index == -1 && event.GetType() == "mouseout" && event.GetCurrentElement() != event.GetTargetElement()) {
+					return;
+				}
+				focused_gfx_index = gfx_index;
+				model_handle.DirtyVariable("cur_gfx_description");
+			});
+		constructor.Bind("cur_gfx_description", &focused_gfx_index);
 
 		graphics_model_handle = constructor.GetModelHandle();
 	}
