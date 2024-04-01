@@ -294,7 +294,7 @@
                         Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.
                     </p>
                     <p data-if="cur_gfx_description == 6">
-                        Sets the position of the HUD from the left and right edges.
+                        Adjusts the placement of HUD elements to fit the selected aspect ratio. Full will use the aspect ratio of the game's output window.
                     </p>
                 </div>
             </div>
