@@ -53,7 +53,6 @@ void edit_billboard_groups(PlayState* play) {
             gEXEditGroupByAddress(POLY_XLU_DISP++, tracked_billboard_matrices[i], G_EX_INTERPOLATE_DECOMPOSE, G_MTX_PUSH, G_MTX_MODELVIEW,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_SKIP, G_EX_COMPONENT_INTERPOLATE,
                 G_EX_ORDER_LINEAR);
-            recomp_printf("Skipped matrix %08X\n", (u32)tracked_billboard_matrices[i]);
         }
     }
 
