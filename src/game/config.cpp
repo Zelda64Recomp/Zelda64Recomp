@@ -170,7 +170,7 @@ void recomp::reset_input_bindings() {
     assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
 }
 
-void recomp::reset_graphics_options() {
+void reset_graphics_options() {
     ultramodern::GraphicsConfig new_config{};
     new_config.res_option = res_default;
     new_config.wm_option = wm_default;
@@ -314,7 +314,7 @@ void recomp::load_config() {
         load_graphics_config(graphics_path);
     }
     else {
-        recomp::reset_graphics_options();
+        reset_graphics_options();
         save_graphics_config(graphics_path);
     }
 

@@ -59,6 +59,8 @@ namespace recomp {
 	void apply_color_hack();
 	void get_window_size(int& width, int& height);
 	void set_cursor_visible(bool visible);
+	void update_supported_options();
+	void toggle_fullscreen();
 }
 
 #endif

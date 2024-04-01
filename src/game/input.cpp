@@ -83,7 +83,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             SDL_KeyboardEvent* keyevent = &event->key;
 
             if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) {
-                RT64ChangeWindow();
+                recomp::toggle_fullscreen();
             }
             if (scanning_device != recomp::InputDevice::COUNT) {
                 if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {

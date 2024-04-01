@@ -204,6 +204,7 @@
                                 data-event-blur="set_current_gfx_description(-1)"
                                 data-event-focus="set_current_gfx_description(5)"
                                 name="antialiasing"
+                                data-attrif-disabled="!msaa2x_supported"
                                 data-checked="msaa_option"
                                 value="MSAA2X"
                                 id="msaa_2x"
@@ -214,6 +215,7 @@
                                 data-event-blur="set_current_gfx_description(-1)"
                                 data-event-focus="set_current_gfx_description(5)"
                                 name="antialiasing"
+                                data-attrif-disabled="!msaa4x_supported"
                                 data-checked="msaa_option"
                                 value="MSAA4X"
                                 id="msaa_4x"
@@ -222,31 +224,38 @@
                             <label class="config-option__tab-label" for="msaa_4x">4x</label>
                             <!-- <input type="radio" data-event-blur="set_current_gfx_description(-1)" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
                             <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
+                            <div class="config-option__details" data-if="!sample_positions_supported">Not available (missing sample positions support)</div>
                         </div>
                     </div>
 
                 </div>
                 <div class="config__wrapper">
                     <p data-if="cur_gfx_description == 0">
-                        Sets the output resolution of the game.
+                        Sets the output resolution of the game. Original matches the game's original 240p resolution. Original 2x will render at 480p. Auto will scale based on the game window's resolution.
                     </p>
                     <p data-if="cur_gfx_description == 1">
                         Renders at a higher resolution and scales it down to the output resolution for increased quality. Only available in Original and Original 2x resolution.
+                        <br />
+                        <br />
+                        Note: 4x downsampling quality at Original 2x resolution may cause performance issues on low end devices, as it will cause the game to render at almost 4k internal resolution.
                     </p>
                     <p data-if="cur_gfx_description == 2">
-                        Sets the horizontal aspect ratio. Original limits the game to 4:3 (N64). Expand will adjust the game to match your display's horizontal resolution.
+                        Sets the horizontal aspect ratio. Original uses the game's original 4:3 aspect ratio. Expand will adjust to match the game window's aspect ratio.
                     </p>
                     <p data-if="cur_gfx_description == 3">
                         Sets whether the game should display on a Window or Fullscreen. You can also use Alt + Enter to toggle this option.
                     </p>
                     <p data-if="cur_gfx_description == 4">
-                        Doesn't affect gameplay. If you have issues on Display while using an external frame limiter, use Manual with that frame limit instead.
+                        Sets the game's output framerate. This option does not affect gameplay.
+                        <br />
+                        <br />
+                        Note: If you have issues with Display mode while using an external frame limiter, use Manual mode instead and configure it to that same frame limit.
                     </p>
                     <p data-if="cur_gfx_description == 5">
-                        Sets the Multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.
+                        Sets the multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.
                         <br />
                         <br />
-                        Note: This option won't be available if your GPU does not support MSAA Sample Positions during the time being as it is required to avoid rendering glitches.
+                        Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.
                     </p>
                 </div>
             </div>
@@ -269,4 +278,3 @@
         </form>
     </body>
 </template>
-    

@@ -294,6 +294,9 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
 
     RT64::Application* application = RT64Init(rdram, window_handle, cur_config.load().developer_mode);
 
+    // TODO move recomp code out of ultramodern.
+    recomp::update_supported_options();
+
     if (application == nullptr) {
         throw std::runtime_error("Failed to initialize RT64!");
     }
@@ -342,6 +345,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
             }
         }
     }
+    // TODO move recomp code out of ultramodern.
     recomp::destroy_ui();
     RT64Shutdown();
 }

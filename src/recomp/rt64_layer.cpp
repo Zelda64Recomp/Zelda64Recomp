@@ -109,6 +109,7 @@ unsigned int SP_STATUS_REG = 0;
 unsigned int RDRAM_SIZE = 0x800000;
 
 static RT64::UserConfiguration::Antialiasing device_max_msaa = RT64::UserConfiguration::Antialiasing::None;
+static bool sample_positions_supported = false;
 
 #define GET_FUNC(lib, name) \
     name = (decltype(name))GetProcAddress(lib, #name)
@@ -184,11 +185,23 @@ RT64::Application* RT64Init(uint8_t* rdram, ultramodern::WindowHandle window_han
 #endif
 
     // Before configuring multisampling, make sure the device actually supports it for the formats we'll use. If it doesn't, turn off antialiasing in the configuration.
-    RT64::RenderSampleCounts color_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::R8G8B8A8_UNORM);
-    RT64::RenderSampleCounts depth_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::D32_FLOAT);
-    RT64::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
-
-    device_max_msaa = compute_max_supported_aa(common_sample_counts);
+    // RT64 requires programmable sample positions for MSAA to function without issues, so check that first.
+    if (ret->device->getCapabilities().sampleLocations) {
+        RT64::RenderSampleCounts color_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::R8G8B8A8_UNORM);
+        RT64::RenderSampleCounts depth_sample_counts = ret->device->getSampleCountsSupported(RT64::RenderFormat::D32_FLOAT);
+        RT64::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
+        device_max_msaa = compute_max_supported_aa(common_sample_counts);
+        sample_positions_supported = true;
+    }
+    else {
+        device_max_msaa = RT64::UserConfiguration::Antialiasing::None;
+        sample_positions_supported = false;
+    }
+    
+    // Update the config to account for MSAA support.
+    ultramodern::GraphicsConfig cur_config = ultramodern::get_graphics_config();
+    cur_config.msaa_option = std::min(cur_config.msaa_option, device_max_msaa);
+    ultramodern::set_graphics_config(cur_config);
 
     // Force gbi depth branches to prevent LODs from kicking in.
     ret->enhancementConfig.f3dex.forceBranch = true;
@@ -215,10 +228,6 @@ void RT64UpdateScreen(uint32_t vi_origin) {
     VI_ORIGIN_REG = vi_origin;
 
     UpdateScreen();
-}
-
-void RT64ChangeWindow() {
-    ChangeWindow();
 }
 
 void RT64Shutdown() {
@@ -269,6 +278,10 @@ void RT64EnableInstantPresent(RT64::Application* application) {
 
 RT64::UserConfiguration::Antialiasing RT64MaxMSAA() {
     return device_max_msaa;
+}
+
+bool RT64SamplePositionsSupported() {
+    return sample_positions_supported;
 }
 
 uint32_t RT64GetDisplayFramerate(RT64::Application* application) {

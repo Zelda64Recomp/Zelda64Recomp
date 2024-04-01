@@ -500,7 +500,7 @@ void EffStk_Draw(Actor* thisx, PlayState* play) {
     gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008920);
     gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008A38);
 
-    // @recomp Tag the transform.
+    // @recomp Pop the transform tag.
     gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
 
     CLOSE_DISPS(play->state.gfxCtx);

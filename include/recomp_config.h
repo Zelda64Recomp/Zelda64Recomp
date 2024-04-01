@@ -13,7 +13,6 @@ namespace recomp {
     void save_config();
     
     void reset_input_bindings();
-    void reset_graphics_options();
 
     std::filesystem::path get_app_folder_path();
     

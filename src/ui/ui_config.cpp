@@ -7,6 +7,7 @@
 #include "../../ultramodern/config.hpp"
 #include "../../ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
+#include "rt64_layer.h"
 
 ultramodern::GraphicsConfig new_options;
 Rml::DataModelHandle nav_help_model_handle;
@@ -70,6 +71,11 @@ static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
 static int focused_gfx_index = -1;
+
+static bool msaa2x_supported = false;
+static bool msaa4x_supported = false;
+static bool msaa8x_supported = false;
+static bool sample_positions_supported = false;
 
 static bool cont_active = true;
 
@@ -340,6 +346,7 @@ public:
 		constructor.BindFunc("ds_info",
 			[](Rml::Variant& out) {
 				switch (new_options.res_option) {
+					default:
 					case ultramodern::Resolution::Auto:
 						out = "Downsampling is not available at auto resolution";
 						return;
@@ -372,6 +379,11 @@ public:
 				model_handle.DirtyVariable("cur_gfx_description");
 			});
 		constructor.Bind("cur_gfx_description", &focused_gfx_index);
+
+		constructor.Bind("msaa2x_supported", &msaa2x_supported);
+		constructor.Bind("msaa4x_supported", &msaa4x_supported);
+		constructor.Bind("msaa8x_supported", &msaa8x_supported);
+		constructor.Bind("sample_positions_supported", &sample_positions_supported);
 
 		graphics_model_handle = constructor.GetModelHandle();
 	}
@@ -622,4 +634,21 @@ void recomp::set_debug_mode_enabled(bool enabled) {
 	if (debug_context.model_handle) {
 		debug_context.model_handle.DirtyVariable("debug_enabled");
 	}
+}
+
+void recomp::update_supported_options() {
+	msaa2x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
+	msaa4x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
+	msaa8x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
+	sample_positions_supported = RT64SamplePositionsSupported();
+	
+	new_options = ultramodern::get_graphics_config();
+
+	graphics_model_handle.DirtyAllVariables();
+}
+
+void recomp::toggle_fullscreen() {
+	new_options.wm_option = (new_options.wm_option == ultramodern::WindowMode::Windowed) ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
+	ultramodern::set_graphics_config(new_options);
+	graphics_model_handle.DirtyVariable("wm_option");
 }
