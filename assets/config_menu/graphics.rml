@@ -240,7 +240,7 @@
                                 id="hr_original"
                                 style="nav-up: #msaa_none; nav-down: #apply_button"
                             />
-                            <label class="config-option__tab-label" for="hr_original">None</label>
+                            <label class="config-option__tab-label" for="hr_original">Original</label>
                             <input type="radio"
                                 data-event-blur="set_current_gfx_description(-1)"
                                 data-event-focus="set_current_gfx_description(6)"

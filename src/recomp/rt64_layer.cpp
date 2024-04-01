@@ -260,14 +260,14 @@ void RT64UpdateConfig(RT64::Application* application, const ultramodern::Graphic
     switch (new_config.hr_option) {
         default:
         case ultramodern::HUDRatioMode::Original:
-            application->userConfig.extAspectPercentage = 0.0f;
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
             break;
         case ultramodern::HUDRatioMode::Clamp16x9:
-            // TODO: Not this lol!!!
-            application->userConfig.extAspectPercentage = 0.5f;
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Manual;
+            application->userConfig.extAspectTarget = 16.0/9.0;
             break;
         case ultramodern::HUDRatioMode::Full:
-            application->userConfig.extAspectPercentage = 1.0f;
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Expand;
             break;
     }
 
