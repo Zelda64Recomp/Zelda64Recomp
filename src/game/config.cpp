@@ -20,7 +20,7 @@ constexpr std::u8string_view sound_filename = u8"sound.json";
 
 constexpr auto res_default            = ultramodern::Resolution::Auto;
 constexpr auto wm_default             = ultramodern::WindowMode::Windowed;
-constexpr auto hr_default             = ultramodern::HUDRatioMode::Full;
+constexpr auto hr_default             = ultramodern::HUDRatioMode::Clamp16x9;
 constexpr auto ar_default             = RT64::UserConfiguration::AspectRatio::Expand;
 constexpr auto msaa_default           = RT64::UserConfiguration::Antialiasing::MSAA2X;
 constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Display;
