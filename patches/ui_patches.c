@@ -874,3 +874,174 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
 
     *gfxP = gfx++;
 }
+
+void View_SetScissor(Gfx** gfx, s32 ulx, s32 uly, s32 lrx, s32 lry);
+
+// @recomp Patched to not actually letterbox the scissor. The letterbox effect will be achieved by drawing an overlay on top instead, which
+// will get interpolated unlike a scissor.
+void View_ApplyLetterbox(View* view) {
+    s32 letterboxY;
+    s32 letterboxX;
+    s32 pad1;
+    s32 ulx;
+    s32 uly;
+    s32 lrx;
+    s32 lry;
+
+    OPEN_DISPS(view->gfxCtx);
+
+    // @recomp Disable letterboxing for the scissor.
+    letterboxY = 0; // ShrinkWindow_Letterbox_GetSize();
+
+    letterboxX = -1; // The following is optimized to varX = 0 but affects codegen
+
+    if (letterboxX < 0) {
+        letterboxX = 0;
+    }
+    if (letterboxX > (SCREEN_WIDTH / 2)) {
+        letterboxX = SCREEN_WIDTH / 2;
+    }
+
+    if (letterboxY < 0) {
+        letterboxY = 0;
+    } else if (letterboxY > (SCREEN_HEIGHT / 2)) {
+        letterboxY = SCREEN_HEIGHT / 2;
+    }
+
+    ulx = view->viewport.leftX + letterboxX;
+    uly = view->viewport.topY + letterboxY;
+    lrx = view->viewport.rightX - letterboxX;
+    lry = view->viewport.bottomY - letterboxY;
+
+    gDPPipeSync(POLY_OPA_DISP++);
+    {
+        s32 pad2;
+        Gfx* polyOpa;
+
+        polyOpa = POLY_OPA_DISP;
+        View_SetScissor(&polyOpa, ulx, uly, lrx, lry);
+        POLY_OPA_DISP = polyOpa;
+    }
+
+    gDPPipeSync(POLY_XLU_DISP++);
+    {
+        Gfx* polyXlu;
+        s32 pad3;
+
+        polyXlu = POLY_XLU_DISP;
+        View_SetScissor(&polyXlu, ulx, uly, lrx, lry);
+        POLY_XLU_DISP = polyXlu;
+    }
+
+    CLOSE_DISPS(view->gfxCtx);
+}
+
+typedef struct {
+    /* 0x0 */ s8 letterboxTarget;
+    /* 0x1 */ s8 letterboxSize;
+    /* 0x2 */ s8 pillarboxTarget;
+    /* 0x3 */ s8 pillarboxSize;
+} ShrinkWindow; // size = 0x4
+
+extern ShrinkWindow* sShrinkWindowPtr;
+
+// @recomp Replace the rects used to letterbox with ortho tris so they can be interpolated.
+void ShrinkWindow_Draw(GraphicsContext* gfxCtx) {
+    Gfx* gfx;
+    s8 letterboxSize = sShrinkWindowPtr->letterboxSize;
+    s8 pillarboxSize = sShrinkWindowPtr->pillarboxSize;
+
+    // @recomp Always draw the letterbox tris so that they the matrices can still be interpolated on the first frame they appear.
+    // Avoid drawing it at a specific point in the pausing process.
+    if (R_PAUSE_BG_PRERENDER_STATE != PAUSE_BG_PRERENDER_PROCESS) { //letterboxSize > 0) {
+        OPEN_DISPS(gfxCtx);
+
+        gfx = OVERLAY_DISP;
+
+        // @recomp Push the old RDP/RSP params.
+        gEXPushProjectionMatrix(gfx++);
+        gEXPushGeometryMode(gfx++);
+        gEXPushOtherMode(gfx++);
+        gEXPushCombineMode(gfx++);
+
+        // @recomp Set up the new RSP/RDP params.
+        gDPSetCycleType(gfx++, G_CYC_1CYCLE);
+        gDPSetRenderMode(gfx++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
+        gDPSetCombineLERP(gfx++, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1);
+        gSPLoadGeometryMode(gfx++, 0);
+
+        // @recomp Set up the letterbox matrix groups.
+        gEXMatrixGroupSimple(gfx++, TEXTBOX_TRANSFORM_PROJECTION_ID, G_EX_PUSH, G_MTX_PROJECTION,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+        gEXMatrixGroupSimple(gfx++, TEXTBOX_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
+            G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+
+        // @recomp Allocate and build the matrices.
+        Mtx* ortho_matrix = GRAPH_ALLOC(gfxCtx, sizeof(Mtx));
+        Mtx* letterbox_matrix_top = GRAPH_ALLOC(gfxCtx, sizeof(Mtx));
+        Mtx* letterbox_matrix_bottom = GRAPH_ALLOC(gfxCtx, sizeof(Mtx));
+
+        guOrtho(ortho_matrix, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, -SCREEN_HEIGHT / 2, -1.0f, 1.0f, 1.0f);
+        Mtx_SetTranslateScaleMtx(letterbox_matrix_top,    1.0f,  1.0f, 1.0f, 0.0f, -SCREEN_HEIGHT / 2 + letterboxSize, 0.0f);
+        Mtx_SetTranslateScaleMtx(letterbox_matrix_bottom, 1.0f, -1.0f, 1.0f, 0.0f,  SCREEN_HEIGHT / 2 - letterboxSize, 0.0f);
+        gSPMatrix(gfx++, ortho_matrix, G_MTX_PROJECTION | G_MTX_NOPUSH | G_MTX_LOAD);
+
+        // @recomp Static variable holding the letterbox vertices. The origin is at the edge to make calculating the translation matrix easy.
+        static Vtx letterbox_verts[4] = {
+            {{{-32000, -120, 0}, 0, {0, 0}, {0, 0, 0, 0xFF}}},
+            {{{ 32000, -120, 0}, 0, {0, 0}, {0, 0, 0, 0xFF}}},
+            {{{-32000,    0, 0}, 0, {0, 0}, {0, 0, 0, 0xFF}}},
+            {{{ 32000,    0, 0}, 0, {0, 0}, {0, 0, 0, 0xFF}}},
+        };
+
+        // @recomp Draw the top letterbox element.
+        gSPMatrix(gfx++, letterbox_matrix_top, G_MTX_MODELVIEW | G_MTX_PUSH | G_MTX_LOAD);
+        gSPVertex(gfx++, letterbox_verts, 4, 0);
+        gSP2Triangles(gfx++, 0, 1, 3, 0x0, 0, 3, 2, 0x0);
+        
+        // @recomp Draw the bottom letterbox element.
+        gSPMatrix(gfx++, letterbox_matrix_bottom, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
+        gSPVertex(gfx++, letterbox_verts, 4, 0);
+        gSP2Triangles(gfx++, 0, 3, 1, 0x0, 0, 2, 3, 0x0);
+
+        // @recomp Restore the old RDP/RSP params.
+        gEXPopProjectionMatrix(gfx++);
+        gEXPopGeometryMode(gfx++);
+        gEXPopOtherMode(gfx++);
+        gEXPopCombineMode(gfx++);
+        gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
+        gEXPopMatrixGroup(gfx++, G_MTX_MODELVIEW);
+        gEXPopMatrixGroup(gfx++, G_MTX_PROJECTION);
+
+        OVERLAY_DISP = gfx++;
+
+        CLOSE_DISPS(gfxCtx);
+    }
+
+    if (pillarboxSize > 0) {
+        OPEN_DISPS(gfxCtx);
+
+        gfx = OVERLAY_DISP;
+
+        gDPPipeSync(gfx++);
+        gDPSetCycleType(gfx++, G_CYC_FILL);
+        gDPSetRenderMode(gfx++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gfx++, (GPACK_RGBA5551(0, 0, 0, 1) << 16) | GPACK_RGBA5551(0, 0, 0, 1));
+
+        gDPFillRectangle(gfx++, 0, 0, pillarboxSize - 1, gScreenHeight - 1);
+        gDPFillRectangle(gfx++, gScreenWidth - pillarboxSize, 0, gScreenWidth - 1, gScreenHeight - 1);
+
+        gDPPipeSync(gfx++);
+        gDPSetCycleType(gfx++, G_CYC_1CYCLE);
+        gDPSetRenderMode(gfx++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+        gDPSetPrimColor(gfx++, 0, 0, 0, 0, 0, 0);
+
+        gDPFillRectangle(gfx++, pillarboxSize, 0, pillarboxSize + 2, gScreenHeight);
+        gDPFillRectangle(gfx++, gScreenWidth - pillarboxSize - 2, 0, gScreenWidth - pillarboxSize, gScreenHeight);
+
+        gDPPipeSync(gfx++);
+        OVERLAY_DISP = gfx++;
+
+        CLOSE_DISPS(gfxCtx);
+    }
+}
