@@ -153,11 +153,16 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
 
     // @recomp Wait on the VI framebuffer to change if this task has a framebuffer swap.
     if (scTask->flags & OS_SC_SWAPBUFFER) {
-        while (osViGetCurrentFramebuffer_recomp() != cfb->fb1) {
+        int viCounter = 0;
+        while (osViGetCurrentFramebuffer() != cfb->fb1) {
+            osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
+            viCounter++;
+        }
+        
+        // If we didn't wait the full number of VIs needed between frames then wait one extra VI afterwards.
+        if (viCounter < gameState->framerateDivisor) {
             osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
         }
-        // Wait one extra VI afterwards.
-        osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
     }
     
     // @recomp Flush any extra messages from the VI queue.

@@ -5,6 +5,7 @@
 #define osCreateMesgQueue osCreateMesgQueue_recomp
 #define osRecvMesg osRecvMesg_recomp
 #define osSendMesg osSendMesg_recomp
+#define osViGetCurrentFramebuffer osViGetCurrentFramebuffer_recomp
 #define sinf __sinf_recomp
 #define cosf __cosf_recomp
 #define gRandFloat sRandFloat
