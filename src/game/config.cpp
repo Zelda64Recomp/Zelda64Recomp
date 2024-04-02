@@ -20,6 +20,7 @@ constexpr std::u8string_view sound_filename = u8"sound.json";
 
 constexpr auto res_default            = ultramodern::Resolution::Auto;
 constexpr auto wm_default             = ultramodern::WindowMode::Windowed;
+constexpr auto hr_default             = ultramodern::HUDRatioMode::Clamp16x9;
 constexpr auto ar_default             = RT64::UserConfiguration::AspectRatio::Expand;
 constexpr auto msaa_default           = RT64::UserConfiguration::Antialiasing::MSAA2X;
 constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Display;
@@ -56,6 +57,7 @@ namespace ultramodern {
         j = json{
             {"res_option",      config.res_option},
             {"wm_option",       config.wm_option},
+            {"hr_option",       config.hr_option},
             {"ds_option",       config.ds_option},
             {"ar_option",       config.ar_option},
             {"msaa_option",     config.msaa_option},
@@ -68,6 +70,7 @@ namespace ultramodern {
     void from_json(const json& j, GraphicsConfig& config) {
         config.res_option       = from_or_default(j, "res_option",      res_default);
         config.wm_option        = from_or_default(j, "wm_option",       wm_default);
+        config.hr_option        = from_or_default(j, "hr_option",       hr_default);
         config.ds_option        = from_or_default(j, "ds_option",       ds_default);
         config.ar_option        = from_or_default(j, "ar_option",       ar_default);
         config.msaa_option      = from_or_default(j, "msaa_option",     msaa_default);
@@ -174,6 +177,7 @@ void reset_graphics_options() {
     ultramodern::GraphicsConfig new_config{};
     new_config.res_option = res_default;
     new_config.wm_option = wm_default;
+    new_config.hr_option = hr_default;
     new_config.ds_option = ds_default;
     new_config.ar_option = ar_default;
     new_config.msaa_option = msaa_default;

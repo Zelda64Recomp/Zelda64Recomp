@@ -15,10 +15,17 @@ namespace ultramodern {
 		Fullscreen,
 		OptionCount
 	};
+	enum class HUDRatioMode {
+		Original,
+		Clamp16x9,
+		Full,
+		OptionCount
+	};
 
 	struct GraphicsConfig {
 		Resolution res_option;
 		WindowMode wm_option;
+		HUDRatioMode hr_option;
 		RT64::UserConfiguration::AspectRatio ar_option;
 		RT64::UserConfiguration::Antialiasing msaa_option;
 		RT64::UserConfiguration::RefreshRate rr_option;
@@ -41,6 +48,12 @@ namespace ultramodern {
 	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::WindowMode, {
 		{ultramodern::WindowMode::Windowed, "Windowed"},
 		{ultramodern::WindowMode::Fullscreen, "Fullscreen"}
+	});
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::HUDRatioMode, {
+		{ultramodern::HUDRatioMode::Original, "Original"},
+		{ultramodern::HUDRatioMode::Clamp16x9, "Clamp16x9"},
+		{ultramodern::HUDRatioMode::Full, "Full"},
 	});
 };
 

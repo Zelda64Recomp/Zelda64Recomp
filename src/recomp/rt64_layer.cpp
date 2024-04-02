@@ -257,6 +257,20 @@ void RT64UpdateConfig(RT64::Application* application, const ultramodern::Graphic
             break;
     }
 
+    switch (new_config.hr_option) {
+        default:
+        case ultramodern::HUDRatioMode::Original:
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Original;
+            break;
+        case ultramodern::HUDRatioMode::Clamp16x9:
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Manual;
+            application->userConfig.extAspectTarget = 16.0/9.0;
+            break;
+        case ultramodern::HUDRatioMode::Full:
+            application->userConfig.extAspectRatio = RT64::UserConfiguration::AspectRatio::Expand;
+            break;
+    }
+
     application->userConfig.aspectRatio = new_config.ar_option;
     application->userConfig.antialiasing = new_config.msaa_option;
     application->userConfig.refreshRate = new_config.rr_option;

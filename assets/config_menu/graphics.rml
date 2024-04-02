@@ -197,7 +197,7 @@
                                 data-checked="msaa_option"
                                 value="None"
                                 id="msaa_none"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_original; nav-down: #apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #hr_original' : 'nav-up: #rr_original; nav-down: #hr_original'"
                             />
                             <label class="config-option__tab-label" for="msaa_none">None</label>
                             <input type="radio"
@@ -208,7 +208,7 @@
                                 data-checked="msaa_option"
                                 value="MSAA2X"
                                 id="msaa_2x"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_display; nav-down: #apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #hr_16_9' : 'nav-up: #rr_display; nav-down: #hr_16_9'"
                             />
                             <label class="config-option__tab-label" for="msaa_2x">2x</label>
                             <input type="radio"
@@ -219,12 +219,48 @@
                                 data-checked="msaa_option"
                                 value="MSAA4X"
                                 id="msaa_4x"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #apply_button' : 'nav-up: #rr_manual; nav-down: #apply_button'"
+                                data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #hr_full' : 'nav-up: #rr_manual; nav-down: #hr_full'"
                             />
                             <label class="config-option__tab-label" for="msaa_4x">4x</label>
                             <!-- <input type="radio" data-event-blur="set_current_gfx_description(-1)" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
                             <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
                             <div class="config-option__details" data-if="!sample_positions_supported">Not available (missing sample positions support)</div>
+                        </div>
+                    </div>
+
+                    <div class="config-option" data-event-mouseover="set_current_gfx_description(6)">
+                        <label class="config-option__title">HUD Placement</label>
+                        <div class="config-option__list">
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(6)"
+                                name="hr-option"
+                                data-checked="hr_option"
+                                value="Original"
+                                id="hr_original"
+                                style="nav-up: #msaa_none; nav-down: #apply_button"
+                            />
+                            <label class="config-option__tab-label" for="hr_original">Original</label>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(6)"
+                                name="hr-option"
+                                data-checked="hr_option"
+                                value="Clamp16x9"
+                                id="hr_16_9"
+                                style="nav-up: #msaa_2x; nav-down: #apply_button"
+                            />
+                            <label class="config-option__tab-label" for="hr_16_9">16:9</label>
+                            <input type="radio"
+                                data-event-blur="set_current_gfx_description(-1)"
+                                data-event-focus="set_current_gfx_description(6)"
+                                name="hr-option"
+                                data-checked="hr_option"
+                                value="Full"
+                                id="hr_full"
+                                style="nav-up: #msaa_4x; nav-down: #apply_button"
+                            />
+                            <label class="config-option__tab-label" for="hr_full">Expand</label>
                         </div>
                     </div>
 
@@ -257,6 +293,9 @@
                         <br />
                         Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.
                     </p>
+                    <p data-if="cur_gfx_description == 6">
+                        Adjusts the placement of HUD elements to fit the selected aspect ratio. Expand will use the aspect ratio of the game's output window.
+                    </p>
                 </div>
             </div>
             <div class="config__footer">
@@ -269,7 +308,7 @@
                         data-attrif-disabled="!options_changed"
                         onclick="apply_options"
                         id="apply_button"
-                        style="nav-up:#msaa_none"
+                        style="nav-up:#hr_original"
                     >
                         <div class="button__label">Apply</div>
                     </button>
