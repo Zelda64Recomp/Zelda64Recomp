@@ -801,13 +801,28 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
     gEXPushProjectionMatrix(gfx++);
     gEXPushGeometryMode(gfx++);
     gEXPushOtherMode(gfx++);
+    gEXPushViewport(gfx++);
     gEXMatrixGroupSimple(gfx++, TEXTBOX_TRANSFORM_PROJECTION_ID, G_EX_PUSH, G_MTX_PROJECTION,
         G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
     gEXMatrixGroupSimple(gfx++, TEXTBOX_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW,
         G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
 
+    // @recomp Set up the RSP params.
     gSPLoadGeometryMode(gfx++, 0);
     gSPTexture(gfx++, 0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_ON);
+    Vp* textbox_viewport = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Vp));
+
+    textbox_viewport->vp.vscale[0] = (gCfbWidth / 2) << 2;
+    textbox_viewport->vp.vscale[1] = (gCfbHeight / 2) << 2;
+    textbox_viewport->vp.vscale[2] = G_MAXZ;
+    textbox_viewport->vp.vscale[3] = 0;
+    
+    textbox_viewport->vp.vtrans[0] = (gCfbWidth / 2) << 2;
+    textbox_viewport->vp.vtrans[1] = (gCfbHeight / 2) << 2;
+    textbox_viewport->vp.vtrans[2] = 0;
+    textbox_viewport->vp.vtrans[3] = 0;
+
+    gSPViewport(gfx++, textbox_viewport);
 
     if (msgCtx->textBoxType == TEXTBOX_TYPE_A) {
         gSPTextureRectangle(gfx++, msgCtx->textboxX << 2, (msgCtx->textboxY + 22) << 2,
@@ -817,9 +832,9 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
         const s32 base_textbox_width = 256;
         const s32 base_textbox_height = 64;
 
-        // @recomp Calculate a scale based on the texcoord derivatives.
-        f32 textbox_scale_x = 1024.0f / sTextboxTexWidth;
-        f32 textbox_scale_y = 1024.0f / sTextboxTexHeight;
+        // @recomp Calculate a scale based on the the target size derivatives.
+        f32 textbox_scale_x = sTextboxWidth / (f32)base_textbox_width;
+        f32 textbox_scale_y = sTextboxHeight / (f32)base_textbox_height;
 
         // @recomp Calculate the textbox center.
         f32 textbox_center_x = msgCtx->textboxX + sTextboxWidth / 2.0f;
@@ -828,15 +843,15 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
         // @recomp Allocate and build the matrices.
         Mtx* textbox_model_matrix = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx));
         Mtx* textbox_proj_matrix  = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx));
-        guOrtho(textbox_proj_matrix, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, -1.0f, 1.0f, 1.0f);
+        guOrtho(textbox_proj_matrix, 0, gCfbWidth, gCfbHeight, 0, -1.0f, 1.0f, 1.0f);
         Mtx_SetTranslateScaleMtx(textbox_model_matrix, textbox_scale_x, textbox_scale_y, 1.0f, textbox_center_x, textbox_center_y, 0.0f);
 
-        // @recomp Static vertex list for the textboxes. Use 6 as the shift for texcoords instead of 5 to account for the 1/2 texture scale.
+        // @recomp Static vertex list for the textboxes.
         static Vtx textbox_verts[4] = {
-            {{{-base_textbox_width / 2, -base_textbox_height / 2, 0}, 0, {                 0 << 6,                    0 << 6}, {0, 0, 0, 0xFF}}},
-            {{{ base_textbox_width / 2, -base_textbox_height / 2, 0}, 0, {base_textbox_width << 6,                    0 << 6}, {0, 0, 0, 0xFF}}},
-            {{{-base_textbox_width / 2,  base_textbox_height / 2, 0}, 0, {                 0 << 6,  base_textbox_height << 6}, {0, 0, 0, 0xFF}}},
-            {{{ base_textbox_width / 2,  base_textbox_height / 2, 0}, 0, {base_textbox_width << 6,  base_textbox_height << 6}, {0, 0, 0, 0xFF}}},
+            {{{-base_textbox_width / 2, -base_textbox_height / 2, 0}, 0, {                 0 << 5,                    0 << 5}, {0, 0, 0, 0xFF}}},
+            {{{ base_textbox_width / 2, -base_textbox_height / 2, 0}, 0, {base_textbox_width << 5,                    0 << 5}, {0, 0, 0, 0xFF}}},
+            {{{-base_textbox_width / 2,  base_textbox_height / 2, 0}, 0, {                 0 << 5,  base_textbox_height << 5}, {0, 0, 0, 0xFF}}},
+            {{{ base_textbox_width / 2,  base_textbox_height / 2, 0}, 0, {base_textbox_width << 5,  base_textbox_height << 5}, {0, 0, 0, 0xFF}}},
         };
 
         // @recomp Loads the matrices, then the verts, and then draw the textbox.
@@ -844,12 +859,14 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
         gSPMatrix(gfx++, textbox_proj_matrix, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
         gSPVertex(gfx++, textbox_verts, 4, 0);
 
-        // @recomp Use point filtering as this texture doesn't work well with bilerp.
+        // @recomp Use point filtering as this texture doesn't work well with bilerp. Also enable perspective correction for drawing tris.
         gDPSetTextureFilter(gfx++, G_TF_POINT);
+        gDPSetTexturePersp(gfx++, G_TP_PERSP);
         gSP2Triangles(gfx++, 0, 1, 3, 0x0, 0, 3, 2, 0x0);
 
-        // @recomp Restore bilerp filtering and pop the model matrix.
+        // @recomp Restore bilerp filtering, disable perspective correction, and pop the model matrix
         gDPSetTextureFilter(gfx++, G_TF_BILERP);
+        gDPSetTexturePersp(gfx++, G_TP_NONE);
         gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
     }
 
@@ -868,9 +885,11 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
     gEXPopProjectionMatrix(gfx++);
     gEXPopGeometryMode(gfx++);
     gEXPopOtherMode(gfx++);
+    gEXPopViewport(gfx++);
     gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
     gEXPopMatrixGroup(gfx++, G_MTX_MODELVIEW);
     gEXPopMatrixGroup(gfx++, G_MTX_PROJECTION);
+    gSPPerspNormalize(gfx++, play->view.perspNorm);
 
     *gfxP = gfx++;
 }
