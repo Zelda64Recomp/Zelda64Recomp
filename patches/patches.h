@@ -6,8 +6,12 @@
 #define osRecvMesg osRecvMesg_recomp
 #define osSendMesg osSendMesg_recomp
 #define osViGetCurrentFramebuffer osViGetCurrentFramebuffer_recomp
+#define osFlashWriteArray osFlashWriteArray_recomp
+#define osFlashWriteBuffer osFlashWriteBuffer_recomp
+#define osWritebackDCache osWritebackDCache_recomp
 #define sinf __sinf_recomp
 #define cosf __cosf_recomp
+#define bzero bzero_recomp
 #define gRandFloat sRandFloat
 #include "global.h"
 #include "rt64_extended_gbi.h"

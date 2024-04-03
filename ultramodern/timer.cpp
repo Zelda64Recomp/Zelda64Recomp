@@ -112,10 +112,9 @@ void timer_thread(RDRAM_ARG1) {
 
         // Determine how long to wait to reach the timer's timestamp
         auto wait_duration = ticks_to_timepoint(cur_timer->timestamp) - std::chrono::system_clock::now();
-        auto wait_us = std::chrono::duration_cast<std::chrono::microseconds>(wait_duration);
 
         // Wait for either the duration to complete or a new action to come through
-        if (timer_context.action_queue.wait_dequeue_timed(cur_action, wait_duration)) {
+        if (wait_duration.count() >= 0 && timer_context.action_queue.wait_dequeue_timed(cur_action, wait_duration)) {
             // Timer was interrupted by a new action 
             // Add the current timer back to the queue (done first in case the action is to remove this timer)
             active_timers.insert(cur_timer_);
