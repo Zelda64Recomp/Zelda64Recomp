@@ -199,6 +199,8 @@ struct DebugContext {
 	int area_index = 0;
 	int scene_index = 0;
 	int entrance_index = 0;
+	uint8_t set_time_hour = 0;
+	uint8_t set_time_minute = 0;
 	bool debug_enabled = false;
 
 	DebugContext() {
@@ -290,6 +292,11 @@ public:
 		recomp::register_event(listener, "do_warp",
 			[](const std::string& param, Rml::Event& event) {
 				recomp::do_warp(debug_context.area_index, debug_context.scene_index, debug_context.entrance_index);
+			});
+
+		recomp::register_event(listener, "set_time",
+			[](const std::string& param, Rml::Event& event) {
+				recomp::set_time(debug_context.set_time_hour, debug_context.set_time_minute);
 			});
 	}
 
