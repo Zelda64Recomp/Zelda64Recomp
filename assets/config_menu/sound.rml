@@ -5,7 +5,7 @@
         <form class="config__form">
             <div class="config__hz-wrapper">
                 <!-- Options -->
-                <div class="config__wrapper">
+                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)">
                         <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
                             <label class="config-option__title">Background Music Volume</label>
                             <div class="config-option__range-wrapper config-option__list">
