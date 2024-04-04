@@ -1,5 +1,13 @@
 __start = 0x80000000;
 
+/* Manual symbol overrides to work around recompiler ambiguity issue (TODO fix this) */
+_ovl_daytelopSegmentOvlEnd = 0x0;
+_ovl_kaleido_scopeSegmentTextStart = 0x0;
+_ovl_kaleido_scopeSegmentStart = 0x0;
+_ovl_daytelopSegmentBssStart = 0x0;
+_ovl_daytelopSegmentEnd = 0x0;
+_ovl_daytelopSegmentBssEnd = 0x0;
+
 /* Static symbols that aren't in the elf */
 sSceneEntranceTable = 0x801C5720;
 D_808DE5B0 = 0x808DE5B0;
@@ -31,3 +39,4 @@ bzero_recomp = 0x8F00005C;
 osFlashWriteArray_recomp = 0x8F000060;
 osFlashWriteBuffer_recomp = 0x8F000064;
 osWritebackDCache_recomp = 0x8F000068;
+recomp_get_pending_set_time = 0x8F00006C;
