@@ -70,7 +70,7 @@ void bind_atomic(Rml::DataModelConstructor& constructor, Rml::DataModelHandle ha
 static int scanned_binding_index = -1;
 static int scanned_input_index = -1;
 static int focused_input_index = -1;
-static int focused_gfx_index = -1;
+static int focused_config_option_index = -1;
 
 static bool msaa2x_supported = false;
 static bool msaa4x_supported = false;
@@ -292,6 +292,22 @@ public:
 				recomp::do_warp(debug_context.area_index, debug_context.scene_index, debug_context.entrance_index);
 			});
 	}
+
+	void bind_config_list_events(Rml::DataModelConstructor &constructor) {
+		constructor.BindEventCallback("set_cur_config_index",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+				int option_index = inputs.at(0).Get<size_t>();
+				// watch for mouseout being overzealous during event bubbling, only clear if the event's attached element matches the current
+				if (option_index == -1 && event.GetType() == "mouseout" && event.GetCurrentElement() != event.GetTargetElement()) {
+					return;
+				}
+				focused_config_option_index = option_index;
+				model_handle.DirtyVariable("cur_config_index");
+			});
+
+		constructor.Bind("cur_config_index", &focused_config_option_index);
+	}
+
 	void make_graphics_bindings(Rml::Context* context) {
 		Rml::DataModelConstructor constructor = context->CreateDataModel("graphics_model");
 		if (!constructor) {
@@ -303,6 +319,7 @@ public:
 			std::this_thread::sleep_for(50ms);
 		}
 		new_options = ultramodern::get_graphics_config();
+		bind_config_list_events(constructor);
 
 		constructor.BindFunc("res_option",
 			[](Rml::Variant& out) { get_option(new_options.res_option, out); },
@@ -368,18 +385,6 @@ public:
 				}
 				out = "";
 			});
-		
-		constructor.BindEventCallback("set_current_gfx_description",
-			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
-				int gfx_index = inputs.at(0).Get<size_t>();
-				// watch for mouseout being overzealous during event bubbling, only clear if the event's attached element matches the current
-				if (gfx_index == -1 && event.GetType() == "mouseout" && event.GetCurrentElement() != event.GetTargetElement()) {
-					return;
-				}
-				focused_gfx_index = gfx_index;
-				model_handle.DirtyVariable("cur_gfx_description");
-			});
-		constructor.Bind("cur_gfx_description", &focused_gfx_index);
 
 		constructor.Bind("msaa2x_supported", &msaa2x_supported);
 		constructor.Bind("msaa4x_supported", &msaa4x_supported);
@@ -568,6 +573,8 @@ public:
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the control options menu");
 		}
+
+		bind_config_list_events(constructor);
 		
 		constructor.Bind("rumble_strength", &control_options_context.rumble_strength);
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
@@ -580,6 +587,8 @@ public:
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the sound options menu");
 		}
+
+		bind_config_list_events(constructor);
 		
 		sound_options_model_handle = constructor.GetModelHandle();
 
@@ -592,6 +601,8 @@ public:
 		if (!constructor) {
 			throw std::runtime_error("Failed to make RmlUi data model for the debug menu");
 		}
+
+		bind_config_list_events(constructor);
 
 		// Bind the debug mode enabled flag.
 		constructor.Bind("debug_enabled", &debug_context.debug_enabled);

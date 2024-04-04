@@ -6,35 +6,45 @@
             <div class="config__hz-wrapper">
                 <!-- Options -->
                 <div class="config__wrapper">
-                    <div class="config-option">
+                    <!-- targeting mode -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
                         <label class="config-option__title">Targeting Mode</label>
                         <div class="config-option__list">
                             <input
                                 type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(0)"
                                 name="targeting_mode"
                                 data-checked="targeting_mode"
                                 value="Switch"
                                 id="tm_switch"
+                                style="nav-up: #tab_general; nav-down: #rumble_strength_input"
                             />
                             <label class="config-option__tab-label" for="tm_switch">Switch</label>
 
                             <input
                                 type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(0)"
                                 name="targeting_mode"
                                 data-checked="targeting_mode"
                                 value="Hold"
                                 id="tm_hold"
+                                style="nav-up: #tab_general; nav-down: #rumble_strength_input"
                             />
                             <label class="config-option__tab-label" for="tm_hold">Hold</label>
                         </div>
                     </div>
 
-                    <div class="config-option">
+                    <!-- rumble strength -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(1)">
                         <label class="config-option__title">Rumble Strength</label>
                         <div class="config-option__range-wrapper config-option__list">
                             <label class="config-option__range-label">{{rumble_strength}}</label>
                             <input
                                 class="nav-vert"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(1)"
                                 id="rumble_strength_input"
                                 type="range"
                                 min="0"
@@ -47,11 +57,11 @@
                 </div>
                 <!-- Descriptions -->
                 <div class="config__wrapper">
-                    <p data-if="0 == 0">
-                        First.
+                    <p data-if="cur_config_index == 0">
+                        Whether or not targeting is done incorrectly, or targets while you hold the button.
                     </p>
-                    <p data-if="1 == 1">
-                        Second.
+                    <p data-if="cur_config_index == 1">
+                        How much your controller go brrrrr
                     </p>
                 </div>
             </div>

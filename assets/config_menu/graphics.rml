@@ -4,13 +4,13 @@
     <body>
         <form class="config__form">
             <div class="config__hz-wrapper">
-                <div class="config__wrapper" data-event-mouseout="set_current_gfx_description(-1)">
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(0)">
+                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
                         <label class="config-option__title">Resolution</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(0)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(0)"
                                 name="resolution"
                                 data-checked="res_option"
                                 value="Original"
@@ -20,8 +20,8 @@
                             />
                             <label class="config-option__tab-label" for="res_original">Original</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(0)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(0)"
                                 name="resolution"
                                 data-checked="res_option"
                                 value="Original2x"
@@ -31,8 +31,8 @@
                             />
                             <label class="config-option__tab-label" for="res_2x">Original 2x</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(0)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(0)"
                                 name="resolution"
                                 data-checked="res_option"
                                 value="Auto"
@@ -44,12 +44,12 @@
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(1)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(1)">
                         <label class="config-option__title">Downsampling Quality</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(1)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(1)"
                                 name="downsampling"
                                 data-attrif-disabled="res_option == 'Auto'"
                                 data-checked="ds_option"
@@ -59,8 +59,8 @@
                             />
                             <label class="config-option__tab-label" for="ds_windowed">Off</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(1)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(1)"
                                 name="downsampling"
                                 data-attrif-disabled="res_option == 'Auto'"
                                 data-checked="ds_option"
@@ -70,8 +70,8 @@
                             />
                             <label class="config-option__tab-label" for="ds_2x">2x</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(1)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(1)"
                                 name="downsampling"
                                 data-attrif-disabled="res_option == 'Auto'"
                                 data-checked="ds_option"
@@ -84,12 +84,12 @@
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(2)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(2)">
                         <label class="config-option__title">Aspect Ratio</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(2)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(2)"
                                 name="aspectratio"
                                 data-checked="ar_option"
                                 value="Original"
@@ -99,8 +99,8 @@
                             />
                             <label class="config-option__tab-label" for="ar_original">Original</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(2)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(2)"
                                 name="aspectratio"
                                 data-checked="ar_option"
                                 value="Expand"
@@ -112,12 +112,12 @@
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(3)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(3)">
                         <label class="config-option__title">Window Mode</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(3)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(3)"
                                 name="windowmode"
                                 data-checked="wm_option"
                                 value="Windowed"
@@ -126,8 +126,8 @@
                             />
                             <label class="config-option__tab-label" for="wm_windowed">Windowed</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(3)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(3)"
                                 name="windowmode"
                                 data-checked="wm_option"
                                 value="Fullscreen"
@@ -138,12 +138,12 @@
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(4)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(4)">
                         <label class="config-option__title">Framerate</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)" 
-                                data-event-focus="set_current_gfx_description(4)"
+                                data-event-blur="set_cur_config_index(-1)" 
+                                data-event-focus="set_cur_config_index(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Original"
@@ -152,8 +152,8 @@
                             />
                             <label class="config-option__tab-label" for="rr_original">Original</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)" 
-                                data-event-focus="set_current_gfx_description(4)"
+                                data-event-blur="set_cur_config_index(-1)" 
+                                data-event-focus="set_cur_config_index(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Display"
@@ -162,8 +162,8 @@
                             />
                             <label class="config-option__tab-label" for="rr_display">Display</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)" 
-                                data-event-focus="set_current_gfx_description(4)"
+                                data-event-blur="set_cur_config_index(-1)" 
+                                data-event-focus="set_cur_config_index(4)"
                                 name="refreshrate"
                                 data-checked="rr_option"
                                 value="Manual"
@@ -175,8 +175,8 @@
                         <div data-if="rr_option=='Manual'" class="config-option__range-wrapper config-option__list">
                             <label class="config-option__range-label">{{rr_manual_value}}</label>
                             <input
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(4)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(4)"
                                 id="rr_manual_input"
                                 type="range"
                                 min="20"
@@ -187,12 +187,12 @@
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(5)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(5)">
                         <label class="config-option__title">MS Anti-Aliasing</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(5)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(5)"
                                 name="antialiasing"
                                 data-checked="msaa_option"
                                 value="None"
@@ -201,8 +201,8 @@
                             />
                             <label class="config-option__tab-label" for="msaa_none">None</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(5)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(5)"
                                 name="antialiasing"
                                 data-attrif-disabled="!msaa2x_supported"
                                 data-checked="msaa_option"
@@ -212,8 +212,8 @@
                             />
                             <label class="config-option__tab-label" for="msaa_2x">2x</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(5)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(5)"
                                 name="antialiasing"
                                 data-attrif-disabled="!msaa4x_supported"
                                 data-checked="msaa_option"
@@ -222,18 +222,16 @@
                                 data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #hr_full' : 'nav-up: #rr_manual; nav-down: #hr_full'"
                             />
                             <label class="config-option__tab-label" for="msaa_4x">4x</label>
-                            <!-- <input type="radio" data-event-blur="set_current_gfx_description(-1)" name="antialiasing" data-checked="msaa_option" value="MSAA8X" id="msaa_8x" style="nav-right:none;nav-down:#apply_button"/>
-                            <label class="config-option__tab-label" for="msaa_8x">8x</label> -->
                             <div class="config-option__details" data-if="!sample_positions_supported">Not available (missing sample positions support)</div>
                         </div>
                     </div>
 
-                    <div class="config-option" data-event-mouseover="set_current_gfx_description(6)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(6)">
                         <label class="config-option__title">HUD Placement</label>
                         <div class="config-option__list">
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(6)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(6)"
                                 name="hr-option"
                                 data-checked="hr_option"
                                 value="Original"
@@ -242,8 +240,8 @@
                             />
                             <label class="config-option__tab-label" for="hr_original">Original</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(6)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(6)"
                                 name="hr-option"
                                 data-checked="hr_option"
                                 value="Clamp16x9"
@@ -252,8 +250,8 @@
                             />
                             <label class="config-option__tab-label" for="hr_16_9">16:9</label>
                             <input type="radio"
-                                data-event-blur="set_current_gfx_description(-1)"
-                                data-event-focus="set_current_gfx_description(6)"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(6)"
                                 name="hr-option"
                                 data-checked="hr_option"
                                 value="Full"
@@ -266,34 +264,34 @@
 
                 </div>
                 <div class="config__wrapper">
-                    <p data-if="cur_gfx_description == 0">
+                    <p data-if="cur_config_index == 0">
                         Sets the output resolution of the game. Original matches the game's original 240p resolution. Original 2x will render at 480p. Auto will scale based on the game window's resolution.
                     </p>
-                    <p data-if="cur_gfx_description == 1">
+                    <p data-if="cur_config_index == 1">
                         Renders at a higher resolution and scales it down to the output resolution for increased quality. Only available in Original and Original 2x resolution.
                         <br />
                         <br />
                         Note: 4x downsampling quality at Original 2x resolution may cause performance issues on low end devices, as it will cause the game to render at almost 4k internal resolution.
                     </p>
-                    <p data-if="cur_gfx_description == 2">
+                    <p data-if="cur_config_index == 2">
                         Sets the horizontal aspect ratio. Original uses the game's original 4:3 aspect ratio. Expand will adjust to match the game window's aspect ratio.
                     </p>
-                    <p data-if="cur_gfx_description == 3">
+                    <p data-if="cur_config_index == 3">
                         Sets whether the game should display on a Window or Fullscreen. You can also use Alt + Enter to toggle this option.
                     </p>
-                    <p data-if="cur_gfx_description == 4">
+                    <p data-if="cur_config_index == 4">
                         Sets the game's output framerate. This option does not affect gameplay.
                         <br />
                         <br />
                         Note: If you have issues with Display mode while using an external frame limiter, use Manual mode instead and configure it to that same frame limit.
                     </p>
-                    <p data-if="cur_gfx_description == 5">
+                    <p data-if="cur_config_index == 5">
                         Sets the multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.
                         <br />
                         <br />
                         Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.
                     </p>
-                    <p data-if="cur_gfx_description == 6">
+                    <p data-if="cur_config_index == 6">
                         Adjusts the placement of HUD elements to fit the selected aspect ratio. Expand will use the aspect ratio of the game's output window.
                     </p>
                 </div>

@@ -22,9 +22,6 @@
 			flex: 1;
     		text-align: center;
 		}
-		#tab_graphics:selected {
-			nav-down:#res_auto;
-		}
 	</style>
 	<link type="text/template" href="config_menu/general.rml" />
 	<link type="text/template" href="config_menu/controls.rml" />
@@ -38,7 +35,7 @@
 			<div class="centered-page" onclick="close_config_menu_backdrop">
 				<div class="centered-page__modal">
 					<tabset class="tabs" id="config_tabset">
-						<tab class="tab" autofocus>
+						<tab class="tab" autofocus id="tab_general">
 							<div>General</div>
 							<div class="tab__indicator"></div>
 						</tab>
@@ -59,7 +56,7 @@
 						<panel class="config" data-model="graphics_model">
 							<template src="config-menu__graphics" />
 						</panel>
-						<tab class="tab">
+						<tab class="tab" id="tab_sound">
 							<div>Sound</div>
 							<div class="tab__indicator"></div>
 						</tab>
