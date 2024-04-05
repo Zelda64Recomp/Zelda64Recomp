@@ -54,11 +54,13 @@ void debug_play_update(PlayState* play) {
         do_warp(play, pending_warp);
     }
 
-    u16 pending_set_time = recomp_get_pending_set_time();
+    u32 pending_set_time = recomp_get_pending_set_time();
     if (pending_set_time != 0xFFFF) {
-        u8 hour   = (pending_set_time >> 8) & 0xFF;
-        u8 minute = (pending_set_time >> 0) & 0xFF;
+        u8 day    = (pending_set_time >> 16) & 0xFF;
+        u8 hour   = (pending_set_time >>  8) & 0xFF;
+        u8 minute = (pending_set_time >>  0) & 0xFF;
 
         gSaveContext.save.time = CLOCK_TIME(hour, minute);
+        gSaveContext.save.day = day;
     }
 }

@@ -101,6 +101,19 @@
         }
     }
 
+    input {
+        @extend %body;
+        @extend %nav-all;
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+        padding: 0;
+        flex: 1 1 100%;
+        width: auto;
+        height: space(20);
+        margin: auto 0;
+    }
+
     select {
         @extend %body;
         @extend %nav-all;
@@ -117,6 +130,10 @@
         background-color: $color-white-a5;
         cursor: pointer;
 
+        align-items: center;
+        justify-content: flex-start;
+        padding: space(14);
+
         &:hover, &:focus {
             @include border($color-white-a80);
             background-color: $color-white-a20;
@@ -124,9 +141,6 @@
 
         selectvalue {
             display: inline;
-            align-items: center;
-            justify-content: flex-start;
-            padding: space(14);
             margin: auto 0;
             height: auto;
         }

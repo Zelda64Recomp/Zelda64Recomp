@@ -4,7 +4,7 @@
 #include "../patches/input.h"
 
 std::atomic<uint16_t> pending_warp = 0xFFFF;
-std::atomic<uint16_t> pending_set_time = 0xFFFF;
+std::atomic<uint32_t> pending_set_time = 0xFFFF;
 
 void recomp::do_warp(int area, int scene, int entrance) {
     const recomp::SceneWarps game_scene = recomp::game_warps[area].scenes[scene];
@@ -17,8 +17,8 @@ extern "C" void recomp_get_pending_warp(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, pending_warp.exchange(0xFFFF));
 }
 
-void recomp::set_time(uint8_t hour, uint8_t minute) {
-    pending_set_time.store((uint16_t(hour) << 8) | minute);
+void recomp::set_time(uint8_t day, uint8_t hour, uint8_t minute) {
+    pending_set_time.store((day << 16) | (uint16_t(hour) << 8) | minute);
 }
 
 extern "C" void recomp_get_pending_set_time(uint8_t* rdram, recomp_context* ctx) {

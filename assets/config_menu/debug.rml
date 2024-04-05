@@ -42,6 +42,63 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="config-debug-option">
+                            <label
+                                class="config-debug-option__label"
+                            >
+                                <div>Set time</div>
+                            </label>
+                            <div class="config-debug__option-split">
+                                <div class="config-debug__option-controls">
+                                    <div class="config-option__range-wrapper config-debug__select-wrapper config-option__list">
+                                        <div class="config-debug__select-label"><div>Day: {{debug_time_day}}</div></div>
+                                        <input
+                                            data-event-blur="set_cur_config_index(-1)"
+                                            data-event-focus="set_cur_config_index(1)"
+                                            class="nav-vert"
+                                            id="debug_time_set_day"
+                                            type="range"
+                                            data-value="debug_time_day"
+                                            min="0"
+                                            max="7"
+                                        />
+                                    </div>
+                                    <div class="config-option__range-wrapper config-debug__select-wrapper config-option__list">
+                                        <div class="config-debug__select-label"><div>Hour: {{debug_time_hour}}</div></div>
+                                        <input
+                                            data-event-blur="set_cur_config_index(-1)"
+                                            data-event-focus="set_cur_config_index(1)"
+                                            class="nav-vert"
+                                            id="debug_time_set_hour"
+                                            type="range"
+                                            data-value="debug_time_hour"
+                                            min="0"
+                                            max="23"
+                                        />
+                                    </div>
+                                    <div class="config-option__range-wrapper config-debug__select-wrapper config-option__list">
+                                        <div class="config-debug__select-label"><div>Minute: {{debug_time_minute}}</div></div>
+                                        <input
+                                            data-event-blur="set_cur_config_index(-1)"
+                                            data-event-focus="set_cur_config_index(1)"
+                                            class="nav-vert"
+                                            id="debug_time_set_minute"
+                                            type="range"
+                                            data-value="debug_time_minute"
+                                            min="0"
+                                            max="59"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="config-debug__option-trigger">
+                                    <button
+                                        class="icon-button icon-button--success" onclick="set_time"
+                                    >
+                                        <svg src="icons/Arrow.svg" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

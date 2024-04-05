@@ -199,8 +199,9 @@ struct DebugContext {
 	int area_index = 0;
 	int scene_index = 0;
 	int entrance_index = 0;
-	uint8_t set_time_hour = 0;
-	uint8_t set_time_minute = 0;
+	int set_time_day = 1;
+	int set_time_hour = 12;
+	int set_time_minute = 0;
 	bool debug_enabled = false;
 
 	DebugContext() {
@@ -296,7 +297,7 @@ public:
 
 		recomp::register_event(listener, "set_time",
 			[](const std::string& param, Rml::Event& event) {
-				recomp::set_time(debug_context.set_time_hour, debug_context.set_time_minute);
+				recomp::set_time(debug_context.set_time_day, debug_context.set_time_hour, debug_context.set_time_minute);
 			});
 	}
 
@@ -626,6 +627,10 @@ public:
 		constructor.Bind("area_names", &debug_context.area_names);
 		constructor.Bind("scene_names", &debug_context.scene_names);
 		constructor.Bind("entrance_names", &debug_context.entrance_names);
+
+		constructor.Bind("debug_time_day", &debug_context.set_time_day);
+		constructor.Bind("debug_time_hour", &debug_context.set_time_hour);
+		constructor.Bind("debug_time_minute", &debug_context.set_time_minute);
 
 		debug_context.model_handle = constructor.GetModelHandle();
 	}
