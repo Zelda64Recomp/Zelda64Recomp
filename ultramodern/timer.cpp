@@ -6,8 +6,13 @@
 #include "ultra64.h"
 #include "ultramodern.hpp"
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+#endif
+
 // Start time for the program
-static std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
+static std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
 // Game speed multiplier (1 means no speedup)
 constexpr uint32_t speed_multiplier = 1;
 // N64 CPU counter ticks per millisecond
@@ -37,7 +42,7 @@ struct {
     moodycamel::BlockingConcurrentQueue<Action> action_queue{};
 } timer_context;
 
-uint64_t duration_to_ticks(std::chrono::system_clock::duration duration) {
+uint64_t duration_to_ticks(std::chrono::high_resolution_clock::duration duration) {
     uint64_t delta_micros = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
     // More accurate than using a floating point timer, will only overflow after running for 12.47 years
     // Units: (micros * (counts/millis)) / (micros/millis) = counts
@@ -51,12 +56,12 @@ std::chrono::microseconds ticks_to_duration(uint64_t ticks) {
     return ticks * 1000us / counter_per_ms;
 }
 
-std::chrono::system_clock::time_point ticks_to_timepoint(uint64_t ticks) {
+std::chrono::high_resolution_clock::time_point ticks_to_timepoint(uint64_t ticks) {
     return start_time + ticks_to_duration(ticks);
 }
 
 uint64_t time_now() {
-    return duration_to_ticks(std::chrono::system_clock::now() - start_time);
+    return duration_to_ticks(std::chrono::high_resolution_clock::now() - start_time);
 }
 
 void timer_thread(RDRAM_ARG1) {
@@ -111,7 +116,7 @@ void timer_thread(RDRAM_ARG1) {
         active_timers.erase(cur_timer_);
 
         // Determine how long to wait to reach the timer's timestamp
-        auto wait_duration = ticks_to_timepoint(cur_timer->timestamp) - std::chrono::system_clock::now();
+        auto wait_duration = ticks_to_timepoint(cur_timer->timestamp) - std::chrono::high_resolution_clock::now();
 
         // Wait for either the duration to complete or a new action to come through
         if (wait_duration.count() >= 0 && timer_context.action_queue.wait_dequeue_timed(cur_action, wait_duration)) {
@@ -142,12 +147,12 @@ uint32_t ultramodern::get_speed_multiplier() {
     return speed_multiplier;
 }
 
-std::chrono::system_clock::time_point ultramodern::get_start() {
+std::chrono::high_resolution_clock::time_point ultramodern::get_start() {
     return start_time;
 }
 
-std::chrono::system_clock::duration ultramodern::time_since_start() {
-    return std::chrono::system_clock::now() - start_time;
+std::chrono::high_resolution_clock::duration ultramodern::time_since_start() {
+    return std::chrono::high_resolution_clock::now() - start_time;
 }
 
 extern "C" u32 osGetCount() {
@@ -188,3 +193,32 @@ extern "C" int osStopTimer(RDRAM_ARG PTR(OSTimer) t_) {
     // TODO don't blindly return 0 here; requires some response from the timer thread to know what the returned value was
     return 0;
 }
+
+#ifdef _WIN32
+
+// The implementations of std::chrono::sleep_until and sleep_for were affected by changing the system clock backwards in older versions
+// of Microsoft's STL. This was fixed as of Visual Studio 2022 17.9, but to be safe ultramodern uses Win32 Sleep directly.
+void ultramodern::sleep_milliseconds(uint32_t millis) {
+    Sleep(millis);
+}
+
+void ultramodern::sleep_until(const std::chrono::high_resolution_clock::time_point& time_point) {
+    auto time_now = std::chrono::high_resolution_clock::now();
+    if (time_point > time_now) {
+        long long delta_ms = std::chrono::ceil<std::chrono::milliseconds>(time_point - time_now).count();
+        // printf("Sleeping %lld %d ms\n", delta_ms, (uint32_t)delta_ms);
+        Sleep(delta_ms);
+    }
+}
+
+#else
+
+void ultramodern::sleep_milliseconds(uint32_t millis) {
+    std::this_thread::sleep_for(std::chrono::milliseconds{millis});
+}
+
+void ultramodern::sleep_until(const std::chrono::high_resolution_clock::time_point& time_point) {
+    std::this_thread::sleep_until(time_point);
+}
+
+#endif

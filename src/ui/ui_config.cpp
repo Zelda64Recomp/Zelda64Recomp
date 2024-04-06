@@ -322,10 +322,7 @@ public:
 			throw std::runtime_error("Failed to make RmlUi data model for the graphics config menu");
 		}
 
-		{
-			using namespace std::chrono_literals;
-			std::this_thread::sleep_for(50ms);
-		}
+		ultramodern::sleep_milliseconds(50);
 		new_options = ultramodern::get_graphics_config();
 		bind_config_list_events(constructor);
 

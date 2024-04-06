@@ -3,10 +3,10 @@
 
 static ultramodern::input_callbacks_t input_callbacks;
 
-std::chrono::system_clock::time_point input_poll_time;
+std::chrono::high_resolution_clock::time_point input_poll_time;
 
 void update_poll_time() {
-    input_poll_time = std::chrono::system_clock::now();
+    input_poll_time = std::chrono::high_resolution_clock::now();
 }
 
 extern "C" void recomp_set_current_frame_poll_id(uint8_t* rdram, recomp_context* ctx) {
@@ -18,7 +18,7 @@ extern "C" void recomp_measure_latency(uint8_t* rdram, recomp_context* ctx) {
 }
 
 void ultramodern::measure_input_latency() {
-    // printf("Delta: %ld micros\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - input_poll_time));    
+    // printf("Delta: %ld micros\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - input_poll_time));    
 }
 
 void set_input_callbacks(const ultramodern::input_callbacks_t& callbacks) {

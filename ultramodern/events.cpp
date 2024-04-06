@@ -115,15 +115,20 @@ void vi_thread_func() {
     while (!exited) {
         // Determine the next VI time (more accurate than adding 16ms each VI interrupt)
         auto next = ultramodern::get_start() + (total_vis * 1000000us) / (60 * ultramodern::get_speed_multiplier());
-        //if (next > std::chrono::system_clock::now()) {
+        //if (next > std::chrono::high_resolution_clock::now()) {
         //    printf("Sleeping for %" PRIu64 " us to get from %" PRIu64 " us to %" PRIu64 " us \n",
-        //        (next - std::chrono::system_clock::now()) / 1us,
-        //        (std::chrono::system_clock::now() - events_context.start) / 1us,
+        //        (next - std::chrono::high_resolution_clock::now()) / 1us,
+        //        (std::chrono::high_resolution_clock::now() - events_context.start) / 1us,
         //        (next - events_context.start) / 1us);
         //} else {
         //    printf("No need to sleep\n");
         //}
-        std::this_thread::sleep_until(next);
+        // Detect if there's more than a second to wait and wait a fixed amount instead for the next VI if so, as that usually means the system clock went back in time.
+        if (std::chrono::floor<std::chrono::seconds>(next - std::chrono::high_resolution_clock::now()) > 1s) {
+            // printf("Skipping the next VI wait\n");
+            next = std::chrono::high_resolution_clock::now();
+        }
+        ultramodern::sleep_until(next);
         // Calculate how many VIs have passed
         uint64_t new_total_vis = (ultramodern::time_since_start() * (60 * ultramodern::get_speed_multiplier()) / 1000ms) + 1;
         if (new_total_vis > total_vis + 1) {
@@ -325,9 +330,9 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
                 sp_complete();
                 ultramodern::measure_input_latency();
 
-                auto rt64_start = std::chrono::system_clock::now();
+                auto rt64_start = std::chrono::high_resolution_clock::now();
                 RT64SendDL(rdram, &task_action->task);
-                auto rt64_end = std::chrono::system_clock::now();
+                auto rt64_end = std::chrono::high_resolution_clock::now();
                 dp_complete();
                 // printf("RT64 ProcessDList time: %d us\n", static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(rt64_end - rt64_start).count()));
             }

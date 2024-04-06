@@ -429,8 +429,7 @@ void recomp::start(ultramodern::WindowHandle window_handle, const ultramodern::a
     }, window_handle, rdram_buffer.get()};
 
     while (!exited) {
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1ms);
+        ultramodern::sleep_milliseconds(1);
         if (gfx_callbacks.update_gfx != nullptr) {
             gfx_callbacks.update_gfx(gfx_data);
         }
