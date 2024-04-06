@@ -16,8 +16,6 @@ void select_rom() {
 	nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
 
 	if (result == NFD_OKAY) {
-		printf("Path: %ls\n", native_path);
-
 		std::filesystem::path path{native_path};
 
 		NFD_FreePathN(native_path);

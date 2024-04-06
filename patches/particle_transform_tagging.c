@@ -1,6 +1,7 @@
 #include "patches.h"
 #include "transform_ids.h"
 #include "overlays/actors/ovl_En_Hanabi/z_en_hanabi.h"
+#include "overlays/actors/ovl_Demo_Kankyo/z_demo_kankyo.h"
 
 extern EffectSsInfo sEffectSsInfo;
 
@@ -173,4 +174,211 @@ void EnHanabi_Draw(Actor* thisx, PlayState* play) {
     // @recomp Call a modified version of the function that takes the actor for relocation purposes.
     func_80B22FA8_patched(thisx, this->unk_148, play);
     Matrix_Pop();
+}
+
+Vec3f kankyo_prev_pos_base[DEMOKANKYO_EFFECT_COUNT] = {0};
+
+// @recomp Patched to draw the lost woods particles outside the 4:3 region and tag their transforms.
+void DemoKakyo_DrawLostWoodsSparkle(Actor* thisx, PlayState* play2) {
+    PlayState* play = play2;
+    DemoKankyo* this = (DemoKankyo*)thisx;
+    s16 i;
+    f32 scaleAlpha;
+    Vec3f worldPos;
+    Vec3f screenPos;
+
+    // if not underwater
+    if (!(play->cameraPtrs[CAM_ID_MAIN]->stateFlags & CAM_STATE_UNDERWATER)) {
+        OPEN_DISPS(play->state.gfxCtx);
+
+        POLY_XLU_DISP = Gfx_SetupDL(POLY_XLU_DISP, SETUPDL_20);
+
+        gSPSegment(POLY_XLU_DISP++, 0x08, Lib_SegmentedToVirtual(gSun1Tex));
+        gSPDisplayList(POLY_XLU_DISP++, gSunSparkleMaterialDL);
+
+        for (i = 0; i < play->envCtx.precipitation[PRECIP_SNOW_MAX]; i++) {
+            worldPos.x = this->effects[i].posBase.x + this->effects[i].posOffset.x;
+            worldPos.y = this->effects[i].posBase.y + this->effects[i].posOffset.y;
+            worldPos.z = this->effects[i].posBase.z + this->effects[i].posOffset.z;
+
+            // @recomp Render the particle regardless of its position on screen.
+            // Play_GetScreenPos(play, &worldPos, &screenPos);
+
+            // // checking if particle is on screen
+            // if ((screenPos.x >= 0.0f) && (screenPos.x < SCREEN_WIDTH) && (screenPos.y >= 0.0f) &&
+            //     (screenPos.y < SCREEN_HEIGHT)) {
+            if (true) {
+                Matrix_Translate(worldPos.x, worldPos.y, worldPos.z, MTXMODE_NEW);
+                scaleAlpha = this->effects[i].alpha / 50.0f;
+                if (scaleAlpha > 1.0f) {
+                    scaleAlpha = 1.0f;
+                }
+
+                Matrix_Scale(this->effects[i].scale * scaleAlpha, this->effects[i].scale * scaleAlpha,
+                             this->effects[i].scale * scaleAlpha, MTXMODE_APPLY);
+
+                // adjust transparency of this particle
+                if (i < 32) {
+                    // Skyfish particles
+                    if (this->effects[i].state != DEMO_KANKYO_STATE_SKYFISH) {
+                        // still initializing
+                        if (this->effects[i].alpha > 0) { // NOT DECR
+                            this->effects[i].alpha--;
+                        }
+                    } else if (this->effects[i].alpha < 100) {
+                        this->effects[i].alpha++;
+                    }
+                } else if (this->effects[i].state != DEMO_KANKYO_STATE_SKYFISH) {
+                    if ((this->effects[i].alphaClock & 31) < 16) {
+                        if (this->effects[i].alpha < 235) {
+                            this->effects[i].alpha += 20;
+                        }
+                    } else if (this->effects[i].alpha > 20) {
+                        this->effects[i].alpha -= 20;
+                    }
+                } else if ((this->effects[i].alphaClock & 15) < 8) {
+                    if (this->effects[i].alpha < 255) {
+                        this->effects[i].alpha += 100;
+                    }
+                } else if (this->effects[i].alpha > 10) {
+                    this->effects[i].alpha -= 10;
+                }
+
+                gDPPipeSync(POLY_XLU_DISP++);
+
+                switch (i & 1) {
+                    case 0: // gold particles
+                        gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 155, this->effects[i].alpha);
+                        gDPSetEnvColor(POLY_XLU_DISP++, 250, 180, 0, this->effects[i].alpha);
+                        break;
+
+                    case 1: // silver particles
+                        gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, this->effects[i].alpha);
+                        gDPSetEnvColor(POLY_XLU_DISP++, 0, 100, 255, this->effects[i].alpha);
+                        break;
+                }
+
+                Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
+                Matrix_RotateZF(DEG_TO_RAD(play->state.frames * 20.0f), MTXMODE_APPLY);
+
+                // @recomp Tag the particle's matrix. Skip if the particle's base position changed.
+                if (this->effects[i].state == DEMO_KANKYO_STATE_SKYFISH || (
+                        kankyo_prev_pos_base[i].x == this->effects[i].posBase.x && 
+                        kankyo_prev_pos_base[i].y == this->effects[i].posBase.y && 
+                        kankyo_prev_pos_base[i].z == this->effects[i].posBase.z)) {
+                    gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+                }
+                else {
+                    gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                }
+                gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
+                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                gSPDisplayList(POLY_XLU_DISP++, gSunSparkleModelDL);
+                // @recomp Pop the matrix tag and record the particle's current base position.
+                gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+                kankyo_prev_pos_base[i] = this->effects[i].posBase;
+            }
+        }
+
+        CLOSE_DISPS(play->state.gfxCtx);
+    }
+}
+
+extern Gfx gLightOrbMaterial1DL[];
+extern Gfx gBubbleDL[];
+extern Gfx gLightOrbModelDL[];
+
+// @recomp Patched to draw the lost woods particles outside the 4:3 region and tag their transforms.
+void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
+    PlayState* play = play2;
+    DemoKankyo* this = (DemoKankyo*)thisx;
+    s16 i;
+    f32 alphaScale;
+
+    if (this->isSafeToDrawGiants != false) {
+        Vec3f worldPos;
+        Vec3f screenPos;
+        s32 pad;
+        GraphicsContext* gfxCtx = play->state.gfxCtx;
+
+        OPEN_DISPS(gfxCtx);
+
+        Gfx_SetupDL25_Xlu(gfxCtx);
+
+        for (i = 0; i < play->envCtx.precipitation[PRECIP_SNOW_MAX]; i++) {
+            worldPos.x = this->effects[i].posBase.x + this->effects[i].posOffset.x;
+            worldPos.y = this->effects[i].posBase.y + this->effects[i].posOffset.y;
+            worldPos.z = this->effects[i].posBase.z + this->effects[i].posOffset.z;
+
+            // @recomp Render the particle regardless of its position on screen.
+            // Play_GetScreenPos(play, &worldPos, &screenPos);
+
+            // checking if effect is on screen
+            // if ((screenPos.x >= 0.0f) && (screenPos.x < SCREEN_WIDTH) && (screenPos.y >= 0.0f) &&
+            //     (screenPos.y < SCREEN_HEIGHT)) {
+            if (true) {
+                Matrix_Translate(worldPos.x, worldPos.y, worldPos.z, MTXMODE_NEW);
+                alphaScale = this->effects[i].alpha / 50.0f;
+                if (alphaScale > 1.0f) {
+                    alphaScale = 1.0f;
+                }
+                Matrix_Scale(this->effects[i].scale * alphaScale, this->effects[i].scale * alphaScale,
+                             this->effects[i].scale * alphaScale, MTXMODE_APPLY);
+                alphaScale = Math_Vec3f_DistXYZ(&worldPos, &play->view.eye) / 300.0f;
+                alphaScale = CLAMP(1.0f - alphaScale, 0.0f, 1.0f);
+
+                if (this->actor.params == DEMO_KANKYO_TYPE_GIANTS) {
+                    this->effects[i].alpha = 255.0f * alphaScale;
+                } else {
+                    this->effects[i].alpha = 160.0f * alphaScale;
+                }
+
+                gDPPipeSync(POLY_XLU_DISP++);
+
+                switch (i & 1) { // half/half slightly different shades of yellow/tan
+                    case 0:
+                        gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 230, 230, 220, this->effects[i].alpha);
+                        gDPSetEnvColor(POLY_XLU_DISP++, 230, 230, 30, this->effects[i].alpha);
+                        break;
+
+                    case 1:
+                        gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 200, 200, 190, this->effects[i].alpha);
+                        gDPSetEnvColor(POLY_XLU_DISP++, 200, 200, 30, this->effects[i].alpha);
+                        break;
+                }
+
+                gSPDisplayList(POLY_XLU_DISP++, gLightOrbMaterial1DL);
+
+                Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
+
+                Matrix_RotateZF(DEG_TO_RAD(play->state.frames * 20.0f), MTXMODE_APPLY);
+
+                gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
+                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+                // @recomp Tag the particle's matrix. Skip if the particle's base position changed.
+                // Allow the Y base position to change if this is a moon particle.
+                if (kankyo_prev_pos_base[i].x == this->effects[i].posBase.x && 
+                    (kankyo_prev_pos_base[i].y == this->effects[i].posBase.y || this->actor.params == DEMO_KANKYO_TYPE_MOON) && 
+                    kankyo_prev_pos_base[i].z == this->effects[i].posBase.z) {
+                    gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+                }
+                else {
+                    gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+                }
+
+                if (this->actor.params == DEMO_KANKYO_TYPE_GIANTS) {
+                    gSPDisplayList(POLY_XLU_DISP++, gBubbleDL);
+                } else {
+                    gSPDisplayList(POLY_XLU_DISP++, gLightOrbModelDL);
+                }
+
+                // @recomp Pop the matrix tag and record the particle's current base position.
+                gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+                kankyo_prev_pos_base[i] = this->effects[i].posBase;
+            }
+        }
+
+        CLOSE_DISPS(gfxCtx);
+    }
 }

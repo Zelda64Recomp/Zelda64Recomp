@@ -951,7 +951,6 @@ void func_800A6A40(EnItem00* this, PlayState* play) {
 
     // @recomp Use custom flag 1 to check if this actor has been in this state before.
     if (!actor_get_custom_flag_1(&this->actor)) {
-        recomp_printf("First frame picked up\n");
         // It hasn't, so skip interpolation this frame and set custom flag 1.
         actor_set_interpolation_skipped(&this->actor);
         actor_set_custom_flag_1(&this->actor);

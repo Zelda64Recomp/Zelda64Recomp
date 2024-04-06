@@ -7,6 +7,8 @@
 #include <numeric>
 #include <stdexcept>
 
+#include "nfd.h"
+
 #include "../../ultramodern/ultra64.h"
 #include "../../ultramodern/ultramodern.hpp"
 #define SDL_MAIN_HANDLED
@@ -219,6 +221,9 @@ int main(int argc, char** argv) {
     // Set up console output to accept UTF-8 on windows
     SetConsoleOutputCP(CP_UTF8);
 
+    // Initialize native file dialogs.
+    NFD_Init();
+
     // Change to a font that supports Japanese characters
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof cfi;
@@ -260,6 +265,8 @@ int main(int argc, char** argv) {
     };
 
     recomp::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
+    
+    NFD_Quit();
 
     return EXIT_SUCCESS;
 }
