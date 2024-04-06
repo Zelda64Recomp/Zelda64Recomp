@@ -704,6 +704,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(0.0f, MTXMODE_NEW);
+            // @recomp Manual relocation, TODO remove when automated.
             Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->itemPageRoll / 100.0f);
@@ -725,6 +726,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(-1.57f, MTXMODE_NEW);
+            // @recomp Manual relocation, TODO remove when automated.
             Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->mapPageRoll / 100.0f);
@@ -755,6 +757,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(-3.14f, MTXMODE_NEW);
+            // @recomp Manual relocation, TODO remove when automated.
             Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->questPageRoll / 100.0f);
@@ -778,6 +781,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(1.57f, MTXMODE_NEW);
+            // @recomp Manual relocation, TODO remove when automated.
             Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->maskPageRoll / 100.0f);
@@ -800,6 +804,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                     Matrix_RotateYF(0.0f, MTXMODE_NEW);
+                    // @recomp Manual relocation, TODO remove when automated.
                     Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
                     Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                     Matrix_RotateXFApply(-pauseCtx->itemPageRoll / 100.0f);
@@ -822,6 +827,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                 Matrix_RotateYF(-1.57f, MTXMODE_NEW);
+                // @recomp Manual relocation, TODO remove when automated.
                 Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->mapPageRoll / 100.0f);
@@ -872,7 +878,8 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetTextureFilter(POLY_OPA_DISP++, G_TF_BILERP);
 
                 Matrix_RotateYF(-3.14f, MTXMODE_NEW);
-                Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
+                // @recomp Manual relocation, TODO remove when automated.
+                Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->questPageRoll / 100.0f);
 
@@ -893,7 +900,8 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                 Matrix_RotateYF(1.57f, MTXMODE_NEW);
-                Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
+                // @recomp Manual relocation, TODO remove when automated.
+                Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->maskPageRoll / 100.0f);
 
