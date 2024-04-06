@@ -21,7 +21,6 @@ void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
         }
     } else if (sramCtx->status == 4) {
         // @recomp Patched to check status instead of using a hardcoded wait.
-        recomp_printf("Status 4\n");
         sramCtx->status = 0;
     }
 }

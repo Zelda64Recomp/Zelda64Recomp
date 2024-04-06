@@ -733,8 +733,8 @@ void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
 
     Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, OSN_ANIM_IDLE);
     if (!isSwitchFlagSet) {
-        // @recomp Manual relocation, TODO remove when automated by the recompiler.
-        this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_HandleCsAction);
+        // @recomp No need to relocate as this function is replaced, so the patch compilation will pick the new address.
+        this->actionFunc = EnOsn_HandleCsAction;
     } else {
         // @recomp Manual relocation, TODO remove when automated by the recompiler.
         this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_Idle);
@@ -914,5 +914,46 @@ void EnFall2_Draw(Actor* thisx, PlayState* play) {
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
             CLOSE_DISPS(play->state.gfxCtx);
         }
+    }
+}
+
+// @recomp Skip interpolation on item pickups the frame they're collected.
+void func_800A6A40(EnItem00* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
+
+    if (this->getItemId != GI_NONE) {
+        if (!Actor_HasParent(&this->actor, play)) {
+            Actor_OfferGetItem(&this->actor, play, this->getItemId, 50.0f, 80.0f);
+            this->unk152++;
+        } else {
+            this->getItemId = GI_NONE;
+        }
+    }
+
+    if (this->unk152 == 0) {
+        Actor_Kill(&this->actor);
+        return;
+    }
+
+    this->actor.world.pos = player->actor.world.pos;
+
+    if (this->actor.params <= ITEM00_RUPEE_RED) {
+        this->actor.shape.rot.y += 0x3C0;
+    } else if (this->actor.params == ITEM00_RECOVERY_HEART) {
+        this->actor.shape.rot.y = 0;
+    }
+
+    this->actor.world.pos.y += (40.0f + (Math_SinS(this->unk152 * 15000) * (this->unk152 * 0.3f)));
+
+    if (LINK_IS_ADULT) {
+        this->actor.world.pos.y += 20.0f;
+    }
+
+    // @recomp Use custom flag 1 to check if this actor has been in this state before.
+    if (!actor_get_custom_flag_1(&this->actor)) {
+        recomp_printf("First frame picked up\n");
+        // It hasn't, so skip interpolation this frame and set custom flag 1.
+        actor_set_interpolation_skipped(&this->actor);
+        actor_set_custom_flag_1(&this->actor);
     }
 }

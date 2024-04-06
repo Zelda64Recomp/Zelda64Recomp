@@ -58,7 +58,8 @@ static inline u32 actor_transform_id(Actor* actor) {
 
 typedef enum {
     ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED = 1 << 0,
-} ActorTransformFlags;
+    ACTOR_CUSTOM_FLAG_1                        = 1 << 1,
+} CustomActorFlags;
 
 static inline u32 actor_get_interpolation_skipped(Actor* actor) {
     return (actorIdByte2(actor) & ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED) != 0;
@@ -70,6 +71,18 @@ static inline void actor_set_interpolation_skipped(Actor* actor) {
 
 static inline void actor_clear_interpolation_skipped(Actor* actor) {
     actorIdByte2(actor) &= ~ACTOR_TRANSFORM_FLAG_INTERPOLATION_SKIPPED;
+}
+
+static inline void actor_set_custom_flag_1(Actor* actor) {
+    actorIdByte2(actor) |= ACTOR_CUSTOM_FLAG_1;
+}
+
+static inline void actor_clear_custom_flag_1(Actor* actor) {
+    actorIdByte2(actor) &= ~ACTOR_CUSTOM_FLAG_1;
+}
+
+static inline bool actor_get_custom_flag_1(Actor* actor) {
+    return (actorIdByte2(actor) & ACTOR_CUSTOM_FLAG_1) != 0;
 }
 
 void force_camera_interpolation();

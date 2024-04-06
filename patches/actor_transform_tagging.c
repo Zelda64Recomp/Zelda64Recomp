@@ -1164,6 +1164,7 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
     // Scan the commands written by the actor to see how many matrices were added.
     s32 opa_matrices = scan_for_matrices(opa_start, POLY_OPA_DISP);
     s32 xlu_matrices = scan_for_matrices(xlu_start, POLY_XLU_DISP);
+    bool skipped = actor_get_interpolation_skipped(actor);
 
     // If the actor wrote at least one matrix in total and at most one matrix to each list, tag that matrix with the actor's id.
     if ((opa_matrices == 1 || xlu_matrices == 1) && opa_matrices <= 1 && xlu_matrices <= 1) {
@@ -1171,7 +1172,12 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
         
         if (opa_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposedNormal(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            if (skipped) {
+                gEXMatrixGroupDecomposedSkipPosRot(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            }
+            else {
+                gEXMatrixGroupDecomposedNormal(opa_start, cur_transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            }
             
             // Pop the matrix group.
             gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
@@ -1179,7 +1185,12 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
 
         if (xlu_matrices == 1) {
             // Fill in the slot that was reserved for a transform id.
-            gEXMatrixGroupDecomposedNormal(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            if (skipped) {
+                gEXMatrixGroupDecomposedSkipPosRot(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            }
+            else {
+                gEXMatrixGroupDecomposedNormal(xlu_start, cur_transform_id + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+            }
 
             // Pop the matrix groups.
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
