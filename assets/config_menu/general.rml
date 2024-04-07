@@ -58,10 +58,10 @@
                 <!-- Descriptions -->
                 <div class="config__wrapper">
                     <p data-if="cur_config_index == 0">
-                        Whether or not targeting is done incorrectly, or targets while you hold the button.
+                        Controls how targeting enemies and objects works. Switch will start or stop targeting each time the target button is pressed. Hold will start when the target button is pressed and stop when the button is released. 
                     </p>
                     <p data-if="cur_config_index == 1">
-                        How much your controller go brrrrr
+                        Controls the strength of rumble when using a controller that supports it. Setting this to zero will disable rumble.
                     </p>
                 </div>
             </div>
