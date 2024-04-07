@@ -6,7 +6,7 @@
 #include "nfd.h"
 #include <filesystem>
 
-std::string version_number = "v0.9.0-dirty";
+std::string version_number = "v0.9.1";
 
 Rml::DataModelHandle model_handle;
 bool mm_rom_valid = false;
