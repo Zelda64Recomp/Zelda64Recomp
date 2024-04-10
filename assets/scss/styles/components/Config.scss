@@ -30,6 +30,10 @@
         padding: space(16);
         white-space: pre-line;
         line-height: space(28);
+
+        b {
+            color: $color-primary;
+        }
     }
 }
 
