@@ -80,3 +80,42 @@ h3 {
 button {
     background-color: $color-primary-d;
 }
+
+@keyframes blue-pulse {
+	0% {
+		color: $color-secondary;
+	}
+	50% {
+		color: $color-secondary-l;
+	}
+	to { 
+		color: $color-secondary;
+	}
+}
+
+@keyframes blue-pulse-with-border {
+	0% {
+		color: $color-secondary;
+		border-color: $color-secondary;
+	}
+	50% {
+		color: $color-secondary-l;
+		border-color: $color-secondary-l;
+	}
+	to { 
+		color: $color-secondary;
+		border-color: $color-secondary;
+	}
+}
+
+@keyframes blue-pulse-background {
+	0% {
+		background-color: $color-secondary;
+	}
+	50% {
+		background-color: $color-secondary-l;
+	}
+	to { 
+		background-color: $color-secondary;
+	}
+}
