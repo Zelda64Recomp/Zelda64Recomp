@@ -114,17 +114,18 @@
 
     .config-option__tab-label {
         @extend %label-sm;
+        @include trans-colors-opa;
         display: block;
-        padding: space(12) 0 space(8);
+        position: relative;
+        padding: space(8) 0;
         height: auto;
-        margin: 0 space(12);
-        margin-right: space(16);
+        margin: space(4) space(12) 0;
         color: $color-text-inactive;
         tab-index: none;
-        transition: color $transition-quick;
 
         &:hover {
             cursor: pointer;
+            color: $color-text;
         }
     }
 
@@ -138,13 +139,20 @@
         &:not(:disabled) {
             &:checked + .config-option__tab-label {
                 border-bottom: 1dp;
-                border-color: $color-border-hard;
+                border-color: $color-text;
+                color: $color-text;
     
                 &:hover {
                     cursor: default;
                 }
             }
     
+            .rmlui-window:not([mouse-active]) &:focus + .config-option__tab-label {
+                animation: $focus-anim-border;
+                color: $color-secondary;
+                border-color: $color-secondary;
+            }
+
             &:focus + .config-option__tab-label,
             &:hover + .config-option__tab-label {
                 color: $color-text;
@@ -179,7 +187,7 @@
         
         .rmlui-window:not([mouse-active]) &:focus {
             @include border($color-a);
-            background-color: $color-secondary;
+            animation: $focus-anim-bg;
         }
 
         &:hover {
@@ -201,7 +209,7 @@
 
 .config-option__details {
     @extend %label-xs;
-    color: $color-secondary;
+    color: $color-primary;
     margin: space(14) space(12) 0;
     height: space(18);
 }
