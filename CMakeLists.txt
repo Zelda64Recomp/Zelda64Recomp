@@ -22,6 +22,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 
+set(RT64_STATIC TRUE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 # set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
@@ -31,11 +32,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 # set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
 SET(ENABLE_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
-add_subdirectory(${CMAKE_SOURCE_DIR}/lib/nativefiledialog-extended)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
-get_target_property(RT64_BASENAME rt64 OUTPUT_NAME)
-set(RT64_DLL ${RT64_BASENAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 # RecompiledFuncs - Library containing the primary recompiler output
 add_library(RecompiledFuncs STATIC)
@@ -111,6 +109,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/threads.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/timer.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/ultrainit.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/rt64_layer.cpp
 
     ${CMAKE_SOURCE_DIR}/src/recomp/ai.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/cont.cpp
@@ -127,7 +126,6 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/ultra_translation.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/print.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/recomp.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/rt64_layer.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
 
@@ -175,7 +173,7 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
-    ${CMAKE_SOURCE_DIR}/lib/lib/nativefiledialog-extended/src/include
+    ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
 )
 
@@ -214,7 +212,7 @@ if (WIN32)
         PROPERTIES
             LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
             LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
-            LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+            # LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
             LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
     )
 
@@ -257,8 +255,3 @@ target_sources(Zelda64Recompiled PRIVATE ${SOURCES})
 
 set_property(TARGET Zelda64Recompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-add_custom_command(TARGET Zelda64Recompiled POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_BINARY_DIR}/${RT64_DLL}
-        ${CMAKE_SOURCE_DIR}
-    MAIN_DEPENDENCY ${CMAKE_BINARY_DIR}/${RT64_DLL})

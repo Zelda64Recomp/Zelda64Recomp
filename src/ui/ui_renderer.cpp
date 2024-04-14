@@ -243,7 +243,7 @@ public:
 
             // Create vertex buffer for the screen drawer (full-screen triangle).
             screen_vertex_buffer_size_ = sizeof(Rml::Vertex) * 3;
-            screen_vertex_buffer_ = render_context->device->createBuffer(RT64::RenderBufferDesc::UploadBuffer(screen_vertex_buffer_size_));
+            screen_vertex_buffer_ = render_context->device->createBuffer(RT64::RenderBufferDesc::VertexBuffer(screen_vertex_buffer_size_, RT64::RenderHeapType::UPLOAD));
             Rml::Vertex *vertices = (Rml::Vertex *)(screen_vertex_buffer_->map());
             const Rml::Colourb white(255, 255, 255, 255);
             vertices[0] = Rml::Vertex{ Rml::Vector2f(-1.0f, 1.0f), white, Rml::Vector2f(0.0f, 0.0f) };

@@ -297,14 +297,14 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
 
     ultramodern::GraphicsConfig old_config;
 
-    RT64::Application* application = RT64Init(rdram, window_handle, cur_config.load().developer_mode);
+    ultramodern::RT64Context rt64{rdram, window_handle, cur_config.load().developer_mode};
+
+    if (!rt64.valid()) {
+        throw std::runtime_error("Failed to initialize RT64!");
+    }
 
     // TODO move recomp code out of ultramodern.
     recomp::update_supported_options();
-
-    if (application == nullptr) {
-        throw std::runtime_error("Failed to initialize RT64!");
-    }
     
     rsp_constants_init();
 
@@ -320,7 +320,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
             if (const auto* task_action = std::get_if<SpTaskAction>(&action)) {
                 // Turn on instant present if the game has been started and it hasn't been turned on yet.
                 if (ultramodern::is_game_started() && !enabled_instant_present) {
-                    RT64EnableInstantPresent(application);
+                    rt64.enable_instant_present();
                     enabled_instant_present = true;
                 }
                 // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
@@ -331,20 +331,20 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
                 ultramodern::measure_input_latency();
 
                 auto rt64_start = std::chrono::high_resolution_clock::now();
-                RT64SendDL(rdram, &task_action->task);
+                rt64.send_dl(&task_action->task);
                 auto rt64_end = std::chrono::high_resolution_clock::now();
                 dp_complete();
                 // printf("RT64 ProcessDList time: %d us\n", static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(rt64_end - rt64_start).count()));
             }
             else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
-                RT64UpdateScreen(swap_action->origin);
-                display_refresh_rate = RT64GetDisplayFramerate(application);
+                rt64.update_screen(swap_action->origin);
+                display_refresh_rate = rt64.get_display_framerate();
             }
             else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
                 ultramodern::GraphicsConfig new_config = cur_config;
                 if (old_config != new_config) {
-                    RT64UpdateConfig(application, old_config, new_config);
+                    rt64.update_config(old_config, new_config);
                     old_config = new_config;
                 }
             }
@@ -352,7 +352,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
     }
     // TODO move recomp code out of ultramodern.
     recomp::destroy_ui();
-    RT64Shutdown();
+    rt64.shutdown();
 }
 
 extern unsigned int VI_STATUS_REG;

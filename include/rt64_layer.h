@@ -10,18 +10,26 @@ namespace RT64 {
 
 namespace ultramodern {
     struct WindowHandle;
-}
+    struct RT64Context {
+        public:
+            ~RT64Context();
+            RT64Context(uint8_t* rdram, WindowHandle window_handle, bool developer_mode);
+            bool valid() { return static_cast<bool>(app); }
 
-RT64::Application* RT64Init(uint8_t* rdram, ultramodern::WindowHandle window_handle, bool developer_mode);
-void RT64UpdateConfig(RT64::Application* application, const ultramodern::GraphicsConfig& old_config, const ultramodern::GraphicsConfig& new_config);
-void RT64EnableInstantPresent(RT64::Application* application);
-void RT64SendDL(uint8_t* rdram, const OSTask* task);
-void RT64UpdateScreen(uint32_t vi_origin);
-void RT64ChangeWindow();
-void RT64Shutdown();
-RT64::UserConfiguration::Antialiasing RT64MaxMSAA();
-bool RT64SamplePositionsSupported();
-uint32_t RT64GetDisplayFramerate(RT64::Application* application);
+            void update_config(const GraphicsConfig& old_config, const GraphicsConfig& new_config);
+            void enable_instant_present();
+            void send_dl(const OSTask* task);
+            void update_screen(uint32_t vi_origin);
+            void shutdown();
+            void set_dummy_vi();
+            uint32_t get_display_framerate();
+        private:
+            std::unique_ptr<RT64::Application> app;
+    };
+    
+    RT64::UserConfiguration::Antialiasing RT64MaxMSAA();
+    bool RT64SamplePositionsSupported();
+}
 
 void set_rt64_hooks();
 

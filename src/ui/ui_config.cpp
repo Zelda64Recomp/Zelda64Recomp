@@ -658,10 +658,10 @@ void recomp::set_debug_mode_enabled(bool enabled) {
 }
 
 void recomp::update_supported_options() {
-	msaa2x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
-	msaa4x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
-	msaa8x_supported = RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
-	sample_positions_supported = RT64SamplePositionsSupported();
+	msaa2x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
+	msaa4x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
+	msaa8x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
+	sample_positions_supported = ultramodern::RT64SamplePositionsSupported();
 	
 	new_options = ultramodern::get_graphics_config();
 
