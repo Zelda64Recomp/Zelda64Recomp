@@ -295,7 +295,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
     ultramodern::set_native_thread_name("Gfx Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
-    ultramodern::GraphicsConfig old_config;
+    ultramodern::GraphicsConfig old_config = ultramodern::get_graphics_config();
 
     ultramodern::RT64Context rt64{rdram, window_handle, cur_config.load().developer_mode};
 
