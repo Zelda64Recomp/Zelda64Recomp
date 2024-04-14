@@ -160,6 +160,19 @@ ultramodern::RT64Context::RT64Context(uint8_t* rdram, ultramodern::WindowHandle 
     app->enhancementConfig.f3dex.forceBranch = true;
     // Scale LODs based on the output resolution.
     app->enhancementConfig.textureLOD.scale = true;
+    // Pick an API if the user has set an override.
+    switch (cur_config.api_option) {
+        case ultramodern::GraphicsApi::D3D12:
+            app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::D3D12;
+            break;
+        case ultramodern::GraphicsApi::Vulkan:
+            app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::Vulkan;
+            break;
+        default:
+        case ultramodern::GraphicsApi::Auto:
+            // Don't override if auto is selected.
+            break;
+    }
 
     // Set up the RT64 application.
     if (!app->setup(window_handle.thread_id)) {

@@ -21,11 +21,18 @@ namespace ultramodern {
 		Full,
 		OptionCount
 	};
+	enum class GraphicsApi {
+		Auto,
+		D3D12,
+		Vulkan,
+		OptionCount
+	};
 
 	struct GraphicsConfig {
 		Resolution res_option;
 		WindowMode wm_option;
 		HUDRatioMode hr_option;
+		GraphicsApi api_option;
 		RT64::UserConfiguration::AspectRatio ar_option;
 		RT64::UserConfiguration::Antialiasing msaa_option;
 		RT64::UserConfiguration::RefreshRate rr_option;
@@ -54,6 +61,12 @@ namespace ultramodern {
 		{ultramodern::HUDRatioMode::Original, "Original"},
 		{ultramodern::HUDRatioMode::Clamp16x9, "Clamp16x9"},
 		{ultramodern::HUDRatioMode::Full, "Full"},
+	});
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::GraphicsApi, {
+		{ultramodern::GraphicsApi::Auto, "Auto"},
+		{ultramodern::GraphicsApi::D3D12, "D3D12"},
+		{ultramodern::GraphicsApi::Vulkan, "Vulkan"},
 	});
 };
 
