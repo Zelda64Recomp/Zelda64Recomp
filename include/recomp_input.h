@@ -118,6 +118,7 @@ namespace recomp {
 
     void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
     void set_rumble(bool);
+    void update_rumble();
     void handle_events();
     
     // Rumble strength ranges from 0 to 100.

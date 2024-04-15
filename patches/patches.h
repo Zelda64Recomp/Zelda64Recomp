@@ -9,6 +9,12 @@
 #define osFlashWriteArray osFlashWriteArray_recomp
 #define osFlashWriteBuffer osFlashWriteBuffer_recomp
 #define osWritebackDCache osWritebackDCache_recomp
+
+#define osContStartReadData osContStartReadData_recomp
+#define osContGetReadData osContGetReadData_recomp
+#define osContStartQuery osContStartQuery_recomp
+#define osContGetQuery osContGetQuery_recomp
+
 #define sinf __sinf_recomp
 #define cosf __cosf_recomp
 #define bzero bzero_recomp

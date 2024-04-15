@@ -13,16 +13,108 @@ void recomp_set_current_frame_poll_id();
 void PadMgr_HandleRetrace(void);
 void PadMgr_LockPadData(void);
 void PadMgr_UnlockPadData(void);
+void PadMgr_UpdateRumble(void);
+void PadMgr_UpdateConnections(void);
+void PadMgr_UpdateInputs(void);
+void PadMgr_InitVoice(void);
+OSMesgQueue* PadMgr_AcquireSerialEventQueue(void);
+void PadMgr_ReleaseSerialEventQueue(OSMesgQueue* serialEventQueue);
 
-void PadMgr_ThreadEntry() {
-    // @recomp Controller polling was moved to the main thread, so there's nothing to do here.
+
+extern PadMgr* sPadMgrInstance;
+extern s32 sPadMgrRetraceCount;
+extern FaultMgr gFaultMgr;
+extern s32 sVoiceInitStatus;
+
+
+typedef enum {
+    /* 0 */ VOICE_INIT_FAILED, // voice initialization failed
+    /* 1 */ VOICE_INIT_TRY,    // try to initialize voice
+    /* 2 */ VOICE_INIT_SUCCESS // voice initialized
+} VoiceInitStatus;
+
+void recomp_update_rumble();
+
+void PadMgr_HandleRetrace(void) {
+    // Execute rumble callback
+    if (sPadMgrInstance->rumbleRetraceCallback != NULL) {
+        sPadMgrInstance->rumbleRetraceCallback(sPadMgrInstance->rumbleRetraceArg);
+    }
+
+    // Try and initialize a Voice Recognition Unit if not already attempted
+    if (sVoiceInitStatus != VOICE_INIT_FAILED) {
+        PadMgr_InitVoice();
+    }
+
+    // Rumble Pak
+    if (gFaultMgr.msgId != 0) {
+        // If fault is active, no rumble
+        PadMgr_RumbleStop();
+    } else if (sPadMgrInstance->rumbleOffTimer > 0) {
+        // If the rumble off timer is active, no rumble
+        --sPadMgrInstance->rumbleOffTimer;
+        PadMgr_RumbleStop();
+    } else if (sPadMgrInstance->rumbleOnTimer == 0) {
+        // If the rumble on timer is inactive, no rumble
+        PadMgr_RumbleStop();
+    } else if (!sPadMgrInstance->isResetting) {
+        // If not resetting, update rumble
+        PadMgr_UpdateRumble();
+        --sPadMgrInstance->rumbleOnTimer;
+    }
+
+    recomp_update_rumble();
+}
+
+void poll_inputs(void) {
+    OSMesgQueue* serialEventQueue = PadMgr_AcquireSerialEventQueue();
+    // Begin reading controller data
+    osContStartReadData(serialEventQueue);
+
+    // Wait for controller data
+    osRecvMesg(serialEventQueue, NULL, OS_MESG_BLOCK);
+    osContGetReadData(sPadMgrInstance->pads);
+
+    // Clear all but controller 1
+    bzero(&sPadMgrInstance->pads[1], sizeof(*sPadMgrInstance->pads) * (MAXCONTROLLERS - 1));
+
+    // If in PreNMI, clear all controllers
+    if (sPadMgrInstance->isResetting) {
+        bzero(sPadMgrInstance->pads, sizeof(sPadMgrInstance->pads));
+    }
+
+    // Query controller statuses
+    osContStartQuery(serialEventQueue);
+    osRecvMesg(serialEventQueue, NULL, OS_MESG_BLOCK);
+    osContGetQuery(sPadMgrInstance->padStatus);
+
+    // Lock serial message queue
+    PadMgr_ReleaseSerialEventQueue(serialEventQueue);
+
+    // Update connections
+    PadMgr_UpdateConnections();
+
+    // Lock input data
+    PadMgr_LockPadData();
+
+    // Update input data
+    PadMgr_UpdateInputs();
+
+    // Execute input callback
+    if (sPadMgrInstance->inputRetraceCallback != NULL) {
+        sPadMgrInstance->inputRetraceCallback(sPadMgrInstance->inputRetraceArg);
+    }
+
+    // Unlock input data
+    PadMgr_UnlockPadData();
+    sPadMgrRetraceCount++;
 }
 
 // @recomp Patched to do the actual input polling.
 void PadMgr_GetInput(Input* inputs, s32 gameRequest) {
     // @recomp Do an actual poll if gameRequest is true.
     if (gameRequest) {
-        PadMgr_HandleRetrace();
+        poll_inputs();
         // @recomp Tag the current frame's input polling id for latency tracking.
         recomp_set_current_frame_poll_id();
     }

@@ -31,6 +31,8 @@ static struct {
     std::array<float, 2> rotation_delta{};
     std::mutex pending_rotation_mutex;
     std::array<float, 2> pending_rotation_delta{};
+    float cur_rumble;
+    bool rumble_active;
 } InputState;
 
 std::atomic<recomp::InputDevice> scanning_device = recomp::InputDevice::COUNT;
@@ -370,10 +372,34 @@ void recomp::poll_inputs() {
 }
 
 void recomp::set_rumble(bool on) {
-    uint16_t rumble_strength = recomp::get_rumble_strength() * 0xFFFF / 100;
+    InputState.rumble_active = on;
+}
+
+static float lerp(float from, float to, float amount) {
+    return (from + (to - from) * amount);
+}
+static float smoothstep(float from, float to, float amount) {
+    amount = (amount * amount) * (3.0f - 2.0f * amount);
+    return lerp(from, to, amount);
+}
+
+// Update rumble to attempt to mimic the way n64 rumble ramps up and falls off
+void recomp::update_rumble() {
+    // Note: values are not accurate! just approximations based on feel
+    if (InputState.rumble_active) {
+        InputState.cur_rumble += 0.17f;
+        if (InputState.cur_rumble > 1) InputState.cur_rumble = 1;
+    } else {
+        InputState.cur_rumble *= 0.92f;
+        InputState.cur_rumble -= 0.01f;
+        if (InputState.cur_rumble < 0) InputState.cur_rumble = 0;
+    }
+    float smooth_rumble = smoothstep(0, 1, InputState.cur_rumble);
+
+    uint16_t rumble_strength = smooth_rumble * (recomp::get_rumble_strength() * 0xFFFF / 100);
     uint32_t duration = 1000000; // Dummy duration value that lasts long enough to matter as the game will reset rumble on its own.
     for (const auto& controller : InputState.cur_controllers) {
-        SDL_GameControllerRumble(controller, 0, on ? rumble_strength : 0, duration);
+        SDL_GameControllerRumble(controller, 0, rumble_strength, duration);
     }
 }
 
