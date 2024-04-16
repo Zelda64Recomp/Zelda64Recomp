@@ -2,6 +2,7 @@
 #include "transform_ids.h"
 #include "overlays/actors/ovl_En_Hanabi/z_en_hanabi.h"
 #include "overlays/actors/ovl_Demo_Kankyo/z_demo_kankyo.h"
+#include "overlays/actors/ovl_En_Water_Effect/z_en_water_effect.h"
 
 extern EffectSsInfo sEffectSsInfo;
 
@@ -381,4 +382,150 @@ void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
 
         CLOSE_DISPS(gfxCtx);
     }
+}
+
+static Vec3f D_80A5AFB0 = { 0.0f, 0.0f, 0.0f };
+static Vec3f D_80A5AFBC = { 0.0f, -1.0f, 0.0f };
+
+// The byte after unk_01 in EnWaterEffectStruct is unused, so we'll use it as a respawn flag.
+#define WATER_EFFECT_RESPAWNED(ptr) (&(ptr)->unk_01)[1]
+
+// @recomp Mark respawned water effect particles so they can be skipped for the first frame.
+void func_80A599E8(EnWaterEffect* this, Vec3f* arg1, u8 arg2) {
+    s16 i;
+    EnWaterEffectStruct* ptr = &this->unk_144[0];
+
+    for (i = 0; i < ARRAY_COUNT(this->unk_144); i++, ptr++) {
+        if (ptr->unk_00 == 0) {
+            ptr->unk_00 = 4;
+            // @recomp Use an unused byte to mark that this particle was respawned.
+            WATER_EFFECT_RESPAWNED(ptr) = true;
+            ptr->unk_04 = *arg1;
+
+            ptr->unk_1C = D_80A5AFB0;
+            ptr->unk_10 = D_80A5AFB0;
+
+            if ((arg2 == 0) || (arg2 == 2)) {
+                ptr->unk_1C.y = -1.0f;
+            }
+
+            if (arg2 >= 2) {
+                if (arg2 == 2) {
+                    ptr->unk_10.x = Rand_CenteredFloat(10.0f);
+                    ptr->unk_10.y = Rand_ZeroFloat(3.0f) + 5.0f;
+                    ptr->unk_10.z = Rand_CenteredFloat(10.0f);
+                }
+                ptr->unk_2C.z = 0.0017f;
+                ptr->unk_2C.x = 0.003f;
+                ptr->unk_2C.y = 0.0018f;
+            } else {
+                ptr->unk_2C.z = 0.003f;
+                ptr->unk_2C.x = 0.003f;
+                ptr->unk_2C.y = 0.003f;
+            }
+            ptr->unk_38 = 255.0f;
+            ptr->unk_28 = Rand_ZeroFloat(0x10000);
+            ptr->unk_3C = 255;
+            ptr->unk_01 = Rand_ZeroFloat(200.0f);
+            ptr->unk_2A = arg2;
+            break;
+        }
+    }
+}
+
+extern Gfx object_water_effect_DL_004340[];
+extern Gfx object_water_effect_DL_0043E8[];
+extern Gfx gameplay_keep_DL_06AB30[];
+
+// @recomp Tag the transforms for falling fire rocks.
+void func_80A5A184(Actor* thisx, PlayState* play2) {
+    PlayState* play = play2;
+    EnWaterEffect* this = (EnWaterEffect*)thisx;
+    GraphicsContext* gfxCtx = play->state.gfxCtx;
+    EnWaterEffectStruct* ptr = &this->unk_144[0];
+    u8 flag = false;
+    s16 i;
+
+    OPEN_DISPS(gfxCtx);
+
+    Gfx_SetupDL25_Opa(play->state.gfxCtx);
+    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+
+    for (i = 0; i < ARRAY_COUNT(this->unk_144); i++, ptr++) {
+        if (ptr->unk_00 == 4) {
+            if (!flag) {
+                gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_004340);
+                gDPSetEnvColor(POLY_XLU_DISP++, 255, 10, 0, 0);
+                POLY_OPA_DISP = Gfx_SetFog(POLY_OPA_DISP, 255, 0, 0, 255, 500, 3600);
+                flag++;
+            }
+
+            gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, (u8)ptr->unk_38, 0, 0, (u8)ptr->unk_3C);
+            gSPSegment(POLY_XLU_DISP++, 0x08,
+                       Gfx_TwoTexScroll(play->state.gfxCtx, 0, 0, 0, 0x20, 0x40, 1, 0, (ptr->unk_01 * -20) & 0x1FF,
+                                        0x20, 0x80));
+
+            Matrix_Translate(ptr->unk_04.x, ptr->unk_04.y, ptr->unk_04.z, MTXMODE_NEW);
+
+            if (ptr->unk_2A >= 2) {
+                Matrix_ReplaceRotation(&play->billboardMtxF);
+            } else {
+                Matrix_RotateYS(Camera_GetInputDirYaw(GET_ACTIVE_CAM(play)), MTXMODE_APPLY);
+            }
+
+            Matrix_Scale(ptr->unk_2C.x, ptr->unk_2C.y, 1.0f, MTXMODE_APPLY);
+
+            if ((i & 1) != 0) {
+                Matrix_RotateYF(M_PI, MTXMODE_APPLY);
+            }
+
+            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+            // @recomp Tag the matrix group. Skip all interpolation if this particle just respawned. Otherwise,
+            // skip rotation interpolation if there was a camera cut since this is a billboard.
+            if (WATER_EFFECT_RESPAWNED(ptr)) {
+                gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, actor_transform_id(thisx) + (i * 2) + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            }
+            else if (camera_was_skipped()) {
+                gEXMatrixGroupDecomposedSkipRot(POLY_XLU_DISP++, actor_transform_id(thisx) + (i * 2) + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            }
+            else {
+                gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + (i * 2) + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            }
+
+            gSPDisplayList(POLY_XLU_DISP++, object_water_effect_DL_0043E8);
+
+            // @recomp Pop the matrix group.
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+
+            if ((ptr->unk_2A & 1) == 0) {
+                Matrix_Translate(ptr->unk_04.x, ptr->unk_04.y + 5.0f, ptr->unk_04.z, MTXMODE_NEW);
+                Matrix_RotateXS(ptr->unk_28, MTXMODE_APPLY);
+                Matrix_Scale(ptr->unk_2C.z, ptr->unk_2C.z, ptr->unk_2C.z, MTXMODE_APPLY);
+
+                gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
+                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+                // @recomp Tag the matrix group. Skip all interpolation if the base particle just respawned.
+                if (WATER_EFFECT_RESPAWNED(ptr)) {
+                    gEXMatrixGroupDecomposedSkipAll(POLY_OPA_DISP++, actor_transform_id(thisx) + (i * 2) + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+                }
+                else {
+                    gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, actor_transform_id(thisx) + (i * 2) + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+                }
+
+                gSPDisplayList(POLY_OPA_DISP++, gameplay_keep_DL_06AB30);
+
+                // @recomp Pop the matrix group.
+                gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+            }
+            
+            // @recomp Clear the respawned state of this particle.
+            WATER_EFFECT_RESPAWNED(ptr) = false;
+        }
+    }
+
+    POLY_OPA_DISP = Play_SetFog(play, POLY_OPA_DISP);
+
+    CLOSE_DISPS(gfxCtx);
 }

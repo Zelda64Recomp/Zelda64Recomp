@@ -7,6 +7,7 @@
 #include "overlays/actors/ovl_En_Water_Effect/z_en_water_effect.h"
 #include "overlays/actors/ovl_En_Osn/z_en_osn.h"
 #include "overlays/actors/ovl_En_Fall2/z_en_fall2.h"
+#include "overlays/actors/ovl_Obj_Entotu/z_obj_entotu.h"
 
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
@@ -954,5 +955,116 @@ void func_800A6A40(EnItem00* this, PlayState* play) {
         // It hasn't, so skip interpolation this frame and set custom flag 1.
         actor_set_interpolation_skipped(&this->actor);
         actor_set_custom_flag_1(&this->actor);
+    }
+}
+
+extern Vtx ovl_Obj_Entotu_Vtx_000D10[7];
+extern Gfx object_f53_obj_DL_001C00[];
+
+// @recomp Skip rotation interpolation for the Clock Town chimney's smoke when the camera skips interolation.
+void func_80A34B28(ObjEntotu* this, PlayState* play) {
+    u8 sp57;
+    u8 sp56;
+    s32 i;
+
+    this->unk_1B8.y += 1.8f;
+    this->unk_1B8.z += 0.6f;
+    sp57 = 0x7F - (u8)this->unk_1B8.y;
+    sp56 = 0x7F - (u8)this->unk_1B8.z;
+
+    this->unk_1B8.x = CLAMP(this->unk_1B8.x, 0.0f, 1.0f);
+
+    // @recomp Manual relocation, TODO remove when automated.
+    Vtx* verts = (Vtx*)actor_relocate(&this->actor, ovl_Obj_Entotu_Vtx_000D10);
+    for (i = 0; i < ARRAY_COUNT(ovl_Obj_Entotu_Vtx_000D10); i++) {
+        this->unk_148[i].v.cn[3] = verts[i].v.cn[3] * this->unk_1B8.x;
+    }
+
+    if (this->unk_1B8.x > 0.0f) {
+        Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, MTXMODE_NEW);
+        this->actor.shape.rot.y = BINANG_ROT180(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)));
+        Matrix_RotateYS(this->actor.shape.rot.y, MTXMODE_APPLY);
+        Matrix_Scale(0.1f, 0.1f, 0.0f, MTXMODE_APPLY);
+
+        OPEN_DISPS(play->state.gfxCtx);
+
+        Gfx_SetupDL25_Opa(play->state.gfxCtx);
+
+        // @recomp Tag the matrix, skipping rotation if the camera skipped interpolation this frame.
+        if (camera_was_skipped()) {
+            gEXMatrixGroupDecomposedSkipRot(POLY_XLU_DISP++, actor_transform_id(&this->actor), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        else {
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(&this->actor), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+
+        gSPSegment(POLY_XLU_DISP++, 0x08,
+                   Gfx_TwoTexScroll(play->state.gfxCtx, 0, 0, sp57, 0x20, 0x20, 1, 0, sp56, 0x20, 0x20));
+        gSPSegment(POLY_XLU_DISP++, 0x09, Lib_SegmentedToVirtual(this->unk_148));
+        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gSPDisplayList(POLY_XLU_DISP++, object_f53_obj_DL_001C00);
+    
+        // @recomp Pop the matrix group.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+
+        CLOSE_DISPS(play->state.gfxCtx);
+    }
+}
+
+extern Gfx object_f53_obj_DL_000158[];
+
+// @recomp Skip rotation interpolation for the Clock Town chimney when the camera skips interolation.
+void func_80A34A44(ObjEntotu* this, PlayState* play) {
+    Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, MTXMODE_NEW);
+    this->actor.shape.rot.y = BINANG_ROT180(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)));
+    Matrix_RotateYS(this->actor.shape.rot.y, MTXMODE_APPLY);
+    Matrix_Scale(0.1f, 0.1f, 0.0f, MTXMODE_APPLY);
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Opa(play->state.gfxCtx);
+
+    // @recomp Tag the matrix, skipping rotation if the camera skipped interpolation this frame.
+    if (camera_was_skipped()) {
+        gEXMatrixGroupDecomposedSkipRot(POLY_OPA_DISP++, actor_transform_id(&this->actor) + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+    }
+    else {
+        gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, actor_transform_id(&this->actor) + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+    }
+
+    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPDisplayList(POLY_OPA_DISP++, object_f53_obj_DL_000158);
+    
+    // @recomp Pop the matrix group.
+    gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+void Environment_DrawRainImpl(PlayState* play, View* view, GraphicsContext* gfxCtx);
+
+// @recomp Skip interpolation for the splashes that raindrops make.
+void Environment_DrawRain(PlayState* play, View* view, GraphicsContext* gfxCtx) {
+    if (!(GET_ACTIVE_CAM(play)->stateFlags & CAM_STATE_UNDERWATER) &&
+        (play->envCtx.precipitation[PRECIP_SNOW_CUR] == 0)) {
+        
+        // @recomp Open the displaylists and skip interpolation for rain.
+        OPEN_DISPS(gfxCtx);
+        gEXMatrixGroupNoInterpolation(POLY_XLU_DISP++, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+
+        if (play->envCtx.precipitation[PRECIP_SOS_MAX] != 0) {
+            if (play->envCtx.precipitation[PRECIP_SNOW_CUR] == 0) {
+                Environment_DrawRainImpl(play, view, gfxCtx);
+            }
+        } else if (!(GET_ACTIVE_CAM(play)->stateFlags & CAM_STATE_UNDERWATER)) {
+            if ((Environment_GetStormState(play) != STORM_STATE_OFF) &&
+                (play->envCtx.precipitation[PRECIP_SNOW_CUR] == 0)) {
+                Environment_DrawRainImpl(play, view, gfxCtx);
+            }
+        }
+
+        // @recomp Pop the matrix group and close the displaylists.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+        CLOSE_DISPS(gfxCtx);
     }
 }
