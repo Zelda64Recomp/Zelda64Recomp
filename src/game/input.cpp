@@ -26,6 +26,7 @@ static struct {
     const Uint8* keys = nullptr;
     int numkeys = 0;
     std::atomic_int32_t mouse_wheel_pos = 0;
+    std::mutex cur_controllers_mutex;
     std::vector<SDL_GameController*> cur_controllers{};
     std::unordered_map<SDL_JoystickID, ControllerState> controller_states;
     std::array<float, 2> rotation_delta{};
@@ -335,13 +336,16 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
 void recomp::poll_inputs() {
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
 
-    InputState.cur_controllers.clear();
+    {
+        std::lock_guard lock{ InputState.cur_controllers_mutex };
+        InputState.cur_controllers.clear();
 
-    for (const auto& [id, state] : InputState.controller_states) {
-        (void)id; // Avoid unused variable warning.
-        SDL_GameController* controller = state.controller;
-        if (controller != nullptr) {
-            InputState.cur_controllers.push_back(controller);
+        for (const auto& [id, state] : InputState.controller_states) {
+            (void)id; // Avoid unused variable warning.
+            SDL_GameController* controller = state.controller;
+            if (controller != nullptr) {
+                InputState.cur_controllers.push_back(controller);
+            }
         }
     }
 
@@ -398,8 +402,11 @@ void recomp::update_rumble() {
 
     uint16_t rumble_strength = smooth_rumble * (recomp::get_rumble_strength() * 0xFFFF / 100);
     uint32_t duration = 1000000; // Dummy duration value that lasts long enough to matter as the game will reset rumble on its own.
-    for (const auto& controller : InputState.cur_controllers) {
-        SDL_GameControllerRumble(controller, 0, rumble_strength, duration);
+    {
+        std::lock_guard lock{ InputState.cur_controllers_mutex };
+        for (const auto& controller : InputState.cur_controllers) {
+            SDL_GameControllerRumble(controller, 0, rumble_strength, duration);
+        }
     }
 }
 
@@ -407,9 +414,11 @@ bool controller_button_state(int32_t input_id) {
     if (input_id >= 0 && input_id < SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_MAX) {
         SDL_GameControllerButton button = (SDL_GameControllerButton)input_id;
         bool ret = false;
-
-        for (const auto& controller : InputState.cur_controllers) {
-            ret |= SDL_GameControllerGetButton(controller, button);
+        {
+            std::lock_guard lock{ InputState.cur_controllers_mutex };
+            for (const auto& controller : InputState.cur_controllers) {
+                ret |= SDL_GameControllerGetButton(controller, button);
+            }
         }
 
         return ret;
@@ -423,12 +432,15 @@ float controller_axis_state(int32_t input_id) {
         bool negative_range = input_id < 0;
         float ret = 0.0f;
 
-        for (const auto& controller : InputState.cur_controllers) {
-            float cur_val = SDL_GameControllerGetAxis(controller, axis) * (1/32768.0f);
-            if (negative_range) {
-                cur_val = -cur_val;
+        {
+            std::lock_guard lock{ InputState.cur_controllers_mutex };
+            for (const auto& controller : InputState.cur_controllers) {
+                float cur_val = SDL_GameControllerGetAxis(controller, axis) * (1/32768.0f);
+                if (negative_range) {
+                    cur_val = -cur_val;
+                }
+                ret += std::clamp(cur_val, 0.0f, 1.0f);
             }
-            ret += std::clamp(cur_val, 0.0f, 1.0f);
         }
 
         return std::clamp(ret, 0.0f, 1.0f);
