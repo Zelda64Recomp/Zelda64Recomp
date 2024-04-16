@@ -33,8 +33,6 @@ typedef enum {
     /* 2 */ VOICE_INIT_SUCCESS // voice initialized
 } VoiceInitStatus;
 
-void recomp_update_rumble();
-
 void PadMgr_HandleRetrace(void) {
     // Execute rumble callback
     if (sPadMgrInstance->rumbleRetraceCallback != NULL) {
@@ -62,8 +60,6 @@ void PadMgr_HandleRetrace(void) {
         PadMgr_UpdateRumble();
         --sPadMgrInstance->rumbleOnTimer;
     }
-
-    recomp_update_rumble();
 }
 
 void poll_inputs(void) {

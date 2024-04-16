@@ -17,6 +17,7 @@
 #include "rt64_layer.h"
 #include "recomp.h"
 #include "recomp_ui.h"
+#include "recomp_input.h"
 #include "rsp.h"
 
 struct SpTaskAction {
@@ -169,6 +170,9 @@ void vi_thread_func() {
                 }
             }
         }
+                
+        // TODO move recomp code out of ultramodern.
+        recomp::update_rumble();
     }
 }
 
