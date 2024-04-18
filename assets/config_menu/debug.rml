@@ -16,7 +16,7 @@
                                 <div class="config-debug__option-controls">
                                     <div class="config-debug__select-wrapper">
                                         <div class="config-debug__select-label"><div>Region</div></div>
-                                        <select data-value="area_index" onchange="area_index_changed">
+                                        <select data-value="area_index" onchange="area_index_changed" id="area_index_select" style="nav-up: #tab_debug">
                                             <option data-for="area, i : area_names" data-attr-value="i">{{area}}</option>
                                         </select>
                                     </div>

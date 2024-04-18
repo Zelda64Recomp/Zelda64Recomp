@@ -8,6 +8,7 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
 #include "recomp_game.h"
+#include "ui_rml_hacks.hpp"
 
 #include "concurrentqueue.h"
 
@@ -956,6 +957,39 @@ struct UIContext {
         void add_menu(recomp::Menu menu, std::unique_ptr<recomp::MenuController>&& controller) {
             menus.emplace(menu, std::move(controller));
         }
+        
+        void update_config_menu_loop(bool menu_changed) {
+            static int prevTab = -1;
+            if (menu_changed) prevTab = -1;
+
+            Rml::ElementTabSet *tabset = (Rml::ElementTabSet *)current_document->GetElementById("config_tabset");
+            if (tabset == nullptr) return;
+
+            int curTab = tabset->GetActiveTab();
+            if (curTab == prevTab) return;
+            prevTab = curTab;
+
+            Rml::ElementList panels;
+            current_document->GetElementsByTagName(panels, "panel");
+            
+            Rml::Element *firstFocus = nullptr;
+            for (const auto& panel : panels) {
+                if (panel->IsVisible()) {
+                    firstFocus = RecompRml::FindNextTabElement(panel, true);
+                    break;
+                }
+            }
+
+            if (!firstFocus) return;
+            Rml::String id = firstFocus->GetId();
+            if (id.empty()) return;
+
+            Rml::ElementList tabs;
+            current_document->GetElementsByTagName(tabs, "tab");
+            for (const auto& tab : tabs) {
+                tab->SetProperty("nav-down", "#" + id);
+            }
+        }
     } rml;
 };
 
@@ -1079,7 +1113,6 @@ int cont_axis_to_key(SDL_ControllerAxisEvent& axis, float value) {
     return 0;
 }
 
-
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
     std::lock_guard lock {ui_context_mutex};
 
@@ -1104,7 +1137,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         prev_menu = recomp::Menu::None;
     }
 
-    if (cur_menu != prev_menu) {
+    bool menu_changed = cur_menu != prev_menu;
+    if (menu_changed) {
         ui_context->rml.swap_document(cur_menu);
     }
 
@@ -1122,6 +1156,10 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool non_mouse_interacted = false;
     bool cont_interacted = false;
     bool kb_interacted = false;
+
+    if (cur_menu == recomp::Menu::Config) {
+        ui_context->rml.update_config_menu_loop(menu_changed);
+    }
 
     while (recomp::try_deque_event(cur_event)) {
         bool menu_is_open = cur_menu != recomp::Menu::None;

@@ -143,6 +143,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_launcher.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
     
     ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontEngineInterfaceScaled.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFace.cpp

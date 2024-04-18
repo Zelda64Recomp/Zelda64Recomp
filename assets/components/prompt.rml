@@ -1,0 +1,30 @@
+<template name="prompt">
+<head>
+</head>
+<body class="prompt">
+    <div class="prompt__overlay" />
+    <div class="prompt__content-wrapper" data-if="promptOpen">
+        <div class="prompt__content">
+            <h3>{{ promptHeader }}</h3>
+            <p>{{ promptContent }}</p>
+            <div class="prompt__controls">
+                <button
+                    autofocus="true"
+                    id="prompt-button-left"
+                    class="button button--success"
+                    style="nav-left: none; nav-right: #prompt-button-right"
+                >
+                    <div class="button__label">{{ promptConfirmLabel }}</div>
+                </button>
+                <button
+                    id="prompt-button-right"
+                    class="button button--error"
+                    style="nav-right: none; nav-left: #prompt-button-left"
+                >
+                    <div class="button__label">{{ promptCancelLabel }}</div>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</template>

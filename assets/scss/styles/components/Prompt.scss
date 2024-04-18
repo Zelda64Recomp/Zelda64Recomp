@@ -1,0 +1,57 @@
+
+.prompt {
+    &__overlay {
+        pointer-events: none;
+    }
+
+    &__overlay,
+    &__content-wrapper {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    &__content-wrapper {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+    
+    &__content {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        margin: auto;
+        flex: 1 1 100%;
+        max-width: space(820);
+        width: 100%;
+        height: auto;
+        background: $color-modal-overlay;
+        border-radius: $border-radius-modal;
+        border-color: $color-border;
+        border-width: $border-width-thickness;
+
+        h3, p {
+            margin: space(16);
+        }
+    }
+
+    &__controls {
+        display: flex;
+        padding: space(16);
+        border-top-color: $color-border-soft;
+        border-top-width: $border-width-thickness;
+
+        .button {
+            nav-up: none;
+            nav-down: none;
+        }
+    }
+}

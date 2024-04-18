@@ -10,7 +10,7 @@
                         id="cont_kb_toggle"
                         data-class-toggle--checked="input_device_is_keyboard"
                         onclick="toggle_input_device"
-                        style="nav-down:#input_row_button_0_0"
+                        style="nav-down: #input_row_button_0_0; nav-up: #tab_controls"
                     >
                         <div class="toggle__border" />
                         <div class="toggle__floater" />
