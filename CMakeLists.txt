@@ -30,7 +30,7 @@ set(BUILD_SHARED_LIBS OFF)
 SET(LUNASVG_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 # set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-SET(ENABLE_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
+SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
@@ -144,17 +144,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
-    
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontEngineInterfaceScaled.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFace.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFaceHandleScaled.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFaceLayer.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontFamily.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FontProvider.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FontEngineScaled/FreeTypeInterface.cpp
 
-    ${CMAKE_SOURCE_DIR}/src/ui/ScaledSVG/ElementScaledSVG.cpp
-    
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 

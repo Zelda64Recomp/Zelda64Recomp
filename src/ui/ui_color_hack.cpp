@@ -4,6 +4,8 @@
 #include "recomp_ui.h"
 #include <string.h>
 
+using ColourMap = Rml::UnorderedMap<Rml::String, Rml::Colourb>;
+
 namespace recomp {
 	class PropertyParserColorHack : public Rml::PropertyParser {
 	public:
@@ -11,8 +13,7 @@ namespace recomp {
 		virtual ~PropertyParserColorHack();
 		bool ParseValue(Rml::Property& property, const Rml::String& value, const Rml::ParameterMap& /*parameters*/) const override;
 	private:
-		using ColourMap = Rml::UnorderedMap<Rml::String, Rml::Colourb>;
-		ColourMap html_colours;
+		static ColourMap html_colours;
 	};
 	static_assert(sizeof(PropertyParserColorHack) == sizeof(Rml::PropertyParserColour));
 	PropertyParserColorHack::PropertyParserColorHack() {
@@ -165,4 +166,6 @@ namespace recomp {
 		// Copy the allocated object into the color parser pointer to overwrite its vtable.
 		memcpy((void*)Rml::StyleSheetSpecification::GetParser("color"), (void*)new_parser, sizeof(*new_parser));
 	}
+
+	ColourMap PropertyParserColorHack::html_colours{};
 }

@@ -2,12 +2,12 @@
     <head>
     </head>
     <body>
-        <form class="config__form">
-            <div class="config__hz-wrapper">
+        <form class="config__form" id="conf-general__form">
+            <div class="config__hz-wrapper" id="conf-general__hz-wrapper">
                 <!-- Options -->
-                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)">
+                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)" id="conf-general__wrapper">
                     <!-- targeting mode -->
-                    <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(0)" id="conf-general__Targeting-Mode">
                         <label class="config-option__title">Targeting Mode</label>
                         <div class="config-option__list">
                             <input

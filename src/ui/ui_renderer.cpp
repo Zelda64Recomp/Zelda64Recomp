@@ -18,6 +18,7 @@
 
 #include "RmlUi/Core.h"
 #include "RmlUi/Debugger.h"
+#include "RmlUi/Core/RenderInterfaceCompatibility.h"
 #include "RmlUi/../../Source/Core/Elements/ElementLabel.h"
 #include "RmlUi_Platform_SDL.h"
 
@@ -28,10 +29,6 @@
 #   include "InterfaceVS.hlsl.dxil.h"
 #   include "InterfacePS.hlsl.dxil.h"
 #endif
-
-#include "FontEngineScaled/FontEngineInterfaceScaled.h"
-#include "FontEngineScaled/FontTypes.h"
-#include "ScaledSVG/ElementScaledSVG.h"
 
 #ifdef _WIN32
 #    define GET_SHADER_BLOB(name, format) \
@@ -98,7 +95,7 @@ T from_bytes_le(const char* input) {
 
 void load_document();
 
-class RmlRenderInterface_RT64 : public Rml::RenderInterface {
+class RmlRenderInterface_RT64 : public Rml::RenderInterfaceCompatibility {
     static constexpr uint32_t per_frame_descriptor_set = 0;
     static constexpr uint32_t per_draw_descriptor_set = 1;
 
@@ -246,7 +243,7 @@ public:
             screen_vertex_buffer_size_ = sizeof(Rml::Vertex) * 3;
             screen_vertex_buffer_ = render_context->device->createBuffer(RT64::RenderBufferDesc::VertexBuffer(screen_vertex_buffer_size_, RT64::RenderHeapType::UPLOAD));
             Rml::Vertex *vertices = (Rml::Vertex *)(screen_vertex_buffer_->map());
-            const Rml::Colourb white(255, 255, 255, 255);
+            const Rml::ColourbPremultiplied white(255, 255, 255, 255);
             vertices[0] = Rml::Vertex{ Rml::Vector2f(-1.0f, 1.0f), white, Rml::Vector2f(0.0f, 0.0f) };
             vertices[1] = Rml::Vertex{ Rml::Vector2f(-1.0f, -3.0f), white, Rml::Vector2f(0.0f, 2.0f) };
             vertices[2] = Rml::Vertex{ Rml::Vector2f(3.0f, 1.0f), white, Rml::Vector2f(2.0f, 0.0f) };
@@ -384,10 +381,10 @@ public:
         list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
             list_->setScissors(RT64::RenderRect{
-                scissor_x_ / RecompRml::global_font_scale,
-                scissor_y_ / RecompRml::global_font_scale,
-                (scissor_width_ + scissor_x_) / RecompRml::global_font_scale,
-                (scissor_height_ + scissor_y_) / RecompRml::global_font_scale });
+                scissor_x_,
+                scissor_y_,
+                (scissor_width_ + scissor_x_),
+                (scissor_height_ + scissor_y_) });
         }
         else {
             list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
@@ -610,7 +607,7 @@ public:
         window_width_ = image_width;
         window_height_ = image_height;
 
-        projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, float(image_width * RecompRml::global_font_scale), float(image_height * RecompRml::global_font_scale), 0.0f, -10000, 10000);
+        projection_mtx_ = Rml::Matrix4f::ProjectOrtho(0.0f, float(image_width), float(image_height), 0.0f, -10000, 10000);
         recalculate_mvp();
 
         // The following code assumes command lists aren't double buffered.
@@ -781,8 +778,6 @@ struct UIContext {
         int last_active_mouse_position[2] = {0, 0};
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
-        std::unique_ptr<Rml::FontEngineInterface> font_interface;
-        std::unique_ptr<Rml::ElementInstancer> svg_instancer;
         Rml::Context* context;
         recomp::UiEventListenerInstancer event_listener_instancer;
 
@@ -1019,17 +1014,10 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     ui_context->rml.make_event_listeners();
 
     Rml::SetSystemInterface(ui_context->rml.system_interface.get());
-    Rml::SetRenderInterface(ui_context->rml.render_interface.get());
+    Rml::SetRenderInterface(ui_context->rml.render_interface.get()->GetAdaptedInterface());
     Rml::Factory::RegisterEventListenerInstancer(&ui_context->rml.event_listener_instancer);
-    
-    ui_context->rml.font_interface = std::make_unique<RecompRml::FontEngineInterfaceScaled>();
-    Rml::SetFontEngineInterface(ui_context->rml.font_interface.get());
 
     Rml::Initialise();
-    
-    ui_context->rml.svg_instancer = std::make_unique<Rml::ElementInstancerGeneric<RecompRml::ElementScaledSVG>>();
-
-    Rml::Factory::RegisterElementInstancer("svg", ui_context->rml.svg_instancer.get());
 
     // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility
     recomp::apply_color_hack();
@@ -1037,7 +1025,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
     
-    ui_context->rml.context = Rml::CreateContext("main", Rml::Vector2i(width * RecompRml::global_font_scale, height * RecompRml::global_font_scale));
+    ui_context->rml.context = Rml::CreateContext("main", Rml::Vector2i(width, height));
     ui_context->rml.make_bindings();
 
     Rml::Debugger::Initialise(ui_context->rml.context);
@@ -1164,31 +1152,6 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     while (recomp::try_deque_event(cur_event)) {
         bool menu_is_open = cur_menu != recomp::Menu::None;
 
-        // Scale coordinates for mouse and window events based on the UI scale
-        switch (cur_event.type) {
-        case SDL_EventType::SDL_MOUSEMOTION:
-            cur_event.motion.x *= RecompRml::global_font_scale;
-            cur_event.motion.y *= RecompRml::global_font_scale;
-            cur_event.motion.xrel *= RecompRml::global_font_scale;
-            cur_event.motion.yrel *= RecompRml::global_font_scale;
-            break;
-        case SDL_EventType::SDL_MOUSEBUTTONDOWN:
-        case SDL_EventType::SDL_MOUSEBUTTONUP:
-            cur_event.button.x *= RecompRml::global_font_scale;
-            cur_event.button.y *= RecompRml::global_font_scale;
-            break;
-        case SDL_EventType::SDL_MOUSEWHEEL:
-            cur_event.wheel.x *= RecompRml::global_font_scale;
-            cur_event.wheel.y *= RecompRml::global_font_scale;
-            break;
-        case SDL_EventType::SDL_WINDOWEVENT:
-            if (cur_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                cur_event.window.data1 *= RecompRml::global_font_scale;
-                cur_event.window.data2 *= RecompRml::global_font_scale;
-            }
-            break;
-        }
-
         if (!recomp::all_input_disabled()) {
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
@@ -1298,7 +1261,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         int height = swap_chain_framebuffer->getHeight();
 
         // Scale the UI based on the window size with 1080 vertical resolution as the reference point.
-        ui_context->rml.context->SetDensityIndependentPixelRatio((height * RecompRml::global_font_scale) / 1080.0f);
+        ui_context->rml.context->SetDensityIndependentPixelRatio((height) / 1080.0f);
 
         ui_context->rml.render_interface->start(command_list, width, height);
 
@@ -1306,7 +1269,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         static int prev_height = 0;
 
         if (prev_width != width || prev_height != height) {
-            ui_context->rml.context->SetDimensions({ (int)(width * RecompRml::global_font_scale), (int)(height * RecompRml::global_font_scale) });
+            ui_context->rml.context->SetDimensions({ width, height });
         }
         prev_width = width;
         prev_height = height;
@@ -1339,7 +1302,6 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 void recomp::destroy_ui() {
     std::lock_guard lock {ui_context_mutex};
     Rml::Debugger::Shutdown();
-    ui_context->rml.font_interface.reset();
     Rml::Shutdown();
     ui_context->rml.unload();
     ui_context.reset();
