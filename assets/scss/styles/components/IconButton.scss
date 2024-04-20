@@ -29,7 +29,6 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
 
     border-radius: space($icon-button-size * 0.5);
     border-width: $border-width-thickness;
