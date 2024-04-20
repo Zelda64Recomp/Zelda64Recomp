@@ -10,18 +10,18 @@
             <div class="prompt__controls">
                 <button
                     autofocus="true"
-                    id="prompt-button-left"
+                    id="prompt__confirm-button"
                     class="button button--success"
-                    style="nav-left: none; nav-right: #prompt-button-right"
+                    style="nav-left: none; nav-right: #prompt__cancel-button"
                 >
-                    <div class="button__label">{{ promptConfirmLabel }}</div>
+                    <div class="button__label" id="prompt__confirm-button-label">{{ promptConfirmLabel }}</div>
                 </button>
                 <button
-                    id="prompt-button-right"
+                    id="prompt__cancel-button"
                     class="button button--error"
-                    style="nav-right: none; nav-left: #prompt-button-left"
+                    style="nav-right: none; nav-left: #prompt__confirm-button"
                 >
-                    <div class="button__label">{{ promptCancelLabel }}</div>
+                    <div class="button__label" id="prompt__cancel-button-label">{{ promptCancelLabel }}</div>
                 </button>
             </div>
         </div>

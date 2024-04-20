@@ -15,6 +15,73 @@ Rml::DataModelHandle general_model_handle;
 Rml::DataModelHandle controls_model_handle;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle sound_options_model_handle;
+
+recomp::PromptContext prompt_context;
+
+namespace recomp {
+	void PromptContext::close_prompt() {
+		open = false;
+		model_handle.DirtyVariable("prompt__open");
+	}
+
+	void PromptContext::open_prompt(
+		const std::string& headerText,
+		const std::string& contentText,
+		const std::string& confirmLabelText,
+		const std::string& cancelLabelText,
+		std::function<void()> confirmCb,
+		std::function<void()> cancelCb,
+		bool shouldFocusOnCancel
+	) {
+		open = true;
+		header = headerText;
+		content = contentText;
+		confirmLabel = confirmLabelText;
+		cancelLabel = cancelLabelText;
+		onConfirm = confirmCb;
+		onCancel = cancelCb;
+		focusOnCancel = shouldFocusOnCancel;
+
+		model_handle.DirtyVariable("prompt__open");
+		model_handle.DirtyVariable("prompt__header");
+		model_handle.DirtyVariable("prompt__content");
+		model_handle.DirtyVariable("prompt__confirmLabel");
+		model_handle.DirtyVariable("prompt__cancelLabel");
+		shouldFocus = true;
+	}
+
+	void PromptContext::on_confirm(void) {
+		onConfirm();
+		open = false;
+		model_handle.DirtyVariable("prompt__open");
+	}
+
+	void PromptContext::on_cancel(void) {
+		onCancel();
+		open = false;
+		model_handle.DirtyVariable("prompt__open");
+	}
+
+	void PromptContext::on_click(Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+		Rml::Element *target = event.GetTargetElement();
+		auto id = target->GetId();
+		if (id == "prompt__confirm-button" || id == "prompt__confirm-button-label") {
+			on_confirm();
+			event.StopPropagation();
+		} else if (id == "prompt__cancel-button" || id == "prompt__cancel-button-label") {
+			on_cancel();
+			event.StopPropagation();
+		}
+		if (event.GetCurrentElement()->GetId() == "prompt-root") {
+			event.StopPropagation();
+		}
+	}
+
+	PromptContext *get_prompt_context() {
+		return &prompt_context;
+	}
+};
+
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false;
 
@@ -108,7 +175,7 @@ void recomp::set_cont_or_kb(bool cont_interacted) {
 	}
 }
 
-void close_config_menu() {
+void close_config_menu_impl() {
 	recomp::save_config();
 
 	if (ultramodern::is_game_started()) {
@@ -117,6 +184,29 @@ void close_config_menu() {
 	else {
 		recomp::set_current_menu(recomp::Menu::Launcher);
 	}
+}
+void close_config_menu() {
+	if (ultramodern::get_graphics_config() != new_options) {
+		prompt_context.open_prompt(
+			"Graphics options have changed",
+			"Would you like to apply or discard the changes?",
+			"Apply",
+			"Discard",
+			[]() {
+				ultramodern::set_graphics_config(new_options);
+				graphics_model_handle.DirtyAllVariables();
+				close_config_menu_impl();
+			},
+			[]() {
+				new_options = ultramodern::get_graphics_config();
+				graphics_model_handle.DirtyAllVariables();
+				close_config_menu_impl();
+			}
+		);
+		return;
+	}
+
+	close_config_menu_impl();
 }
 
 struct ControlOptionsContext {
@@ -632,6 +722,24 @@ public:
 		debug_context.model_handle = constructor.GetModelHandle();
 	}
 
+	void make_prompt_bindings(Rml::Context* context) {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("prompt_model");
+		if (!constructor) {
+			throw std::runtime_error("Failed to make RmlUi data model for the prompt");
+		}
+
+		// Bind the debug mode enabled flag.
+		constructor.Bind("prompt__open", &prompt_context.open);
+		constructor.Bind("prompt__header", &prompt_context.header);
+		constructor.Bind("prompt__content", &prompt_context.content);
+		constructor.Bind("prompt__confirmLabel", &prompt_context.confirmLabel);
+		constructor.Bind("prompt__cancelLabel", &prompt_context.cancelLabel);
+
+		constructor.BindEventCallback("prompt__on_click", &recomp::PromptContext::on_click, &prompt_context);
+
+		prompt_context.model_handle = constructor.GetModelHandle();
+	}
+
 	void make_bindings(Rml::Context* context) override {
 		make_nav_help_bindings(context);
 		make_general_bindings(context);
@@ -639,6 +747,7 @@ public:
 		make_graphics_bindings(context);
 		make_sound_options_bindings(context);
 		make_debug_bindings(context);
+		make_prompt_bindings(context);
 	}
 };
 

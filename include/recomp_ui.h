@@ -5,6 +5,7 @@
 #include <string>
 
 #include "SDL.h"
+#include "RmlUi/Core.h"
 
 namespace Rml {
 	class ElementDocument;
@@ -61,6 +62,38 @@ namespace recomp {
 	void set_cursor_visible(bool visible);
 	void update_supported_options();
 	void toggle_fullscreen();
+
+	struct PromptContext {
+		Rml::DataModelHandle model_handle;
+		std::string header = "";
+		std::string content = "";
+		std::string confirmLabel = "Confirm";
+		std::string cancelLabel = "Cancel";
+		std::function<void()> onConfirm;
+		std::function<void()> onCancel;
+
+		bool open = false;
+		bool shouldFocus = false;
+		bool focusOnCancel = true;
+
+		PromptContext() = default;
+
+		void close_prompt();
+		void open_prompt(
+			const std::string& headerText,
+			const std::string& contentText,
+			const std::string& confirmLabelText,
+			const std::string& cancelLabelText,
+			std::function<void()> confirmCb,
+			std::function<void()> cancelCb,
+			bool shouldFocusOnCancel = true
+		);
+		void on_confirm(void);
+		void on_cancel(void);
+		void on_click(Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs);
+	};
+
+	PromptContext *get_prompt_context(void);
 }
 
 #endif

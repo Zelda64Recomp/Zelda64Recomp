@@ -985,6 +985,21 @@ struct UIContext {
                 tab->SetProperty("nav-down", "#" + id);
             }
         }
+        
+        void update_prompt_loop(void) {
+            recomp::PromptContext *ctx = recomp::get_prompt_context();
+            if (!ctx->shouldFocus) return;
+
+            Rml::Element* focused = current_document->GetFocusLeafNode();
+            if (focused) focused->Blur();
+
+            Rml::Element *targetButton = current_document->GetElementById(
+                ctx->focusOnCancel ? "prompt__cancel-button" :  "prompt__confirm-button");
+
+            targetButton->Focus(true);
+
+            ctx->shouldFocus = false;
+        }
     } rml;
 };
 
@@ -1147,6 +1162,9 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 
     if (cur_menu == recomp::Menu::Config) {
         ui_context->rml.update_config_menu_loop(menu_changed);
+    }
+    if (cur_menu != recomp::Menu::None) {
+        ui_context->rml.update_prompt_loop();
     }
 
     while (recomp::try_deque_event(cur_event)) {

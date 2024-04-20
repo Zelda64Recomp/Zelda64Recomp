@@ -101,16 +101,19 @@
 					<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
 				</div>
 			</div>
-			<!-- <div
-				data-if="1==0"
-				data-alias-promptOpen="0"
-				data-alias-promptHeader="'test header'"
-				data-alias-promptContent="'This allows templates to be used as reusable components within data models. By wrapping the inline template in an element that defines variable name aliases, the template can refer to any outside variable by a fixed name.'"
-				data-alias-promptConfirmLabel="'Confirm'"
-				data-alias-promptCancelLabel="'Cancel'"
+			<div
+				id="prompt-root"
+				data-model="prompt_model"
+				data-if="prompt__open"
+				data-alias-promptOpen="prompt__open"
+				data-alias-promptHeader="prompt__header"
+				data-alias-promptContent="prompt__content"
+				data-alias-promptConfirmLabel="prompt__confirmLabel"
+				data-alias-promptCancelLabel="prompt__cancelLabel"
+				data-event-click="prompt__on_click"
 			>
 				<template src="prompt"/>
-			</div> -->
+			</div>
 		</div>
 	<!-- </handle> -->
 	<!-- <handle size_target="#document" style="position: absolute; width: 16dp; height: 16dp; bottom: 0px; right: 0px; cursor: resize;"></handle> -->

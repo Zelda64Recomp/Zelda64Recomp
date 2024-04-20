@@ -1,7 +1,11 @@
+@use 'sass:math';
+
+$prompt-space: 24;
 
 .prompt {
     &__overlay {
         pointer-events: none;
+        background-color: $color-bg-overlay;
     }
 
     &__overlay,
@@ -30,7 +34,7 @@
         position: relative;
         margin: auto;
         flex: 1 1 100%;
-        max-width: space(820);
+        max-width: space(700);
         width: 100%;
         height: auto;
         background: $color-modal-overlay;
@@ -39,19 +43,27 @@
         border-width: $border-width-thickness;
 
         h3, p {
-            margin: space(16);
+            margin: space($prompt-space);
+        }
+        p {
+            margin-top: 0;
         }
     }
 
     &__controls {
         display: flex;
-        padding: space(16);
+        flex-direction: row;
+        justify-content: center;
+        padding: space($prompt-space) space(math.div($prompt-space, 2));
         border-top-color: $color-border-soft;
         border-top-width: $border-width-thickness;
 
         .button {
             nav-up: none;
             nav-down: none;
+            margin: 0 space(math.div($prompt-space, 2));
+            min-width: space(math.div(700, 3));
+            text-align: center;
         }
     }
 }
