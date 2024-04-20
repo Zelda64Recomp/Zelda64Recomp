@@ -3,5 +3,5 @@
 // $primary-lr-fade: linear-gradient(90deg, rgba($color-primary-l, 0.08) 0%, rgba($color-primary-l, 0.00) 100%);
 // $primary-rl-fade: linear-gradient(90deg, rgba($color-primary-l, 0.00) 0%, rgba($color-primary-l, 0.08) 100%);
 
-$primary-lr-fade: gradient(horizontal #{$color-primary-d}14 #{$color-primary-l}00);
-$primary-rl-fade: gradient(horizontal #{$color-primary-d}00 #{$color-primary-l}14);
+$primary-lr-fade: horizontal-gradient(#{$color-primary-d}14 #{$color-primary-l}00);
+$primary-rl-fade: horizontal-gradient(#{$color-primary-d}00 #{$color-primary-l}14);
