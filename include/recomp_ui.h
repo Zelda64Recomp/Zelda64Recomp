@@ -54,6 +54,16 @@ namespace recomp {
 		Count
 	};
 
+	enum class ButtonVariant {
+		Primary,
+		Secondary,
+		Tertiary,
+		Success,
+		Error,
+		Warning,
+		NumVariants,
+	};
+
 	void set_config_submenu(ConfigSubmenu submenu);
 
 	void destroy_ui();
@@ -63,14 +73,20 @@ namespace recomp {
 	void update_supported_options();
 	void toggle_fullscreen();
 
+	extern const std::unordered_map<ButtonVariant, std::string> button_variants;
+
 	struct PromptContext {
 		Rml::DataModelHandle model_handle;
 		std::string header = "";
 		std::string content = "";
 		std::string confirmLabel = "Confirm";
 		std::string cancelLabel = "Cancel";
+		ButtonVariant confirmVariant = ButtonVariant::Success;
+		ButtonVariant cancelVariant = ButtonVariant::Error;
 		std::function<void()> onConfirm;
 		std::function<void()> onCancel;
+
+		std::string returnElementId = "";
 
 		bool open = false;
 		bool shouldFocus = false;
@@ -86,7 +102,10 @@ namespace recomp {
 			const std::string& cancelLabelText,
 			std::function<void()> confirmCb,
 			std::function<void()> cancelCb,
-			bool shouldFocusOnCancel = true
+			ButtonVariant _confirmVariant = ButtonVariant::Success,
+			ButtonVariant _cancelVariant = ButtonVariant::Error,
+			bool _focusOnCancel = true,
+			const std::string& _returnElementId = ""
 		);
 		void on_confirm(void);
 		void on_cancel(void);

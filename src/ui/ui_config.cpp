@@ -19,6 +19,15 @@ Rml::DataModelHandle sound_options_model_handle;
 recomp::PromptContext prompt_context;
 
 namespace recomp {
+	const std::unordered_map<ButtonVariant, std::string> button_variants {
+		{ButtonVariant::Primary, "primary"},
+		{ButtonVariant::Secondary, "secondary"},
+		{ButtonVariant::Tertiary, "tertiary"},
+		{ButtonVariant::Success, "success"},
+		{ButtonVariant::Error, "error"},
+		{ButtonVariant::Warning, "warning"}
+	};
+
 	void PromptContext::close_prompt() {
 		open = false;
 		model_handle.DirtyVariable("prompt__open");
@@ -31,7 +40,10 @@ namespace recomp {
 		const std::string& cancelLabelText,
 		std::function<void()> confirmCb,
 		std::function<void()> cancelCb,
-		bool shouldFocusOnCancel
+		ButtonVariant _confirmVariant,
+		ButtonVariant _cancelVariant,
+		bool _focusOnCancel,
+		const std::string& _returnElementId
 	) {
 		open = true;
 		header = headerText;
@@ -40,7 +52,10 @@ namespace recomp {
 		cancelLabel = cancelLabelText;
 		onConfirm = confirmCb;
 		onCancel = cancelCb;
-		focusOnCancel = shouldFocusOnCancel;
+		confirmVariant = _confirmVariant;
+		cancelVariant = _cancelVariant;
+		focusOnCancel = _focusOnCancel;
+		returnElementId = _returnElementId;
 
 		model_handle.DirtyVariable("prompt__open");
 		model_handle.DirtyVariable("prompt__header");
@@ -201,12 +216,33 @@ void close_config_menu() {
 				new_options = ultramodern::get_graphics_config();
 				graphics_model_handle.DirtyAllVariables();
 				close_config_menu_impl();
-			}
+			},
+			recomp::ButtonVariant::Success,
+			recomp::ButtonVariant::Error,
+			true,
+			"config__close-menu-button"
 		);
 		return;
 	}
 
 	close_config_menu_impl();
+}
+
+void open_quit_game_prompt() {
+	prompt_context.open_prompt(
+		"Are you sure you want to quit?",
+		"Any progress since your last save will be lost.",
+		"Quit",
+		"Cancel",
+		[]() {
+			ultramodern::quit();
+		},
+		[]() {},
+		recomp::ButtonVariant::Error,
+		recomp::ButtonVariant::Tertiary,
+		true,
+		"config__quit-game-button"
+	);
 }
 
 struct ControlOptionsContext {
@@ -344,7 +380,7 @@ public:
 			});
 		recomp::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
-				if (event.GetId() == Rml::EventId::Keydown) {
+				if (!prompt_context.open && event.GetId() == Rml::EventId::Keydown) {
 					if (event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN) == Rml::Input::KeyIdentifier::KI_ESCAPE) {
 						close_config_menu();
 					}
@@ -360,6 +396,11 @@ public:
 		recomp::register_event(listener, "close_config_menu",
 			[](const std::string& param, Rml::Event& event) {
 				close_config_menu();
+			});
+
+		recomp::register_event(listener, "open_quit_game_prompt",
+			[](const std::string& param, Rml::Event& event) {
+				open_quit_game_prompt();
 			});
 
 		recomp::register_event(listener, "toggle_input_device",

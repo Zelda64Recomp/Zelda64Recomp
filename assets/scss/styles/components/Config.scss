@@ -1,8 +1,17 @@
 
-.config__exit-button {
+.config__icon-buttons {
+    display: flex;
     position: absolute;
     top: space(8);
-    right: space(8);
+    right: space(0);
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    width: auto;
+
+    .icon-button {
+        margin: 0 space(8);
+    }
 }
 
 .config__form {

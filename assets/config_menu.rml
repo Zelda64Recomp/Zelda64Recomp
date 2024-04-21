@@ -72,14 +72,22 @@
 							<template src="config-menu__debug" />
 						</panel>
 					</tabset>
-					<!-- Close button absolutely positioned on top right of modal -->
-					<button
-						class="icon-button config__exit-button"
-						onclick="close_config_menu"
-						style="z-index: 10000;"
-					>
-						<svg src="icons/X.svg" />
-					</button>
+					<div class="config__icon-buttons">
+						<button
+							class="icon-button"
+							onclick="open_quit_game_prompt"
+							id="config__quit-game-button"
+						>
+							<svg src="icons/Quit.svg" />
+						</button>
+						<button
+							class="icon-button"
+							onclick="close_config_menu"
+							id="config__close-menu-button"
+						>
+							<svg src="icons/X.svg" />
+						</button>
+					</div>
 				</div>
 				<div
 					class="centered-page__controls"

@@ -37,9 +37,9 @@
     border-radius: $border-radius-md;
 
     // Setting it by default for convenience
-    // &--primary {
-    //     @include create-button-variation($color-primary);
-    // }
+    &--primary {
+        @include create-button-variation($color-primary);
+    }
 
     &--large {
         @extend %label-lg;

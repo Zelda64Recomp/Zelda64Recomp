@@ -987,7 +987,36 @@ struct UIContext {
         }
         
         void update_prompt_loop(void) {
+            static bool wasShowingPrompt = false;
+
             recomp::PromptContext *ctx = recomp::get_prompt_context();
+            if (!ctx->open && wasShowingPrompt) {
+                Rml::Element* focused = current_document->GetFocusLeafNode();
+                if (focused) focused->Blur();
+
+                bool didFocus = false;
+
+                if (ctx->returnElementId.size() > 0) {
+                    Rml::Element *retEl = current_document->GetElementById(ctx->returnElementId);
+                    if (retEl != nullptr && retEl->IsVisible()) {
+                        retEl->Focus(true);
+                        didFocus = true;
+                    }
+                }
+
+                if (!didFocus) {
+                    Rml::ElementList tabs;
+                    current_document->GetElementsByTagName(tabs, "tab");
+                    for (const auto& tab : tabs) {
+                        if (tab->IsVisible()) {
+                            tab->Focus(true);
+                            break;
+                        }
+                    }
+                }
+            }
+            wasShowingPrompt = ctx->open;
+
             if (!ctx->shouldFocus) return;
 
             Rml::Element* focused = current_document->GetFocusLeafNode();
@@ -999,6 +1028,11 @@ struct UIContext {
             targetButton->Focus(true);
 
             ctx->shouldFocus = false;
+
+            Rml::Element *confirmButton = current_document->GetElementById("prompt__confirm-button");
+            Rml::Element *cancelButton  = current_document->GetElementById("prompt__cancel-button");
+            if (confirmButton != nullptr) confirmButton->SetClassNames("button button--" + recomp::button_variants.at(ctx->confirmVariant));
+            if (cancelButton  != nullptr) cancelButton->SetClassNames( "button button--" + recomp::button_variants.at(ctx->cancelVariant));
         }
     } rml;
 };
