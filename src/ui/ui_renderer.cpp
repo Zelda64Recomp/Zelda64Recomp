@@ -68,7 +68,7 @@ struct TextureHandle {
     std::unique_ptr<RT64::RenderDescriptorSet> set;
 };
 
-std::vector<char> read_file(const std::filesystem::path& filepath) {
+static std::vector<char> read_file(const std::filesystem::path& filepath) {
     std::vector<char> ret{};
     std::ifstream input_file{ filepath, std::ios::binary };
 

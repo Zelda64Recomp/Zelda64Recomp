@@ -17,12 +17,6 @@
 #include "../ultramodern/ultramodern.hpp"
 #include "../../RecompiledPatches/patches_bin.h"
 
-#ifdef _WIN32
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default")))
-#endif
-
 #ifdef _MSC_VER
 inline uint32_t byteswap(uint32_t val) {
     return _byteswap_ulong(val);
@@ -49,7 +43,7 @@ bool check_hash(const std::vector<uint8_t>& rom_data, uint64_t expected_hash) {
     return calculated_hash == expected_hash;
 }
 
-std::vector<uint8_t> read_file(const std::filesystem::path& path) {
+static std::vector<uint8_t> read_file(const std::filesystem::path& path) {
     std::vector<uint8_t> ret;
 
     std::ifstream file{ path, std::ios::binary};

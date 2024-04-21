@@ -150,7 +150,7 @@ void scheduler_func() {
     thread_queue_t running_thread_queue{};
     OSThread* cur_running_thread = nullptr;
 
-    ultramodern::set_native_thread_name("Scheduler Thread");
+    ultramodern::set_native_thread_name("Scheduler");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Critical);
 
     while (true) {
@@ -188,6 +188,7 @@ void scheduler_func() {
                 old_running_thread->id, old_running_thread->priority, cur_running_thread->id, cur_running_thread->priority);
         }
     }
+    printf("Scheduler broke\n");
 }
 
 extern "C" void do_yield() {

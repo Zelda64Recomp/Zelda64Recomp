@@ -18,6 +18,7 @@
 #   undef None
 #   undef Status
 #   undef LockMask
+#   undef Always
 #endif
 
 struct UltraThreadContext {

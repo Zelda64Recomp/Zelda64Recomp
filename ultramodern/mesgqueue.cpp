@@ -61,6 +61,13 @@ extern "C" s32 osSendMesg(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, s32 flags)
         // If non-blocking, fail if the queue is full
         if (MQ_IS_FULL(mq)) {
             ultramodern::enable_preemption();
+            
+            // Notify the scheduler anyways so it can resume the thread in case the queue was already full.
+            // TODO does this work?
+            if (!ultramodern::is_game_thread()) {
+                ultramodern::notify_scheduler();
+            }
+
             return -1;
         }
     } else {
