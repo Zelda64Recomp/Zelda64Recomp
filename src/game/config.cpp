@@ -151,31 +151,50 @@ void assign_mapping(recomp::InputDevice device, recomp::GameInput input, const s
     }
 };
 
-void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Mappings& values) {
-    assign_mapping(device, recomp::GameInput::A, values.a);
-    assign_mapping(device, recomp::GameInput::B, values.b);
-    assign_mapping(device, recomp::GameInput::Z, values.z);
-    assign_mapping(device, recomp::GameInput::START, values.start);
-    assign_mapping(device, recomp::GameInput::DPAD_UP, values.dpad_up);
-    assign_mapping(device, recomp::GameInput::DPAD_DOWN, values.dpad_down);
-    assign_mapping(device, recomp::GameInput::DPAD_LEFT, values.dpad_left);
-    assign_mapping(device, recomp::GameInput::DPAD_RIGHT, values.dpad_right);
-    assign_mapping(device, recomp::GameInput::L, values.l);
-    assign_mapping(device, recomp::GameInput::R, values.r);
-    assign_mapping(device, recomp::GameInput::C_UP, values.c_up);
-    assign_mapping(device, recomp::GameInput::C_DOWN, values.c_down);
-    assign_mapping(device, recomp::GameInput::C_LEFT, values.c_left);
-    assign_mapping(device, recomp::GameInput::C_RIGHT, values.c_right);
+// same as assign_mapping, except will clear unassigned bindings if not in value
+void assign_mapping_complete(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
+    for (size_t binding_index = 0; binding_index < recomp::bindings_per_input; binding_index++) {
+        if (binding_index >= value.size()) {
+            recomp::set_input_binding(input, binding_index, device, recomp::InputField{});
+        } else {
+            recomp::set_input_binding(input, binding_index, device, value[binding_index]);
+        }
+    }
+};
 
-    assign_mapping(device, recomp::GameInput::X_AXIS_NEG, values.analog_left);
-    assign_mapping(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
-    assign_mapping(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
-    assign_mapping(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
+void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Mappings& values) {
+    assign_mapping_complete(device, recomp::GameInput::A, values.a);
+    assign_mapping_complete(device, recomp::GameInput::B, values.b);
+    assign_mapping_complete(device, recomp::GameInput::Z, values.z);
+    assign_mapping_complete(device, recomp::GameInput::START, values.start);
+    assign_mapping_complete(device, recomp::GameInput::DPAD_UP, values.dpad_up);
+    assign_mapping_complete(device, recomp::GameInput::DPAD_DOWN, values.dpad_down);
+    assign_mapping_complete(device, recomp::GameInput::DPAD_LEFT, values.dpad_left);
+    assign_mapping_complete(device, recomp::GameInput::DPAD_RIGHT, values.dpad_right);
+    assign_mapping_complete(device, recomp::GameInput::L, values.l);
+    assign_mapping_complete(device, recomp::GameInput::R, values.r);
+    assign_mapping_complete(device, recomp::GameInput::C_UP, values.c_up);
+    assign_mapping_complete(device, recomp::GameInput::C_DOWN, values.c_down);
+    assign_mapping_complete(device, recomp::GameInput::C_LEFT, values.c_left);
+    assign_mapping_complete(device, recomp::GameInput::C_RIGHT, values.c_right);
+
+    assign_mapping_complete(device, recomp::GameInput::X_AXIS_NEG, values.analog_left);
+    assign_mapping_complete(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
+    assign_mapping_complete(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
+    assign_mapping_complete(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
 };
 
 void recomp::reset_input_bindings() {
     assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
     assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
+}
+
+void recomp::reset_cont_input_bindings() {
+    assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
+}
+
+void recomp::reset_kb_input_bindings() {
+    assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
 }
 
 void reset_graphics_options() {

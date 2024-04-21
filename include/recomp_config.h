@@ -13,6 +13,8 @@ namespace recomp {
     void save_config();
     
     void reset_input_bindings();
+    void reset_cont_input_bindings();
+    void reset_kb_input_bindings();
 
     std::filesystem::path get_app_folder_path();
     

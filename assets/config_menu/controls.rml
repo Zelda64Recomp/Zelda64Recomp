@@ -24,6 +24,7 @@
                     <button
                         class="button button--warning"
                         style="nav-down:#input_row_button_0_0"
+                        data-event-click="reset_input_bindings_to_defaults"
                     >
                         <div class="button__label">Reset to defaults</div>
                     </button>

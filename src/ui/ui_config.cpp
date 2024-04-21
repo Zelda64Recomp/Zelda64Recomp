@@ -527,6 +527,16 @@ public:
 				model_handle.DirtyVariable("active_binding_slot");
 			});
 
+		constructor.BindEventCallback("reset_input_bindings_to_defaults",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+				if (cur_device == recomp::InputDevice::Controller) {
+					recomp::reset_cont_input_bindings();
+				} else {
+					recomp::reset_kb_input_bindings();
+				}
+				model_handle.DirtyAllVariables();
+			});
+
 		constructor.BindEventCallback("clear_input_bindings",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
 				recomp::GameInput input = static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>());
