@@ -302,7 +302,7 @@ void load_sound_config(const std::filesystem::path& path) {
     
     recomp::reset_sound_settings();
     call_if_key_exists(recomp::set_bgm_volume, config_json, "bgm_volume");
-    call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "set_low_health_beeps_enabled");
+    call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "low_health_beeps");
 }
 
 void recomp::load_config() {
