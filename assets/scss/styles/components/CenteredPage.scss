@@ -15,27 +15,27 @@
 .centered-page__modal {
     @extend %nav-all;
     display: flex;
-    flex-direction: column;
     position: relative;
-    margin: auto;
     flex: 1 1 100%;
-    max-width: space($base-modal-max-width);
+    flex-direction: column;
     width: 100%;
+    max-width: space($base-modal-max-width);
     height: 100%;
-    background: $color-modal-overlay;
+    margin: auto;
+    border-width: $border-width-thickness;
     border-radius: $border-radius-modal;
     border-color: $color-border;
-    border-width: $border-width-thickness;
+    background: $color-modal-overlay;
 
     > .tabs {
         display: flex;
-        flex-direction: column;
         position: relative;
-        margin: auto;
         flex: 1 1 100%;
-        max-width: space($base-modal-max-width);
+        flex-direction: column;
         width: 100%;
+        max-width: space($base-modal-max-width);
         height: 100%;
+        margin: auto;
     }
 
     panels {
@@ -45,15 +45,15 @@
 
 .centered-page__controls {
     display: flex;
-    flex-direction: row;
     position: absolute;
+    bottom: space(24);
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    height: auto;
-    bottom: space(24);
-    margin: 0 auto;
     width: 100%;
     max-width: space($base-modal-max-width);
+    height: auto;
+    margin: 0 auto;
 
     > label {
         @extend %label-sm;

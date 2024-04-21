@@ -16,16 +16,16 @@
 .subtitle-title {
     display: block;
     position: relative;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: flex-start;
     width: auto;
     height: auto;
-    flex-direction: column;
-    align-items: flex-start;
-    align-content: flex-start;
+    padding: 0;
     background-color: rgba(0, 0, 0, 0);
     color: $color-text-dim;
-    cursor: pointer;
     text-align: left;
-    padding: 0;
+    cursor: pointer;
 
     &--right {
         align-content: flex-end;
@@ -64,7 +64,7 @@
     }
 
     &__disclaimer {
-        @extend .label-sm;
+        @extend %label-sm;
 
         margin-top: space(16);
     }

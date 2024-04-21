@@ -36,6 +36,7 @@ namespace recomp {
 		html_colours["teal"] = Rml::Colourb(0, 128, 128);
 		html_colours["aqua"] = Rml::Colourb(0, 255, 255);
 		html_colours["transparent"] = Rml::Colourb(0, 0, 0, 0);
+		html_colours["whitesmoke"] = Rml::Colourb(245, 245, 245);
 	}
 
 	PropertyParserColorHack::~PropertyParserColorHack() {}

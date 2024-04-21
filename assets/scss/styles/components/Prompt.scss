@@ -4,8 +4,8 @@ $prompt-space: 24;
 
 .prompt {
     &__overlay {
-        pointer-events: none;
         background-color: $color-bg-overlay;
+        pointer-events: none;
     }
 
     &__overlay,
@@ -18,33 +18,34 @@ $prompt-space: 24;
     }
 
     &__content-wrapper {
-        position: absolute;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        position: absolute;
         top: 0;
         right: 0;
         bottom: 0;
         left: 0;
+        align-items: center;
+        justify-content: center;
     }
     
     &__content {
         display: flex;
-        flex-direction: column;
         position: relative;
-        margin: auto;
         flex: 1 1 100%;
-        max-width: space(700);
+        flex-direction: column;
         width: 100%;
+        max-width: space(700);
         height: auto;
-        background: $color-modal-overlay;
+        margin: auto;
+        border-width: $border-width-thickness;
         border-radius: $border-radius-modal;
         border-color: $color-border;
-        border-width: $border-width-thickness;
+        background: $color-modal-overlay;
 
         h3, p {
             margin: space($prompt-space);
         }
+
         p {
             margin-top: 0;
         }
@@ -55,15 +56,15 @@ $prompt-space: 24;
         flex-direction: row;
         justify-content: center;
         padding: space($prompt-space) space(math.div($prompt-space, 2));
-        border-top-color: $color-border-soft;
         border-top-width: $border-width-thickness;
+        border-top-color: $color-border-soft;
 
         .button {
+            min-width: space(math.div(700, 3));
+            margin: 0 space(math.div($prompt-space, 2));
+            text-align: center;
             nav-up: none;
             nav-down: none;
-            margin: 0 space(math.div($prompt-space, 2));
-            min-width: space(math.div(700, 3));
-            text-align: center;
         }
     }
 }

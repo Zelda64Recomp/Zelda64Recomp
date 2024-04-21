@@ -12,25 +12,25 @@ $toggle-checked-left-offset: $toggle-width - $toggle-floater-margin - $toggle-fl
     @extend %nav-all;
     @include trans-colors-opa;
     display: flex;
+    position: relative;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    position: relative;
     width: space($toggle-width);
     height: space($toggle-height);
-    background: $color-transparent;
     border-radius: space(math.div($toggle-height, 2));
-    cursor: pointer;
     opacity: 0.9;
+    background: $color-transparent;
+    cursor: pointer;
 
     &:hover, &:focus-visible, &:focus {
-        background-color: $color-secondary-a30;
         opacity: 1;
+        background-color: $color-secondary-a30;
     }
 
     &:active {
-        background-color: $color-secondary-a5;
         opacity: 1;
+        background-color: $color-secondary-a5;
     }
 
     .toggle__border {
@@ -40,10 +40,10 @@ $toggle-checked-left-offset: $toggle-width - $toggle-floater-margin - $toggle-fl
 
     .toggle__floater {
         position: absolute;
-        width: space($toggle-floater-width);
-        height: space($toggle-floater-height);
         top: 50%;
         left: space($toggle-floater-margin);
+        width: space($toggle-floater-width);
+        height: space($toggle-floater-height);
         transform: translateY(-50%);
         border-radius: space(math.div($toggle-floater-height, 2));
         background: $color-secondary-d;
@@ -56,12 +56,13 @@ $toggle-checked-left-offset: $toggle-width - $toggle-floater-margin - $toggle-fl
 
         .toggle__icon {
             &.toggle__icon--left {
-                color: $color-secondary-l;
                 opacity: 0.9;
+                color: $color-secondary-l;
             }
+
             &.toggle__icon--right {
-                color: $color-text;
                 opacity: 1.0;
+                color: $color-text;
             }
         }
     }
@@ -70,13 +71,13 @@ $toggle-checked-left-offset: $toggle-width - $toggle-floater-margin - $toggle-fl
 .toggle__icons {
     display: flex;
     position: absolute;
-    height: space(56);
     top: 50%;
-    transform: translateY(-50%);
     right: space(16);
     left: space(16);
     align-items: center;
     justify-content: space-between;
+    height: space(56);
+    transform: translateY(-50%);
 }
 
 .toggle__icon {

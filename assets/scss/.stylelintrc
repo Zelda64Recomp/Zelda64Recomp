@@ -30,7 +30,7 @@
         "color-no-hex": true,
         "function-url-quotes": "always",
         "max-nesting-depth": [
-            3,
+            4,
             {
                 "ignoreAtRules": ["each", "media", "supports", "include"],
                 "severity": "warning"
@@ -69,7 +69,7 @@
         "scss/selector-no-redundant-nesting-selector": null,
         "selector-class-pattern": null,
         "selector-max-compound-selectors": [
-            3,
+            4,
             {
                 "severity": "warning"
             }
@@ -83,12 +83,17 @@
         "scss/dollar-variable-empty-line-before": null,
         "scss/dollar-variable-pattern": "[a-z-]",
         "scss/at-import-partial-extension": null,
-        "declaration-block-no-redundant-longhand-properties": [true, { "severity": "warning" }],
+        "declaration-block-no-redundant-longhand-properties": null,
         "color-function-notation": null,
         "alpha-value-notation": null,
         "at-rule-no-unknown": null,
+        "property-no-unknown": null,
         "scss/at-rule-no-unknown": true,
+        "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["selected"] }],
+        "font-family-no-missing-generic-family-keyword": null,
         "scss/no-global-function-names": null,
-        "unit-no-unknown": [true, { "ignoreUnits": ["dp"] }]
+        "unit-no-unknown": [true, { "ignoreUnits": ["dp"] }],
+        "selector-type-no-unknown": [true, { "ignore": ["custom-elements", "default-namespace"] }],
+        "value-keyword-case": null
     }
 }

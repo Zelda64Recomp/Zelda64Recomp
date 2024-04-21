@@ -60,24 +60,24 @@ $font-stack: chiaro;
 
 %prompt-font-lg {
     font-family: promptfont;
+    font-size: space(56);
     font-style: normal;
     font-weight: 400;
-    font-size: space(56);
     line-height: space(56);
 }
 
 %prompt-font {
     font-family: promptfont;
+    font-size: space(40);
     font-style: normal;
     font-weight: 400;
-    font-size: space(40);
     line-height: space(40);
 }
 
 %prompt-font-sm {
     font-family: promptfont;
+    font-size: space(32);
     font-style: normal;
     font-weight: 400;
-    font-size: space(32);
     line-height: space(32);
 }

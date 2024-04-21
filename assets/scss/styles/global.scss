@@ -25,18 +25,23 @@ body
         pointer-events: none;
     }
 }
+
 .nav-vert {
     @extend %nav-vert;
 }
+
 .nav-horiz {
     @extend %nav-horiz;
 }
+
 .nav-dir {
     @extend %nav-dir;
 }
+
 .nav-foc {
     @extend %nav-foc;
 }
+
 .nav-all {
     @extend %nav-all;
 }
@@ -85,26 +90,30 @@ button {
 	0% {
 		color: $color-secondary;
 	}
+
 	50% {
 		color: $color-secondary-l;
 	}
-	to { 
+
+	100% { 
 		color: $color-secondary;
 	}
 }
 
 @keyframes blue-pulse-with-border {
 	0% {
-		color: $color-secondary;
 		border-color: $color-secondary;
+		color: $color-secondary;
 	}
+
 	50% {
-		color: $color-secondary-l;
 		border-color: $color-secondary-l;
+		color: $color-secondary-l;
 	}
-	to { 
+
+	100% {
+		border-color: $color-secondary; 
 		color: $color-secondary;
-		border-color: $color-secondary;
 	}
 }
 
@@ -112,10 +121,12 @@ button {
 	0% {
 		background-color: $color-secondary;
 	}
+
 	50% {
 		background-color: $color-secondary-l;
 	}
-	to { 
+
+	100% { 
 		background-color: $color-secondary;
 	}
 }

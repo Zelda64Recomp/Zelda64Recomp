@@ -2,13 +2,13 @@
 
 .bottom-left {
     display: flex;
-    flex-direction: row;
     position: absolute;
+    bottom: space(4);
+    flex-direction: row;
     align-items: flex-start;
     justify-content: flex-start;
-    height: auto;
-    bottom: space(4);
-    margin: 0 space(4);
     width: 100%;
     max-width: space($base-modal-max-width);
+    height: auto;
+    margin: 0 space(4);
 }

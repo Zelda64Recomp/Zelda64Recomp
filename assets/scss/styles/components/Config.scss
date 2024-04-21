@@ -8,30 +8,29 @@
 .config__form {
     @include border-top($color-border-soft);
     display: flex;
+    flex: 1 1 100%;
     flex-direction: column;
     justify-content: space-between;
-    flex: 1 1 100%;
     width: 100%;
     height: 100%;
-    border-bottom-left-radius: $border-radius-modal;
     border-bottom-right-radius: $border-radius-modal;
+    border-bottom-left-radius: $border-radius-modal;
 }
 
 .config__wrapper {
-    border-radius: 0dp;
     flex: 1 1 100%;
-    height: 100%;
-    padding: space(16);
-    text-align: left;
-    background-color: $color-bg-shadow;
     width: auto;
     height: auto;
+    padding: space(16);
+    border-radius: 0dp;
+    background-color: $color-bg-shadow;
+    text-align: left;
 
     p {
         @extend %body;
         padding: space(16);
-        white-space: pre-line;
         line-height: space(28);
+        white-space: pre-line;
 
         b {
             color: $color-primary;
@@ -41,18 +40,18 @@
 
 .config__hz-wrapper {
     display: flex;
-    flex-direction: row;
-    border-radius: 0dp;
     flex: 1 1 100%;
+    flex-direction: row;
     width: 100%;
     height: 100%;
+    border-radius: 0dp;
     text-align: left;
 }
 
 .config__header, .config__footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
     background-color: $color-bg-shadow;
 }
@@ -65,14 +64,14 @@
 .config__footer {
     @include border-top($color-border-soft);
     padding: space(20) space(20);
-    border-bottom-left-radius: $border-radius-modal;
     border-bottom-right-radius: $border-radius-modal;
+    border-bottom-left-radius: $border-radius-modal;
 }
 
 .config__header-left {
     display: flex;
-    flex-direction: row;
     flex: 1 1 auto;
+    flex-direction: row;
 
     > :not(:first-child) {
         margin-left: space(8);
@@ -86,8 +85,8 @@
 
 .config-option {
     display: flex;
-    flex-direction: column;
     flex: 1;
+    flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
     margin: space(16) space(0) space(24);
@@ -104,12 +103,12 @@
 
 .config-option__list {
     display: flex;
-    padding: 0;
     flex-direction: row;
-    width: 100%;
-    height: auto;
     align-items: flex-start;
     justify-content: flex-start;
+    width: 100%;
+    height: auto;
+    padding: 0;
 
     input:first-of-type {
         nav-left: none;
@@ -124,15 +123,15 @@
         @include trans-colors-opa;
         display: block;
         position: relative;
-        padding: space(8) 0;
         height: auto;
         margin: space(4) space(12) 0;
+        padding: space(8) 0;
         color: $color-text-inactive;
         tab-index: none;
 
         &:hover {
-            cursor: pointer;
             color: $color-text;
+            cursor: pointer;
         }
     }
 
@@ -156,8 +155,8 @@
     
             .rmlui-window:not([mouse-active]) &:focus + .config-option__tab-label {
                 animation: $focus-anim-border;
-                color: $color-secondary;
                 border-color: $color-secondary;
+                color: $color-secondary;
             }
 
             &:focus + .config-option__tab-label,
@@ -177,20 +176,20 @@
 
     input.range slidertrack {
         @include trans-colors;
-        margin-top: 7dp;
         height: 2dp;
+        margin-top: 7dp;
         background-color: $color-border;
     }
     
     input.range sliderbar {
         @include trans-colors;
-        margin-left: -8dp;
-        margin-right: -6dp;
         width: space(16);
         height: space(16);
-        background-color: $color-text-dim;
-        border-radius: 8dp;
+        margin-right: -6dp;
+        margin-left: -8dp;
         transition: background-color $transition-quick;
+        border-radius: 8dp;
+        background-color: $color-text-dim;
         
         .rmlui-window:not([mouse-active]) &:focus {
             @include border($color-a);
@@ -198,8 +197,8 @@
         }
 
         &:hover {
-            cursor: pointer;
             background-color: $color-text;
+            cursor: pointer;
         }
     }
     
@@ -216,24 +215,24 @@
 
 .config-option__details {
     @extend %label-xs;
-    color: $color-primary;
-    margin: space(14) space(12) 0;
     height: space(18);
+    margin: space(14) space(12) 0;
+    color: $color-primary;
 }
 
 .config-option__range-wrapper {
-    margin-top: space(4);
     max-width: space(360);
+    margin-top: space(4);
 }
 
 .config-option__range-label {
     @extend %label-sm;
-    flex: 0 0 space(16);
 
     display: block;
-    padding: 0;
+    flex: 0 0 space(16);
     margin: 0 12dp;
     margin-right: space(16);
+    padding: 0;
     color: $color-text;
     tab-index: none;
 }

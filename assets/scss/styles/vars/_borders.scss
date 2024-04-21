@@ -11,18 +11,18 @@ $border-width-thickness-num: 1.1;
 $border-width-thickness: space($border-width-thickness-num);
 
 @mixin border($col: $color-border) {
-    border-color: $col;
     border-width: $border-width-thickness;
+    border-color: $col;
 }
 
 @mixin border-top($col: $color-border) {
-    border-top-color: $col;
     border-top-width: $border-width-thickness;
+    border-top-color: $col;
 }
 
 @mixin border-bottom($col: $color-border) {
-    border-bottom-color: $col;
     border-bottom-width: $border-width-thickness;
+    border-bottom-color: $col;
 }
 
 @mixin inset-block($inset-amt) {

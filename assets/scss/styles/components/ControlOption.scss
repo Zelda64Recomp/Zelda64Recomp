@@ -59,10 +59,10 @@
 .control-option__bindings {
     display: flex;
     position: relative;
+    flex: 2 1 space(400);
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    flex: 2 1 space(400);
     width: 100%;
     height: space(56);
     padding: 0 space(12) 0 space(4);
@@ -73,23 +73,23 @@
     @include trans-colors-border;
     display: flex;
     position: relative;
-    align-items: center;
-    justify-content: center;
-    margin: 0 space(4);
 
     flex: 1 1 100%;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: space(56);
+    margin: 0 space(4);
     padding: space(8);
-    background-color: $color-bg-overlay;
-    border-color: $color-bg-overlay;
     border-width: $border-width-thickness;
     border-radius: $border-radius-sm;
+    border-color: $color-bg-overlay;
+    background-color: $color-bg-overlay;
 
     &:focus, &:hover {
         @include set-color($color-text);
-        background-color: $color-border-soft;
         border-color: $color-text;
+        background-color: $color-border-soft;
     }
 
     &:active {
@@ -116,24 +116,26 @@
 	0% {
 		transform: scale(1);
 	}
+
 	50% {
 		transform: scale(0.85);
 	}
-	to { 
+
+	100% { 
 		transform: scale(1);
 	}
 }
 
 .control-option__binding-recording {
     @include trans-colors-opa;
-    position: absolute;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
 
     .control-option__binding-circle {
@@ -141,9 +143,9 @@
 
         width: space($rec-size);
         height: space($rec-size);
-        background-color: $color-error;
-        border-radius: space($rec-size);
         animation: 1.5s sine-in-out infinite control-option__binding-recording-scale;
+        border-radius: space($rec-size);
+        background-color: $color-error;
     }
 
     .control-option__binding-edge {
@@ -152,12 +154,12 @@
 
         position: absolute;
 
-        transform: translate(-50%, -50%);
-
         top: 50%;
         left: 50%;
         width: space($edge-size);
         height: space($edge-size);
+
+        transform: translate(-50%, -50%);
         
         > svg.control-option__binding-edge-svg {
             width: space($edge-size);

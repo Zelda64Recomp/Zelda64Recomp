@@ -25,12 +25,12 @@
     cursor: pointer;
 
     &--right {
-        align-content: flex-end;
         flex-direction: row-reverse;
+        align-content: flex-end;
 
         .menu-list-item__bullet {
-            opacity: 1;
             margin-left: space(12);
+            opacity: 1;
         }
 
         &.menu-list-item:focus:not(:disabled, [disabled]),
@@ -60,11 +60,12 @@
     }
 
 }
+
 .menu-list-item__label {
-    @extend .label-lg;
+    @extend %label-lg;
 }
 
 .menu-list-item__bullet {
-    opacity: 0;
     margin-right: space(12);
+    opacity: 0;
 }

@@ -1,7 +1,7 @@
 @use 'sass:math';
 
 // Probably will need to adjust for other langs...
-$mapping-min-width: 80*8;
+$mapping-min-width: 80 * 8;
 $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width;
 
 .input-config {
@@ -18,8 +18,8 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
 .input-config__mappings {
     display: block;
     flex: 1 1 auto;
-    height: 100%;
     min-width: space($mapping-min-width);
+    height: 100%;
 }
 
 .input-config__mappings-scroll {
@@ -35,30 +35,30 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
 
 .input-config__visual-wrapper {
     display: block;
+    flex: 1 1 100%;
     width: auto;
-    height: auto;
     max-width: space($visual-max-width);
+    height: auto;
     max-height: space(math.div($visual-max-width, 4) * 3);
     margin: auto 0;
-    flex: 1 1 100%;
 }
 
 .input-config__visual-aspect {
     position: relative;
     width: 100%;
+    margin: auto 0;
     padding-bottom: 75%;
     background-color: $color-bg-shadow;
-    margin: auto 0;
 }
 
 .input-config__visual {
     display: flex;
-    flex-direction: column;
     position: absolute;
     top: space(16);
     right: space(16);
     bottom: space(16);
     left: space(16);
+    flex-direction: column;
     border-radius: space(108);
     background-color: $color-white-a5;
 }
@@ -66,8 +66,8 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
 .input-config__visual-half {
     display: flex;
     position: relative;
-    flex-direction: row;
     flex: 1 1 100%;
+    flex-direction: row;
     padding: 6%;
 
     &--bottom {
@@ -79,9 +79,9 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
 .input-config__visual-quarter-left {
     display: flex;
     flex: 1 1 50%;
-    width: auto;
     align-items: flex-start;
     justify-content: flex-start;
+    width: auto;
 }
 
 .input-config__visual-quarter-right {
@@ -94,18 +94,18 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
 .input-config__visual-stick-wrapper {
     display: flex;
     position: absolute;
-    align-items: center;
-    justify-content: center;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-viz {
     @include trans-colors-opa;
-    position: relative;
     display: flex;
+    position: relative;
     align-items: center;
     justify-content: center;
 
@@ -113,8 +113,8 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
         position: absolute;
         top: 0;
         right: 0;
-        left: 0;
         bottom: 0;
+        left: 0;
     }
 
     &__mappings div {
@@ -122,8 +122,7 @@ $visual-max-width: $base-modal-max-width - $mapping-min-width - $scrollbar-width
     }
 }
 
-$all-inputs:
-    A,
+$all-inputs: A,
     B,
     Z,
     START,
@@ -206,6 +205,7 @@ $all-inputs:
 }
 
 $dpad-size: 192;
+
 .input-viz.input-viz__dpad {
     @include set-svgs-color($color-text);
     @include set-sizes($dpad-size);
@@ -213,6 +213,7 @@ $dpad-size: 192;
 }
 
 $stick-size: 200;
+
 .input-config__visual-stick {
     display: flex;
     position: relative;
@@ -246,9 +247,9 @@ $stick-size: 200;
     > div {
         display: flex;
         flex: 1 1 100%;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
-        flex-direction: row;
     }
 }
 
@@ -263,10 +264,10 @@ $stick-size: 200;
 }
 
 .input-viz__dpad-arrow {
+    $edge-dist: space(4);
     position: absolute;
     width: space(60);
     height: space(60);
-    $edge-dist: space(4);
 
     &--up {
         top: $edge-dist;
@@ -304,16 +305,16 @@ $stick-size: 200;
 
 .input-config__c-buttons {
     position: relative;
-    width: space(76+76+56);
-    height: space(76+56);
+    width: space(76 + 76 + 56);
+    height: space(76 + 56);
 
     &-lr, &-du {
         display: flex;
         position: absolute;
         top: 0;
         right: 0;
-        left: 0;
         bottom: 0;
+        left: 0;
     }
 
     &-lr {
@@ -337,10 +338,10 @@ $stick-size: 200;
 
 .input-config__main-buttons {
     display: flex;
+    position: relative;
     flex-direction: row;
     justify-content: space-between;
     width: space(268);
     height: space(128);
-    position: relative;
     margin-right: space(10);
 }

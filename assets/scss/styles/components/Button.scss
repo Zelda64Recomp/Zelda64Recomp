@@ -1,14 +1,14 @@
 @use 'sass:color';
 
 @mixin create-button-variation($base-col) {
+    border-color: rgba($base-col, 0.8);
     background-color: rgba($base-col, 0.05);
     color: $color-text-dim;
-    border-color: rgba($base-col, 0.8);
 
     &:focus, &:hover {
-        color: $color-text;
         border-color: $base-col;
         background-color: rgba($base-col, 0.3);
+        color: $color-text;
     }
 
     &:disabled,&[disabled] {
@@ -28,13 +28,13 @@
     @include trans-colors;
 
     display: block;
-    // leave 1dp room for border expansion
-    padding: space(24 - 1);
-
-    border-radius: $border-radius-md;
-    border-width: $border-width-thickness;
     width: auto;
     height: auto;
+    // leave 1dp room for border expansion
+    padding: space(24 - 1);
+    border-width: $border-width-thickness;
+
+    border-radius: $border-radius-md;
 
     // Setting it by default for convenience
     // &--primary {

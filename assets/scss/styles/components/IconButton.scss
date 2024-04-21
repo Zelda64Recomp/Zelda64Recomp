@@ -1,4 +1,5 @@
 @use 'sass:color';
+
 /*
     <button
         class="icon-button icon-button--danger"
@@ -7,8 +8,8 @@
     </button>
 */
 @mixin create-icon-button-variation($base-col) {
-    background-color: rgba($base-col, 0.05);
     border-color: rgba($base-col, 0.8);
+    background-color: rgba($base-col, 0.05);
 
     &:focus, &:hover {
         border-color: $base-col;
@@ -29,17 +30,16 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
     display: flex;
     align-items: center;
     justify-content: center;
-
-    border-radius: space($icon-button-size * 0.5);
+    width: space($icon-button-size);
+    min-width: space($icon-button-size);
+    max-width: space($icon-button-size);
+    height: space($icon-button-size);
+    min-height: space($icon-button-size);
+    max-height: space($icon-button-size);
     border-width: $border-width-thickness;
+    border-radius: space($icon-button-size * 0.5);
     border-color: $color-transparent;
     background-color: $color-transparent;
-    width: space($icon-button-size);
-    height: space($icon-button-size);
-    min-width: space($icon-button-size);
-    min-height: space($icon-button-size);
-    max-width: space($icon-button-size);
-    max-height: space($icon-button-size);
 
     &:focus, &:hover {
         @include set-color($color-text);
