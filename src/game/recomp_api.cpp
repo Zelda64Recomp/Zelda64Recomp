@@ -39,7 +39,7 @@ extern "C" void recomp_powf(uint8_t* rdram, recomp_context* ctx) {
     float a = _arg<0, float>(rdram, ctx);
     float b = ctx->f14.fl; //_arg<1, float>(rdram, ctx);
 
-    _return(ctx, std::powf(a, b));
+    _return(ctx, std::pow(a, b));
 }
 
 extern "C" void recomp_get_target_framerate(uint8_t* rdram, recomp_context* ctx) {

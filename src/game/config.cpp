@@ -114,7 +114,7 @@ std::filesystem::path recomp::get_app_folder_path() {
    }
 
    if (homedir != nullptr) {
-       recomp_dir = std::filesystem::path{homedir} / (std::string{"."} + recomp::program_id);
+       recomp_dir = std::filesystem::path{homedir} / (std::u8string{u8"."} + std::u8string{recomp::program_id});
    }
 #endif
 

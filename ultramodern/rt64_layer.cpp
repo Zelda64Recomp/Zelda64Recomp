@@ -175,7 +175,11 @@ ultramodern::RT64Context::RT64Context(uint8_t* rdram, ultramodern::WindowHandle 
     }
 
     // Set up the RT64 application.
-    if (!app->setup(window_handle.thread_id)) {
+    uint32_t thread_id = 0;
+#ifdef _WIN32
+    thread_id = window_handle.thread_id;
+#endif
+    if (!app->setup(thread_id)) {
         app = nullptr;
         return;
     }

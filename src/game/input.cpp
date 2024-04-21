@@ -380,12 +380,9 @@ void recomp::set_rumble(bool on) {
     InputState.rumble_active = on;
 }
 
-static float lerp(float from, float to, float amount) {
-    return (from + (to - from) * amount);
-}
 static float smoothstep(float from, float to, float amount) {
     amount = (amount * amount) * (3.0f - 2.0f * amount);
-    return lerp(from, to, amount);
+    return std::lerp(from, to, amount);
 }
 
 // Update rumble to attempt to mimic the way n64 rumble ramps up and falls off

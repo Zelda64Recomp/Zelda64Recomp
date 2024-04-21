@@ -20,7 +20,9 @@ endif()
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
+if (WIN32)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
+endif()
 
 set(RT64_STATIC TRUE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
@@ -90,7 +92,7 @@ add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h
                        ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
-                   COMMAND RecompPort patches.toml && ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
+                   COMMAND ./N64Recomp patches.toml && ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
@@ -211,6 +213,29 @@ if (WIN32)
     target_sources(Zelda64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
 endif()
 
+if (LINUX)
+    find_package(X11 REQUIRED)
+
+    message(STATUS "X11_FOUND = ${X11_FOUND}")
+    message(STATUS "X11_Xrandr_FOUND = ${X11_Xrandr_FOUND}")
+    message(STATUS "X11_INCLUDE_DIR = ${X11_INCLUDE_DIR}")
+    message(STATUS "X11_LIBRARIES = ${X11_LIBRARIES}")
+
+    include_directories(${X11_INCLUDE_DIR} ${X11_Xrandr_INCLUDE_PATH})
+    target_link_libraries(Zelda64Recompiled PRIVATE ${X11_LIBRARIES} ${X11_Xrandr_LIB})
+
+    find_package(Freetype REQUIRED)
+
+    message(STATUS "FREETYPE_FOUND = ${FREETYPE_FOUND}")
+    message(STATUS "FREETYPE_INCLUDE_DIRS = ${FREETYPE_INCLUDE_DIRS}")
+    message(STATUS "FREETYPE_LIBRARIES = ${FREETYPE_LIBRARIES}")
+
+    include_directories(${FREETYPE_LIBRARIES})
+    target_link_libraries(Zelda64Recompiled PRIVATE ${FREETYPE_LIBRARIES})
+    
+    target_link_libraries(Zelda64Recompiled PRIVATE "-latomic")
+endif()
+
 target_link_libraries(Zelda64Recompiled PRIVATE
     PatchesLib
     RecompiledFuncs
@@ -237,7 +262,7 @@ if (${WIN32})
     set (DXC "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/src/contrib/dxc/bin/x64/dxc")
+    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
 endif()
 
 build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
