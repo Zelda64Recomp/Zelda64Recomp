@@ -178,7 +178,7 @@
     input.range slidertrack {
         @include trans-colors;
         height: 2dp;
-        margin-top: 7dp;
+        margin-top: space(8);
         background-color: $color-border;
     }
     
@@ -186,8 +186,9 @@
         @include trans-colors;
         width: space(16);
         height: space(16);
-        margin-right: -6dp;
-        margin-left: -8dp;
+        margin-top: space(1);
+        margin-right: space(-8);
+        margin-left: space(-8);
         transition: background-color $transition-quick;
         border-radius: 8dp;
         background-color: $color-text-dim;
@@ -230,7 +231,8 @@
     @extend %label-sm;
 
     display: block;
-    flex: 0 0 space(16);
+    // flex: 0 0 space(32);
+    width: space(56);
     margin: 0 12dp;
     margin-right: space(16);
     padding: 0;

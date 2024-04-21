@@ -211,6 +211,7 @@ void close_config_menu() {
 
 struct ControlOptionsContext {
 	int rumble_strength = 50; // 0 to 100
+	int gyro_sensitivity = 50; // 0 to 200
 	recomp::TargetingMode targeting_mode = recomp::TargetingMode::Switch;
 };
 
@@ -224,6 +225,17 @@ void recomp::set_rumble_strength(int strength) {
 	control_options_context.rumble_strength = strength;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("rumble_strength");
+	}
+}
+
+int recomp::get_gyro_sensitivity() {
+	return control_options_context.gyro_sensitivity;
+}
+
+void recomp::set_gyro_sensitivity(int sensitivity) {
+	control_options_context.gyro_sensitivity = sensitivity;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("gyro_sensitivity");
 	}
 }
 
@@ -672,6 +684,7 @@ public:
 		bind_config_list_events(constructor);
 		
 		constructor.Bind("rumble_strength", &control_options_context.rumble_strength);
+		constructor.Bind("gyro_sensitivity", &control_options_context.gyro_sensitivity);
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
 
 		general_model_handle = constructor.GetModelHandle();

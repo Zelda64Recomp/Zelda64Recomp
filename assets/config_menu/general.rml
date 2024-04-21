@@ -40,7 +40,7 @@
                     <div class="config-option" data-event-mouseover="set_cur_config_index(1)">
                         <label class="config-option__title">Rumble Strength</label>
                         <div class="config-option__range-wrapper config-option__list">
-                            <label class="config-option__range-label">{{rumble_strength}}</label>
+                            <label class="config-option__range-label">{{rumble_strength}}%</label>
                             <input
                                 class="nav-vert"
                                 data-event-blur="set_cur_config_index(-1)"
@@ -54,6 +54,25 @@
                             />
                         </div>
                     </div>
+
+                    <!-- gyro sensitivity -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(2)">
+                        <label class="config-option__title">Gyro Sensitivity</label>
+                        <div class="config-option__range-wrapper config-option__list">
+                            <label class="config-option__range-label">{{gyro_sensitivity}}%</label>
+                            <input
+                                class="nav-vert"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(2)"
+                                id="gyro_sensitivity_input"
+                                type="range"
+                                min="0"
+                                max="100"
+                                style="flex: 1; margin: 0dp;"
+                                data-value="gyro_sensitivity"
+                            />
+                        </div>
+                    </div>
                 </div>
                 <!-- Descriptions -->
                 <div class="config__wrapper">
@@ -62,6 +81,9 @@
                     </p>
                     <p data-if="cur_config_index == 1">
                         Controls the strength of rumble when using a controller that supports it. Setting this to zero will disable rumble.
+                    </p>
+                    <p data-if="cur_config_index == 2">
+                        Controls the sensitivity of gyro when using a controller that supports it. Setting this to zero will disable gyro.
                     </p>
                 </div>
             </div>

@@ -124,6 +124,10 @@ namespace recomp {
     // Rumble strength ranges from 0 to 100.
     int get_rumble_strength();
     void set_rumble_strength(int strength);
+    
+    // Gyro sensitivity ranges from 0 to 100 (gets doubled).
+    int get_gyro_sensitivity();
+    void set_gyro_sensitivity(int strength);
 
     enum class TargetingMode {
         Switch,

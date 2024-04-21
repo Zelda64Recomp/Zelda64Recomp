@@ -505,8 +505,9 @@ bool recomp::get_input_digital(const std::span<const recomp::InputField> fields)
 
 void recomp::get_gyro_deltas(float* x, float* y) {
     std::array<float, 2> cur_rotation_delta = InputState.rotation_delta;
-    *x = cur_rotation_delta[0];
-    *y = cur_rotation_delta[1];
+    float sensitivity = (float)recomp::get_gyro_sensitivity() / 50.0f;
+    *x = cur_rotation_delta[0] * sensitivity;
+    *y = cur_rotation_delta[1] * sensitivity;
 }
 
 bool recomp::game_input_disabled() {
