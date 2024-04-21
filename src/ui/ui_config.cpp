@@ -249,6 +249,7 @@ struct ControlOptionsContext {
 	int rumble_strength = 50; // 0 to 100
 	int gyro_sensitivity = 50; // 0 to 200
 	recomp::TargetingMode targeting_mode = recomp::TargetingMode::Switch;
+	recomp::BackgroundInputMode background_input_mode = recomp::BackgroundInputMode::On;
 };
 
 ControlOptionsContext control_options_context;
@@ -284,6 +285,23 @@ void recomp::set_targeting_mode(recomp::TargetingMode mode) {
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("targeting_mode");
 	}
+}
+
+recomp::BackgroundInputMode recomp::get_background_input_mode() {
+	return control_options_context.background_input_mode;
+}
+
+void recomp::set_background_input_mode(recomp::BackgroundInputMode mode) {
+	control_options_context.background_input_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("background_input_mode");
+	}
+	SDL_SetHint(
+		SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
+		mode == recomp::BackgroundInputMode::On
+			? "1"
+			: "0"
+	);
 }
 
 struct SoundOptionsContext {
@@ -737,6 +755,7 @@ public:
 		constructor.Bind("rumble_strength", &control_options_context.rumble_strength);
 		constructor.Bind("gyro_sensitivity", &control_options_context.gyro_sensitivity);
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
+		bind_option(constructor, "background_input_mode", &control_options_context.background_input_mode);
 
 		general_model_handle = constructor.GetModelHandle();
 	}

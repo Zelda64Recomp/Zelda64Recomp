@@ -1150,8 +1150,26 @@ int cont_axis_to_key(SDL_ControllerAxisEvent& axis, float value) {
     return 0;
 }
 
+void apply_background_input_mode() {
+    static recomp::BackgroundInputMode last_input_mode = recomp::BackgroundInputMode::OptionCount;
+
+    recomp::BackgroundInputMode cur_input_mode = recomp::get_background_input_mode();
+
+    if (last_input_mode != cur_input_mode) {
+        SDL_SetHint(
+            SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
+            cur_input_mode == recomp::BackgroundInputMode::On
+                ? "1"
+                : "0"
+        );
+    }
+    last_input_mode = cur_input_mode;
+}
+
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
     std::lock_guard lock {ui_context_mutex};
+
+    apply_background_input_mode();
 
     // Return early if the ui context has been destroyed already.
     if (!ui_context) {

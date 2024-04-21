@@ -143,6 +143,20 @@ namespace recomp {
     TargetingMode get_targeting_mode();
     void set_targeting_mode(TargetingMode mode);
 
+    enum class BackgroundInputMode {
+        On,
+        Off,
+		OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::BackgroundInputMode, {
+        {recomp::BackgroundInputMode::On, "On"},
+        {recomp::BackgroundInputMode::Off, "Off"}
+    });
+
+    BackgroundInputMode get_background_input_mode();
+    void set_background_input_mode(BackgroundInputMode mode);
+
     bool game_input_disabled();
     bool all_input_disabled();
 
