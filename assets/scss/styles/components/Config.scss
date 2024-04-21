@@ -154,6 +154,7 @@
             }
     
             .rmlui-window:not([mouse-active]) &:focus + .config-option__tab-label {
+                transition: none;
                 animation: $focus-anim-border;
                 border-color: $color-secondary;
                 color: $color-secondary;

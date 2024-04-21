@@ -38,6 +38,7 @@
     }
 
     .rmlui-window:not([mouse-active]) &:focus {
+        transition: none;
         animation: $focus-anim-border;
 
         &:selected .tab__indicator {
