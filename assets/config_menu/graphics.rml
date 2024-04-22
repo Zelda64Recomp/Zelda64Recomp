@@ -265,19 +265,19 @@
                 </div>
                 <div class="config__wrapper">
                     <p data-if="cur_config_index == 0">
-                        Sets the output resolution of the game. Original matches the game's original 240p resolution. Original 2x will render at 480p. Auto will scale based on the game window's resolution.
+                        Sets the output resolution of the game. <b>Original</b> matches the game's original 240p resolution. <b>Original 2x</b> will render at 480p. <b>Auto</b> will scale based on the game window's resolution.
                     </p>
                     <p data-if="cur_config_index == 1">
-                        Renders at a higher resolution and scales it down to the output resolution for increased quality. Only available in Original and Original 2x resolution.
+                        Renders at a higher resolution and scales it down to the output resolution for increased quality. Only available in <b>Original</b> and <b>Original 2x</b> resolution.
                         <br />
                         <br />
-                        Note: 4x downsampling quality at Original 2x resolution may cause performance issues on low end devices, as it will cause the game to render at almost 4k internal resolution.
+                        Note: <b>4x</b> downsampling quality at <b>Original 2x</b> resolution may cause performance issues on low end devices, as it will cause the game to render <i>at almost 4k internal resolution</i>.
                     </p>
                     <p data-if="cur_config_index == 2">
-                        Sets the horizontal aspect ratio. Original uses the game's original 4:3 aspect ratio. Expand will adjust to match the game window's aspect ratio.
+                        Sets the horizontal aspect ratio. <b>Original</b> uses the game's original 4:3 aspect ratio. <b>Expand</b> will adjust to match the game window's aspect ratio.
                     </p>
                     <p data-if="cur_config_index == 3">
-                        Sets whether the game should display on a Window or Fullscreen. You can also use Alt + Enter to toggle this option.
+                        Sets whether the game should display <b>Windowed</b> or <b>Fullscreen</b>. You can also use <b>Alt + Enter</b> to toggle this option.
                     </p>
                     <p data-if="cur_config_index == 4">
                         Sets the game's output framerate. This option does not affect gameplay.
@@ -292,10 +292,10 @@
                         Sets the multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.
                         <br />
                         <br />
-                        Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.
+                        <b>Note: This option won't be available if your GPU does not support programmable MSAA sample positions, as it is currently required to avoid rendering glitches.</b>
                     </p>
                     <p data-if="cur_config_index == 6">
-                        Adjusts the placement of HUD elements to fit the selected aspect ratio. Expand will use the aspect ratio of the game's output window.
+                        Adjusts the placement of HUD elements to fit the selected aspect ratio. <b>Expand</b> will use the aspect ratio of the game's output window.
                     </p>
                 </div>
             </div>
