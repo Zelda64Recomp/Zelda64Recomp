@@ -61,17 +61,17 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
 #if defined(__linux__)
 SDL_Surface *LoadImage(char* filename)
 {
-	// Read data
-	int width, height, bytesPerPixel;
-	void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 0);
+    // Read data
+    int width, height, bytesPerPixel;
+    void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 0);
 
-	// Calculate pitch
-	int pitch;
+    // Calculate pitch
+    int pitch;
     pitch = width * bytesPerPixel;
     pitch = (pitch + 3) & ~3;
 
     // Setup relevance bitmask
-	int Rmask, Gmask, Bmask, Amask;
+    int Rmask, Gmask, Bmask, Amask;
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     Rmask = 0x000000FF;
@@ -86,14 +86,14 @@ SDL_Surface *LoadImage(char* filename)
     Amask = 0x000000FF >> s;
 #endif
 
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(data, width, height, bytesPerPixel*8, pitch, Rmask, Gmask,
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(data, width, height, bytesPerPixel*8, pitch, Rmask, Gmask,
                              Bmask, Amask);
-	if (!surface)
-	{
-		// NOTE: Should free stbi_load 'data' variable here
-		return NULL;
+    if (!surface)
+    {
+        // NOTE: Should free stbi_load 'data' variable here
+        return NULL;
 	}
-	return surface;
+    return surface;
 }
 #endif
 
