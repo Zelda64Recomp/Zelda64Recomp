@@ -292,6 +292,10 @@ uint32_t ultramodern::get_target_framerate(uint32_t original) {
     }
 }
 
+uint32_t ultramodern::get_display_refresh_rate() {
+    return display_refresh_rate.load();
+}
+
 void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;

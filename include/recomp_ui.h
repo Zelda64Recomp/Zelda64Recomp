@@ -72,6 +72,7 @@ namespace recomp {
 	void set_cursor_visible(bool visible);
 	void update_supported_options();
 	void toggle_fullscreen();
+	void update_rml_display_refresh_rate();
 
 	extern const std::unordered_map<ButtonVariant, std::string> button_variants;
 

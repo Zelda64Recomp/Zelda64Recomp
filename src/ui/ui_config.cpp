@@ -377,6 +377,17 @@ struct DebugContext {
 	}
 };
 
+void recomp::update_rml_display_refresh_rate() {
+	static uint32_t lastRate = 0;
+	if (!graphics_model_handle) return;
+
+	uint32_t curRate = ultramodern::get_display_refresh_rate();
+	if (curRate != lastRate) {
+		graphics_model_handle.DirtyVariable("display_refresh_rate");
+	}
+	lastRate = curRate;
+}
+
 DebugContext debug_context;
 
 class ConfigMenu : public recomp::MenuController {
@@ -521,6 +532,11 @@ public:
 				new_options.ds_option = in.Get<int>();
 				graphics_model_handle.DirtyVariable("options_changed");
 				graphics_model_handle.DirtyVariable("ds_info");
+			});
+
+		constructor.BindFunc("display_refresh_rate",
+			[](Rml::Variant& out) {
+				out = ultramodern::get_display_refresh_rate();
 			});
 
 		constructor.BindFunc("options_changed",

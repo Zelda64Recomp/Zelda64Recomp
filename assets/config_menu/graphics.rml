@@ -283,7 +283,10 @@
                         Sets the game's output framerate. This option does not affect gameplay.
                         <br />
                         <br />
-                        Note: If you have issues with Display mode while using an external frame limiter, use Manual mode instead and configure it to that same frame limit.
+                        Note: If you have issues with <b>Display</b> mode while using an external frame limiter, use <b>Manual</b> mode instead and configure it to that same frame limit.
+                        <br />
+                        <br />
+                        <b>Detected display refresh rate: {{display_refresh_rate}}hz</b>
                     </p>
                     <p data-if="cur_config_index == 5">
                         Sets the multisample anti-aliasing (MSAA) quality level. This reduces jagged edges in the final image at the expense of rendering performance.

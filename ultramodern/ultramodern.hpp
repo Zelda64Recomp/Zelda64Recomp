@@ -96,6 +96,7 @@ std::chrono::high_resolution_clock::time_point get_start();
 std::chrono::high_resolution_clock::duration time_since_start();
 void get_window_size(uint32_t& width, uint32_t& height);
 uint32_t get_target_framerate(uint32_t original);
+uint32_t get_display_refresh_rate();
 void measure_input_latency();
 void sleep_milliseconds(uint32_t millis);
 void sleep_until(const std::chrono::high_resolution_clock::time_point& time_point);

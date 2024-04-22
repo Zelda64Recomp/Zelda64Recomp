@@ -956,6 +956,7 @@ struct UIContext {
         void update_config_menu_loop(bool menu_changed) {
             static int prevTab = -1;
             if (menu_changed) prevTab = -1;
+            recomp::update_rml_display_refresh_rate();
 
             Rml::ElementTabSet *tabset = (Rml::ElementTabSet *)current_document->GetElementById("config_tabset");
             if (tabset == nullptr) return;
