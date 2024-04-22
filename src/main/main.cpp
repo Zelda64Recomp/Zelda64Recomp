@@ -59,15 +59,15 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
 }
 
 #if defined(__linux__)
-SDL_Surface *LoadImage(char* filename)
+bool SetImageAsIcon(char* filename, SDL_Window* window)
 {
     // Read data
     int width, height, bytesPerPixel;
-    void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 0);
+    void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 4);
 
     // Calculate pitch
     int pitch;
-    pitch = width * bytesPerPixel;
+    pitch = width * 4;
     pitch = (pitch + 3) & ~3;
 
     // Setup relevance bitmask
@@ -77,23 +77,31 @@ SDL_Surface *LoadImage(char* filename)
     Rmask = 0x000000FF;
     Gmask = 0x0000FF00;
     Bmask = 0x00FF0000;
-    Amask = (bytesPerPixel == 4) ? 0xFF000000 : 0;
+    Amask = 0xFF000000;
 #else
-    int s = (bytesPerPixel == 4) ? 0 : 8;
-    Rmask = 0xFF000000 >> s;
-    Gmask = 0x00FF0000 >> s;
-    Bmask = 0x0000FF00 >> s;
-    Amask = 0x000000FF >> s;
+    Rmask = 0xFF000000;
+    Gmask = 0x00FF0000;
+    Bmask = 0x0000FF00;
+    Amask = 0x000000FF;
 #endif
 
-    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(data, width, height, bytesPerPixel*8, pitch, Rmask, Gmask,
-                             Bmask, Amask);
-    if (!surface)
-    {
-        // NOTE: Should free stbi_load 'data' variable here
-        return NULL;
-	}
-    return surface;
+    SDL_Surface* surface;
+    if (data != NULL) {
+        surface = SDL_CreateRGBSurfaceFrom(data, width, height, 32, pitch, Rmask, Gmask,
+                            Bmask, Amask);
+    }
+
+    if (surface == NULL) {   
+        if (data != NULL) {
+            stbi_image_free(data);
+        }
+        return false;
+	} else {
+        SDL_SetWindowIcon(window,surface);
+        SDL_FreeSurface(surface);
+        stbi_image_free(data);
+        return true;
+    }
 }
 #endif
 
@@ -102,8 +110,7 @@ SDL_Window* window;
 ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, SDL_WINDOW_RESIZABLE );
 #if defined(__linux__)
-    SDL_Surface* icon = LoadImage("icons/512linux.png");
-    SDL_SetWindowIcon(window, icon);
+    SetImageAsIcon("icons/512linux.png",window);
 #endif
 
     if (window == nullptr) {
