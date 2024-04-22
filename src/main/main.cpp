@@ -58,6 +58,7 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     return {};
 }
 
+#if defined(__linux__)
 SDL_Surface *LoadImage(char* filename)
 {
 	// Read data
@@ -94,15 +95,17 @@ SDL_Surface *LoadImage(char* filename)
 	}
 	return surface;
 }
+#endif
 
 SDL_Window* window;
 
 ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     int width, height, channels;
-    //unsigned char *icon = stbi_load("icons/512linux.png", &width, &height, &channels, 0);
     SDL_Surface* icon = LoadImage("icons/512linux.png");
     window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, SDL_WINDOW_RESIZABLE );
+#if defined(__linux__)
     SDL_SetWindowIcon(window, icon);
+#endif
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());
