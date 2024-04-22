@@ -30,6 +30,9 @@
 #include "SDL_syswm.h"
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../lib/rt64/src/contrib/stb/stb_image.h"
+
 extern "C" void init();
 /*extern "C"*/ void start(ultramodern::WindowHandle window_handle, const ultramodern::audio_callbacks_t* audio_callbacks, const ultramodern::input_callbacks_t* input_callbacks);
 
@@ -55,10 +58,51 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     return {};
 }
 
+SDL_Surface *LoadImage(char* filename)
+{
+	// Read data
+	int width, height, bytesPerPixel;
+	void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 0);
+
+	// Calculate pitch
+	int pitch;
+    pitch = width * bytesPerPixel;
+    pitch = (pitch + 3) & ~3;
+
+    // Setup relevance bitmask
+	int Rmask, Gmask, Bmask, Amask;
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    Rmask = 0x000000FF;
+    Gmask = 0x0000FF00;
+    Bmask = 0x00FF0000;
+    Amask = (bytesPerPixel == 4) ? 0xFF000000 : 0;
+#else
+    int s = (bytesPerPixel == 4) ? 0 : 8;
+    Rmask = 0xFF000000 >> s;
+    Gmask = 0x00FF0000 >> s;
+    Bmask = 0x0000FF00 >> s;
+    Amask = 0x000000FF >> s;
+#endif
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(data, width, height, bytesPerPixel*8, pitch, Rmask, Gmask,
+                             Bmask, Amask);
+	if (!surface)
+	{
+		// NOTE: Should free stbi_load 'data' variable here
+		return NULL;
+	}
+	return surface;
+}
+
 SDL_Window* window;
 
 ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
+    int width, height, channels;
+    //unsigned char *icon = stbi_load("icons/512linux.png", &width, &height, &channels, 0);
+    SDL_Surface* icon = LoadImage("icons/512linux.png");
     window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, SDL_WINDOW_RESIZABLE );
+    SDL_SetWindowIcon(window, icon);
 
     if (window == nullptr) {
         exit_error("Failed to create window: %s\n", SDL_GetError());
