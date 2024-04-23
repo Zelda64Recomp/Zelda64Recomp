@@ -59,7 +59,7 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
 }
 
 #if defined(__linux__)
-bool SetImageAsIcon(char* filename, SDL_Window* window)
+bool SetImageAsIcon(const char* filename, SDL_Window* window)
 {
     // Read data
     int width, height, bytesPerPixel;
