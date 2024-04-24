@@ -185,6 +185,23 @@ void close_config_menu_impl() {
 		recomp::set_current_menu(recomp::Menu::Launcher);
 	}
 }
+
+// TODO: Remove once RT64 gets native fullscreen support on Linux
+#if defined(__linux__)
+extern SDL_Window* window;
+#endif
+
+void apply_graphics_config(void) {
+	ultramodern::set_graphics_config(new_options);
+#if defined(__linux__) // TODO: Remove once RT64 gets native fullscreen support on Linux
+	if (new_options.wm_option == ultramodern::WindowMode::Fullscreen) {
+		SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
+	} else {
+		SDL_SetWindowFullscreen(window,SDL_WINDOW_BORDERLESS);
+	}
+#endif
+}
+
 void close_config_menu() {
 	if (ultramodern::get_graphics_config() != new_options) {
 		prompt_context.open_prompt(
@@ -193,7 +210,7 @@ void close_config_menu() {
 			"Apply",
 			"Discard",
 			[]() {
-				ultramodern::set_graphics_config(new_options);
+				apply_graphics_config();
 				graphics_model_handle.DirtyAllVariables();
 				close_config_menu_impl();
 			},
@@ -328,7 +345,7 @@ public:
 		recomp::register_event(listener, "apply_options",
 			[](const std::string& param, Rml::Event& event) {
 				graphics_model_handle.DirtyVariable("options_changed");
-				ultramodern::set_graphics_config(new_options);
+				apply_graphics_config();
 			});
 		recomp::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
@@ -779,6 +796,6 @@ void recomp::update_supported_options() {
 
 void recomp::toggle_fullscreen() {
 	new_options.wm_option = (new_options.wm_option == ultramodern::WindowMode::Windowed) ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
-	ultramodern::set_graphics_config(new_options);
+	apply_graphics_config();
 	graphics_model_handle.DirtyVariable("wm_option");
 }
