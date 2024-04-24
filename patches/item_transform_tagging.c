@@ -182,10 +182,8 @@ void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
         }
     }
 
-    // @recomp Manually relocate Player_PostLimbDrawGameplay.
-    // TODO remove this when the recompiler can relocate patch code.
     Player_DrawImpl(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount, lod,
-                    this->transformation, 0, this->actor.shape.face, overrideLimbDraw, (PostLimbDrawFlex)actor_relocate(&this->actor, Player_PostLimbDrawGameplay),
+                    this->transformation, 0, this->actor.shape.face, overrideLimbDraw, Player_PostLimbDrawGameplay,
                     &this->actor);
 
     CLOSE_DISPS(play->state.gfxCtx);
