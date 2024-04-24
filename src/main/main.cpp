@@ -114,7 +114,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
     if (ultramodern::get_graphics_config().wm_option == ultramodern::WindowMode::Fullscreen) { // TODO: Remove once RT64 gets native fullscreen support on Linux
         SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
     } else {
-        SDL_SetWindowFullscreen(window,SDL_WINDOW_BORDERLESS);
+        SDL_SetWindowFullscreen(window,SDL_WINDOW_RESIZABLE);
     }
 #endif
 
