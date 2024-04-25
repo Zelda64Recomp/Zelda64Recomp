@@ -104,7 +104,8 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/mesgqueue.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/misc_ultra.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/port_main.c
-    ${CMAKE_SOURCE_DIR}/ultramodern/scheduler.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/scheduling.cpp
+    ${CMAKE_SOURCE_DIR}/ultramodern/threadqueue.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/task_win32.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/threads.cpp
     ${CMAKE_SOURCE_DIR}/ultramodern/timer.cpp

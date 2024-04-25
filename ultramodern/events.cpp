@@ -64,7 +64,8 @@ static struct {
     std::mutex message_mutex;
     uint8_t* rdram;
     moodycamel::BlockingConcurrentQueue<Action> action_queue{};
-    std::atomic<OSTask*> sp_task = nullptr;
+    moodycamel::BlockingConcurrentQueue<OSTask*> sp_task_queue{};
+    moodycamel::ConcurrentQueue<OSThread*> deleted_threads{};
 } events_context{};
 
 extern "C" void osSetEventMesg(RDRAM_ARG OSEvent event_id, PTR(OSMesgQueue) mq_, OSMesg msg) {
@@ -227,25 +228,21 @@ void run_rsp_microcode(uint8_t* rdram, const OSTask* task, RspUcodeFunc* ucode_f
 }
 
 
-void task_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready) {
+void task_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_ready) {
     ultramodern::set_native_thread_name("SP Task Thread");
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::Normal);
 
     // Notify the caller thread that this thread is ready.
-    thread_ready->test_and_set();
-    thread_ready->notify_all();
+    thread_ready->signal();
 
     while (true) {
         // Wait until an RSP task has been sent
-        events_context.sp_task.wait(nullptr);
+        OSTask* task;
+        events_context.sp_task_queue.wait_dequeue(task);
 
-        if (exited) {
+        if (task == nullptr) {
             return;
         }
-
-        // Retrieve the task pointer and clear the pending RSP task
-        OSTask* task = events_context.sp_task;
-        events_context.sp_task.store(nullptr);
 
         // Run the correct function based on the task type
         if (task->t.type == M_AUDTASK) {
@@ -296,7 +293,7 @@ uint32_t ultramodern::get_display_refresh_rate() {
     return display_refresh_rate.load();
 }
 
-void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern::WindowHandle window_handle) {
+void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;
 
@@ -317,8 +314,7 @@ void gfx_thread_func(uint8_t* rdram, std::atomic_flag* thread_ready, ultramodern
     rsp_constants_init();
 
     // Notify the caller thread that this thread is ready.
-    thread_ready->test_and_set();
-    thread_ready->notify_all();
+    thread_ready->signal();
 
     while (!exited) {
         // Try to pull an action from the queue
@@ -522,8 +518,7 @@ void ultramodern::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
     }
     // Set all other tasks as the RSP task
     else {
-        events_context.sp_task.store(task);
-        events_context.sp_task.notify_all();
+        events_context.sp_task_queue.enqueue(task);
     }
 }
 
@@ -533,16 +528,16 @@ void ultramodern::send_si_message() {
 }
 
 void ultramodern::init_events(uint8_t* rdram, ultramodern::WindowHandle window_handle) {
-    std::atomic_flag gfx_thread_ready;
-    std::atomic_flag task_thread_ready;
+    moodycamel::LightweightSemaphore gfx_thread_ready;
+    moodycamel::LightweightSemaphore task_thread_ready;
     events_context.rdram = rdram;
     events_context.sp.gfx_thread = std::thread{ gfx_thread_func, rdram, &gfx_thread_ready, window_handle };
     events_context.sp.task_thread = std::thread{ task_thread_func, rdram, &task_thread_ready };
     
     // Wait for the two sp threads to be ready before continuing to prevent the game from
     // running before we're able to handle RSP tasks.
-    gfx_thread_ready.wait(false);
-    task_thread_ready.wait(false);
+    gfx_thread_ready.wait();
+    task_thread_ready.wait();
 
     events_context.vi.thread = std::thread{ vi_thread_func };
 }
@@ -551,16 +546,7 @@ void ultramodern::join_event_threads() {
     events_context.sp.gfx_thread.join();
     events_context.vi.thread.join();
 
-    // Send a dummy RSP task so that the task thread is able to exit it's atomic wait and terminate.
-    OSTask dummy_task{};
-    OSTask* expected = nullptr;
-
-    // Attempt to exchange the task with the dummy task one until it was nullptr, as that indicates the
-    // task thread was ready for a new task.
-    do {
-        expected = nullptr;
-    } while (!events_context.sp_task.compare_exchange_weak(expected, &dummy_task));
-    events_context.sp_task.notify_all();
-
+    // Send a null RSP task to indicate that the RSP task thread should exit.
+    events_context.sp_task_queue.enqueue(nullptr);
     events_context.sp.task_thread.join();
 }

@@ -1,4 +1,5 @@
 #include <atomic>
+#include <mutex>
 
 #include "../ultramodern/ultramodern.hpp"
 #include "recomp.h"

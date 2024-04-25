@@ -2,10 +2,12 @@
 #define __ultramodern_HPP__
 
 #include <thread>
-#include <atomic>
-#include <mutex>
-#include <algorithm>
+#include <cassert>
+#include <stdexcept>
 
+#undef MOODYCAMEL_DELETE_FUNCTION
+#define MOODYCAMEL_DELETE_FUNCTION = delete
+#include "lightweightsemaphore.h"
 #include "ultra64.h"
 
 #if defined(_WIN32)
@@ -22,8 +24,8 @@
 
 struct UltraThreadContext {
     std::thread host_thread;
-    std::atomic_bool running;
-    std::atomic_bool initialized;
+    moodycamel::LightweightSemaphore running;
+    moodycamel::LightweightSemaphore initialized;
 };
 
 namespace ultramodern {
@@ -51,26 +53,36 @@ constexpr int32_t cart_handle = 0x80800000;
 constexpr int32_t flash_handle = (int32_t)(cart_handle + sizeof(OSPiHandle));
 constexpr uint32_t save_size = 1024 * 1024 / 8; // Maximum save size, 1Mbit for flash
 
+// Initialization.
 void preinit(uint8_t* rdram, WindowHandle window_handle);
 void save_init();
-void init_scheduler();
 void init_events(uint8_t* rdram, WindowHandle window_handle);
 void init_timers(RDRAM_ARG1);
-void set_self_paused(RDRAM_ARG1);
-void yield_self(RDRAM_ARG1);
-void block_self(RDRAM_ARG1);
-void unblock_thread(OSThread* t);
+void init_thread_cleanup();
+
+// Thread queues.
+constexpr PTR(PTR(OSThread)) running_queue = (PTR(PTR(OSThread)))-1;
+
+void thread_queue_insert(RDRAM_ARG PTR(PTR(OSThread)) queue, PTR(OSThread) toadd);
+PTR(OSThread) thread_queue_pop(RDRAM_ARG PTR(PTR(OSThread)) queue);
+bool thread_queue_remove(RDRAM_ARG PTR(PTR(OSThread)) queue_, PTR(OSThread) t_);
+bool thread_queue_empty(RDRAM_ARG PTR(PTR(OSThread)) queue);
+PTR(OSThread) thread_queue_peek(RDRAM_ARG PTR(PTR(OSThread)) queue);
+
+// Message queues.
+void wait_for_external_message(RDRAM_ARG1);
+
+// Thread scheduling.
+void check_running_queue(RDRAM_ARG1);
 void wait_for_resumed(RDRAM_ARG1);
+void run_next_thread(RDRAM_ARG1);
 void swap_to_thread(RDRAM_ARG OSThread *to);
-void pause_thread_impl(OSThread *t);
-void resume_thread_impl(OSThread* t);
-void schedule_running_thread(OSThread *t);
-void pause_self(RDRAM_ARG1);
-void halt_self(RDRAM_ARG1);
-void stop_thread(OSThread *t);
+void resume_thread(OSThread* t);
+void schedule_running_thread(RDRAM_ARG PTR(OSThread) t);
 void cleanup_thread(OSThread *t);
 uint32_t permanent_thread_count();
 uint32_t temporary_thread_count();
+struct thread_terminated : std::exception {};
 
 enum class ThreadPriority {
     Low,
@@ -83,23 +95,23 @@ enum class ThreadPriority {
 void set_native_thread_name(const std::string& name);
 void set_native_thread_priority(ThreadPriority pri);
 PTR(OSThread) this_thread();
-void disable_preemption();
-void enable_preemption();
-void notify_scheduler();
-void reprioritize_thread(OSThread *t, OSPri pri);
 void set_main_thread();
 bool is_game_thread();
 void submit_rsp_task(RDRAM_ARG PTR(OSTask) task);
 void send_si_message();
 uint32_t get_speed_multiplier();
+
+// Time
 std::chrono::high_resolution_clock::time_point get_start();
 std::chrono::high_resolution_clock::duration time_since_start();
-void get_window_size(uint32_t& width, uint32_t& height);
-uint32_t get_target_framerate(uint32_t original);
-uint32_t get_display_refresh_rate();
 void measure_input_latency();
 void sleep_milliseconds(uint32_t millis);
 void sleep_until(const std::chrono::high_resolution_clock::time_point& time_point);
+
+// Graphics
+void get_window_size(uint32_t& width, uint32_t& height);
+uint32_t get_target_framerate(uint32_t original);
+uint32_t get_display_refresh_rate();
 
 // Audio
 void init_audio();
@@ -138,6 +150,7 @@ struct gfx_callbacks_t {
 bool is_game_started();
 void quit();
 void join_event_threads();
+void join_thread_cleaner_thread();
 
 } // namespace ultramodern
 

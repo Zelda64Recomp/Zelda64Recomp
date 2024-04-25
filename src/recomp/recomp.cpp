@@ -419,7 +419,11 @@ void recomp::start(ultramodern::WindowHandle window_handle, const ultramodern::a
                     recomp::message_box("Error opening stored ROM! Please restart this program.");
                 }
                 init(rdram, &context);
-                recomp_entrypoint(rdram, &context);
+                try {
+                    recomp_entrypoint(rdram, &context);
+                } catch (ultramodern::thread_terminated& terminated) {
+
+                } 
                 break;
             case recomp::Game::Quit:
                 break;
@@ -436,4 +440,5 @@ void recomp::start(ultramodern::WindowHandle window_handle, const ultramodern::a
     }
     game_thread.join();
     ultramodern::join_event_threads();
+    ultramodern::join_thread_cleaner_thread();
 }

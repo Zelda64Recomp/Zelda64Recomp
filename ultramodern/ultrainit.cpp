@@ -7,8 +7,8 @@ void ultramodern::preinit(uint8_t* rdram, ultramodern::WindowHandle window_handl
     ultramodern::init_timers(rdram);
     ultramodern::init_audio();
     ultramodern::save_init();
+    ultramodern::init_thread_cleanup();
 }
 
 extern "C" void osInitialize() {
-    ultramodern::init_scheduler();
 }

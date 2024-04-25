@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-#include <queue>
-#endif
-
 #ifdef __GNUC__
 #define UNUSED __attribute__((unused))
 #define ALIGNED(x) __attribute__((aligned(x)))
@@ -24,14 +20,28 @@ typedef uint16_t u16;
 typedef int8_t s8;
 typedef uint8_t u8;
 
-#define PTR(x) int32_t
-#define RDRAM_ARG uint8_t *rdram, 
-#define RDRAM_ARG1 uint8_t *rdram
-#define PASS_RDRAM rdram, 
-#define PASS_RDRAM1 rdram
-#define TO_PTR(type, var) ((type*)(&rdram[(uint64_t)var - 0xFFFFFFFF80000000]))
-#ifdef __cplusplus
-#define NULLPTR (PTR(void))0
+#if 0 // For native compilation
+#  define PTR(x) x*
+#  define RDRAM_ARG
+#  define RDRAM_ARG1
+#  define PASS_RDRAM
+#  define PASS_RDRAM1
+#  define TO_PTR(type, var) var
+#  define GET_MEMBER(type, addr, member) (&addr->member)
+#  ifdef __cplusplus
+#    define NULLPTR nullptr
+#  endif
+#else
+#  define PTR(x) int32_t
+#  define RDRAM_ARG uint8_t *rdram, 
+#  define RDRAM_ARG1 uint8_t *rdram
+#  define PASS_RDRAM rdram, 
+#  define PASS_RDRAM1 rdram
+#  define TO_PTR(type, var) ((type*)(&rdram[(uint64_t)var - 0xFFFFFFFF80000000]))
+#  define GET_MEMBER(type, addr, member) (addr + (intptr_t)&(((type*)nullptr)->member))
+#  ifdef __cplusplus
+#    define NULLPTR (PTR(void))0
+#  endif
 #endif
 
 #ifndef NULL
@@ -76,18 +86,16 @@ typedef u64	OSTime;
 typedef struct UltraThreadContext UltraThreadContext;
 
 typedef enum {
-    RUNNING,
-    PAUSED,
     STOPPED,
-    BLOCKED_PAUSED,
-    BLOCKED_STOPPED,
-    PREEMPTED
+    QUEUED,
+    RUNNING,
+    BLOCKED
 } OSThreadState;
 
 typedef struct OSThread_t {
     PTR(struct OSThread_t) next; // Next thread in the given queue
     OSPri priority;
-    uint32_t pad1;
+    PTR(PTR(struct OSThread_t)) queue; // Queue this thread is in, if any
     uint32_t pad2;
     uint16_t flags; // These two are swapped to reflect rdram byteswapping
     uint16_t state;
@@ -225,10 +233,6 @@ void osYieldThread(RDRAM_ARG1);
 void osSetThreadPri(RDRAM_ARG PTR(OSThread) t, OSPri pri);
 OSPri osGetThreadPri(RDRAM_ARG PTR(OSThread) thread);
 OSId osGetThreadId(RDRAM_ARG PTR(OSThread) t);
-
-s32 MQ_GET_COUNT(RDRAM_ARG PTR(OSMesgQueue));
-s32 MQ_IS_EMPTY(RDRAM_ARG PTR(OSMesgQueue));
-s32 MQ_IS_FULL(RDRAM_ARG PTR(OSMesgQueue));
 
 void osCreateMesgQueue(RDRAM_ARG PTR(OSMesgQueue), PTR(OSMesg), s32);
 s32 osSendMesg(RDRAM_ARG PTR(OSMesgQueue), OSMesg, s32);
