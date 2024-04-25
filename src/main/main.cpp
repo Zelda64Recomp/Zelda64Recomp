@@ -293,8 +293,6 @@ int main(int argc, char** argv) {
     cfi.FontWeight = FW_NORMAL;
     wcscpy_s(cfi.FaceName, L"NSimSun");
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
-#else
-    std::setlocale(LC_ALL, "en_US.UTF-8");
 #endif
 
     //printf("Current dir: %ls\n", std::filesystem::current_path().c_str());

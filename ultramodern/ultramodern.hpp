@@ -21,6 +21,7 @@
 #   undef Status
 #   undef LockMask
 #   undef Always
+#   undef Success
 #endif
 
 struct UltraThreadContext {

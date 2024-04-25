@@ -1049,6 +1049,9 @@ void recomp::get_window_size(int& width, int& height) {
 }
 
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
+#if defined(__linux__)
+    std::locale::global(std::locale::classic());
+#endif
     ui_context = std::make_unique<UIContext>();
 
     ui_context->rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
