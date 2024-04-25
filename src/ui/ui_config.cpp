@@ -197,7 +197,7 @@ void apply_graphics_config(void) {
 	if (new_options.wm_option == ultramodern::WindowMode::Fullscreen) {
 		SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
 	} else {
-		SDL_SetWindowFullscreen(window,SDL_WINDOW_RESIZABLE);
+		SDL_SetWindowFullscreen(window,0);
 	}
 #endif
 }
