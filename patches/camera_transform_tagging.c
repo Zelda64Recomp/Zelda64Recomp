@@ -214,3 +214,157 @@ void View_Apply(View* view, s32 mask) {
 
     CLOSE_DISPS(gfxCtx);
 }
+
+typedef s32 (*CameraUpdateFunc)(Camera*);
+
+typedef struct {
+    /* 0x0 */ s16 val;
+    /* 0x2 */ s16 param;
+} CameraModeValue; // size = 0x4
+
+typedef struct {
+    /* 0x0 */ s16 funcId;
+    /* 0x2 */ s16 numValues;
+    /* 0x4 */ CameraModeValue* values;
+} CameraMode; // size = 0x8
+
+typedef struct {
+    /* 0x0 */ u32 validModes;
+    /* 0x4 */ u32 flags;
+    /* 0x8 */ CameraMode* cameraModes;
+} CameraSetting; // size = 0xC
+
+extern CameraSetting sCameraSettings[];
+extern s32 sCameraInterfaceFlags;
+
+s32 Camera_BgCheck(Camera* camera, Vec3f* from, Vec3f* to);
+Vec3s* Camera_GetBgCamOrActorCsCamFuncData(Camera* camera, u32 camDataId);
+f32 Camera_GetFocalActorHeight(Camera* camera);
+f32 Camera_ScaledStepToCeilF(f32 target, f32 cur, f32 stepScale, f32 minDiff);
+s16 Camera_ScaledStepToCeilS(s16 target, s16 cur, f32 stepScale, s16 minDiff);
+void Camera_ScaledStepToCeilVec3f(Vec3f* target, Vec3f* cur, f32 xzStepScale, f32 yStepScale, f32 minDiff);
+void Camera_SetFocalActorAtOffset(Camera* camera, Vec3f* focalActorPos);
+void Camera_SetUpdateRatesSlow(Camera* camera);
+Vec3f Camera_Vec3sToVec3f(Vec3s* src);
+#define RELOAD_PARAMS(camera) ((camera->animState == 0) || (camera->animState == 10) || (camera->animState == 20))
+#define CAM_RODATA_SCALE(x) ((x)*100.0f)
+#define CAM_RODATA_UNSCALE(x) ((x)*0.01f)
+#define GET_NEXT_RO_DATA(values) ((values++)->val)
+#define GET_NEXT_SCALED_RO_DATA(values) CAM_RODATA_UNSCALE(GET_NEXT_RO_DATA(values))
+
+/**
+ * Used for many fixed-based camera settings i.e. camera is fixed in rotation, and often position (but not always)
+ */
+// @recomp Modified to not force interpolation while panning.
+s32 Camera_Fixed1(Camera* camera) {
+    s32 pad[2];
+    s32 yawDiff;
+    VecGeo eyeOffset;
+    VecGeo eyeAtOffset;
+    VecGeo sp7C;
+    u32 negOne;
+    Vec3f adjustedPos;
+    BgCamFuncData* bgCamFuncData;
+    Vec3f* eye = &camera->eye;
+    Vec3f* at = &camera->at;
+    PosRot* focalActorPosRot = &camera->focalActorPosRot;
+    f32 focalActorHeight = Camera_GetFocalActorHeight(camera);
+    CameraModeValue* values;
+    PosRot* targetHome;
+    PosRot* targetWorld;
+    VecGeo sp44;
+    Fixed1ReadOnlyData* roData = &camera->paramData.fixd1.roData;
+    Fixed1ReadWriteData* rwData = &camera->paramData.fixd1.rwData;
+
+    sp7C = OLib_Vec3fDiffToVecGeo(at, eye);
+
+    if (!RELOAD_PARAMS(camera)) {
+    } else {
+        values = sCameraSettings[camera->setting].cameraModes[camera->mode].values;
+        bgCamFuncData = (BgCamFuncData*)Camera_GetBgCamOrActorCsCamFuncData(camera, camera->bgCamIndex);
+        rwData->eyePosRotTarget.pos = Camera_Vec3sToVec3f(&bgCamFuncData->pos);
+
+        rwData->eyePosRotTarget.rot = bgCamFuncData->rot;
+        rwData->fov = bgCamFuncData->fov;
+        rwData->focalActor = camera->focalActor;
+
+        roData->unk_00 = GET_NEXT_SCALED_RO_DATA(values) * focalActorHeight;
+        roData->unk_04 = GET_NEXT_SCALED_RO_DATA(values);
+        roData->fov = GET_NEXT_RO_DATA(values);
+        roData->interfaceFlags = GET_NEXT_RO_DATA(values);
+
+        if (roData->interfaceFlags & FIXED1_FLAG_4) {
+            if (camera->target == NULL) {
+                return false;
+            }
+
+            targetHome = &camera->target->home;
+            targetWorld = &camera->target->world;
+
+            sp44 = OLib_Vec3fDiffToVecGeo(&targetHome->pos, &rwData->eyePosRotTarget.pos);
+            sp44.yaw = targetWorld->rot.y + (s16)(sp44.yaw - targetHome->rot.y);
+            rwData->eyePosRotTarget.pos = OLib_AddVecGeoToVec3f(&targetWorld->pos, &sp44);
+            yawDiff = (s16)(rwData->eyePosRotTarget.rot.y - targetHome->rot.y);
+            rwData->eyePosRotTarget.rot.y = targetWorld->rot.y + yawDiff;
+        }
+    }
+
+    negOne = -1;
+
+    if (rwData->focalActor != camera->focalActor) {
+        camera->animState = 20;
+    }
+
+    if (rwData->fov == (s32)negOne) {
+        rwData->fov = roData->fov * 100;
+    } else if (rwData->fov <= 360) {
+        rwData->fov *= 100;
+    }
+
+    sCameraInterfaceFlags = roData->interfaceFlags;
+
+    if (camera->animState == 0) {
+        camera->animState++;
+        Camera_SetUpdateRatesSlow(camera);
+        if (rwData->fov != (s32)negOne) {
+            roData->fov = CAM_RODATA_UNSCALE(rwData->fov);
+        }
+
+        if (bgCamFuncData->unk_0E != (s32)negOne) {
+            roData->unk_04 = CAM_RODATA_UNSCALE(bgCamFuncData->unk_0E);
+        }
+    }
+
+    // @recomp Camera interpolation should always apply on this mode unless something else modified it externally.
+    // We check for the approach percentage as well to detect when it wants to force an interpolation to the next position.
+    static Vec3f lastEye = {};
+    static Vec3f lastAt = {};
+    if (OLib_Vec3fDist(eye, &lastEye) < 1e-6f && OLib_Vec3fDist(at, &lastAt) < 1e-6f && (roData->unk_04 < 0.999f)) {
+        force_camera_interpolation();
+    }
+
+    eyeAtOffset = OLib_Vec3fDiffToVecGeo(eye, at);
+    Camera_ScaledStepToCeilVec3f(&rwData->eyePosRotTarget.pos, eye, roData->unk_04, roData->unk_04, 0.2f);
+    adjustedPos = focalActorPosRot->pos;
+    adjustedPos.y += focalActorHeight;
+    camera->dist = OLib_Vec3fDist(&adjustedPos, eye);
+    eyeOffset.r = camera->dist;
+    eyeOffset.pitch =
+        Camera_ScaledStepToCeilS(rwData->eyePosRotTarget.rot.x * -1, eyeAtOffset.pitch, roData->unk_04, 5);
+    eyeOffset.yaw = Camera_ScaledStepToCeilS(rwData->eyePosRotTarget.rot.y, eyeAtOffset.yaw, roData->unk_04, 5);
+    *at = OLib_AddVecGeoToVec3f(eye, &eyeOffset);
+    camera->eyeNext = *eye;
+    Camera_BgCheck(camera, eye, at);
+
+    camera->fov = Camera_ScaledStepToCeilF(roData->fov, camera->fov, roData->unk_04, 0.1f);
+    camera->roll = 0;
+    camera->atLerpStepScale = 0.0f;
+    Camera_SetFocalActorAtOffset(camera, &focalActorPosRot->pos);
+    camera->roll = Camera_ScaledStepToCeilS(rwData->eyePosRotTarget.rot.z, camera->roll, roData->unk_04, 5);
+
+    // @recomp
+    lastEye = *eye;
+    lastAt = *at;
+
+    return 1;
+}
