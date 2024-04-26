@@ -130,6 +130,7 @@ void save_general_config(const std::filesystem::path& path) {
     recomp::to_json(config_json["background_input_mode"], recomp::get_background_input_mode());
     config_json["rumble_strength"] = recomp::get_rumble_strength();
     config_json["gyro_sensitivity"] = recomp::get_gyro_sensitivity();
+    config_json["mouse_sensitivity"] = recomp::get_mouse_sensitivity();
     config_json["debug_mode"] = recomp::get_debug_mode_enabled();
     config_file << std::setw(4) << config_json;
 }
@@ -144,6 +145,7 @@ void load_general_config(const std::filesystem::path& path) {
     recomp::set_background_input_mode(from_or_default(config_json, "background_input_mode", recomp::BackgroundInputMode::On));
     recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
     recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
+    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", 0));
     recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 

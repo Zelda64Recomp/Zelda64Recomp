@@ -46,3 +46,4 @@ osContStartReadData_recomp = 0x8F000070;
 osContGetReadData_recomp = 0x8F000074;
 osContStartQuery_recomp = 0x8F000078;
 osContGetQuery_recomp = 0x8F00007C;
+recomp_get_mouse_deltas = 0x8F000080; 

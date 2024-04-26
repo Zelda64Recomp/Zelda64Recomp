@@ -74,31 +74,50 @@
                         </div>
                     </div>
 
+                    <!-- mouse sensitivity -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(3)">
+                        <label class="config-option__title">Mouse Sensitivity</label>
+                        <div class="config-option__range-wrapper config-option__list">
+                            <label class="config-option__range-label">{{mouse_sensitivity}}%</label>
+                            <input
+                                class="nav-vert"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(3)"
+                                id="mouse_sensitivity_input"
+                                type="range"
+                                min="0"
+                                max="100"
+                                style="flex: 1; margin: 0dp;"
+                                data-value="mouse_sensitivity"
+                            />
+                        </div>
+                    </div>
+
                     <!-- targeting mode -->
-                    <div class="config-option" data-event-mouseover="set_cur_config_index(3)" id="conf-general__Background-Input">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(4)" id="conf-general__Background-Input">
                         <label class="config-option__title">Background Input</label>
                         <div class="config-option__list">
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(3)"
+                                data-event-focus="set_cur_config_index(4)"
                                 name="background_input_mode"
                                 data-checked="background_input_mode"
                                 value="On"
                                 id="bg_input_enabled"
-                                style="nav-up: #gyro_sensitivity_input"
+                                style="nav-up: #mouse_sensitivity_input"
                             />
                             <label class="config-option__tab-label" for="bg_input_enabled">On</label>
 
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(3)"
+                                data-event-focus="set_cur_config_index(4)"
                                 name="background_input_mode"
                                 data-checked="background_input_mode"
                                 value="Off"
                                 id="bg_input_disabled"
-                                style="nav-up: #gyro_sensitivity_input"
+                                style="nav-up: #mouse_sensitivity_input"
                             />
                             <label class="config-option__tab-label" for="bg_input_disabled">Off</label>
                         </div>
@@ -119,6 +138,12 @@
                         <b>Note: To recalibrate controller gyro, set the controller down on a still, flat surface for 5 seconds.</b>
                     </p>
                     <p data-if="cur_config_index == 3">
+                        Controls the sensitivity of mouse aiming when using items in first person for controllers that support it. <b>Setting this to zero will disable mouse aiming.</b>
+                        <br />
+                        <br />
+                        <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is meant for using inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
+                    </p>
+                    <p data-if="cur_config_index == 4">
                         Allows the game to read controller input when out of focus.
                         <br/>
                         <b>This setting does not affect keyboard input.</b>

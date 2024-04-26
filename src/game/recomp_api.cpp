@@ -35,6 +35,13 @@ extern "C" void recomp_get_gyro_deltas(uint8_t* rdram, recomp_context* ctx) {
     recomp::get_gyro_deltas(x_out, y_out);
 }
 
+extern "C" void recomp_get_mouse_deltas(uint8_t* rdram, recomp_context* ctx) {
+    float* x_out = _arg<0, float*>(rdram, ctx);
+    float* y_out = _arg<1, float*>(rdram, ctx);
+
+    recomp::get_mouse_deltas(x_out, y_out);
+}
+
 extern "C" void recomp_powf(uint8_t* rdram, recomp_context* ctx) {
     float a = _arg<0, float>(rdram, ctx);
     float b = ctx->f14.fl; //_arg<1, float>(rdram, ctx);

@@ -66,6 +66,7 @@ namespace recomp {
     bool get_input_digital(const InputField& field);
     bool get_input_digital(const std::span<const recomp::InputField> fields);
     void get_gyro_deltas(float* x, float* y);
+    void get_mouse_deltas(float* x, float* y);
 
     enum class InputDevice {
         Controller,
@@ -125,9 +126,11 @@ namespace recomp {
     int get_rumble_strength();
     void set_rumble_strength(int strength);
     
-    // Gyro sensitivity ranges from 0 to 100 (gets doubled).
+    // Gyro and mouse sensitivities range from 0 to 100.
     int get_gyro_sensitivity();
+    int get_mouse_sensitivity();
     void set_gyro_sensitivity(int strength);
+    void set_mouse_sensitivity(int strength);
 
     enum class TargetingMode {
         Switch,

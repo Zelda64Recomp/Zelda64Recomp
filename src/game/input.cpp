@@ -30,9 +30,13 @@ static struct {
     std::mutex cur_controllers_mutex;
     std::vector<SDL_GameController*> cur_controllers{};
     std::unordered_map<SDL_JoystickID, ControllerState> controller_states;
+    
     std::array<float, 2> rotation_delta{};
-    std::mutex pending_rotation_mutex;
+    std::array<float, 2> mouse_delta{};
+    std::mutex pending_input_mutex;
     std::array<float, 2> pending_rotation_delta{};
+    std::array<float, 2> pending_mouse_delta{};
+
     float cur_rumble;
     bool rumble_active;
 } InputState;
@@ -189,12 +193,19 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             state.motion.GetPlayerSpaceGyro(rot_x, rot_y);
 
             {
-                std::lock_guard lock{ InputState.pending_rotation_mutex };
+                std::lock_guard lock{ InputState.pending_input_mutex };
                 InputState.pending_rotation_delta[0] += rot_x;
                 InputState.pending_rotation_delta[1] += rot_y;
             }
         }
         break;
+    case SDL_EventType::SDL_MOUSEMOTION:
+        if (!recomp::game_input_disabled()) {
+            SDL_MouseMotionEvent* motion_event = &event->motion;
+            std::lock_guard lock{ InputState.pending_input_mutex };
+            InputState.pending_mouse_delta[0] += motion_event->xrel;
+            InputState.pending_mouse_delta[1] += motion_event->yrel;
+        }
     default:
         queue_if_enabled(event);
         break;
@@ -207,7 +218,18 @@ void recomp::handle_events() {
     static bool exited = false;
     while (SDL_PollEvent(&cur_event) && !exited) {
         exited = sdl_event_filter(nullptr, &cur_event);
-        SDL_ShowCursor(cursor_enabled ? SDL_ENABLE : SDL_DISABLE);
+
+        // Lock the cursor if all three conditions are true: mouse aiming is enabled, game input is not disabled, and the game has been started. 
+        bool cursor_locked = (recomp::get_mouse_sensitivity() != 0) && !recomp::game_input_disabled() && ultramodern::is_game_started();
+
+        // Hide the cursor based on its enable state, but override visibility to false if the cursor is locked.
+        bool cursor_visible = cursor_enabled;
+        if (cursor_locked) {
+            cursor_visible = false;
+        }
+
+        SDL_ShowCursor(cursor_visible ? SDL_ENABLE : SDL_DISABLE);
+        SDL_SetRelativeMouseMode(cursor_locked ? SDL_TRUE : SDL_FALSE);
     }
 }
 
@@ -352,9 +374,13 @@ void recomp::poll_inputs() {
 
     // Read the deltas while resetting them to zero.
     {
-        std::lock_guard lock{ InputState.pending_rotation_mutex };
+        std::lock_guard lock{ InputState.pending_input_mutex };
+        
         InputState.rotation_delta = InputState.pending_rotation_delta;
         InputState.pending_rotation_delta = { 0.0f, 0.0f };
+
+        InputState.mouse_delta = InputState.pending_mouse_delta;
+        InputState.pending_mouse_delta = { 0.0f, 0.0f };
     }
     
     // Quicksaving is disabled for now and will likely have more limited functionality
@@ -503,9 +529,16 @@ bool recomp::get_input_digital(const std::span<const recomp::InputField> fields)
 
 void recomp::get_gyro_deltas(float* x, float* y) {
     std::array<float, 2> cur_rotation_delta = InputState.rotation_delta;
-    float sensitivity = (float)recomp::get_gyro_sensitivity() / 50.0f;
+    float sensitivity = (float)recomp::get_gyro_sensitivity() / 100.0f;
     *x = cur_rotation_delta[0] * sensitivity;
     *y = cur_rotation_delta[1] * sensitivity;
+}
+
+void recomp::get_mouse_deltas(float* x, float* y) {
+    std::array<float, 2> cur_mouse_delta = InputState.mouse_delta;
+    float sensitivity = (float)recomp::get_mouse_sensitivity() / 100.0f;
+    *x = cur_mouse_delta[0] * sensitivity;
+    *y = cur_mouse_delta[1] * sensitivity;
 }
 
 bool recomp::game_input_disabled() {
