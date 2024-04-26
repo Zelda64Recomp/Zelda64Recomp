@@ -2100,6 +2100,20 @@ void draw_dpad(PlayState* play) {
         alpha = MAX(alpha, cur_alpha);
     }
 
+    // Check if none of the D-Pad items have been obtained and clamp the alpha to 70 if so.
+    bool item_obtained = false;
+    for (int i = 0; i < 4; i++) {
+        s32 item = extra_button_items[0][i];
+        if ((item != ITEM_NONE) && (INV_CONTENT(item) == item)) {
+            item_obtained = true;
+            break;
+        }
+    }
+
+    if (!item_obtained) {
+        alpha = MIN(alpha, 70);
+    }
+
     gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
     OVERLAY_DISP = Gfx_DrawRect_DropShadow(OVERLAY_DISP, DPAD_CENTER_X - (DPAD_W/2), DPAD_CENTER_Y - (DPAD_W/2), DPAD_W, DPAD_H,
         DPAD_DSDX, DPAD_DTDY,

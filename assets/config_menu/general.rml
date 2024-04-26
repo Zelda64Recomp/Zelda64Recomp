@@ -138,10 +138,10 @@
                         <b>Note: To recalibrate controller gyro, set the controller down on a still, flat surface for 5 seconds.</b>
                     </p>
                     <p data-if="cur_config_index == 3">
-                        Controls the sensitivity of mouse aiming when using items in first person for controllers that support it. <b>Setting this to zero will disable mouse aiming.</b>
+                        Controls the sensitivity of mouse aiming. <b>Setting this to zero will disable mouse aiming.</b>
                         <br />
                         <br />
-                        <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is meant for using inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
+                        <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is is intended to be used with inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
                     </p>
                     <p data-if="cur_config_index == 4">
                         Allows the game to read controller input when out of focus.
