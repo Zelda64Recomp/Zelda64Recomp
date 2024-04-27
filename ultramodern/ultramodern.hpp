@@ -77,12 +77,10 @@ void wait_for_external_message(RDRAM_ARG1);
 
 // Thread scheduling.
 void check_running_queue(RDRAM_ARG1);
-void wait_for_resumed(RDRAM_ARG1);
-void run_next_thread(RDRAM_ARG1);
-void swap_to_thread(RDRAM_ARG OSThread *to);
-void resume_thread(OSThread* t);
+void run_next_thread_and_wait(RDRAM_ARG1);
+void resume_thread_and_wait(RDRAM_ARG OSThread* t);
 void schedule_running_thread(RDRAM_ARG PTR(OSThread) t);
-void cleanup_thread(OSThread *t);
+void cleanup_thread(UltraThreadContext* thread_context);
 uint32_t permanent_thread_count();
 uint32_t temporary_thread_count();
 struct thread_terminated : std::exception {};

@@ -86,7 +86,7 @@ void ultramodern::set_native_thread_name(const std::string& name) {
 
 void ultramodern::set_native_thread_priority(ThreadPriority pri) {
     // TODO linux thread priority
-    printf("set_native_thread_priority unimplemented\n");
+    // printf("set_native_thread_priority unimplemented\n");
     // int nPriority = THREAD_PRIORITY_NORMAL;
 
     // // Convert ThreadPriority to Win32 priority
@@ -116,7 +116,43 @@ void ultramodern::set_native_thread_priority(ThreadPriority pri) {
 std::atomic_int temporary_threads = 0;
 std::atomic_int permanent_threads = 0;
 
-static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg) {
+void wait_for_resumed(RDRAM_ARG UltraThreadContext* thread_context) {
+    TO_PTR(OSThread, ultramodern::this_thread())->context->running.wait();
+    // If this thread's context was replaced by another thread or deleted, destroy it again from its own context.
+    // This will trigger thread cleanup instead.
+    if (TO_PTR(OSThread, ultramodern::this_thread())->context != thread_context) {
+        osDestroyThread(PASS_RDRAM NULLPTR);
+    }
+}
+
+void resume_thread(OSThread* t) {
+    debug_printf("[Thread] Resuming execution of thread %d\n", t->id);
+    t->context->running.signal();
+}
+
+void run_next_thread(RDRAM_ARG1) {
+    if (ultramodern::thread_queue_empty(PASS_RDRAM ultramodern::running_queue)) {
+        throw std::runtime_error("No threads left to run!\n");
+    }
+
+    OSThread* to_run = TO_PTR(OSThread, ultramodern::thread_queue_pop(PASS_RDRAM ultramodern::running_queue));
+    debug_printf("[Scheduling] Resuming execution of thread %d\n", to_run->id);
+    to_run->context->running.signal();
+}
+
+void ultramodern::run_next_thread_and_wait(RDRAM_ARG1) {
+    UltraThreadContext* cur_context = TO_PTR(OSThread, thread_self)->context;
+    run_next_thread(PASS_RDRAM1);
+    wait_for_resumed(PASS_RDRAM cur_context);
+}
+
+void ultramodern::resume_thread_and_wait(RDRAM_ARG OSThread *t) {
+    UltraThreadContext* cur_context = TO_PTR(OSThread, thread_self)->context;
+    resume_thread(t);
+    wait_for_resumed(PASS_RDRAM cur_context);
+}
+
+static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg, UltraThreadContext* thread_context) {
     OSThread *self = TO_PTR(OSThread, self_);
     debug_printf("[Thread] Thread created: %d\n", self->id);
     thread_self = self_;
@@ -135,26 +171,35 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     }
 
     // Signal the initialized semaphore to indicate that this thread can be started.
-    self->context->initialized.signal();
+    thread_context->initialized.signal();
 
     debug_printf("[Thread] Thread waiting to be started: %d\n", self->id);
 
     // Wait until the thread is marked as running.
-    ultramodern::wait_for_resumed(PASS_RDRAM1);
-
-    debug_printf("[Thread] Thread started: %d\n", self->id);
-
-    try {
-        // Run the thread's function with the provided argument.
-        run_thread_function(PASS_RDRAM entrypoint, self->sp, arg);
-        // The thread function terminated normally, so mark this thread as destroyed and run the next thread.
-        self->destroyed = true;
-        ultramodern::run_next_thread(PASS_RDRAM1);
-    } catch (ultramodern::thread_terminated& terminated) {
+    wait_for_resumed(PASS_RDRAM thread_context);
+    
+    // Make sure the thread wasn't replaced or destroyed before it was started.
+    if (self->context == thread_context) {
+        debug_printf("[Thread] Thread started: %d\n", self->id);
+        try {
+            // Run the thread's function with the provided argument.
+            run_thread_function(PASS_RDRAM entrypoint, self->sp, arg);
+        } catch (ultramodern::thread_terminated& terminated) {
+        }
+    }
+    else {
+        debug_printf("[Thread] Thread destroyed before being started: %d\n", self->id);
     }
 
-    // Dispose of this thread after it completes and run the next queued thread.
-    ultramodern::cleanup_thread(self);
+    // Check if the thread hasn't been destroyed or replaced. If so, then the thread terminated or destroyed itself,
+    // so mark this thread as destroyed and run the next queued thread.
+    if (self->context == thread_context) {
+        self->context = nullptr;
+        run_next_thread(PASS_RDRAM1);
+    }
+
+    // Dispose of this thread now that it's completed or terminated.
+    ultramodern::cleanup_thread(thread_context);
     
     // TODO fix these being hardcoded (this is only used for quicksaving)
     if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
@@ -187,7 +232,7 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
     // Otherwise, immediately start the thread and terminate this one.
     else {
         t->state = OSThreadState::QUEUED;
-        ultramodern::resume_thread(t);
+        resume_thread(t);
         //throw ultramodern::thread_terminated{};
     }
 }
@@ -202,11 +247,11 @@ extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_f
     t->id = id;
     t->state = OSThreadState::STOPPED;
     t->sp = sp - 0x10; // Set up the first stack frame
-    t->destroyed = false;
 
     // Spawn a new thread, which will immediately pause itself and wait until it's been started.
+    // Pass the context as an argument to the thread function to ensure that it can't get cleared before the thread captures its value.
     t->context = new UltraThreadContext{};
-    t->context->host_thread = std::thread{_thread_func, PASS_RDRAM t_, entrypoint, arg};
+    t->context->host_thread = std::thread{_thread_func, PASS_RDRAM t_, entrypoint, arg, t->context};
 }
 
 extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
@@ -220,12 +265,6 @@ extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {
     OSThread* t = TO_PTR(OSThread, t_);
     // Check if the thread is destroying itself (arg is null or thread_self)
     if (t_ == thread_self) {
-        // Check if the thread was destroyed by another thread. If it wasn't, then this thread destroyed itself and a new thread
-        // needs to be run.
-        if (!t->destroyed) {
-            t->destroyed = true;
-            ultramodern::run_next_thread(PASS_RDRAM1);
-        }
         throw ultramodern::thread_terminated{};
     }
     // Otherwise if the thread isn't stopped, remove it from its currrent queue., 
@@ -233,10 +272,11 @@ extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {
         ultramodern::thread_queue_remove(PASS_RDRAM t->queue, t_);
     }
     // Check if the thread has already been destroyed to prevent destroying it again.
-    if (!t->destroyed) {
+    UltraThreadContext* cur_context = t->context;
+    if (cur_context != nullptr) {
         // Mark the target thread as destroyed and resume it. When it starts it'll check this and terminate itself instead of resuming.
-        t->destroyed = true;
-        t->context->running.signal();
+        t->context = nullptr;
+        cur_context->running.signal();
     }
 }
 
@@ -277,20 +317,18 @@ PTR(OSThread) ultramodern::this_thread() {
 }
 
 static std::thread thread_cleaner_thread;
-static moodycamel::BlockingConcurrentQueue<OSThread*> deleted_threads{};
+static moodycamel::BlockingConcurrentQueue<UltraThreadContext*> deleted_threads{};
 extern std::atomic_bool exited;
 
 void thread_cleaner_func() {
     using namespace std::chrono_literals;
     while (!exited) {
-        OSThread* to_delete;
+        UltraThreadContext* to_delete;
         if (deleted_threads.wait_dequeue_timed(to_delete, 10ms)) {
-            printf("Deleting thread %d\n", to_delete->id);
-            UltraThreadContext* cur_context = to_delete->context;
-            to_delete->context = nullptr;
+            debug_printf("[Cleanup] Deleting thread context %p\n", to_delete);
 
-            cur_context->host_thread.join();
-            delete cur_context;
+            to_delete->host_thread.join();
+            delete to_delete;
         }
     }
 }
@@ -299,8 +337,8 @@ void ultramodern::init_thread_cleanup() {
     thread_cleaner_thread = std::thread{thread_cleaner_func};
 }
 
-void ultramodern::cleanup_thread(OSThread *t) {
-    deleted_threads.enqueue(t);
+void ultramodern::cleanup_thread(UltraThreadContext *cur_context) {
+    deleted_threads.enqueue(cur_context);
 }
 
 void ultramodern::join_thread_cleaner_thread() {

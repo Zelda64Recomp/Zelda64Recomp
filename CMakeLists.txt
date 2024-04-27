@@ -223,6 +223,7 @@ if (WIN32)
 endif()
 
 if (LINUX)
+    find_package(SDL2 REQUIRED)
     find_package(X11 REQUIRED)
     
     # Generate icon_bytes.c from the app icon PNG.
@@ -231,6 +232,11 @@ if (LINUX)
         DEPENDS ${CMAKE_SOURCE_DIR}/icons/512.png
     )
     target_sources(Zelda64Recompiled PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c)
+
+    message(STATUS "SDL2_FOUND = ${SDL2_FOUND}")
+    message(STATUS "SDL2_INCLUDE_DIRS = ${SDL2_INCLUDE_DIRS}")
+
+    target_include_directories(Zelda64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
 
     message(STATUS "X11_FOUND = ${X11_FOUND}")
     message(STATUS "X11_Xrandr_FOUND = ${X11_Xrandr_FOUND}")
@@ -249,7 +255,7 @@ if (LINUX)
     include_directories(${FREETYPE_LIBRARIES})
     target_link_libraries(Zelda64Recompiled PRIVATE ${FREETYPE_LIBRARIES})
     
-    target_link_libraries(Zelda64Recompiled PRIVATE "-latomic")
+    target_link_libraries(Zelda64Recompiled PRIVATE "-latomic -static-libstdc++")
 endif()
 
 target_link_libraries(Zelda64Recompiled PRIVATE
