@@ -762,6 +762,19 @@ void recomp::register_event(UiEventListenerInstancer& listener, const std::strin
     listener.register_event(name, handler);
 }
 
+Rml::Element* find_autofocus_element(Rml::Element* start) {
+    Rml::Element* cur_element = start;
+
+    while (cur_element) {
+        if (cur_element->HasAttribute("autofocus")) {
+            break;
+        }
+        cur_element = RecompRml::FindNextTabElement(cur_element, true);
+    }
+
+    return cur_element;
+}
+
 struct UIContext {
     struct UIRenderContext render;
     class {
@@ -938,9 +951,12 @@ struct UIContext {
             }
 
             if (!mouse_is_active) {
-                if (!prev_focused) {
-                    // get current focus and set to prev
-                    prev_focused = current_document->GetFocusLeafNode();
+                if (!prev_focused || !can_focus(prev_focused)) {
+                    // Find the autofocus element in the tab chain
+                    Rml::Element* element = find_autofocus_element(current_document);
+                    if (element && can_focus(element)) {
+                        prev_focused = element;
+                    }
                 }
 
                 if (mouse_is_active_changed && prev_focused && can_focus(prev_focused)) {
