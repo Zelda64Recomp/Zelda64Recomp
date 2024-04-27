@@ -254,8 +254,12 @@ if (LINUX)
 
     include_directories(${FREETYPE_LIBRARIES})
     target_link_libraries(Zelda64Recompiled PRIVATE ${FREETYPE_LIBRARIES})
+
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
     
-    target_link_libraries(Zelda64Recompiled PRIVATE "-latomic -static-libstdc++")
+    target_link_libraries(Zelda64Recompiled PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
 
 target_link_libraries(Zelda64Recompiled PRIVATE
