@@ -86,6 +86,12 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
     DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
+# Generate mm_shader_cache.c from the MM shader cache
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+    COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+    DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
+)
+
 # Recompile patches elf into patches.c
 add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
@@ -152,6 +158,8 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
+
+    ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c
 )
 
 target_include_directories(Zelda64Recompiled PRIVATE
@@ -169,6 +177,7 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_compile_options(Zelda64Recompiled PRIVATE
@@ -221,7 +230,6 @@ if (LINUX)
         COMMAND file_to_c ${CMAKE_SOURCE_DIR}/icons/512.png icon_bytes ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h 
         DEPENDS ${CMAKE_SOURCE_DIR}/icons/512.png
     )
-    target_include_directories(Zelda64Recompiled PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_sources(Zelda64Recompiled PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c)
 
     message(STATUS "X11_FOUND = ${X11_FOUND}")

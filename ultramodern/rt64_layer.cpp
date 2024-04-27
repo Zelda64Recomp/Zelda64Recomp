@@ -245,6 +245,16 @@ uint32_t ultramodern::RT64Context::get_display_framerate() {
     return app->presentQueue->ext.sharedResources->swapChainRate;
 }
 
+void ultramodern::RT64Context::load_shader_cache(std::span<const char> cache_binary) {
+    // TODO figure out how to avoid a copy here.
+    std::istringstream cache_stream{std::string{cache_binary.data(), cache_binary.size()}};
+
+    if (!app->rasterShaderCache->loadOfflineList(cache_stream)) {
+        printf("Failed to preload shader cache!\n");
+        assert(false);
+    }
+}
+
 RT64::UserConfiguration::Antialiasing ultramodern::RT64MaxMSAA() {
     return device_max_msaa;
 }

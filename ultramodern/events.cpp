@@ -31,7 +31,11 @@ struct SwapBuffersAction {
 struct UpdateConfigAction {
 };
 
-using Action = std::variant<SpTaskAction, SwapBuffersAction, UpdateConfigAction>;
+struct LoadShaderCacheAction {
+    std::span<const char> data;
+};
+
+using Action = std::variant<SpTaskAction, SwapBuffersAction, UpdateConfigAction, LoadShaderCacheAction>;
 
 static struct {
     struct {
@@ -293,6 +297,10 @@ uint32_t ultramodern::get_display_refresh_rate() {
     return display_refresh_rate.load();
 }
 
+void ultramodern::load_shader_cache(std::span<const char> cache_data) {
+    events_context.action_queue.enqueue(LoadShaderCacheAction{cache_data});
+}
+
 void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;
@@ -351,6 +359,9 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
                     rt64.update_config(old_config, new_config);
                     old_config = new_config;
                 }
+            }
+            else if (const auto* load_shader_cache_action = std::get_if<LoadShaderCacheAction>(&action)) {
+                rt64.load_shader_cache(load_shader_cache_action->data);
             }
         }
     }

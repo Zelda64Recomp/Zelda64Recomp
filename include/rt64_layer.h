@@ -23,6 +23,7 @@ namespace ultramodern {
             void shutdown();
             void set_dummy_vi();
             uint32_t get_display_framerate();
+            void load_shader_cache(std::span<const char> cache_binary);
         private:
             std::unique_ptr<RT64::Application> app;
     };
