@@ -19,7 +19,6 @@ constexpr std::u8string_view controls_filename = u8"controls.json";
 constexpr std::u8string_view sound_filename = u8"sound.json";
 
 constexpr auto res_default            = ultramodern::Resolution::Auto;
-constexpr auto wm_default             = ultramodern::WindowMode::Windowed;
 constexpr auto hr_default             = ultramodern::HUDRatioMode::Clamp16x9;
 constexpr auto api_default            = ultramodern::GraphicsApi::Auto;
 constexpr auto ar_default             = RT64::UserConfiguration::AspectRatio::Expand;
@@ -28,6 +27,36 @@ constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Di
 constexpr int ds_default              = 1;
 constexpr int rr_manual_default       = 60;
 constexpr bool developer_mode_default = false;
+
+static bool is_steam_deck = false;
+
+ultramodern::WindowMode wm_default() {
+    return is_steam_deck ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
+}
+
+#ifdef __gnu_linux__
+void detect_steam_deck() {
+    // Check if the board vendor is Valve.
+    std::ifstream board_vendor_file("/sys/devices/virtual/dmi/id/board_vendor");
+    std::string line;
+    if (std::getline(board_vendor_file, line).good() && line == "Valve") {
+        is_steam_deck = true;
+        return;
+    }
+
+    // Check if the SteamDeck variable is set to 1.
+    const char* steam_deck_env = getenv("SteamDeck");
+    if (steam_deck_env != nullptr && std::string{steam_deck_env} == "1") {
+        is_steam_deck = true;
+        return;
+    }
+
+    is_steam_deck = false;
+    return;
+}
+#else
+void detect_steam_deck() { is_steam_deck = false; }
+#endif
 
 template <typename T>
 T from_or_default(const json& j, const std::string& key, T default_value) {
@@ -71,7 +100,7 @@ namespace ultramodern {
 
     void from_json(const json& j, GraphicsConfig& config) {
         config.res_option       = from_or_default(j, "res_option",      res_default);
-        config.wm_option        = from_or_default(j, "wm_option",       wm_default);
+        config.wm_option        = from_or_default(j, "wm_option",       wm_default());
         config.hr_option        = from_or_default(j, "hr_option",       hr_default);
         config.api_option       = from_or_default(j, "api_option",      api_default);
         config.ds_option        = from_or_default(j, "ds_option",       ds_default);
@@ -145,7 +174,7 @@ void load_general_config(const std::filesystem::path& path) {
     recomp::set_background_input_mode(from_or_default(config_json, "background_input_mode", recomp::BackgroundInputMode::On));
     recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
     recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
-    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", 0));
+    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
     recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 
@@ -204,7 +233,7 @@ void recomp::reset_kb_input_bindings() {
 void reset_graphics_options() {
     ultramodern::GraphicsConfig new_config{};
     new_config.res_option = res_default;
-    new_config.wm_option = wm_default;
+    new_config.wm_option = wm_default();
     new_config.hr_option = hr_default;
     new_config.ds_option = ds_default;
     new_config.ar_option = ar_default;
@@ -329,6 +358,8 @@ void load_sound_config(const std::filesystem::path& path) {
 }
 
 void recomp::load_config() {
+    detect_steam_deck();
+
     std::filesystem::path recomp_dir = recomp::get_app_folder_path();
     std::filesystem::path general_path = recomp_dir / general_filename;
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;

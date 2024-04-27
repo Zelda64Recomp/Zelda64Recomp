@@ -58,12 +58,14 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     return {};
 }
 
-#if defined(__linux__)
+#if defined(__gnu_linux__)
+#include "icon_bytes.h"
+
 bool SetImageAsIcon(const char* filename, SDL_Window* window)
 {
     // Read data
     int width, height, bytesPerPixel;
-    void* data = stbi_load(filename, &width, &height, &bytesPerPixel, 4);
+    void* data = stbi_load_from_memory(reinterpret_cast<const uint8_t*>(icon_bytes), sizeof(icon_bytes), &width, &height, &bytesPerPixel, 4);
 
     // Calculate pitch
     int pitch;
@@ -85,14 +87,14 @@ bool SetImageAsIcon(const char* filename, SDL_Window* window)
     Amask = 0x000000FF;
 #endif
 
-    SDL_Surface* surface;
-    if (data != NULL) {
+    SDL_Surface* surface = nullptr;
+    if (data != nullptr) {
         surface = SDL_CreateRGBSurfaceFrom(data, width, height, 32, pitch, Rmask, Gmask,
                             Bmask, Amask);
     }
 
-    if (surface == NULL) {   
-        if (data != NULL) {
+    if (surface == nullptr) {   
+        if (data != nullptr) {
             stbi_image_free(data);
         }
         return false;
