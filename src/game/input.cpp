@@ -128,9 +128,19 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             InputState.controller_states.erase(controller_event->which);
         }
         break;
-    case SDL_EventType::SDL_QUIT:
-        ultramodern::quit();
-        return true;
+    case SDL_EventType::SDL_QUIT: {
+        if (!ultramodern::is_game_started()) {
+            ultramodern::quit();
+            return true;
+        }
+
+        if (recomp::get_current_menu() != recomp::Menu::Config) {
+            recomp::set_current_menu(recomp::Menu::Config);
+        }
+
+        recomp::open_quit_game_prompt();
+        break;
+    }
     case SDL_EventType::SDL_MOUSEWHEEL:
         {
             SDL_MouseWheelEvent* wheel_event = &event->wheel;    
