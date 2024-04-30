@@ -186,6 +186,7 @@ void recomp::set_cont_or_kb(bool cont_interacted) {
 		cont_active = cont_interacted;
 		nav_help_model_handle.DirtyVariable("nav_help__navigate");
 		nav_help_model_handle.DirtyVariable("nav_help__accept");
+		graphics_model_handle.DirtyVariable("gfx_help__apply");
 		nav_help_model_handle.DirtyVariable("nav_help__exit");
 	}
 }
@@ -439,8 +440,15 @@ public:
 		recomp::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
 				if (!prompt_context.open && event.GetId() == Rml::EventId::Keydown) {
-					if (event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN) == Rml::Input::KeyIdentifier::KI_ESCAPE) {
-						close_config_menu();
+					auto key = event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN);
+					switch (key) {
+						case Rml::Input::KeyIdentifier::KI_ESCAPE:
+							close_config_menu();
+							break;
+						case Rml::Input::KeyIdentifier::KI_F:
+							graphics_model_handle.DirtyVariable("options_changed");
+							apply_graphics_config();
+							break;
 					}
 				}
 			});
@@ -596,6 +604,14 @@ public:
 				}
 				out = "";
 			});
+		
+		constructor.BindFunc("gfx_help__apply", [](Rml::Variant& out) {
+			if (cont_active) {
+				out = PF_GAMEPAD_X " " PF_GAMEPAD_START;
+			} else {
+				out = PF_KEYBOARD_F;
+			}
+		});
 
 		constructor.Bind("msaa2x_supported", &msaa2x_supported);
 		constructor.Bind("msaa4x_supported", &msaa4x_supported);
