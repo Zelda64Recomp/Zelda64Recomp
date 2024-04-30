@@ -158,7 +158,8 @@
                                 data-checked="rr_option"
                                 value="Display"
                                 id="rr_display"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up: #wm_fullscreen; nav-down: #rr_manual_input' : 'nav-up: #wm_fullscreen; nav-down: #msaa_2x'"
+                                style="nav-up: #wm_fullscreen"
+                                data-style-nav-down="rr_option=='Manual' ? '#rr_manual_input' : (msaa2x_supported ? '#msaa_2x' : '#msaa_none')"
                             />
                             <label class="config-option__tab-label" for="rr_display">Display</label>
                             <input type="radio"
@@ -168,7 +169,8 @@
                                 data-checked="rr_option"
                                 value="Manual"
                                 id="rr_manual"
-                                data-attr-style="rr_option=='Manual' ? 'nav-up: #wm_fullscreen; nav-down: #rr_manual_input' : 'nav-up: #wm_fullscreen; nav-down: #msaa_4x'"
+                                style="nav-up: #wm_fullscreen"
+                                data-style-nav-down="rr_option=='Manual' ? '#rr_manual_input' : (msaa4x_supported ? '#msaa_4x' : (msaa2x_supported ? '#msaa_2x' : '#msaa_none'))"
                             />
                             <label class="config-option__tab-label" for="rr_manual">Manual</label>
                         </div>
@@ -181,7 +183,7 @@
                                 type="range"
                                 min="20"
                                 max="360"
-                                style="flex:1;margin: 0dp;nav-up:auto;nav-down:auto;"
+                                style="flex:1;margin: 0dp;nav-up:#rr_manual;nav-down:#msaa_none;"
                                 data-value="rr_manual_value"
                             />
                         </div>
@@ -209,6 +211,7 @@
                                 value="MSAA2X"
                                 id="msaa_2x"
                                 data-attr-style="rr_option=='Manual' ? 'nav-up: #rr_manual_input; nav-down: #hr_16_9' : 'nav-up: #rr_display; nav-down: #hr_16_9'"
+                                data-style-nav-right="msaa4x_supported ? '#msaa_4x' : 'none'"
                             />
                             <label class="config-option__tab-label" for="msaa_2x">2x</label>
                             <input type="radio"
@@ -247,6 +250,7 @@
                                 value="Clamp16x9"
                                 id="hr_16_9"
                                 style="nav-up: #msaa_2x; nav-down: #apply_button"
+                                data-style-nav-up="msaa2x_supported ? '#msaa_2x' : '#msaa_none'"
                             />
                             <label class="config-option__tab-label" for="hr_16_9">16:9</label>
                             <input type="radio"
@@ -257,6 +261,7 @@
                                 value="Full"
                                 id="hr_full"
                                 style="nav-up: #msaa_4x; nav-down: #apply_button"
+                                data-style-nav-up="msaa4x_supported ? '#msaa_4x' : (msaa2x_supported ? '#msaa_2x' : '#msaa_none')"
                             />
                             <label class="config-option__tab-label" for="hr_full">Expand</label>
                         </div>
