@@ -114,6 +114,8 @@ namespace recomp {
 	};
 
 	PromptContext *get_prompt_context(void);
+
+	bool get_cont_active(void);
 }
 
 #endif

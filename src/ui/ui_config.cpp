@@ -191,6 +191,10 @@ void recomp::set_cont_or_kb(bool cont_interacted) {
 	}
 }
 
+bool recomp::get_cont_active() {
+	return cont_active;
+}
+
 void close_config_menu_impl() {
 	recomp::save_config();
 

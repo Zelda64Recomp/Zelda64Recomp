@@ -1260,6 +1260,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 }
                 last_mouse_pos[0] = cur_event.motion.x;
                 last_mouse_pos[1] = cur_event.motion.y;
+
+                // if controller is the primary input, don't use mouse movement to allow cursor to reactivate
+                if (recomp::get_cont_active()) {
+                    break;
+                }
             }
             // fallthrough
             case SDL_EventType::SDL_MOUSEBUTTONDOWN:
