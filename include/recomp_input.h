@@ -166,6 +166,8 @@ namespace recomp {
     // TODO move these
     void quicksave_save();
     void quicksave_load();
+
+    void open_quit_game_prompt();
 }
 
 #endif

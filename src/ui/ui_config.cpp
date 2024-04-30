@@ -246,7 +246,7 @@ void close_config_menu() {
 	close_config_menu_impl();
 }
 
-void open_quit_game_prompt() {
+void recomp::open_quit_game_prompt() {
 	prompt_context.open_prompt(
 		"Are you sure you want to quit?",
 		"Any progress since your last save will be lost.",
@@ -466,7 +466,7 @@ public:
 
 		recomp::register_event(listener, "open_quit_game_prompt",
 			[](const std::string& param, Rml::Event& event) {
-				open_quit_game_prompt();
+				recomp::open_quit_game_prompt();
 			});
 
 		recomp::register_event(listener, "toggle_input_device",
