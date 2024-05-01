@@ -5,7 +5,7 @@ $prompt-space: 24;
 .prompt {
     &__overlay {
         background-color: $color-bg-overlay;
-        pointer-events: none;
+        pointer-events: auto;
     }
 
     &__overlay,

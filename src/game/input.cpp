@@ -139,6 +139,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         }
 
         recomp::open_quit_game_prompt();
+        recomp::activate_mouse();
         break;
     }
     case SDL_EventType::SDL_MOUSEWHEEL:

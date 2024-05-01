@@ -116,6 +116,8 @@ namespace recomp {
 	PromptContext *get_prompt_context(void);
 
 	bool get_cont_active(void);
+	void set_cont_active(bool active);
+	void activate_mouse();
 }
 
 #endif

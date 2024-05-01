@@ -181,18 +181,20 @@ void recomp::cancel_scanning_input() {
 	controls_model_handle.DirtyVariable("active_binding_slot");
 }
 
-void recomp::set_cont_or_kb(bool cont_interacted) {
-	if (nav_help_model_handle && cont_active != cont_interacted) {
+void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
+	if (cont_active != cont_interacted) {
 		cont_active = cont_interacted;
-		nav_help_model_handle.DirtyVariable("nav_help__navigate");
-		nav_help_model_handle.DirtyVariable("nav_help__accept");
-		graphics_model_handle.DirtyVariable("gfx_help__apply");
-		nav_help_model_handle.DirtyVariable("nav_help__exit");
-	}
-}
 
-bool recomp::get_cont_active() {
-	return cont_active;
+		if (nav_help_model_handle) {
+			nav_help_model_handle.DirtyVariable("nav_help__navigate");
+			nav_help_model_handle.DirtyVariable("nav_help__accept");
+			nav_help_model_handle.DirtyVariable("nav_help__exit");
+		}
+
+		if (graphics_model_handle) {
+			graphics_model_handle.DirtyVariable("gfx_help__apply");
+		}
+	}
 }
 
 void close_config_menu_impl() {
@@ -890,6 +892,8 @@ public:
 	}
 
 	void make_bindings(Rml::Context* context) override {
+		// initially set cont state for ui help
+		recomp::config_menu_set_cont_or_kb(recomp::get_cont_active());
 		make_nav_help_bindings(context);
 		make_general_bindings(context);
 		make_controls_bindings(context);

@@ -786,6 +786,7 @@ struct UIContext {
     public:
         bool mouse_is_active_initialized = false;
         bool mouse_is_active = false;
+        bool cont_is_active = true;
         bool await_stick_return_x = false;
         bool await_stick_return_y = false;
         int last_active_mouse_position[2] = {0, 0};
@@ -929,8 +930,22 @@ struct UIContext {
             }
         }
 
-        void update_focus(bool mouse_moved) {
+        void update_focus(bool mouse_moved, bool non_mouse_interacted) {
             if (current_document == nullptr) {
+                return;
+            }
+
+            if (cont_is_active || non_mouse_interacted) {
+                if (non_mouse_interacted) {
+                    auto focusedEl = current_document->GetFocusLeafNode();
+                    Rml::Variant* ti = focusedEl == nullptr ? nullptr : focusedEl->GetAttribute("tab-index");
+                    if (focusedEl == nullptr || RecompRml::CanFocusElement(focusedEl) != RecompRml::CanFocus::Yes) {
+                        Rml::Element* element = find_autofocus_element(current_document);
+                        if (element != nullptr) {
+                            element->Focus();
+                        }
+                    }
+                }
                 return;
             }
 
@@ -1034,13 +1049,35 @@ struct UIContext {
             }
             wasShowingPrompt = ctx->open;
 
-            if (!ctx->shouldFocus) return;
+            if (!ctx->open) {
+                return;
+            }
 
             Rml::Element* focused = current_document->GetFocusLeafNode();
-            if (focused) focused->Blur();
+            // Check if unfocused or current focus isn't either prompt button
+            if (
+                focused == nullptr || (
+                    focused != current_document->GetElementById("prompt__cancel-button") &&
+                    focused != current_document->GetElementById("prompt__confirm-button")
+                )
+            ) {
+                ctx->shouldFocus = true;
+            }
+
+            if (!ctx->shouldFocus) {
+                return;
+            }
+
+            if (focused != nullptr) {
+                focused->Blur();
+            }
 
             Rml::Element *targetButton = current_document->GetElementById(
                 ctx->focusOnCancel ? "prompt__cancel-button" :  "prompt__confirm-button");
+
+            if (targetButton == nullptr) {
+                return;
+            }
 
             targetButton->Focus(true);
 
@@ -1187,6 +1224,19 @@ void apply_background_input_mode() {
         );
     }
     last_input_mode = cur_input_mode;
+}
+
+bool recomp::get_cont_active() {
+    return ui_context->rml.cont_is_active;
+}
+
+void recomp::set_cont_active(bool active) {
+    ui_context->rml.cont_is_active = active;
+}
+
+void recomp::activate_mouse() {
+    ui_context->rml.update_primary_input(true, false);
+    ui_context->rml.update_focus(true, false);
 }
 
 void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* swap_chain_framebuffer) {
@@ -1343,8 +1393,9 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     } // end dequeue event loop
 
     if (cont_interacted || kb_interacted) {
-        recomp::set_cont_or_kb(cont_interacted);
+        recomp::set_cont_active(cont_interacted);
     }
+    recomp::config_menu_set_cont_or_kb(ui_context->rml.cont_is_active);
 
     recomp::InputField scanned_field = recomp::get_scanned_input();
     if (scanned_field != recomp::InputField{}) {
@@ -1352,7 +1403,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     }
 
     ui_context->rml.update_primary_input(mouse_moved, non_mouse_interacted);
-    ui_context->rml.update_focus(mouse_moved);
+    ui_context->rml.update_focus(mouse_moved, non_mouse_interacted);
 
     if (cur_menu != recomp::Menu::None) {
         int width = swap_chain_framebuffer->getWidth();
