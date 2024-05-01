@@ -786,7 +786,7 @@ struct UIContext {
     public:
         bool mouse_is_active_initialized = false;
         bool mouse_is_active = false;
-        bool cont_is_active = true;
+        bool cont_is_active = false;
         bool await_stick_return_x = false;
         bool await_stick_return_y = false;
         int last_active_mouse_position[2] = {0, 0};
@@ -1283,6 +1283,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     SDL_Event cur_event{};
 
     bool mouse_moved = false;
+    bool mouse_clicked = false;
     bool non_mouse_interacted = false;
     bool cont_interacted = false;
     bool kb_interacted = false;
@@ -1321,6 +1322,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             // fallthrough
             case SDL_EventType::SDL_MOUSEBUTTONDOWN:
                 mouse_moved = true;
+                mouse_clicked = true;
                 break;
                 
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN: {
@@ -1394,7 +1396,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         }
     } // end dequeue event loop
 
-    if (cont_interacted || kb_interacted) {
+    if (cont_interacted || kb_interacted || mouse_clicked) {
         recomp::set_cont_active(cont_interacted);
     }
     recomp::config_menu_set_cont_or_kb(ui_context->rml.cont_is_active);
