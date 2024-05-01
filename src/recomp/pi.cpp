@@ -107,7 +107,6 @@ void saving_thread_func(RDRAM_ARG1) {
 
         // If an action came through that affected the save file, save the updated contents.
         if (save_buffer_updated) {
-            printf("Writing updated save buffer to disk\n");
             update_save_file();
         }
     }

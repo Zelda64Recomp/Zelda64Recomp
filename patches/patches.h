@@ -9,6 +9,7 @@
 #define osFlashWriteArray osFlashWriteArray_recomp
 #define osFlashWriteBuffer osFlashWriteBuffer_recomp
 #define osWritebackDCache osWritebackDCache_recomp
+#define osGetTime osGetTime_recomp
 
 #define osContStartReadData osContStartReadData_recomp
 #define osContGetReadData osContGetReadData_recomp
@@ -91,6 +92,7 @@ void clear_camera_skipped();
 void edit_billboard_groups(PlayState* play);
 bool camera_was_skipped();
 void room_load_hook(PlayState* play, Room* room);
+void draw_autosave_icon(PlayState* play);
 
 void recomp_crash(const char* err);
 

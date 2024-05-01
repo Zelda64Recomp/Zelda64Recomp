@@ -2085,8 +2085,6 @@ Gfx* Gfx_DrawRect_DropShadow(Gfx* gfx, s16 rectLeft, s16 rectTop, s16 rectWidth,
                              s16 r, s16 g, s16 b, s16 a);
 
 void draw_dpad(PlayState* play) {
-    InterfaceContext* interfaceCtx = &play->interfaceCtx;
-
     OPEN_DISPS(play->state.gfxCtx);
 
     gEXForceUpscale2D(OVERLAY_DISP++, 1);

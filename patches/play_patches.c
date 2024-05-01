@@ -33,6 +33,7 @@ void Play_Main(GameState* thisx) {
         camera_pre_play_update(this);
         Play_Update(this);
         camera_post_play_update(this);
+        autosave_post_play_update(this);
         this->state.gfxCtx = gfxCtx;
     }
 
