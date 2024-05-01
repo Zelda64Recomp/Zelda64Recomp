@@ -179,7 +179,7 @@ ultramodern::RT64Context::RT64Context(uint8_t* rdram, ultramodern::WindowHandle 
 #ifdef _WIN32
     thread_id = window_handle.thread_id;
 #endif
-    if (!app->setup(thread_id)) {
+    if (app->setup(thread_id) != RT64::Application::SetupResult::Success) {
         app = nullptr;
         return;
     }
@@ -249,10 +249,11 @@ void ultramodern::RT64Context::load_shader_cache(std::span<const char> cache_bin
     // TODO figure out how to avoid a copy here.
     std::istringstream cache_stream{std::string{cache_binary.data(), cache_binary.size()}};
 
-    if (!app->rasterShaderCache->loadOfflineList(cache_stream)) {
-        printf("Failed to preload shader cache!\n");
-        assert(false);
-    }
+    // TODO update shader cache
+    //if (!app->rasterShaderCache->loadOfflineList(cache_stream)) {
+    //    printf("Failed to preload shader cache!\n");
+    //    assert(false);
+    //}
 }
 
 RT64::UserConfiguration::Antialiasing ultramodern::RT64MaxMSAA() {

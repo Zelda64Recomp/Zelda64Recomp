@@ -1379,7 +1379,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 }
 
 void deinit_hook() {
-
+    std::lock_guard lock {ui_context_mutex};
+    Rml::Debugger::Shutdown();
+    Rml::Shutdown();
+    ui_context->rml.unload();
+    ui_context.reset();
 }
 
 void set_rt64_hooks() {
@@ -1398,11 +1402,6 @@ void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
 }
 
 void recomp::destroy_ui() {
-    std::lock_guard lock {ui_context_mutex};
-    Rml::Debugger::Shutdown();
-    Rml::Shutdown();
-    ui_context->rml.unload();
-    ui_context.reset();
 }
 
 recomp::Menu recomp::get_current_menu() {
