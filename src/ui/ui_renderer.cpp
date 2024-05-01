@@ -1055,13 +1055,15 @@ struct UIContext {
 
             Rml::Element* focused = current_document->GetFocusLeafNode();
             // Check if unfocused or current focus isn't either prompt button
-            if (
-                focused == nullptr || (
-                    focused != current_document->GetElementById("prompt__cancel-button") &&
-                    focused != current_document->GetElementById("prompt__confirm-button")
-                )
-            ) {
-                ctx->shouldFocus = true;
+            if (mouse_is_active == false) {
+                if (
+                    focused == nullptr || (
+                        focused != current_document->GetElementById("prompt__cancel-button") &&
+                        focused != current_document->GetElementById("prompt__confirm-button")
+                    )
+                ) {
+                    ctx->shouldFocus = true;
+                }
             }
 
             if (!ctx->shouldFocus) {
