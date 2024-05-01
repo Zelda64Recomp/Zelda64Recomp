@@ -143,7 +143,7 @@ std::filesystem::path recomp::get_app_folder_path() {
    }
 
    if (homedir != nullptr) {
-       recomp_dir = std::filesystem::path{homedir} / (std::u8string{u8"."} + std::u8string{recomp::program_id});
+       recomp_dir = std::filesystem::path{homedir} / (std::u8string{u8".config/"} + std::u8string{recomp::program_id});
    }
 #endif
 
@@ -365,6 +365,10 @@ void recomp::load_config() {
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;
     std::filesystem::path controls_path = recomp_dir / controls_filename;
     std::filesystem::path sound_path = recomp_dir / sound_filename;
+
+    if (!recomp_dir.empty()) {
+        std::filesystem::create_directories(recomp_dir);
+    }
 
     if (std::filesystem::exists(general_path)) {
         load_general_config(general_path);
