@@ -3,6 +3,7 @@
 #include <array>
 #include <cstring>
 #include <string>
+#include <mutex>
 #include "recomp.h"
 #include "recomp_game.h"
 #include "recomp_config.h"
@@ -60,7 +61,13 @@ void recomp::do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr
     }
 }
 
-std::array<char, 0x20000> save_buffer;
+struct {
+    std::array<char, 0x20000> save_buffer;
+    std::thread saving_thread;
+    moodycamel::LightweightSemaphore write_sempahore;
+    std::mutex save_buffer_mutex;
+} save_context;
+
 const std::u8string save_folder = u8"saves";
 const std::u8string save_filename = std::u8string{recomp::mm_game_id} + u8".bin";
 
@@ -72,44 +79,77 @@ void update_save_file() {
     std::ofstream save_file{ get_save_file_path(), std::ios_base::binary };
 
     if (save_file.good()) {
-        save_file.write(save_buffer.data(), save_buffer.size());
+        std::lock_guard lock{ save_context.save_buffer_mutex };
+        save_file.write(save_context.save_buffer.data(), save_context.save_buffer.size());
     } else {
         fprintf(stderr, "Failed to save!\n");
         std::exit(EXIT_FAILURE);
+    }
+}
+
+extern std::atomic_bool exited;
+
+void saving_thread_func(RDRAM_ARG1) {
+    while (!exited) {
+        bool save_buffer_updated = false;
+        // Repeatedly wait for a new action to be sent.
+        constexpr int64_t wait_time_microseconds = 10000;
+        constexpr int max_actions = 128;
+        int num_actions = 0;
+
+        // Wait up to the given timeout for a write to come in. Allow multiple writes to coalesce together into a single save.
+        // Cap the number of coalesced writes to guarantee that the save buffer eventually gets written out to the file even if the game
+        // is constantly sending writes.
+        while (save_context.write_sempahore.wait(wait_time_microseconds) && num_actions < max_actions) {
+            save_buffer_updated = true;
+            num_actions++;
+        }
+
+        // If an action came through that affected the save file, save the updated contents.
+        if (save_buffer_updated) {
+            printf("Writing updated save buffer to disk\n");
+            update_save_file();
+        }
     }
 }
 
 void save_write_ptr(const void* in, uint32_t offset, uint32_t count) {
-    memcpy(&save_buffer[offset], in, count);
-    update_save_file();
-}
-
-void save_write(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count) {
-    for (uint32_t i = 0; i < count; i++) {
-        save_buffer[offset + i] = MEM_B(i, rdram_address);
+    {
+        std::lock_guard lock { save_context.save_buffer_mutex };
+        memcpy(&save_context.save_buffer[offset], in, count);
     }
-    update_save_file();
+    
+    save_context.write_sempahore.signal();
 }
 
-void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count) {
+void save_write(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count) {
+    {
+        std::lock_guard lock { save_context.save_buffer_mutex };
+        for (uint32_t i = 0; i < count; i++) {
+            save_context.save_buffer[offset + i] = MEM_B(i, rdram_address);
+        }
+    }
+
+    save_context.write_sempahore.signal();
+}
+
+void save_read(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count) {
+    std::lock_guard lock { save_context.save_buffer_mutex };
     for (size_t i = 0; i < count; i++) {
-        MEM_B(i, rdram_address) = save_buffer[offset + i];
+        MEM_B(i, rdram_address) = save_context.save_buffer[offset + i];
     }
 }
 
 void save_clear(uint32_t start, uint32_t size, char value) {
-    std::fill_n(save_buffer.begin() + start, size, value);
-    std::ofstream save_file{ get_save_file_path(), std::ios_base::binary };
-
-    if (save_file.good()) {
-        save_file.write(save_buffer.data(), save_buffer.size());
-    } else {
-        fprintf(stderr, "Failed to save!\n");
-        std::exit(EXIT_FAILURE);
+    {
+        std::lock_guard lock { save_context.save_buffer_mutex };
+        std::fill_n(save_context.save_buffer.begin() + start, size, value);
     }
+
+    save_context.write_sempahore.signal();
 }
 
-void ultramodern::save_init() {
+void ultramodern::init_saving(RDRAM_ARG1) {
     std::filesystem::path save_file_path = get_save_file_path();
 
     // Ensure the save file directory exists.
@@ -118,14 +158,20 @@ void ultramodern::save_init() {
     // Read the save file if it exists.
     std::ifstream save_file{ save_file_path, std::ios_base::binary };
     if (save_file.good()) {
-        save_file.read(save_buffer.data(), save_buffer.size());
+        save_file.read(save_context.save_buffer.data(), save_context.save_buffer.size());
     } else {
         // Otherwise clear the save file to all zeroes.
-        save_buffer.fill(0);
+        save_context.save_buffer.fill(0);
     }
+
+    save_context.saving_thread = std::thread{saving_thread_func, PASS_RDRAM};
 }
 
-void do_dma(uint8_t* rdram, PTR(OSMesgQueue) mq, gpr rdram_address, uint32_t physical_addr, uint32_t size, uint32_t direction) {
+void ultramodern::join_saving_thread() {
+    save_context.saving_thread.join();
+}
+
+void do_dma(RDRAM_ARG PTR(OSMesgQueue) mq, gpr rdram_address, uint32_t physical_addr, uint32_t size, uint32_t direction) {
     // TODO asynchronous transfer
     // TODO implement unaligned DMA correctly
     if (direction == 0) {
@@ -160,7 +206,7 @@ void do_dma(uint8_t* rdram, PTR(OSMesgQueue) mq, gpr rdram_address, uint32_t phy
     }
 }
 
-extern "C" void osPiStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
+extern "C" void osPiStartDma_recomp(RDRAM_ARG recomp_context* ctx) {
     uint32_t mb = ctx->r4;
     uint32_t pri = ctx->r5;
     uint32_t direction = ctx->r6;
@@ -172,12 +218,12 @@ extern "C" void osPiStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
 
     debug_printf("[pi] DMA from 0x%08X into 0x%08X of size 0x%08X\n", devAddr, dramAddr, size);
 
-    do_dma(rdram, mq, dramAddr, physical_addr, size, direction);
+    do_dma(PASS_RDRAM mq, dramAddr, physical_addr, size, direction);
 
     ctx->r2 = 0;
 }
 
-extern "C" void osEPiStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
+extern "C" void osEPiStartDma_recomp(RDRAM_ARG recomp_context* ctx) {
     OSPiHandle* handle = TO_PTR(OSPiHandle, ctx->r4);
     OSIoMesg* mb = TO_PTR(OSIoMesg, ctx->r5);
     uint32_t direction = ctx->r6;
@@ -189,12 +235,12 @@ extern "C" void osEPiStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
 
     debug_printf("[pi] DMA from 0x%08X into 0x%08X of size 0x%08X\n", devAddr, dramAddr, size);
 
-    do_dma(rdram, mq, dramAddr, physical_addr, size, direction);
+    do_dma(PASS_RDRAM mq, dramAddr, physical_addr, size, direction);
 
     ctx->r2 = 0;
 }
 
-extern "C" void osEPiReadIo_recomp(uint8_t * rdram, recomp_context * ctx) {
+extern "C" void osEPiReadIo_recomp(RDRAM_ARG recomp_context * ctx) {
     OSPiHandle* handle = TO_PTR(OSPiHandle, ctx->r4);
     uint32_t devAddr = handle->baseAddress | ctx->r5;
     gpr dramAddr = ctx->r6;
@@ -202,7 +248,7 @@ extern "C" void osEPiReadIo_recomp(uint8_t * rdram, recomp_context * ctx) {
 
     if (physical_addr > rom_base) {
         // cart rom
-        recomp::do_rom_read(rdram, dramAddr, physical_addr, sizeof(uint32_t));
+        recomp::do_rom_read(PASS_RDRAM dramAddr, physical_addr, sizeof(uint32_t));
     } else {
         // sram
         assert(false && "SRAM ReadIo unimplemented");
@@ -211,10 +257,10 @@ extern "C" void osEPiReadIo_recomp(uint8_t * rdram, recomp_context * ctx) {
     ctx->r2 = 0;
 }
 
-extern "C" void osPiGetStatus_recomp(uint8_t * rdram, recomp_context * ctx) {
+extern "C" void osPiGetStatus_recomp(RDRAM_ARG recomp_context * ctx) {
     ctx->r2 = 0;
 }
 
-extern "C" void osPiRawStartDma_recomp(uint8_t * rdram, recomp_context * ctx) {
+extern "C" void osPiRawStartDma_recomp(RDRAM_ARG recomp_context * ctx) {
     ctx->r2 = 0;
 }

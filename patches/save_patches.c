@@ -56,30 +56,3 @@ void Sram_UpdateWriteToFlashOwlSave(SramContext* sramCtx) {
         Lib_MemCpy(&gSaveContext, sramCtx->saveBuf, offsetof(SaveContext, fileNum));
     }
 }
-
-// @recomp Patched to add a pause so that other threads can execute in the meantime.
-s32 SysFlashrom_ExecWrite(void* addr, u32 pageNum, u32 pageCount) {
-    OSIoMesg msg;
-    s32 result;
-    u32 i;
-
-    if (!SysFlashrom_IsInit()) {
-        return -1;
-    }
-    // Ensure the page is always aligned to a sector boundary.
-    if ((pageNum % FLASH_BLOCK_SIZE) != 0) {
-        Fault_AddHungupAndCrash("../sys_flashrom.c", 275);
-    }
-    osWritebackDCache(addr, pageCount * FLASH_BLOCK_SIZE);
-    for (i = 0; i < pageCount; i++) {
-        // @recomp Pause shortly to allow other threads to work.
-        Sleep_Msec(5);
-        osFlashWriteBuffer(&msg, OS_MESG_PRI_NORMAL, (u8*)addr + i * FLASH_BLOCK_SIZE, &sFlashromMesgQueue);
-        osRecvMesg(&sFlashromMesgQueue, NULL, OS_MESG_BLOCK);
-        result = osFlashWriteArray(i + pageNum);
-        if (result != 0) {
-            return result;
-        }
-    }
-    return 0;
-}

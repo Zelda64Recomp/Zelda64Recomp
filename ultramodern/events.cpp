@@ -533,12 +533,11 @@ void ultramodern::submit_rsp_task(RDRAM_ARG PTR(OSTask) task_) {
     }
 }
 
-void ultramodern::send_si_message() {
-    uint8_t* rdram = events_context.rdram;
+void ultramodern::send_si_message(RDRAM_ARG1) {
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
-void ultramodern::init_events(uint8_t* rdram, ultramodern::WindowHandle window_handle) {
+void ultramodern::init_events(RDRAM_ARG ultramodern::WindowHandle window_handle) {
     moodycamel::LightweightSemaphore gfx_thread_ready;
     moodycamel::LightweightSemaphore task_thread_ready;
     events_context.rdram = rdram;

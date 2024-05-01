@@ -437,4 +437,5 @@ void recomp::start(ultramodern::WindowHandle window_handle, const ultramodern::a
     game_thread.join();
     ultramodern::join_event_threads();
     ultramodern::join_thread_cleaner_thread();
+    ultramodern::join_saving_thread();
 }

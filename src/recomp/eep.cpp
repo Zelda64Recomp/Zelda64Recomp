@@ -1,8 +1,8 @@
 #include "recomp.h"
 #include "../ultramodern/ultra64.h"
 
-void save_write(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
-void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
+void save_write(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count);
+void save_read(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count);
 
 constexpr int eeprom_block_size = 8;
 constexpr int eep4_size = 4096;

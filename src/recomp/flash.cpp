@@ -14,8 +14,8 @@ constexpr uint32_t sector_size = page_size * pages_per_sector;
 constexpr uint32_t sector_count = flash_size / sector_size;
 
 void save_write_ptr(const void* in, uint32_t offset, uint32_t count);
-void save_write(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
-void save_read(uint8_t* rdram, gpr rdram_address, uint32_t offset, uint32_t count);
+void save_write(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count);
+void save_read(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count);
 void save_clear(uint32_t start, uint32_t size, char value);
 
 std::array<char, page_size> write_buffer;

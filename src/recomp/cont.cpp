@@ -56,7 +56,7 @@ extern "C" void osContStartReadData_recomp(uint8_t* rdram, recomp_context* ctx) 
     }
     update_poll_time();
 
-    ultramodern::send_si_message();
+    ultramodern::send_si_message(rdram);
 }
 
 extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -86,7 +86,7 @@ extern "C" void osContGetReadData_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osContStartQuery_recomp(uint8_t * rdram, recomp_context * ctx) {
-    ultramodern::send_si_message();
+    ultramodern::send_si_message(rdram);
 }
 
 extern "C" void osContGetQuery_recomp(uint8_t * rdram, recomp_context * ctx) {

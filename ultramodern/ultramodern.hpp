@@ -57,9 +57,9 @@ constexpr int32_t flash_handle = (int32_t)(cart_handle + sizeof(OSPiHandle));
 constexpr uint32_t save_size = 1024 * 1024 / 8; // Maximum save size, 1Mbit for flash
 
 // Initialization.
-void preinit(uint8_t* rdram, WindowHandle window_handle);
-void save_init();
-void init_events(uint8_t* rdram, WindowHandle window_handle);
+void preinit(RDRAM_ARG WindowHandle window_handle);
+void init_saving(RDRAM_ARG1);
+void init_events(RDRAM_ARG WindowHandle window_handle);
 void init_timers(RDRAM_ARG1);
 void init_thread_cleanup();
 
@@ -99,7 +99,7 @@ PTR(OSThread) this_thread();
 void set_main_thread();
 bool is_game_thread();
 void submit_rsp_task(RDRAM_ARG PTR(OSTask) task);
-void send_si_message();
+void send_si_message(RDRAM_ARG1);
 uint32_t get_speed_multiplier();
 
 // Time
@@ -153,6 +153,7 @@ bool is_game_started();
 void quit();
 void join_event_threads();
 void join_thread_cleaner_thread();
+void join_saving_thread();
 
 } // namespace ultramodern
 
