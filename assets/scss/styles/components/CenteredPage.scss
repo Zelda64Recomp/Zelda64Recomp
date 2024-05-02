@@ -13,7 +13,6 @@
 }
 
 .centered-page__modal {
-    @extend %nav-all;
     display: flex;
     position: relative;
     flex: 1 1 100%;

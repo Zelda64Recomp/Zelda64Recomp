@@ -5,28 +5,28 @@
 //! these are hidden methods not exposed by RmlUi
 //! they may need to be updated eventually with RmlUi
 
-enum class CanFocus { Yes, No, NoAndNoChildren };
-CanFocus CanFocusElement(Rml::Element* element)
+RecompRml::CanFocus RecompRml::CanFocusElement(Rml::Element* element)
 {
 	if (!element->IsVisible())
-		return CanFocus::NoAndNoChildren;
+		return RecompRml::CanFocus::NoAndNoChildren;
 
 	const Rml::ComputedValues& computed = element->GetComputedValues();
 
 	if (computed.focus() == Rml::Style::Focus::None)
-		return CanFocus::NoAndNoChildren;
+		return RecompRml::CanFocus::NoAndNoChildren;
 
 	if (computed.tab_index() == Rml::Style::TabIndex::Auto)
-		return CanFocus::Yes;
+		return RecompRml::CanFocus::Yes;
 
-	return CanFocus::No;
+	return RecompRml::CanFocus::No;
 }
+
 Rml::Element* SearchFocusSubtree(Rml::Element* element, bool forward)
 {
-	auto can_focus = CanFocusElement(element);
-	if (can_focus == CanFocus::Yes)
+	auto can_focus = RecompRml::CanFocusElement(element);
+	if (can_focus == RecompRml::CanFocus::Yes)
 		return element;
-	else if (can_focus == CanFocus::NoAndNoChildren)
+	else if (can_focus == RecompRml::CanFocus::NoAndNoChildren)
 		return nullptr;
 
 	for (int i = 0; i < element->GetNumChildren(); i++)
@@ -90,7 +90,7 @@ Rml::Element* RecompRml::FindNextTabElement(Rml::Element* current_element, bool 
 	// We could not find anything to focus along this direction.
 
 	// If we can focus the document, then focus that now.
-	if (current_element != document && CanFocusElement(document) == CanFocus::Yes)
+	if (current_element != document && RecompRml::CanFocusElement(document) == RecompRml::CanFocus::Yes)
 		return document;
 
 	// Otherwise, search the entire document tree. This way we will wrap around.
