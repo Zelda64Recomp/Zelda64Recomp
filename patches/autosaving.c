@@ -123,10 +123,6 @@ bool autosave_compare_saves(SaveContext* a, SaveContext* b) {
 Gfx* Gfx_DrawRect_DropShadow(Gfx* gfx, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy,
                              s16 r, s16 g, s16 b, s16 a);
 
-#define MIN_FRAMES_SINCE_CHANGED 10
-
-OSTime last_autosave_time = 0;
-int frames_since_save_changed = 0;
 int autosave_icon_counter = 0;
 
 #define AUTOSAVE_ICON_FADE_OUT_FRAMES 5
@@ -165,6 +161,12 @@ Gfx* GfxEx_DrawRect_DropShadow(Gfx* gfx, s16 rectLeft, s16 rectTop, s16 rectWidt
     return gfx;
 }
 
+bool autosave_was_ready = false;
+
+s32 recomp_autosave_debug_enabled() {
+    return 1;
+}
+
 void draw_autosave_icon(PlayState* play) {
     s32 alpha = 0;
     if (autosave_icon_counter > (AUTOSAVE_ICON_SHOW_FRAMES + AUTOSAVE_ICON_FADE_OUT_FRAMES)) {
@@ -181,9 +183,9 @@ void draw_autosave_icon(PlayState* play) {
         autosave_icon_counter--;
     }
 
-    if (alpha != 0) {
-        OPEN_DISPS(play->state.gfxCtx);
+    OPEN_DISPS(play->state.gfxCtx);
 
+    if (alpha != 0) {
         gEXForceUpscale2D(OVERLAY_DISP++, 1);
         gDPLoadTextureBlock(OVERLAY_DISP++, autosave_icon, G_IM_FMT_RGBA, G_IM_SIZ_32b, AUTOSAVE_ICON_WIDTH, AUTOSAVE_ICON_HEIGHT, 0,
             G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
@@ -193,9 +195,15 @@ void draw_autosave_icon(PlayState* play) {
             (s32)(1024.0f * AUTOSAVE_ICON_WIDTH / AUTOSAVE_ICON_DRAW_WIDTH), (s32)(1024.0f * AUTOSAVE_ICON_HEIGHT / AUTOSAVE_ICON_DRAW_HEIGHT),
             255, 255, 255, alpha, G_EX_ORIGIN_RIGHT);
         gEXForceUpscale2D(OVERLAY_DISP++, 0);
-
-        CLOSE_DISPS(play->state.gfxCtx);
     }
+        
+    if (recomp_autosave_debug_enabled() && autosave_was_ready) {
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 0, 0, 255);
+        gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE);
+        gEXFillRectangle(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT, 0, SCREEN_HEIGHT - 10, 20, SCREEN_HEIGHT);
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
 }
 
 void show_autosave_icon() {
@@ -210,7 +218,23 @@ u32 recomp_autosave_interval() {
     return 2 * 60 * 1000;
 }
 
+#define MIN_FRAMES_SINCE_CHANGED 10
+#define MIN_FRAMES_SINCE_READY 20
+OSTime last_autosave_time = 0;
+
+bool reached_final_three_hours() {
+    // Logic copied with modifications from Interface_DrawClock.
+    if ((CURRENT_DAY >= 4) ||
+        ((CURRENT_DAY == 3) && (CURRENT_TIME >= CLOCK_TIME(3, 0)) && (CURRENT_TIME < CLOCK_TIME(6, 0)))
+    ) {
+        return true;
+    }
+    return false;
+}
+
 void autosave_post_play_update(PlayState* play) {
+    static int frames_since_save_changed = 0;
+    static int frames_since_autosave_ready = 0;
     if (recomp_autosave_enabled()) {
         if (autosave_compare_saves(&gSaveContext, &prev_save_ctx)) {
             frames_since_save_changed = 0;
@@ -222,27 +246,40 @@ void autosave_post_play_update(PlayState* play) {
 
         OSTime time_now = osGetTime();
 
-        // Check if enough time has passed since the previous autosave to create a new one.
-        if (OS_CYCLES_TO_USEC(time_now - last_autosave_time) > (1000 * recomp_autosave_interval())) {
-            // Check the following conditions:
-            // * The UI is in a normal state.
-            // * Time is passing.
-            // * No message is on screen.
-            // * The game is not paused.
-            // * No cutscene is running.
-            // * The game is not in cutscene mode.
-            if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
-                R_TIME_SPEED != 0 &&
-                !Environment_IsTimeStopped() && 
-                play->msgCtx.msgMode == MSGMODE_NONE &&
-                play->pauseCtx.state == PAUSE_STATE_OFF &&
-                gSaveContext.save.cutsceneIndex < 0xFFF0 &&
-                !Play_InCsMode(play)
-            ) {
-                last_autosave_time = time_now;
-                do_autosave(&play->sramCtx);
-                show_autosave_icon();
-            }
+        // Check the following conditions:
+        // * The UI is in a normal state.
+        // * Time is passing.
+        // * No message is on screen.
+        // * The game is not paused.
+        // * No cutscene is running.
+        // * The game is not in cutscene mode.
+        // * The clock has not reached the final 3 hours.
+        if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
+            R_TIME_SPEED != 0 &&
+            !Environment_IsTimeStopped() && 
+            play->msgCtx.msgMode == MSGMODE_NONE &&
+            play->pauseCtx.state == PAUSE_STATE_OFF &&
+            gSaveContext.save.cutsceneIndex < 0xFFF0 &&
+            !Play_InCsMode(play) &&
+            !reached_final_three_hours()
+        ) {
+            frames_since_autosave_ready++;
+            autosave_was_ready = true;
+        }
+        else {
+            frames_since_autosave_ready = 0;
+            autosave_was_ready = false;
+        }
+
+        // Check if the frame count thresholds for the save data remaining unchanged and autosaving being ready have both been met
+        // and that enough time has passed since the previous autosave to create a new one.
+        if (frames_since_save_changed >= MIN_FRAMES_SINCE_CHANGED &&
+            frames_since_autosave_ready >= MIN_FRAMES_SINCE_READY &&
+            OS_CYCLES_TO_USEC(time_now - last_autosave_time) > (1000 * recomp_autosave_interval())
+        ) {
+            last_autosave_time = time_now;
+            do_autosave(&play->sramCtx);
+            show_autosave_icon();
         }
     }
     else {
