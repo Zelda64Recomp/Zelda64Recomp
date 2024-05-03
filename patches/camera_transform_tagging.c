@@ -4,6 +4,8 @@
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
 
+// #define PRINT_CAMERA_INFO
+
 static bool camera_interpolation_forced = false;
 static bool camera_skip_interpolation_forced = false;
 static bool camera_ignore_tracking = false;
@@ -36,6 +38,38 @@ void camera_post_play_update(PlayState* play) {
     }
     else {
         in_kaleido = false;
+
+        if (play->activeCamId >= 0 && play->activeCamId < NUM_CAMS) {
+            Camera *active_cam = play->cameraPtrs[play->activeCamId];
+#ifdef PRINT_CAMERA_INFO
+            recomp_printf("active_cam->setting %d  active_cam->mode %d play->sceneId %d\n", active_cam->setting, active_cam->mode, play->sceneId);
+#endif
+
+            // Dedicated section for workarounds where the heuristic fails to detect the large amount of movements the camera does in these particular areas.
+            bool force_interpolation = false;
+            if (active_cam->setting == CAM_SET_NORMAL0 || active_cam->setting == CAM_SET_DUNGEON0) {
+                force_interpolation =
+                    // Pirates' Fortress Moat. Pushing the switch that unlocks the fortress will cause very large camera movement.
+                    play->sceneId == SCENE_TORIDE ||
+                    // Z-targetting an actor.
+                    active_cam->mode == CAM_MODE_FOLLOWTARGET ||
+                    // Z-targetting nothing.
+                    active_cam->mode == CAM_MODE_TARGET;
+            }
+            // TODO: This setting claims "Smoothly and gradually return camera to Player after a cutscene "CONNECT0"". It might be worth it to enable this globally regardless of the scene.
+            else if (active_cam->setting == CAM_SET_CONNECT0) {
+                // Stone tower and inverted stone tower. The block puzzles will cause very large camera movement after they're activated.
+                force_interpolation = play->sceneId == SCENE_F40 || play->sceneId == SCENE_F41;
+            }
+            else if (active_cam->setting == CAM_SET_FREE0) {
+                // Cutscene after Majora fight. The camera zooms out while facing the moon with a very large movement.
+                force_interpolation = play->sceneId == SCENE_00KEIKOKU && play->csCtx.scriptIndex == 0 && play->csCtx.curFrame <= 98 && gSaveContext.sceneLayer == 8;
+            }
+
+            if (force_interpolation) {
+                force_camera_interpolation();
+            }
+        }
     }
 }
 
