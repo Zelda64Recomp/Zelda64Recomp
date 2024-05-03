@@ -6,6 +6,62 @@
 
 #define SAVE_TYPE_AUTOSAVE 2 
 
+u8 gCanPause;
+s32 ShrinkWindow_Letterbox_GetSizeTarget(void);
+void ShrinkWindow_Letterbox_SetSizeTarget(s32 target);
+
+// @recomp Patched function to set a global variable if the player can pause
+void KaleidoSetup_Update(PlayState* play) {
+    Input* input = CONTROLLER1(&play->state);
+    MessageContext* msgCtx = &play->msgCtx;
+    Player* player = GET_PLAYER(play);
+    PauseContext* pauseCtx = &play->pauseCtx;
+
+    if (CHECK_BTN_ALL(input->cur.button, BTN_R)) {
+        if (msgCtx && msgCtx) {}
+    }
+    
+    if ((pauseCtx->state == PAUSE_STATE_OFF) && (pauseCtx->debugEditor == DEBUG_EDITOR_NONE) &&
+        (play->gameOverCtx.state == GAMEOVER_INACTIVE)) {
+        if ((play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF)) {
+            if ((gSaveContext.save.cutsceneIndex < 0xFFF0) && (gSaveContext.nextCutsceneIndex < 0xFFF0)) {
+                if (!Play_InCsMode(play) || ((msgCtx->msgMode != MSGMODE_NONE) && (msgCtx->currentTextId == 0xFF))) {
+                    if ((play->unk_1887C < 2) && (gSaveContext.magicState != MAGIC_STATE_STEP_CAPACITY) &&
+                        (gSaveContext.magicState != MAGIC_STATE_FILL)) {
+                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20)) {
+                            if (!(play->actorCtx.flags & ACTORCTX_FLAG_TELESCOPE_ON) &&
+                                !(play->actorCtx.flags & ACTORCTX_FLAG_PICTO_BOX_ON)) {
+                                if (!play->actorCtx.isOverrideInputOn) {
+                                    if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+                                        gSaveContext.prevHudVisibility = gSaveContext.hudVisibility;
+                                        pauseCtx->itemDescriptionOn = false;
+                                        pauseCtx->state = PAUSE_STATE_OPENING_0;
+                                        func_800F4A10(play);
+                                        // Set next page mode to scroll left
+                                        pauseCtx->nextPageMode = pauseCtx->pageIndex * 2 + 1;
+                                        Audio_SetPauseState(true);
+                                    }
+                                    // @recomp Create a variable to check if the player can pause or not, which is used to determine when to autosave
+                                    else {
+                                        gCanPause = true;
+                                    }
+                                }
+                                if (pauseCtx->state == PAUSE_STATE_OPENING_0) {
+                                    GameState_SetFramerateDivisor(&play->state, 2);
+                                    if (ShrinkWindow_Letterbox_GetSizeTarget() != 0) {
+                                        ShrinkWindow_Letterbox_SetSizeTarget(0);
+                                    }
+                                    Audio_PlaySfx_PauseMenuOpenOrClose(SFX_PAUSE_MENU_OPEN);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Sram_SyncWriteToFlash(SramContext* sramCtx, s32 curPage, s32 numPages);
 
 void do_autosave(SramContext* sramCtx) {
@@ -256,6 +312,7 @@ void autosave_post_play_update(PlayState* play) {
         // * No cutscene is running.
         // * The game is not in cutscene mode.
         // * The clock has not reached the final 3 hours.
+        // * The player is allowed to pause.
         if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
             R_TIME_SPEED != 0 &&
             !Environment_IsTimeStopped() && 
@@ -263,7 +320,8 @@ void autosave_post_play_update(PlayState* play) {
             play->pauseCtx.state == PAUSE_STATE_OFF &&
             gSaveContext.save.cutsceneIndex < 0xFFF0 &&
             !Play_InCsMode(play) &&
-            !reached_final_three_hours()
+            !reached_final_three_hours() &&
+            gCanPause
         ) {
             frames_since_autosave_ready++;
             autosave_was_ready = true;
@@ -288,6 +346,7 @@ void autosave_post_play_update(PlayState* play) {
         // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on. 
         last_autosave_time = osGetTime();
     }
+    gCanPause = false;
 }
 
 void autosave_init() {
