@@ -8,6 +8,8 @@
 #include "overlays/actors/ovl_En_Osn/z_en_osn.h"
 #include "overlays/actors/ovl_En_Fall2/z_en_fall2.h"
 #include "overlays/actors/ovl_Obj_Entotu/z_obj_entotu.h"
+#include "overlays/actors/ovl_En_Goroiwa/z_en_goroiwa.h"
+#include "overlays/actors/ovl_En_Twig/z_en_twig.h"
 
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
@@ -1066,5 +1068,44 @@ void Environment_DrawRain(PlayState* play, View* view, GraphicsContext* gfxCtx) 
         // @recomp Pop the matrix group and close the displaylists.
         gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         CLOSE_DISPS(gfxCtx);
+    }
+}
+
+// @recomp Skip interpolation on the boulders in the path to Snowhead and the path to Ikana Canyon when they teleport back to their home position.
+void func_8093EE64(EnGoroiwa* this, s32 arg1) {
+    Vec3s* temp_v0 = &this->pathPoints[arg1];
+
+    this->actor.world.pos.x = temp_v0->x;
+    this->actor.world.pos.y = temp_v0->y;
+    this->actor.world.pos.z = temp_v0->z;
+
+    // @recomp Skip interpolation if their next goal position is their home position.
+    if (arg1 == 0) {
+        actor_set_interpolation_skipped(&this->actor);
+    }
+}
+
+extern Gfx object_twig_DL_001C38[];
+extern Gfx object_twig_DL_0014C8[];
+
+// @recomp Skip interpolation on the rotation for the beaver race rings in order to retain the intended animation look.
+void EnTwig_Draw(Actor* thisx, PlayState* play) {
+    EnTwig* this = (EnTwig*)thisx;
+
+    switch (this->unk_160) {
+        case 1:
+            // @recomp Set the matrix group to skip interpolation on rotation.
+            OPEN_DISPS(play->state.gfxCtx);
+            gEXMatrixGroupDecomposedSkipRot(POLY_OPA_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            Gfx_DrawDListOpa(play, object_twig_DL_001C38);
+
+            // @recomp Pop the tag.
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+            
+            CLOSE_DISPS(play->state.gfxCtx);
+            break;
+        case 2:
+            Gfx_DrawDListOpa(play, object_twig_DL_0014C8);
+            break;
     }
 }
