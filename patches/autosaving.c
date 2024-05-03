@@ -21,6 +21,8 @@ void do_autosave(SramContext* sramCtx) {
     // Synchronously save into the owl save slot and the backup owl save slot. 
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2], gFlashOwlSaveNumPages[fileNum * 2]);
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2 + 1], gFlashOwlSaveNumPages[fileNum * 2 + 1]);
+
+    gSaveContext.save.isOwlSave = false;
 }
 
 // @recomp Do not clear the save if the save was an autosave.
