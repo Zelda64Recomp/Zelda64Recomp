@@ -3,6 +3,7 @@
 #include "z64save.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
+#include "overlays/actors/ovl_Obj_Warpstone/z_obj_warpstone.h"
 #include "misc_funcs.h"
 
 #define SAVE_TYPE_AUTOSAVE 2 
@@ -562,4 +563,44 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
 
     // @recomp Initialize the autosave state tracking.
     autosave_init();
+}
+
+extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
+
+// @recomp If autosave is enabled, skip the part of the owl statue dialog that talks about the file being deleted on load, since it's not true.
+void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
+    ObjWarpstone* this = (ObjWarpstone*)thisx;
+    s32 pad;
+
+    if (this->isTalking) {
+        if (Actor_TextboxIsClosing(&this->dyna.actor, play)) {
+            this->isTalking = false;
+        } else if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
+            if (play->msgCtx.choiceIndex != 0) {
+                Audio_PlaySfx_MessageDecide();
+                play->msgCtx.msgMode = MSGMODE_OWL_SAVE_0;
+                play->msgCtx.unk120D6 = 0;
+                play->msgCtx.unk120D4 = 0;
+                gSaveContext.save.owlWarpId = OBJ_WARPSTONE_GET_OWL_WARP_ID(&this->dyna.actor);
+            } else {
+                Message_CloseTextbox(play);
+            }
+        }
+    } else if (Actor_ProcessTalkRequest(&this->dyna.actor, &play->state)) {
+        this->isTalking = true;
+    } else if (!this->actionFunc(this, play)) {
+        Actor_OfferTalkNearColChkInfoCylinder(&this->dyna.actor, play);
+    }
+
+    // @recomp Skip the text talking about the save being deleted on load, if autosave is enabled.
+    if (recomp_autosave_enabled()) {
+        if (this->isTalking && play->msgCtx.currentTextId == 0xC01 && play->msgCtx.msgBufPos == 269) {
+            play->msgCtx.msgBufPos = 530;
+        }
+    }
+
+    Collider_ResetCylinderAC(play, &this->collider.base);
+    Collider_UpdateCylinder(&this->dyna.actor, &this->collider);
+    CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
+    CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
 }
