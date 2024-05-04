@@ -282,7 +282,7 @@
                         Sets the horizontal aspect ratio. <b>Original</b> uses the game's original 4:3 aspect ratio. <b>Expand</b> will adjust to match the game window's aspect ratio.
                     </p>
                     <p data-if="cur_config_index == 3">
-                        Sets whether the game should display <b>Windowed</b> or <b>Fullscreen</b>. You can also use <b>Alt + Enter</b> to toggle this option.
+                        Sets whether the game should display <b>Windowed</b> or <b>Fullscreen</b>. You can also use <b>F11</b> or <b>Alt + Enter</b> to toggle this option.
                     </p>
                     <p data-if="cur_config_index == 4">
                         Sets the game's output framerate. This option does not affect gameplay.

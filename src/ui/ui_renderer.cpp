@@ -1255,7 +1255,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     const Uint8* key_state = SDL_GetKeyboardState(&num_keys);
 
     static bool was_reload_held = false;
-    bool is_reload_held = key_state[SDL_SCANCODE_F11] != 0;
+    bool is_reload_held = key_state[SDL_SCANCODE_F10] != 0;
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
 

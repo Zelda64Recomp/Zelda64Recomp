@@ -102,7 +102,14 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         {
             SDL_KeyboardEvent* keyevent = &event->key;
 
-            if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) {
+            // Skip repeated events.
+            if (event->key.repeat) {
+                break;
+            }
+
+            if ((keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) ||
+                keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_F11
+            ) {
                 recomp::toggle_fullscreen();
             }
             if (scanning_device != recomp::InputDevice::COUNT) {
