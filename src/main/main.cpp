@@ -160,6 +160,8 @@ constexpr uint32_t duplicated_input_frames = 4;
 // The number of output frames to skip for playback (to avoid playing duplicate inputs twice).
 static uint32_t discarded_output_frames;
 
+constexpr uint32_t bytes_per_frame = input_channels * sizeof(float);
+
 void queue_samples(int16_t* audio_data, size_t sample_count) {
     // Buffer for holding the output of swapping the audio channels. This is reused across
     // calls to reduce runtime allocations.
@@ -203,18 +205,31 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         throw std::runtime_error("Error using SDL audio converter");
     }
 
+    uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
+    uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
+    float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
+
+    // Prevent audio latency from building up by skipping samples in incoming audio when too many samples are already queued.
+    // Skip samples based on how many microseconds of samples are queued already.
+    uint32_t skip_factor = cur_queued_microseconds / 100000;
+    if (skip_factor != 0) {
+        uint32_t skip_ratio = 1 << skip_factor;
+        num_bytes_to_queue /= skip_ratio;
+        for (size_t i = 0; i < num_bytes_to_queue / (output_channels * sizeof(swap_buffer[0])); i++) {
+            samples_to_queue[2 * i + 0] = samples_to_queue[2 * skip_ratio * i + 0];
+            samples_to_queue[2 * i + 1] = samples_to_queue[2 * skip_ratio * i + 1];
+        }
+    }
+
     // Queue the swapped audio data.
     // Offset the data start by only half the discarded frame count as the other half of the discarded frames are at the end of the buffer.
-    SDL_QueueAudio(audio_device, swap_buffer.data() + output_channels * discarded_output_frames / 2,
-        audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]));
+    SDL_QueueAudio(audio_device, samples_to_queue, num_bytes_to_queue);
 }
-
-constexpr uint32_t bytes_per_frame = input_channels * sizeof(float);
 
 size_t get_frames_remaining() {
     constexpr float buffer_offset_frames = 1.0f;
     // Get the number of remaining buffered audio bytes.
-    uint32_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
+    uint64_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
 
     // Scale the byte count based on the ratio of sample rates and channel counts.
     buffered_byte_count = buffered_byte_count * 2 * sample_rate / output_sample_rate / output_channels;
@@ -231,7 +246,7 @@ size_t get_frames_remaining() {
         buffered_byte_count = 0;
     }
     // Convert from byte count to sample count.
-    return buffered_byte_count / bytes_per_frame;
+    return static_cast<uint32_t>(buffered_byte_count / bytes_per_frame);
 }
 
 void update_audio_converter() {
