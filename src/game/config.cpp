@@ -160,8 +160,19 @@ void save_general_config(const std::filesystem::path& path) {
     config_json["rumble_strength"] = recomp::get_rumble_strength();
     config_json["gyro_sensitivity"] = recomp::get_gyro_sensitivity();
     config_json["mouse_sensitivity"] = recomp::get_mouse_sensitivity();
+    config_json["autosave_mode"] = recomp::get_autosave_mode();
     config_json["debug_mode"] = recomp::get_debug_mode_enabled();
     config_file << std::setw(4) << config_json;
+}
+
+void set_general_settings_from_json(const nlohmann::json& config_json) {
+    recomp::set_targeting_mode(from_or_default(config_json, "targeting_mode", recomp::TargetingMode::Switch));
+    recomp::set_background_input_mode(from_or_default(config_json, "background_input_mode", recomp::BackgroundInputMode::On));
+    recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
+    recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
+    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
+    recomp::set_autosave_mode(from_or_default(config_json, "autosave_mode", recomp::AutosaveMode::On));
+    recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 
 void load_general_config(const std::filesystem::path& path) {
@@ -169,13 +180,8 @@ void load_general_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     config_file >> config_json;
-    
-    recomp::set_targeting_mode(from_or_default(config_json, "targeting_mode", recomp::TargetingMode::Switch));
-    recomp::set_background_input_mode(from_or_default(config_json, "background_input_mode", recomp::BackgroundInputMode::On));
-    recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
-    recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
-    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
-    recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
+
+    set_general_settings_from_json(config_json);
 }
 
 void assign_mapping(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
@@ -374,6 +380,8 @@ void recomp::load_config() {
         load_general_config(general_path);
     }
     else {
+        // Set the general settings from an empty json to use defaults.
+        set_general_settings_from_json({});
         save_general_config(general_path);
     }
 

@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "recomp.h"
+#include "recomp_config.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
 #include "recomp_sound.h"
@@ -87,4 +88,8 @@ extern "C" void recomp_get_low_health_beeps_enabled(uint8_t* rdram, recomp_conte
 
 extern "C" void recomp_time_us(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(ultramodern::time_since_start()).count()));
+}
+
+extern "C" void recomp_autosave_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, static_cast<s32>(recomp::get_autosave_mode() == recomp::AutosaveMode::On));
 }

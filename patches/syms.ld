@@ -49,3 +49,4 @@ osContGetQuery_recomp = 0x8F00007C;
 recomp_get_mouse_deltas = 0x8F000080; 
 bcmp_recomp = 0x8F000084;
 osGetTime_recomp = 0x8F000088;
+recomp_autosave_enabled = 0x8F00008C;

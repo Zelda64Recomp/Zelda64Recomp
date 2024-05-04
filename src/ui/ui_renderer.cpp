@@ -521,7 +521,7 @@ public:
             if (row_byte_padding == 0) {
                 // Copy row-by-row if the image is flipped.
                 if (flip_y) {
-                    for (uint32_t row = 0; row < source_dimensions.y; row++) {
+                    for (int row = 0; row < source_dimensions.y; row++) {
                         memcpy(dst_data + row_byte_width * (source_dimensions.y - row - 1), source + row_byte_width * row, row_byte_width);
                     }
                 }
@@ -536,7 +536,7 @@ public:
                 uint32_t src_stride = flip_y ? -row_pitch : row_pitch;
                 size_t offset = 0;
 
-                for (uint32_t row = 0; row < source_dimensions.y; row++) { //(offset + increment) <= image_size_bytes) {
+                for (int row = 0; row < source_dimensions.y; row++) { //(offset + increment) <= image_size_bytes) {
                     memcpy(dst_data, src_data, row_pitch);
                     src_data += src_stride;
                     offset += row_pitch;
@@ -581,7 +581,7 @@ public:
         mvp_ = projection_mtx_ * transform_;
     }
 
-    void start(RT64::RenderCommandList* list, uint32_t image_width, uint32_t image_height) {
+    void start(RT64::RenderCommandList* list, int image_width, int image_height) {
         list_ = list;
 
         if (multisampling_.sampleCount > 1) {

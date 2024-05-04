@@ -20,6 +20,20 @@ namespace recomp {
     
     bool get_debug_mode_enabled();
     void set_debug_mode_enabled(bool enabled);
+
+    enum class AutosaveMode {
+        On,
+        Off,
+		OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::AutosaveMode, {
+        {recomp::AutosaveMode::On, "On"},
+        {recomp::AutosaveMode::Off, "Off"}
+    });
+
+    AutosaveMode get_autosave_mode();
+    void set_autosave_mode(AutosaveMode mode);
 };
 
 #endif

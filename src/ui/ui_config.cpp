@@ -269,12 +269,14 @@ void recomp::open_quit_game_prompt() {
 	);
 }
 
+// These defaults values don't matter, as the config file handling overrides them.
 struct ControlOptionsContext {
-	int rumble_strength = 50; // 0 to 100
-	int gyro_sensitivity = 50; // 0 to 100
-	int mouse_sensitivity = 50; // 0 to 100
-	recomp::TargetingMode targeting_mode = recomp::TargetingMode::Switch;
-	recomp::BackgroundInputMode background_input_mode = recomp::BackgroundInputMode::On;
+	int rumble_strength; // 0 to 100
+	int gyro_sensitivity; // 0 to 100
+	int mouse_sensitivity; // 0 to 100
+	recomp::TargetingMode targeting_mode;
+	recomp::BackgroundInputMode background_input_mode;
+	recomp::AutosaveMode autosave_mode;
 };
 
 ControlOptionsContext control_options_context;
@@ -338,6 +340,17 @@ void recomp::set_background_input_mode(recomp::BackgroundInputMode mode) {
 			? "1"
 			: "0"
 	);
+}
+
+recomp::AutosaveMode recomp::get_autosave_mode() {
+	return control_options_context.autosave_mode;
+}
+
+void recomp::set_autosave_mode(recomp::AutosaveMode mode) {
+	control_options_context.autosave_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("autosave_mode");
+	}
 }
 
 struct SoundOptionsContext {
@@ -824,6 +837,7 @@ public:
 		constructor.Bind("mouse_sensitivity", &control_options_context.mouse_sensitivity);
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
 		bind_option(constructor, "background_input_mode", &control_options_context.background_input_mode);
+		bind_option(constructor, "autosave_mode", &control_options_context.autosave_mode);
 
 		general_model_handle = constructor.GetModelHandle();
 	}

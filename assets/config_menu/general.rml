@@ -93,7 +93,7 @@
                         </div>
                     </div>
 
-                    <!-- targeting mode -->
+                    <!-- background input -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(4)" id="conf-general__Background-Input">
                         <label class="config-option__title">Background Input</label>
                         <div class="config-option__list">
@@ -105,7 +105,7 @@
                                 data-checked="background_input_mode"
                                 value="On"
                                 id="bg_input_enabled"
-                                style="nav-up: #mouse_sensitivity_input"
+                                style="nav-up: #mouse_sensitivity_input; nav-down: #autosave_enabled"
                             />
                             <label class="config-option__tab-label" for="bg_input_enabled">On</label>
 
@@ -117,9 +117,39 @@
                                 data-checked="background_input_mode"
                                 value="Off"
                                 id="bg_input_disabled"
-                                style="nav-up: #mouse_sensitivity_input"
+                                style="nav-up: #mouse_sensitivity_input; nav-down: #autosave_disabled"
                             />
                             <label class="config-option__tab-label" for="bg_input_disabled">Off</label>
+                        </div>
+                    </div>
+
+                    <!-- autosave -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(5)">
+                        <label class="config-option__title">Autosaving</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(5)"
+                                name="autosave_mode"
+                                data-checked="autosave_mode"
+                                value="On"
+                                id="autosave_enabled"
+                                style="nav-up: #bg_input_enabled"
+                            />
+                            <label class="config-option__tab-label" for="autosave_enabled">On</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(5)"
+                                name="autosave_mode"
+                                data-checked="autosave_mode"
+                                value="Off"
+                                id="autosave_disabled"
+                                style="nav-up: #bg_input_disabled"
+                            />
+                            <label class="config-option__tab-label" for="autosave_disabled">Off</label>
                         </div>
                     </div>
                 </div>
@@ -138,7 +168,7 @@
                         <b>Note: To recalibrate controller gyro, set the controller down on a still, flat surface for 5 seconds.</b>
                     </p>
                     <p data-if="cur_config_index == 3">
-                        Controls the sensitivity of mouse aiming. <b>Setting this to zero will disable mouse aiming.</b>
+                        Controls the sensitivity of mouse aiming when using items in first person. <b>Setting this to zero will disable mouse aiming.</b>
                         <br />
                         <br />
                         <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is is intended to be used with inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
@@ -147,6 +177,11 @@
                         Allows the game to read controller input when out of focus.
                         <br/>
                         <b>This setting does not affect keyboard input.</b>
+                    </p>
+                    <p data-if="cur_config_index == 5">
+                        Enables or disables the autosave feature.
+                        <br/>
+                        <b>If any owl save exists when an autosave is made, the owl save will get replaced.</b>
                     </p>
                 </div>
             </div>

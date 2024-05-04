@@ -3,6 +3,7 @@
 #include "z64save.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
+#include "misc_funcs.h"
 
 #define SAVE_TYPE_AUTOSAVE 2 
 
@@ -266,10 +267,6 @@ void draw_autosave_icon(PlayState* play) {
 
 void show_autosave_icon() {
     autosave_icon_counter = AUTOSAVE_ICON_TOTAL_FRAMES;
-}
-
-s32 recomp_autosave_enabled() {
-    return 1;
 }
 
 u32 recomp_autosave_interval() {

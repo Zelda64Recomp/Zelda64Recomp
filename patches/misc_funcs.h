@@ -9,5 +9,6 @@ DECLARE_FUNC(void, recomp_handle_quicksave_actions, OSMesgQueue* enter_mq, OSMes
 DECLARE_FUNC(void, recomp_handle_quicksave_actions_main, OSMesgQueue* enter_mq, OSMesgQueue* exit_mq);
 DECLARE_FUNC(u16, recomp_get_pending_warp);
 DECLARE_FUNC(u32, recomp_get_pending_set_time);
+DECLARE_FUNC(s32, recomp_autosave_enabled);
 
 #endif
