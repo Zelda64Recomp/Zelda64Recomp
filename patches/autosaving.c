@@ -357,6 +357,79 @@ extern u16 D_801C6A58[];
 #define CHECK_NEWF(newf)                                                                                 \
     ((newf)[0] != 'Z' || (newf)[1] != 'E' || (newf)[2] != 'L' || (newf)[3] != 'D' || (newf)[4] != 'A' || \
      (newf)[5] != '3')
+     
+typedef struct {
+    /* 0x00 */ s16 csId;
+    /* 0x02 */ s16 length;
+    /* 0x04 */ s16 endCsId;
+    /* 0x06 */ s16 subCamId;
+    /* 0x08 */ Actor* targetActor;
+    /* 0x0C */ s32 startMethod;
+    /* 0x10 */ PlayState* play;
+    /* 0x14 */ s16 retCamId;
+    /* 0x16 */ s16 isCameraStored;
+} CutsceneManager; // size = 0x18
+
+extern CutsceneManager sCutsceneMgr;
+extern ActorCutscene* sSceneCutsceneList;
+extern s16 sSceneCutsceneCount;
+
+bool skip_entry_cutscene = false;
+
+// @recomp Patched to skip the entrance cutscene if the flag is enabled.
+s16 CutsceneManager_FindEntranceCsId(void) {
+    PlayState* play;
+    s32 csId;
+
+    for (csId = 0; csId < sSceneCutsceneCount; csId++) {
+        //! FAKE:
+        if ((sSceneCutsceneList[csId].scriptIndex != CS_SCRIPT_ID_NONE) &&
+            (sSceneCutsceneList[csId].scriptIndex < (play = sCutsceneMgr.play)->csCtx.scriptListCount) &&
+            (sCutsceneMgr.play->curSpawn ==
+             sCutsceneMgr.play->csCtx.scriptList[sSceneCutsceneList[csId].scriptIndex].spawn)) {
+            
+            // @recomp Check if the entry cutscene should be skipped and do so.
+            if (skip_entry_cutscene) {
+                skip_entry_cutscene = false;
+                return -1;
+            }
+            return csId;
+        }
+    }
+
+    for (csId = 0; csId < sSceneCutsceneCount; csId++) {
+        if ((sSceneCutsceneList[csId].customValue >= 100) &&
+            (sSceneCutsceneList[csId].customValue == (sCutsceneMgr.play->curSpawn + 100))) {
+            return csId;
+        }
+    }
+
+    return -1;
+}
+
+s32 spawn_entrance_from_autosave_entrance(s16 autosave_entrance) {
+    s32 scene_id = Entrance_GetSceneIdAbsolute(gSaveContext.save.entrance);
+    recomp_printf("Loaded entrance: %d in scene: %d\n", autosave_entrance, scene_id);
+
+    switch (scene_id) {
+        default:
+            return ENTRANCE(SOUTH_CLOCK_TOWN, 0);
+        case SCENE_MITURIN: // Woodfall Temple
+        case SCENE_MITURIN_BS: // Odolwa's Lair
+            return ENTRANCE(WOODFALL_TEMPLE, 0);
+        case SCENE_HAKUGIN: // Snowhead Temple
+        case SCENE_HAKUGIN_BS: // Goht's Lair
+            return ENTRANCE(SNOWHEAD_TEMPLE, 0);
+        case SCENE_SEA: // Great Bay Temple
+        case SCENE_SEA_BS: // Gyorg's Lair
+            return ENTRANCE(GREAT_BAY_TEMPLE, 0);
+        case SCENE_INISIE_N: // Stone Tower Temple
+            return ENTRANCE(STONE_TOWER_TEMPLE, 0);
+        case SCENE_INISIE_R: // Inverted Stone Tower Temple
+        case SCENE_INISIE_BS: // Twinmold's Lair
+            return ENTRANCE(STONE_TOWER_TEMPLE_INVERTED, 0);
+    }
+}
 
 // @recomp Patched to change the entrance for autosaves and initialize autosaves.
 void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
@@ -433,7 +506,12 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
     }
     // @recomp Handle autosaves.
     else if (gSaveContext.save.isOwlSave == SAVE_TYPE_AUTOSAVE) {
-        gSaveContext.save.entrance = ENTRANCE(SOUTH_CLOCK_TOWN, 0);
+        gSaveContext.save.entrance = spawn_entrance_from_autosave_entrance(gSaveContext.save.entrance);
+
+        // Skip the turtle cutscene that happens when entering Great Bay Temple.
+        if (gSaveContext.save.entrance == ENTRANCE(GREAT_BAY_TEMPLE, 0)) {
+            skip_entry_cutscene = true;
+        }
 
         for (i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
             gSaveContext.cycleSceneFlags[i].chest = gSaveContext.save.saveInfo.permanentSceneFlags[i].chest;
