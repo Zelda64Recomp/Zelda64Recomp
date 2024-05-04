@@ -25,6 +25,7 @@ struct ControllerState {
 
 static struct {
     const Uint8* keys = nullptr;
+    SDL_Keymod keymod = SDL_Keymod::KMOD_NONE;
     int numkeys = 0;
     std::atomic_int32_t mouse_wheel_pos = 0;
     std::mutex cur_controllers_mutex;
@@ -84,6 +85,17 @@ void recomp::set_cursor_visible(bool visible) {
     cursor_enabled.store(visible);
 }
 
+bool should_override_keystate(SDL_Scancode key, SDL_Keymod mod) {
+    // Override Enter when Alt is held.
+    if (key == SDL_Scancode::SDL_SCANCODE_RETURN) {
+        if (mod & SDL_Keymod::KMOD_ALT) {
+            return true;
+        }
+    }
+
+    return false;        
+}
+
 bool sdl_event_filter(void* userdata, SDL_Event* event) {
     switch (event->type) {
     case SDL_EventType::SDL_KEYDOWN:
@@ -100,7 +112,9 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
                     set_scanned_input({(uint32_t)InputType::Keyboard, keyevent->keysym.scancode});
                 }
             } else {
-                queue_if_enabled(event);
+                if (!should_override_keystate(keyevent->keysym.scancode, static_cast<SDL_Keymod>(keyevent->keysym.mod))) {
+                    queue_if_enabled(event);
+                }
             }
         }
         break;
@@ -369,6 +383,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
 
 void recomp::poll_inputs() {
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
+    InputState.keymod = SDL_GetModState();
 
     {
         std::lock_guard lock{ InputState.cur_controllers_mutex };
@@ -487,6 +502,9 @@ float recomp::get_input_analog(const recomp::InputField& field) {
     switch ((InputType)field.input_type) {
     case InputType::Keyboard:
         if (InputState.keys && field.input_id >= 0 && field.input_id < InputState.numkeys) {
+            if (should_override_keystate(static_cast<SDL_Scancode>(field.input_id), InputState.keymod)) {
+                return 0.0f;
+            }
             return InputState.keys[field.input_id] ? 1.0f : 0.0f;
         }
         return 0.0f;
@@ -514,6 +532,9 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
     switch ((InputType)field.input_type) {
     case InputType::Keyboard:
         if (InputState.keys && field.input_id >= 0 && field.input_id < InputState.numkeys) {
+            if (should_override_keystate(static_cast<SDL_Scancode>(field.input_id), InputState.keymod)) {
+                return false;
+            }
             return InputState.keys[field.input_id] != 0;
         }
         return false;
