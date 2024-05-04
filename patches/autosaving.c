@@ -222,7 +222,7 @@ Gfx* GfxEx_DrawRect_DropShadow(Gfx* gfx, s16 rectLeft, s16 rectTop, s16 rectWidt
 bool autosave_was_ready = false;
 
 s32 recomp_autosave_debug_enabled() {
-    return 1;
+    return 0;
 }
 
 void draw_autosave_icon(PlayState* play) {
