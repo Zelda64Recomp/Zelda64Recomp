@@ -343,6 +343,7 @@ u32 recomp_autosave_interval() {
 #define MIN_FRAMES_SINCE_CHANGED 10
 #define MIN_FRAMES_SINCE_READY 20
 OSTime last_autosave_time = 0;
+u32 extra_autosave_delay_milliseconds = 0;
 
 bool reached_final_three_hours() {
     // Logic copied with modifications from Interface_DrawClock.
@@ -356,11 +357,13 @@ bool reached_final_three_hours() {
 
 void autosave_reset_timer() {
     last_autosave_time = osGetTime();
+    extra_autosave_delay_milliseconds = 0;
 }
 
 void autosave_reset_timer_slow() {
     // Set the most recent autosave time in the future to give extra time before an autosave triggers.
-    last_autosave_time = osGetTime() + OS_USEC_TO_CYCLES(2 * 60 * 1000 * 1000);
+    last_autosave_time = osGetTime();
+    extra_autosave_delay_milliseconds = 2 * 60 * 1000;
 }
 
 void autosave_post_play_update(PlayState* play) {
@@ -408,7 +411,7 @@ void autosave_post_play_update(PlayState* play) {
         // and that enough time has passed since the previous autosave to create a new one.
         if (frames_since_save_changed >= MIN_FRAMES_SINCE_CHANGED &&
             frames_since_autosave_ready >= MIN_FRAMES_SINCE_READY &&
-            OS_CYCLES_TO_USEC(time_now - last_autosave_time) > (1000 * recomp_autosave_interval())
+            time_now - last_autosave_time > (OS_USEC_TO_CYCLES(1000 * (recomp_autosave_interval() + extra_autosave_delay_milliseconds)))
         ) {
             do_autosave(&play->sramCtx);
             show_autosave_icon();
@@ -418,7 +421,6 @@ void autosave_post_play_update(PlayState* play) {
     else {
         // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on. 
         autosave_reset_timer();
-        last_autosave_time = osGetTime();
     }
     gCanPause = false;
 }
@@ -512,7 +514,7 @@ s32 spawn_entrance_from_autosave_entrance(s16 autosave_entrance) {
 void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
     s32 i;
     s32 pad;
-    s32 phi_t1;
+    s32 phi_t1 = 0;
     s32 pad1;
     s32 fileNum;
 
