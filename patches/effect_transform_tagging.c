@@ -751,3 +751,75 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
+
+// @recomp Patched to tag the two custom lens flares (used by the Igos du Ikana curtains).
+void Environment_DrawCustomLensFlare(PlayState* play) {
+    Vec3f pos;
+
+    // @recomp Set up the graphics context.
+    OPEN_DISPS(play->state.gfxCtx);
+
+    if (gCustomLensFlare1On) {
+        pos.x = gCustomLensFlare1Pos.x;
+        pos.y = gCustomLensFlare1Pos.y;
+        pos.z = gCustomLensFlare1Pos.z;
+        // @recomp Tag the entire lens flare effect, using order linear. Skip interpolation when the camera is skipped.
+        if (camera_was_skipped()) {
+            gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, CUSTOM_LENS_FLARE_TRANSFORM_ID_START + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        else {
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, CUSTOM_LENS_FLARE_TRANSFORM_ID_START + 0, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        Environment_DrawLensFlare(play, &play->envCtx, &play->view, play->state.gfxCtx, pos, D_801F4E44, D_801F4E48,
+                                  D_801F4E4C, false);
+        // @recomp Pop the matrix group.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+    }
+
+    if (gCustomLensFlare2On) {
+        pos.x = gCustomLensFlare2Pos.x;
+        pos.y = gCustomLensFlare2Pos.y;
+        pos.z = gCustomLensFlare2Pos.z;
+        // @recomp Tag the entire lens flare effect, using order linear. Skip interpolation when the camera is skipped.
+        if (camera_was_skipped()) {
+            gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, CUSTOM_LENS_FLARE_TRANSFORM_ID_START + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        else {
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, CUSTOM_LENS_FLARE_TRANSFORM_ID_START + 1, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        Environment_DrawLensFlare(play, &play->envCtx, &play->view, play->state.gfxCtx, pos, D_801F4E5C, D_801F4E60,
+                                  D_801F4E64, false);
+        // @recomp Pop the matrix group.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+    }
+
+    // @recomp Close the graphics context.
+    CLOSE_DISPS();
+}
+
+// @recomp Patched to tag the sun lens flare.
+void Environment_DrawSunLensFlare(PlayState* play, EnvironmentContext* envCtx, View* view, GraphicsContext* gfxCtx,
+                                  Vec3f vec) {
+    if ((play->envCtx.precipitation[PRECIP_RAIN_CUR] == 0) &&
+        !(GET_ACTIVE_CAM(play)->stateFlags & CAM_STATE_UNDERWATER) && (play->skyboxId == SKYBOX_NORMAL_SKY)) {
+        f32 v0 = Math_CosS(CURRENT_TIME - CLOCK_TIME(12, 0));
+
+        // @recomp Set up the graphics context.
+        OPEN_DISPS(play->state.gfxCtx);
+
+        // @recomp Tag the entire lens flare effect, using order linear. Skip interpolation when the camera is skipped.
+        if (camera_was_skipped()) {
+            gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, SUN_LENS_FLARE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        else {
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SUN_LENS_FLARE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        Environment_DrawLensFlare(play, &play->envCtx, &play->view, play->state.gfxCtx, vec, 370.0f, v0 * 120.0f, 0x190,
+                                  true);
+        // @recomp Pop the matrix group.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+        
+        // @recomp Close the graphics context.
+        CLOSE_DISPS();
+    }
+}

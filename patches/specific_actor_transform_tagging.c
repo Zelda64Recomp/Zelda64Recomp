@@ -10,6 +10,11 @@
 #include "overlays/actors/ovl_Obj_Entotu/z_obj_entotu.h"
 #include "overlays/actors/ovl_En_Goroiwa/z_en_goroiwa.h"
 #include "overlays/actors/ovl_En_Twig/z_en_twig.h"
+#include "overlays/actors/ovl_En_Honotrap/z_en_honotrap.h"
+
+// Decomp renames, TODO update decomp and remove these
+#define EnHonotrap_FlameGroup func_8092F878
+#define EnHonotrap_DrawFlameGroup func_80930190
 
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
@@ -1108,4 +1113,168 @@ void EnTwig_Draw(Actor* thisx, PlayState* play) {
             Gfx_DrawDListOpa(play, object_twig_DL_0014C8);
             break;
     }
+}
+
+extern Gfx gEffFire1DL[];
+
+#define HONOTRAP_EXTRA_BYTE_1(flameGroup) (&(flameGroup)->flameList[0].isDrawn)[1]
+#define HONOTRAP_EXTRA_BYTE_2(flameGroup) (&(flameGroup)->flameList[1].isDrawn)[1]
+
+void EnHonotrap_FlameGroup(EnHonotrap* this, PlayState* play) {
+    s32 i;
+    EnHonotrapFlameGroup* flameGroup = &this->flameGroup;
+    f32 var_fs0;
+    f32 temp_fs0;
+    f32 temp_fs1;
+    f32 sp88;
+    f32 sp84;
+    f32 sp80;
+    s32 flameScrollDisplacement;
+    s32 sp78 = false;
+    f32 var_fs0_2;
+    Vec3f sp68;
+    EnHonotrapFlameElement* flameElem;
+
+    sp80 = fabsf(Math_CosS(Camera_GetCamDirPitch(GET_ACTIVE_CAM(play))));
+    flameScrollDisplacement = (s32)(sp80 * -10.5f) - 10;
+    Math_StepToF(&flameGroup->unk0, 1.0f, 0.05f);
+    if (this->timer <= 40) {
+        sp78 = Math_StepToF(&flameGroup->unk4, 1.0f, 0.05f);
+    } else if (this->actor.parent == NULL) {
+        this->timer = 40;
+    }
+    for (i = 0; i < ARRAY_COUNT(flameGroup->flameList); i++) {
+        flameGroup->flameList[i].isDrawn = false;
+    }
+
+    sp88 = Math_SinS(this->actor.shape.rot.y) * 120.0f;
+    sp84 = Math_CosS(this->actor.shape.rot.y) * 120.0f;
+
+    flameGroup->unk8 += 0.050f * (1.0f - flameGroup->unk4);
+
+    if (flameGroup->unk8 > 1.0f / 6) {
+        flameGroup->unk8 -= 1.0f / 6;
+        // @recomp Indicate that a cycle of the flame group has occurred.
+        HONOTRAP_EXTRA_BYTE_1(flameGroup) = true;
+        HONOTRAP_EXTRA_BYTE_2(flameGroup)++;
+        if (HONOTRAP_EXTRA_BYTE_2(flameGroup) == ARRAY_COUNT(flameGroup->flameList)) {
+            HONOTRAP_EXTRA_BYTE_2(flameGroup) = 0;
+        }
+    }
+    else {
+        HONOTRAP_EXTRA_BYTE_1(flameGroup) = false;
+    }
+    var_fs0 = flameGroup->unk4 + flameGroup->unk8;
+
+    for (i = 0; i < ARRAY_COUNT(flameGroup->flameList) && (var_fs0 <= flameGroup->unk0); i++) {
+        flameElem = &flameGroup->flameList[i];
+        flameElem->isDrawn = true;
+
+        flameElem->pos.x = (sp88 * var_fs0) + this->actor.world.pos.x;
+        flameElem->pos.y = this->actor.world.pos.y;
+        flameElem->pos.z = (sp84 * var_fs0) + this->actor.world.pos.z;
+
+        flameElem->unkC = Math_SinS(TRUNCF_BINANG(var_fs0 * 25486.223f)) * 1.6f;
+        if (flameElem->unkC > 1.0f) {
+            flameElem->unkC = 1.0f;
+        } else if (flameElem->unkC < 0.0f) {
+            flameElem->unkC = 0.0f;
+        }
+
+        var_fs0 += 1.0f / 6;
+        flameElem->unkC *= (0.006f * (((1.0f - flameGroup->unk4) * 0.8f) + 0.2f));
+        flameElem->flameScroll += flameScrollDisplacement;
+        flameElem->flameScroll %= 0x200U;
+    }
+
+    if (sp78 || (this->timer <= 0)) {
+        Actor_Kill(&this->actor);
+        return;
+    }
+    temp_fs0 = flameGroup->unk0 * 120.0f;
+    temp_fs1 = flameGroup->unk4 * 120.0f;
+    Actor_OffsetOfPointInActorCoords(&this->actor, &sp68, &GET_PLAYER(play)->actor.world.pos);
+
+    if (sp68.z < temp_fs1) {
+        sp68.z = temp_fs1;
+    } else if (temp_fs0 < sp68.z) {
+        sp68.z = temp_fs0;
+    }
+
+    var_fs0_2 = Math_SinS(TRUNCF_BINANG(sp68.z * 212.3852f)) * 1.6f;
+    if (var_fs0_2 > 1.0f) {
+        var_fs0_2 = 1.0f;
+    }
+    sp80 *= ((1.0f - flameGroup->unk4) * 0.8f) + 0.2f;
+    if (sp80 > 0.2f) {
+        this->collider.cyl.dim.pos.x =
+            TRUNCF_BINANG((Math_SinS(this->actor.shape.rot.y) * sp68.z) + this->actor.world.pos.x);
+        this->collider.cyl.dim.pos.y = TRUNCF_BINANG(this->actor.world.pos.y - (24.0f * var_fs0_2));
+        this->collider.cyl.dim.pos.z =
+            TRUNCF_BINANG((Math_CosS(this->actor.shape.rot.y) * sp68.z) + this->actor.world.pos.z);
+        this->collider.cyl.dim.radius = TRUNCF_BINANG(15.0f * var_fs0_2);
+        this->collider.cyl.dim.height = TRUNCF_BINANG(37.5f * var_fs0_2);
+        CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.tris.base);
+        CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.tris.base);
+        CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.tris.base);
+    }
+}
+
+
+// @recomp Patched to tag the flames that come out of fire eyes.
+void EnHonotrap_DrawFlameGroup(Actor* thisx, PlayState* play) {
+    s32 pad;
+    EnHonotrap* this = (EnHonotrap*)thisx;
+    EnHonotrapFlameElement* flameElem;
+    EnHonotrapFlameGroup* flameGroup = &this->flameGroup;
+    s32 i;
+    s32 pad2;
+    Vec3s camDir;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+    gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 255, 200, 0, 255);
+    gDPSetEnvColor(POLY_XLU_DISP++, 255, 0, 0, 0);
+    camDir = Camera_GetCamDir(GET_ACTIVE_CAM(play));
+    camDir.y += 0x8000;
+
+    // @recomp Get the transform ID for this actor.
+    u32 base_transform_id = actor_transform_id(thisx);
+
+    for (i = 0; i < ARRAY_COUNT(flameGroup->flameList); i++) {
+        flameElem = &flameGroup->flameList[i];
+        if (flameElem->isDrawn) {
+
+            // @recomp Tag the current flame.
+            s32 transform_id_offset = i - HONOTRAP_EXTRA_BYTE_2(flameGroup);
+            if (transform_id_offset < 0) {
+                transform_id_offset += ARRAY_COUNT(flameGroup->flameList);
+            }
+            u32 transform_id = base_transform_id + transform_id_offset;
+
+            // @recomp Use the texscroll for the flame index based on the calculated transform offset to make it consistent in movement.
+            gSPSegment(POLY_XLU_DISP++, 0x08,
+                       Gfx_TwoTexScroll(play->state.gfxCtx, 0, 0, 0, 32, 64, 1, 0, flameGroup->flameList[transform_id_offset].flameScroll, 32, 128));
+            Matrix_SetTranslateRotateYXZ(flameElem->pos.x, flameElem->pos.y - (4000.0f * flameElem->unkC),
+                                         flameElem->pos.z, &camDir);
+            Matrix_Scale(((fabsf(Math_SinS((s16)(camDir.y - thisx->shape.rot.y) >> 1)) * 0.2f) + 1.7f) *
+                             flameElem->unkC,
+                         flameElem->unkC, 1.0f, MTXMODE_APPLY);
+            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+            // @recomp Skip if a cycle occurred and this is the first flame.
+            if (i == 0 && HONOTRAP_EXTRA_BYTE_1(flameGroup)) {
+                gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            }
+            else {
+                gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, transform_id, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            }
+            gSPDisplayList(POLY_XLU_DISP++, gEffFire1DL);
+            // @recomp Pop the matrix group.
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+        }
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
 }

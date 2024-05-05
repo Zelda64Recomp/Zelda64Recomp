@@ -64,8 +64,17 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
     EnTest7_DrawFeathers(play, this->feathers);
 
     if (this->flags & OWL_WARP_FLAGS_DRAW_LENS_FLARE) {
+        // @recomp Tag the entire lens flare effect, using order linear. Skip interpolation when the camera is skipped.
+        if (camera_was_skipped()) {
+            gEXMatrixGroupDecomposedSkipAll(POLY_XLU_DISP++, SOARING_LENS_FLARE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
+        else {
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, SOARING_LENS_FLARE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+        }
         Environment_DrawLensFlare(play, &play->envCtx, &play->view, play->state.gfxCtx, this->actor.world.pos, 70.0f,
                                   5.0f, 0, false);
+        // @recomp Pop the lens flare matrix group.
+        gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
     }
 
     CLOSE_DISPS(play->state.gfxCtx);

@@ -1,6 +1,7 @@
 #include "patches.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 #include "overlays/actors/ovl_En_Fall/z_en_fall.h"
+#include "overlays/actors/ovl_Demo_Effect/z_demo_effect.h"
 
 #define PAGE_BG_WIDTH (PAGE_BG_COLS * PAGE_BG_QUAD_WIDTH)
 #define PAGE_BG_HEIGHT (PAGE_BG_ROWS * PAGE_BG_QUAD_HEIGHT)
@@ -297,4 +298,35 @@ void Cutscene_UpdateScripted(PlayState* play, CutsceneContext* csCtx) {
             extra_vis = 1;
         }
     }
+}
+
+// @recomp Fix a texture scroll using an incorrect tile size, which resulted in the scroll jumping during the animation.
+s32 DemoEffect_OverrideLimbDrawTimewarp(PlayState* play, SkelCurve* skelCurve, s32 limbIndex, Actor* thisx) {
+    s32 pad;
+    DemoEffect* this = (DemoEffect*)thisx;
+    u32 frames = play->gameplayFrames;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+
+    gDPSetPrimColor(POLY_XLU_DISP++, 0, 0x80, 170, 255, 255, 255);
+    gDPSetEnvColor(POLY_XLU_DISP++, this->envXluColor[0], this->envXluColor[1], this->envXluColor[2], 255);
+
+    // @recomp Fix the tile size to be 64x64 for both tiles to match the actual texture size.
+    gSPSegment(POLY_XLU_DISP++, 0x08,
+            Gfx_TwoTexScroll(play->state.gfxCtx,
+                0, (frames * 6) % 256, 255 - ((frames * 16) % 256), 0x40, 0x40,
+                1, (frames * 4) % 256, 255 - ((frames * 12) % 256), 0x40, 0x40));
+
+    CLOSE_DISPS(play->state.gfxCtx);
+
+    if (limbIndex == 0) {
+        s16* transform = skelCurve->jointTable[0];
+
+        transform[2] = transform[0] = 1024;
+        transform[1] = 1024;
+    }
+
+    return true;
 }
