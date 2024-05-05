@@ -88,8 +88,8 @@ void func_80147314(SramContext* sramCtx, s32 fileNum) {
     s32 save_type = gSaveContext.save.isOwlSave;
     gSaveContext.save.isOwlSave = false;
 
-    // @recomp Check if this owl save was actually an autosave and don't clear it if so.
-    if (save_type != SAVE_TYPE_AUTOSAVE) {
+    // @recomp Prevent owl save/autosave deletion if autosaving is enabled.
+    if (!recomp_autosave_enabled()) {
         gSaveContext.save.saveInfo.playerData.newf[0] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[1] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[2] = '\0';

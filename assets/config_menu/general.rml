@@ -179,9 +179,10 @@
                         <b>This setting does not affect keyboard input.</b>
                     </p>
                     <p data-if="cur_config_index == 5">
-                        Enables or disables the autosave feature.
+                        Turns on autosaving and prevents owl saves from being deleted on load. If an owl save exists when an autosave is made, the owl save will get replaced.
                         <br/>
-                        <b>If any owl save exists when an autosave is made, the owl save will get replaced.</b>
+                        <br/>
+                        <b>If autosaving is disabled, existing autosaves will be deleted when loaded.</b>
                     </p>
                 </div>
             </div>
