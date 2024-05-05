@@ -66,6 +66,9 @@ void KaleidoSetup_Update(PlayState* play) {
 
 void Sram_SyncWriteToFlash(SramContext* sramCtx, s32 curPage, s32 numPages);
 
+void autosave_reset_timer();
+void autosave_reset_timer_slow();
+
 void do_autosave(SramContext* sramCtx) {
     s32 fileNum = gSaveContext.fileNum;
 
@@ -116,19 +119,81 @@ void func_80147314(SramContext* sramCtx, s32 fileNum) {
     }
 }
 
+void delete_owl_save(SramContext* sramCtx, s32 fileNum) {
+    gSaveContext.save.saveInfo.playerData.newf[0] = '\0';
+    gSaveContext.save.saveInfo.playerData.newf[1] = '\0';
+    gSaveContext.save.saveInfo.playerData.newf[2] = '\0';
+    gSaveContext.save.saveInfo.playerData.newf[3] = '\0';
+    gSaveContext.save.saveInfo.playerData.newf[4] = '\0';
+    gSaveContext.save.saveInfo.playerData.newf[5] = '\0';
+
+    gSaveContext.save.saveInfo.checksum = 0;
+    gSaveContext.save.saveInfo.checksum = Sram_CalcChecksum(&gSaveContext, offsetof(SaveContext, fileNum));
+
+    Lib_MemCpy(sramCtx->saveBuf, &gSaveContext, offsetof(SaveContext, fileNum));
+    Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2], gFlashOwlSaveNumPages[fileNum * 2]);
+    Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2 + 1], gFlashOwlSaveNumPages[fileNum * 2 + 1]);
+
+    gSaveContext.save.saveInfo.playerData.newf[0] = 'Z';
+    gSaveContext.save.saveInfo.playerData.newf[1] = 'E';
+    gSaveContext.save.saveInfo.playerData.newf[2] = 'L';
+    gSaveContext.save.saveInfo.playerData.newf[3] = 'D';
+    gSaveContext.save.saveInfo.playerData.newf[4] = 'A';
+    gSaveContext.save.saveInfo.playerData.newf[5] = '3';
+}
+
+// @recomp Patched to delete owl saves when making regular saves.
+void func_8014546C(SramContext* sramCtx) {
+    s32 i;
+
+    if (gSaveContext.save.isOwlSave) {
+        for (i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].chest = gSaveContext.cycleSceneFlags[i].chest;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].switch0 = gSaveContext.cycleSceneFlags[i].switch0;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].switch1 = gSaveContext.cycleSceneFlags[i].switch1;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].clearedRoom = gSaveContext.cycleSceneFlags[i].clearedRoom;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].collectible = gSaveContext.cycleSceneFlags[i].collectible;
+        }
+
+        gSaveContext.save.saveInfo.checksum = 0;
+        gSaveContext.save.saveInfo.checksum = Sram_CalcChecksum(&gSaveContext, offsetof(SaveContext, fileNum));
+
+        Lib_MemCpy(sramCtx->saveBuf, &gSaveContext, offsetof(SaveContext, fileNum));
+    } else {
+        // @recomp Delete the owl save.
+        delete_owl_save(sramCtx, gSaveContext.fileNum);
+        // @recomp Reset the autosave timer.
+        autosave_reset_timer();
+        for (i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].chest = gSaveContext.cycleSceneFlags[i].chest;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].switch0 = gSaveContext.cycleSceneFlags[i].switch0;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].switch1 = gSaveContext.cycleSceneFlags[i].switch1;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].clearedRoom = gSaveContext.cycleSceneFlags[i].clearedRoom;
+            gSaveContext.save.saveInfo.permanentSceneFlags[i].collectible = gSaveContext.cycleSceneFlags[i].collectible;
+        }
+
+        gSaveContext.save.saveInfo.checksum = 0;
+        gSaveContext.save.saveInfo.checksum = Sram_CalcChecksum(&gSaveContext.save, sizeof(Save));
+
+        if (gSaveContext.flashSaveAvailable) {
+            Lib_MemCpy(sramCtx->saveBuf, &gSaveContext, sizeof(Save));
+            Lib_MemCpy(&sramCtx->saveBuf[0x2000], &gSaveContext.save, sizeof(Save));
+        }
+    }
+}
+
 extern u16 D_801F6AF0;
 extern u8 D_801F6AF2;
 
-// @recomp Patched to tag autosaves as owl saves so that the modified version of func_80147314 still clears them.
+// @recomp Patched to call the new owl save deletion function.
 void Sram_EraseSave(FileSelectState* fileSelect2, SramContext* sramCtx, s32 fileNum) {
     FileSelectState* fileSelect = fileSelect2;
     s32 pad;
 
     if (gSaveContext.flashSaveAvailable) {
         if (fileSelect->isOwlSave[fileNum + 2]) {
-            // @recomp Override the save type to a regular owl save.
-            fileSelect->isOwlSave[fileNum + 2] = true;
-            func_80147314(sramCtx, fileNum);
+            // @recomp Call the new owl save deletion function.
+            delete_owl_save(sramCtx, gSaveContext.fileNum);
             fileSelect->isOwlSave[fileNum + 2] = false;
         }
         bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
@@ -288,6 +353,15 @@ bool reached_final_three_hours() {
     return false;
 }
 
+void autosave_reset_timer() {
+    last_autosave_time = osGetTime();
+}
+
+void autosave_reset_timer_slow() {
+    // Set the most recent autosave time in the future to give extra time before an autosave triggers.
+    last_autosave_time = osGetTime() + OS_USEC_TO_CYCLES(2 * 60 * 1000 * 1000);
+}
+
 void autosave_post_play_update(PlayState* play) {
     static int frames_since_save_changed = 0;
     static int frames_since_autosave_ready = 0;
@@ -335,20 +409,21 @@ void autosave_post_play_update(PlayState* play) {
             frames_since_autosave_ready >= MIN_FRAMES_SINCE_READY &&
             OS_CYCLES_TO_USEC(time_now - last_autosave_time) > (1000 * recomp_autosave_interval())
         ) {
-            last_autosave_time = time_now;
             do_autosave(&play->sramCtx);
             show_autosave_icon();
+            autosave_reset_timer();
         }
     }
     else {
         // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on. 
+        autosave_reset_timer();
         last_autosave_time = osGetTime();
     }
     gCanPause = false;
 }
 
 void autosave_init() {
-    last_autosave_time = osGetTime();
+    autosave_reset_timer();
     Lib_MemCpy(&prev_save_ctx, &gSaveContext, offsetof(SaveContext, fileNum));
 }
 
@@ -566,6 +641,58 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
 }
 
 extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
+
+// @recomp Reset the autosave timer when the moon crashes.
+void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
+    s32 i;
+    s32 cutsceneIndex = gSaveContext.save.cutsceneIndex;
+
+    bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
+
+    if (SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2],
+                             gFlashSaveNumPages[gSaveContext.fileNum * 2]) != 0) {
+        SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
+                             gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
+    }
+    Lib_MemCpy(&gSaveContext.save, sramCtx->saveBuf, sizeof(Save));
+    if (CHECK_NEWF(gSaveContext.save.saveInfo.playerData.newf)) {
+        SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
+                             gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
+        Lib_MemCpy(&gSaveContext, sramCtx->saveBuf, sizeof(Save));
+    }
+    gSaveContext.save.cutsceneIndex = cutsceneIndex;
+
+    for (i = 0; i < ARRAY_COUNT(gSaveContext.eventInf); i++) {
+        gSaveContext.eventInf[i] = 0;
+    }
+
+    for (i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
+        gSaveContext.cycleSceneFlags[i].chest = gSaveContext.save.saveInfo.permanentSceneFlags[i].chest;
+        gSaveContext.cycleSceneFlags[i].switch0 = gSaveContext.save.saveInfo.permanentSceneFlags[i].switch0;
+        gSaveContext.cycleSceneFlags[i].switch1 = gSaveContext.save.saveInfo.permanentSceneFlags[i].switch1;
+        gSaveContext.cycleSceneFlags[i].clearedRoom = gSaveContext.save.saveInfo.permanentSceneFlags[i].clearedRoom;
+        gSaveContext.cycleSceneFlags[i].collectible = gSaveContext.save.saveInfo.permanentSceneFlags[i].collectible;
+    }
+
+    for (i = 0; i < TIMER_ID_MAX; i++) {
+        gSaveContext.timerStates[i] = TIMER_STATE_OFF;
+        gSaveContext.timerCurTimes[i] = SECONDS_TO_TIMER(0);
+        gSaveContext.timerTimeLimits[i] = SECONDS_TO_TIMER(0);
+        gSaveContext.timerStartOsTimes[i] = 0;
+        gSaveContext.timerStopTimes[i] = SECONDS_TO_TIMER(0);
+        gSaveContext.timerPausedOsTimes[i] = 0;
+    }
+
+    D_801BDAA0 = true;
+    gHorseIsMounted = false;
+    gSaveContext.powderKegTimer = 0;
+    gSaveContext.unk_1014 = 0;
+    gSaveContext.jinxTimer = 0;
+
+    // @recomp Use the slow autosave timer to give the player extra time to respond to the moon crashing to decide if they want to reload their autosave.
+    autosave_reset_timer_slow();
+}
+
 
 // @recomp If autosave is enabled, skip the part of the owl statue dialog that talks about the file being deleted on load, since it's not true.
 void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
