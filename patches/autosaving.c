@@ -194,7 +194,7 @@ void Sram_EraseSave(FileSelectState* fileSelect2, SramContext* sramCtx, s32 file
     if (gSaveContext.flashSaveAvailable) {
         if (fileSelect->isOwlSave[fileNum + 2]) {
             // @recomp Call the new owl save deletion function.
-            delete_owl_save(sramCtx, gSaveContext.fileNum);
+            delete_owl_save(sramCtx, fileNum);
             fileSelect->isOwlSave[fileNum + 2] = false;
         }
         bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
