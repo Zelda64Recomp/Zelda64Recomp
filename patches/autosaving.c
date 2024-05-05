@@ -1,6 +1,7 @@
 #include "patches.h"
 #include "play_patches.h"
 #include "z64save.h"
+#include "z64horse.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 #include "overlays/actors/ovl_Obj_Warpstone/z_obj_warpstone.h"
@@ -423,7 +424,7 @@ void autosave_post_play_update(PlayState* play) {
 }
 
 void autosave_init() {
-    autosave_reset_timer();
+    autosave_reset_timer_slow();
     Lib_MemCpy(&prev_save_ctx, &gSaveContext, offsetof(SaveContext, fileNum));
 }
 
