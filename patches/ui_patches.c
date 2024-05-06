@@ -628,16 +628,9 @@ void Interface_Draw(PlayState* play) {
             Interface_DrawPerfectLetters(play);
         }
 
-        // @recomp If carrots are being drawn, use default alignment and shift up
-        if (interfaceCtx->unk_212 == DO_ACTION_FASTER) {
-            gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, -margin_reduction * 4, 0, -margin_reduction * 4);
-            gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, 0, -margin_reduction * 4);
-        }
-        // @recomp Otherwise align left and shift up
-        else {
-            gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT, 0, -margin_reduction * 4, 0, -margin_reduction * 4);
-            gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, 0, -margin_reduction * 4);
-        }
+        // @recomp Align left and shift up for minigame icons (carrot icons use an extended gbi texrect to ignore this state).
+        gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT, 0, -margin_reduction * 4, 0, -margin_reduction * 4);
+        gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, 0, -margin_reduction * 4);
         Interface_SetOrthoView(interfaceCtx);
 
         Interface_DrawMinigameIcons(play);
@@ -754,6 +747,132 @@ void Interface_Draw(PlayState* play) {
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
+
+extern u64 gCarrotIconTex[];
+extern u64 gBeaverRingIconTex[];
+extern u64 gSwordTrainingLogIconTex[];
+extern u64 gFishermanMinigameTorchIconTex[];
+extern u64 gArcheryScoreIconTex[];
+extern u16 sMinigameScoreDigits[];
+
+// @recomp Patched to draw the carrot icons with an extended gbi texrect so they don't inherit the current origin.
+void Interface_DrawMinigameIcons(PlayState* play) {
+    InterfaceContext* interfaceCtx = &play->interfaceCtx;
+    s16 i;
+    s16 numDigitsDrawn;
+    s16 rectX;
+    s16 rectY;
+    s16 width;
+    s16 height;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL39_Overlay(play->state.gfxCtx);
+
+    if ((play->pauseCtx.state == PAUSE_STATE_OFF) && (play->pauseCtx.debugEditor == DEBUG_EDITOR_NONE)) {
+        // Carrots rendering if the action corresponds to riding a horse
+        if (interfaceCtx->unk_212 == DO_ACTION_FASTER) {
+            // Load Carrot Icon
+            gDPLoadTextureBlock(OVERLAY_DISP++, gCarrotIconTex, G_IM_FMT_RGBA, G_IM_SIZ_32b, 16, 16, 0,
+                                G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                G_TX_NOLOD, G_TX_NOLOD);
+
+            rectX = 110;
+            rectY = (interfaceCtx->minigameState != MINIGAME_STATE_NONE) ? 200 : 56;
+
+            // Draw 6 carrots
+            for (i = 1; i < 7; i++, rectX += 16) {
+                // Carrot Color (based on availability)
+                if ((interfaceCtx->numHorseBoosts == 0) || (interfaceCtx->numHorseBoosts < i)) {
+                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 0, 150, 255, interfaceCtx->aAlpha);
+                } else {
+                    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, interfaceCtx->aAlpha);
+                }
+
+                // @recomp Draw the carrot icons with an extended gbi texrect, using none as the origin to override the current alignment.
+                gEXTextureRectangle(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, rectX << 2, rectY << 2, (rectX + 16) << 2, (rectY + 16) << 2,
+                                    G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
+            }
+        }
+
+        if (gSaveContext.minigameStatus == MINIGAME_STATUS_ACTIVE) {
+            gDPPipeSync(OVERLAY_DISP++);
+            gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
+                              PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
+            width = 24;
+            height = 16;
+            rectX = 20;
+            if (gSaveContext.save.saveInfo.playerData.healthCapacity > 0xA0) {
+                rectY = 75; // two rows of hearts
+            } else {
+                rectY = 67; // one row of hearts
+            }
+
+            if (gSaveContext.save.entrance == ENTRANCE(WATERFALL_RAPIDS, 1)) {
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, interfaceCtx->bAlpha);
+                gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
+                gDPLoadTextureBlock(OVERLAY_DISP++, gBeaverRingIconTex, G_IM_FMT_RGBA, G_IM_SIZ_32b, 24, 16, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                    G_TX_NOLOD, G_TX_NOLOD);
+            } else if (play->sceneId == SCENE_DOUJOU) {
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 140, 50, interfaceCtx->bAlpha);
+                gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
+                gDPLoadTextureBlock(OVERLAY_DISP++, gSwordTrainingLogIconTex, G_IM_FMT_IA, G_IM_SIZ_8b, 24, 16, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                    G_TX_NOLOD, G_TX_NOLOD);
+            } else if (play->sceneId == SCENE_30GYOSON) {
+                width = 16;
+                height = 30;
+                rectX = 24;
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 100, 75, interfaceCtx->bAlpha);
+                gDPSetEnvColor(OVERLAY_DISP++, 55, 55, 0, 255);
+                gDPLoadTextureBlock(OVERLAY_DISP++, gFishermanMinigameTorchIconTex, G_IM_FMT_IA, G_IM_SIZ_8b, 16, 30, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                    G_TX_NOLOD, G_TX_NOLOD);
+            } else {
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, interfaceCtx->bAlpha);
+                gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
+                gDPLoadTextureBlock(OVERLAY_DISP++, gArcheryScoreIconTex, G_IM_FMT_RGBA, G_IM_SIZ_16b, 24, 16, 0,
+                                    G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
+                                    G_TX_NOLOD, G_TX_NOLOD);
+            }
+
+            gSPTextureRectangle(OVERLAY_DISP++, (rectX << 2), (rectY << 2), ((rectX + width) << 2),
+                                ((rectY + height) << 2), G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
+            gDPPipeSync(OVERLAY_DISP++);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, interfaceCtx->bAlpha);
+            gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0,
+                              0, PRIMITIVE, 0);
+
+            if (play->sceneId == SCENE_30GYOSON) {
+                rectX += 20;
+                if (gSaveContext.save.saveInfo.playerData.healthCapacity > 0xA0) {
+                    rectY = 87; // two rows of hearts
+                } else {
+                    rectY = 79; // one row of hearts
+                }
+            } else {
+                rectX += 26;
+            }
+
+            for (i = 0, numDigitsDrawn = 0; i < 4; i++) {
+                if ((sMinigameScoreDigits[i] != 0) || (numDigitsDrawn != 0) || (i >= 3)) {
+                    OVERLAY_DISP =
+                        Gfx_DrawTexRectI8(OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * sMinigameScoreDigits[i])),
+                                          8, 0x10, rectX, rectY - 2, 9, 0xFA, 0x370, 0x370);
+                    rectX += 9;
+                    numDigitsDrawn++;
+                }
+            }
+
+            gDPPipeSync(OVERLAY_DISP++);
+            gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
+        }
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
 
 extern s16 sTextboxWidth;
 extern s16 sTextboxHeight;
