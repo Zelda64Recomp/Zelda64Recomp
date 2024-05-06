@@ -47,14 +47,20 @@ void camera_post_play_update(PlayState* play) {
 
             // Dedicated section for workarounds where the heuristic fails to detect the large amount of movements the camera does in these particular areas.
             bool force_interpolation = false;
-            if (active_cam->setting == CAM_SET_NORMAL0 || active_cam->setting == CAM_SET_DUNGEON0) {
+            if (active_cam->setting == CAM_SET_BOSS_MAJORA) {
+                // Majora's Mask final fight. All cameras should transition smoothly during this fight while not in a cutscene.
+                force_interpolation = true;
+            }
+            else if (active_cam->setting == CAM_SET_NORMAL0 || active_cam->setting == CAM_SET_DUNGEON0) {
                 force_interpolation =
                     // Pirates' Fortress Moat. Pushing the switch that unlocks the fortress will cause very large camera movement.
                     play->sceneId == SCENE_TORIDE ||
                     // Z-targetting an actor.
                     active_cam->mode == CAM_MODE_FOLLOWTARGET ||
                     // Z-targetting nothing.
-                    active_cam->mode == CAM_MODE_TARGET;
+                    active_cam->mode == CAM_MODE_TARGET ||
+                    // Z-targetting in battle.
+                    active_cam->mode == CAM_MODE_BATTLE;
             }
             // TODO: This setting claims "Smoothly and gradually return camera to Player after a cutscene "CONNECT0"". It might be worth it to enable this globally regardless of the scene.
             else if (active_cam->setting == CAM_SET_CONNECT0) {
