@@ -3,3 +3,4 @@
 *.elf
 *.bin
 ./funcs.h
+patches.map

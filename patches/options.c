@@ -42,6 +42,11 @@ extern u64 gFileSelYesButtonENGTex[];
 extern u64 gFileSelQuitButtonENGTex[];
 
 // TODO extern these when the recompiler handles relocations automatically.
+s16 D_80814280[] = {
+    2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 0, 1, 1, 2, 1, 1, 4, 2, 2, 2, 1, 1, 0, 2, 0, 1, 1, 1, 1, 1, 0,
+    1, 1, 1, 2, 2, 2, 2, 2, 3, 2, 2, 4, 3, 2, 4, 1, 2, 2, 1, 1, 2, 2, 3, 2, 2, 0, 2, 2, 2, 0, 3, 1, 0,
+};
+
 s16 sWindowContentColors[] = { 100, 150, 255 };
 
 TexturePtr sFileInfoBoxTextures[] = {
