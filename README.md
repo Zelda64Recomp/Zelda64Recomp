@@ -7,6 +7,7 @@ Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com
 * [System Requirements](#system-requirements)
 * [Features](#features)
   * [Plug and Play](#plug-and-play)
+  * [Fully Intact N64 Effects](#fully-intact-n64-effects)
   * [Easy-to-Use Menus](#easy-to-use-menus)
   * [High Framerate Support](#high-framerate-support)
   * [Widescreen and Ultrawide Support](#widescreen-and-ultrawide-support)
@@ -29,11 +30,14 @@ A CPU supporting the AVX instruction set is also required (Intel Core 2000 serie
 #### Plug and Play
 Simply provide your copy of the North American version of the game in the main menu and start playing! This project will automatically load assets from the provided copy, so there is no need to go through a separate extraction step or build the game yourself. Other versions of the game may be supported in the future.
 
+#### Fully Intact N64 Effects
+A lot of care was put into RT64 to make sure all graphical effects were rendered exactly as they did originally on the N64. No changes or "hacks" were made to replicate these effects, with the only modifications to them being made for enhancement purposes such as widescreen support. This includes framebuffer effects like the grayscale cutscenes and the Deku bubble projectile, depth effects like the lens of truth, accurate lighting, shading effects like the fire arrows and bomb explosions, and various textures that are often rendered incorrectly.
+
 #### Easy-to-Use Menus
 Gameplay settings, graphics settings, input mappings, and audio settings can all be configured with the in-game config menu. The menus can all be used with mouse, controller, or keyboard for maximum convenience.
 
 #### High Framerate Support
-Play at any framerate you want, thanks to [RT64](https://github.com/rt64/rt64)! By default, this project is configured to run at your monitor's refresh rate. You can also play at the original framerate of the game if you prefer.
+Play at any framerate you want thanks to functionality provided by RT64! Game objects and terrain, texture scrolling, screen effects, and most HUD elements are all rendered at high framerates. By default, this project is configured to run at your monitor's refresh rate. You can also play at the original framerate of the game if you prefer. **Changing framerate has no effect on gameplay.**
 
 **Note**: External framerate limiters (such as the NVIDIA Control Panel) are known to potentially cause problems, so if you notice any stuttering then turn them off and use the manual framerate slider in the in-game graphics menu instead.
 
@@ -80,6 +84,7 @@ This project provides mouse aiming as a way to allow using gyro on Steam Deck, a
 TODO instructions
 
 ## Known Issues
+* The motion blur effect used by the game was capped to prevent ghosting at incredibly high framerates, which causes it to be less noticeable (this is only really noticeable above 120FPS). This may be fixed in the future by offering option to render to an HDR framebuffer internally, which would allow it to be uncapped.
 * Intel GPUs on Linux may not currently work. If you have experience with Vulkan development on Linux, help here would be greatly appreciated!
 * The prebuilt Linux binary may not work correctly on some distributions of Linux. If you encounter such an issue, building the project locally yourself is recommended. A Flatpak or AppImage may be provided in the future to solve this issue. Alternatively, running the Windows version with Proton is known to work well and may work around this issue.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
