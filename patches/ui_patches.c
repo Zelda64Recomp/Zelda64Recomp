@@ -1184,3 +1184,37 @@ void ShrinkWindow_Draw(GraphicsContext* gfxCtx) {
         CLOSE_DISPS(gfxCtx);
     }
 }
+
+extern u64 gSceneTitleCardGradientTex[];
+
+// @recomp Patch the scene title card (the one with purple background when entering a new scene) 
+// to not glitch out on the right edge, which is hidden by overscan on N64.
+void Message_DrawSceneTitleCard(PlayState* play, Gfx** gfxP) {
+    MessageContext* msgCtx = &play->msgCtx;
+    Gfx* gfx;
+
+    gfx = *gfxP;
+    Gfx_SetupDL39_Ptr(&gfx);
+
+    gDPSetCombineLERP(gfx++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
+                      ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
+    gDPSetTextureFilter(gfx++, G_TF_BILERP);
+    gDPSetAlphaDither(gfx++, G_AD_NOTPATTERN);
+    gDPSetPrimColor(gfx++, 0, 0, 0, 0, 0, msgCtx->textboxColorAlphaCurrent);
+    gDPSetEnvColor(gfx++, 140, 40, 160, 255);
+    gDPLoadTextureBlock(gfx++, gSceneTitleCardGradientTex, G_IM_FMT_I, G_IM_SIZ_8b, 64, 1, 0, G_TX_NOMIRROR | G_TX_WRAP,
+                        G_TX_NOMIRROR | G_TX_WRAP, 6, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+    // @recomp Decrease dsdx from the original 204 to 200 in order to hide the glitching on the right edge.
+    gSPTextureRectangle(gfx++, 0, XREG(77) << 2, 320 << 2, (XREG(77) + XREG(76)) << 2, G_TX_RENDERTILE, 0, 0, 200,
+                        1 << 10);
+    gDPPipeSync(gfx++);
+    gDPSetCombineLERP(gfx++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
+    gDPSetEnvColor(gfx++, 0, 0, 0, 255);
+
+    if ((msgCtx->currentTextId < 0x1BB2) || (msgCtx->currentTextId >= 0x1BB7)) {
+        msgCtx->unk11FF8 = XREG(75);
+    }
+    msgCtx->unk11FFA = XREG(74);
+    Message_DrawTextNES(play, &gfx, 0);
+    *gfxP = gfx++;
+}
