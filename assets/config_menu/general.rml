@@ -171,7 +171,7 @@
                         Controls the sensitivity of mouse aiming when using items in first person. <b>Setting this to zero will disable mouse aiming.</b>
                         <br />
                         <br />
-                        <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is is intended to be used with inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
+                        <b>Note: This option does not allow mouse buttons to activate items. Mouse aiming is intended to be used with inputs that are mapped to mouse movement, such as gyro on Steam Deck.</b>
                     </p>
                     <p data-if="cur_config_index == 4">
                         Allows the game to read controller input when out of focus.
@@ -179,7 +179,10 @@
                         <b>This setting does not affect keyboard input.</b>
                     </p>
                     <p data-if="cur_config_index == 5">
-                        Turns on autosaving and prevents owl saves from being deleted on load. If an owl save exists when an autosave is made, the owl save will get replaced.
+                        Turns on autosaving and prevents owl saves from being deleted on load. Autosaves act as owl saves and take up the same slot as they do.
+                        <br/>
+                        <br/>
+                        Loading an autosave will place you in Clock Town or at the entrance of the current dungeon if you were in one.
                         <br/>
                         <br/>
                         <b>If autosaving is disabled, existing autosaves will be deleted when loaded.</b>
