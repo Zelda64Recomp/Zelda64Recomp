@@ -21,6 +21,8 @@ Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com
 * [Planned Features](#planned-features)
 * [FAQ](#faq)
 * [Known Issues](#known-issues)
+* [Building](#building)
+* [Libraries Used and Projects Referenced](#libraries-used-and-projects-referenced)
 
 ## System Requirements
 A GPU supporting Direct3D 12.0 (Shader Model 6) or Vulkan 1.2 is required to run this project (GeForce GT 630, Radeon HD 7750, or Intel HD 510 (Skylake) and newer).
@@ -96,4 +98,14 @@ You'll probably also want to change the default behavior so that you don't need 
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
-Building is not required to play this project, as prebuilt binaries (which do not contain game assets) can be found in the [Releases section](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases). Instructions on how to build this project are being worked on and will be available in the very near future.
+Building is not required to play this project, as prebuilt binaries (which do not contain game assets) can be found in the [Releases section](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases). Instructions on how to build this project are being worked on and will be available in the near future.
+
+## Libraries Used and Projects Referenced
+* [RT64](https://github.com/rt64/rt64) for the project's rendering engine
+* [RmlUi](https://github.com/mikke89/RmlUi) for building the menus and launcher
+* [lunasvg](https://github.com/sammycage/lunasvg) for SVG rendering, used by RmlUi
+* [FreeType](https://freetype.org/) for font rendering, used by RmlUi  
+* [moodycamel::ConcurrentQueue](https://github.com/cameron314/concurrentqueue) for semaphores and fast, lock-free MPMC queues
+* [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms to implement gyro aiming
+* [Majora's Mask Decompilation](https://github.com/zeldaret/mm) for headers and some function definitions, used for making patches or some enhancements
+* [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
