@@ -70,6 +70,7 @@ A Linux binary is available for playing on most up-to-date distros, including on
 To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the Zelda64Recompiled executable file and select "Add to Steam" as shown. From there, you can return to Gaming mode and configure the controls as needed. See the [Steam Deck gyro aim FAQ section](#how-do-i-set-up-gyro-aiming-on-steam-deck) for more detailed instructions.
 
 ## Planned Features
+* Dual analog control scheme (with analog camera)
 * Ocarina of Time support
 * Mod support and Randomizer
 * Texture Packs
@@ -109,3 +110,5 @@ Building is not required to play this project, as prebuilt binaries (which do no
 * [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms to implement gyro aiming
 * [Majora's Mask Decompilation](https://github.com/zeldaret/mm) for headers and some function definitions, used for making patches or some enhancements
 * [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
+
+Special thanks to [thecozies](github.com/thecozies) for designing and helping implement the launcher and config menus!
