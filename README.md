@@ -71,6 +71,7 @@ To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop 
 
 ## Planned Features
 * Dual analog control scheme (with analog camera)
+* Configurable deadzone and analog stick sensitivity
 * Ocarina of Time support
 * Mod support and Randomizer
 * Texture Packs
