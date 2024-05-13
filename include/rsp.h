@@ -3,6 +3,7 @@
 
 #include "rsp_vu.h"
 #include "recomp.h"
+#include <cstdio>
 
 enum class RspExitReason {
     Invalid,
@@ -16,21 +17,48 @@ extern uint8_t dmem[];
 extern uint16_t rspReciprocals[512];
 extern uint16_t rspInverseSquareRoots[512];
 
-#define RSP_MEM_W(offset, addr) \
-    (*reinterpret_cast<uint32_t*>(dmem + (0xFFF & ((offset) + (addr)))))
-
-#define RSP_MEM_H(offset, addr) \
-    (*reinterpret_cast<int16_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 2))))
-
-#define RSP_MEM_HU(offset, addr) \
-    (*reinterpret_cast<uint16_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 2))))
-
 #define RSP_MEM_B(offset, addr) \
     (*reinterpret_cast<int8_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 3))))
 
 #define RSP_MEM_BU(offset, addr) \
     (*reinterpret_cast<uint8_t*>(dmem + (0xFFF & (((offset) + (addr)) ^ 3))))
-    
+
+static inline uint32_t RSP_MEM_W_LOAD(uint32_t offset, uint32_t addr) {
+    uint32_t out;
+    for (int i = 0; i < 4; i++) {
+        reinterpret_cast<uint8_t*>(&out)[i ^ 3] = RSP_MEM_BU(offset + i, addr);
+    }
+    return out;
+}
+
+static inline void RSP_MEM_W_STORE(uint32_t offset, uint32_t addr, uint32_t val) {
+    for (int i = 0; i < 4; i++) {
+        RSP_MEM_BU(offset + i, addr) = reinterpret_cast<uint8_t*>(&val)[i ^ 3];
+    }
+}
+
+static inline uint32_t RSP_MEM_HU_LOAD(uint32_t offset, uint32_t addr) {
+    uint16_t out;
+    for (int i = 0; i < 2; i++) {
+        reinterpret_cast<uint8_t*>(&out)[(i + 2) ^ 3] = RSP_MEM_BU(offset + i, addr);
+    }
+    return out;
+}
+
+static inline uint32_t RSP_MEM_H_LOAD(uint32_t offset, uint32_t addr) {
+    int16_t out;
+    for (int i = 0; i < 2; i++) {
+        reinterpret_cast<uint8_t*>(&out)[(i + 2) ^ 3] = RSP_MEM_BU(offset + i, addr);
+    }
+    return out;
+}
+
+static inline void RSP_MEM_H_STORE(uint32_t offset, uint32_t addr, uint32_t val) {
+    for (int i = 0; i < 2; i++) {
+        RSP_MEM_BU(offset + i, addr) = reinterpret_cast<uint8_t*>(&val)[(i + 2) ^ 3];
+    }
+}
+
 #define RSP_ADD32(a, b) \
     ((int32_t)((a) + (b)))
     
