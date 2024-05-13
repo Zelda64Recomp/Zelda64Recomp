@@ -25,6 +25,7 @@ void recomp::set_rom_contents(std::vector<uint8_t>&& new_rom) {
 // that involve physical addresses don't need to be handled for flashram.
 constexpr uint32_t sram_base = 0x08000000;
 constexpr uint32_t rom_base = 0x10000000;
+constexpr uint32_t drive_base = 0x06000000;
 
 constexpr uint32_t k1_to_phys(uint32_t addr) {
     return addr & 0x1FFFFFFF;
@@ -34,6 +35,12 @@ constexpr uint32_t phys_to_k1(uint32_t addr) {
     return addr | 0xA0000000;
 }
 
+extern "C" void __osPiGetAccess_recomp(uint8_t* rdram, recomp_context* ctx) {
+}
+
+extern "C" void __osPiRelAccess_recomp(uint8_t* rdram, recomp_context* ctx) {
+}
+
 extern "C" void osCartRomInit_recomp(uint8_t* rdram, recomp_context* ctx) {
     OSPiHandle* handle = TO_PTR(OSPiHandle, ultramodern::cart_handle);
     handle->type = 0; // cart
@@ -41,6 +48,15 @@ extern "C" void osCartRomInit_recomp(uint8_t* rdram, recomp_context* ctx) {
     handle->domain = 0;
 
     ctx->r2 = (gpr)ultramodern::cart_handle;
+}
+
+extern "C" void osDriveRomInit_recomp(uint8_t * rdram, recomp_context * ctx) {
+    OSPiHandle* handle = TO_PTR(OSPiHandle, ultramodern::drive_handle);
+    handle->type = 1; // bulk
+    handle->baseAddress = phys_to_k1(drive_base);
+    handle->domain = 0;
+
+    ctx->r2 = (gpr)ultramodern::drive_handle;
 }
 
 extern "C" void osCreatePiManager_recomp(uint8_t* rdram, recomp_context* ctx) {
@@ -59,6 +75,16 @@ void recomp::do_rom_read(uint8_t* rdram, gpr ram_address, uint32_t physical_addr
         MEM_B(i, ram_address) = *rom_addr;
         rom_addr++;
     }
+}
+
+void recomp::do_rom_pio(uint8_t* rdram, gpr ram_address, uint32_t physical_addr) {
+    assert((physical_addr & 0x3) == 0 && "PIO not 4-byte aligned in device, currently unsupported");
+    assert((ram_address & 0x3) == 0 && "PIO not 4-byte aligned in RDRAM, currently unsupported");
+    uint8_t* rom_addr = rom.data() + physical_addr - rom_base;
+    MEM_B(0, ram_address) = *rom_addr++;
+    MEM_B(1, ram_address) = *rom_addr++;
+    MEM_B(2, ram_address) = *rom_addr++;
+    MEM_B(3, ram_address) = *rom_addr++;
 }
 
 struct {
@@ -247,7 +273,7 @@ extern "C" void osEPiReadIo_recomp(RDRAM_ARG recomp_context * ctx) {
 
     if (physical_addr > rom_base) {
         // cart rom
-        recomp::do_rom_read(PASS_RDRAM dramAddr, physical_addr, sizeof(uint32_t));
+        recomp::do_rom_pio(PASS_RDRAM dramAddr, physical_addr);
     } else {
         // sram
         assert(false && "SRAM ReadIo unimplemented");
