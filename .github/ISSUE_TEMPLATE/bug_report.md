@@ -6,6 +6,7 @@ labels: ''
 assignees: ''
 
 ---
+## If you have a crash on startup, please make sure your graphics drivers are up to date before submitting a bug report.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
