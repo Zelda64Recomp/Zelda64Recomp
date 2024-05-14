@@ -29,3 +29,7 @@ extern "C" void osPfsFindFile_recomp(uint8_t * rdram, recomp_context * ctx) {
 extern "C" void osPfsReadWriteFile_recomp(uint8_t * rdram, recomp_context * ctx) {
 	ctx->r2 = 1; // PFS_ERR_NOPACK
 }
+
+extern "C" void osPfsChecker_recomp(uint8_t * rdram, recomp_context * ctx) {
+	ctx->r2 = 1; // PFS_ERR_NOPACK
+}
