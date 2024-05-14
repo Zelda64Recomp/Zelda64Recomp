@@ -150,7 +150,7 @@ void save_write_ptr(const void* in, uint32_t offset, uint32_t count) {
 void save_write(RDRAM_ARG PTR(void) rdram_address, uint32_t offset, uint32_t count) {
     {
         std::lock_guard lock { save_context.save_buffer_mutex };
-        for (uint32_t i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; i++) {
             save_context.save_buffer[offset + i] = MEM_B(i, rdram_address);
         }
     }
