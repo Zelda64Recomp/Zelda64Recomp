@@ -143,7 +143,7 @@ void save_write_ptr(const void* in, uint32_t offset, uint32_t count) {
         std::lock_guard lock { save_context.save_buffer_mutex };
         memcpy(&save_context.save_buffer[offset], in, count);
     }
-    
+
     save_context.write_sempahore.signal();
 }
 
