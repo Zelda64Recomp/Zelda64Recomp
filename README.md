@@ -98,6 +98,10 @@ This project provides mouse aiming as a way to allow using gyro on Steam Deck, a
 
 You'll probably also want to change the default behavior so that you don't need to be touching the right stick to allow gyro input. To do so, click on the Gear icon to the right of "Gyro Behavior" and ensure that "Gyro Activation Buttons" is set to "None Selected (Gyro Always On)." If this isn't the case, then select that option and then press "Select None" in the following menu.
 
+#### Where is the savefile stored?
+- Windows: `%LOCALAPPDATA%\Zelda64Recompiled\saves`
+- Linux: `~/.config/Zelda64Recompiled/saves`
+
 ## Known Issues
 * The motion blur effect used by the game was capped to prevent ghosting at incredibly high framerates, which causes it to be less noticeable (this is only really noticeable above 120FPS). This may be fixed in the future by offering the option to render to an HDR framebuffer internally, which would allow it to be uncapped.
 * Intel GPUs on Linux may not currently work. If you have experience with Vulkan development on Linux, help here would be greatly appreciated!
