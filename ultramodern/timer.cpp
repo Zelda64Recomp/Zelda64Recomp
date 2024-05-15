@@ -91,11 +91,11 @@ void timer_thread(RDRAM_ARG1) {
         match(action, 
             [&active_timers](const AddTimerAction& action)
             {
-                active_timers.insert(action->timer);
+                active_timers.insert(action.timer);
             },
             [&active_timers](const RemoveTimerAction& action)
             {
-                active_timers.erase(action->timer);
+                active_timers.erase(action.timer);
             }
         );
     };

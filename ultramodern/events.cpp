@@ -343,14 +343,14 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
                     ultramodern::measure_input_latency();
 
                     auto rt64_start = std::chrono::high_resolution_clock::now();
-                    rt64.send_dl(&task_action->task);
+                    rt64.send_dl(&action.task);
                     auto rt64_end = std::chrono::high_resolution_clock::now();
                     dp_complete();
                 },
                 [&](const SwapBuffersAction &action)
                 {
                     events_context.vi.current_buffer = events_context.vi.next_buffer;
-                    rt64.update_screen(swap_action->origin);
+                    rt64.update_screen(action.origin);
                     display_refresh_rate = rt64.get_display_framerate();
                 },
                 [&](const UpdateConfigAction &action)
@@ -363,7 +363,7 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
                 },
                 [&](const LoadShaderCacheAction &action)
                 {
-                    rt64.load_shader_cache(load_shader_cache_action->data);
+                    rt64.load_shader_cache(action.data);
                 }
             );
         }
