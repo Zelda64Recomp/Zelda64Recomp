@@ -121,4 +121,4 @@ Building is not required to play this project, as prebuilt binaries (which do no
 * [Majora's Mask Decompilation](https://github.com/zeldaret/mm) for headers and some function definitions, used for making patches or some enhancements
 * [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
 
-Special thanks to [thecozies](github.com/thecozies) for designing and helping implement the launcher and config menus!
+Special thanks to [thecozies](https://github.com/thecozies) for designing and helping implement the launcher and config menus!
