@@ -105,7 +105,7 @@ You'll probably also want to change the default behavior so that you don't need 
 ## Known Issues
 * The motion blur effect used by the game was capped to prevent ghosting at incredibly high framerates, which causes it to be less noticeable (this is only really noticeable above 120FPS). This may be fixed in the future by offering the option to render to an HDR framebuffer internally, which would allow it to be uncapped.
 * Intel GPUs on Linux may not currently work. If you have experience with Vulkan development on Linux, help here would be greatly appreciated!
-* The prebuilt Linux binary may not work correctly on some distributions of Linux. If you encounter such an issue, building the project locally yourself is recommended. A Flatpak or AppImage may be provided in the future to solve this issue. Alternatively, running the Windows version with Proton is known to work well and may work around this issue.
+* The prebuilt Linux binary may not work correctly on some distributions of Linux. If you encounter such an issue, building the project locally yourself is recommended. A Flatpak or AppImage may be provided in the future to solve this issue. Adding the Linux version to Steam and setting "Steam Linux Runtime" as the compatibility tool or launching it via Gamescope may work around the issue. Alternatively, running the Windows version with Proton is known to work well and may also work around this issue.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
