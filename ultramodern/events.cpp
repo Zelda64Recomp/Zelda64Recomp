@@ -10,7 +10,7 @@
 #include <cstring>
 
 #include "blockingconcurrentqueue.h"
-
+#include "utils.hpp"
 #include "ultra64.h"
 #include "ultramodern.hpp"
 #include "config.hpp"
@@ -328,41 +328,44 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
         // Try to pull an action from the queue
         Action action;
         if (events_context.action_queue.wait_dequeue_timed(action, 1ms)) {
-            // Determine the action type and act on it
-            if (const auto* task_action = std::get_if<SpTaskAction>(&action)) {
-                // Turn on instant present if the game has been started and it hasn't been turned on yet.
-                if (ultramodern::is_game_started() && !enabled_instant_present) {
-                    rt64.enable_instant_present();
-                    enabled_instant_present = true;
-                }
-                // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
-                // start another graphics task until the RDP is also complete. Games usually preserve the RSP inputs until the RDP
-                // is finished as well, so sending this early shouldn't be an issue in most cases.
-                // If this causes issues then the logic can be replaced with responding to yield requests.
-                sp_complete();
-                ultramodern::measure_input_latency();
+            match(action, 
+                [&](const SpTaskAction& action){
+                    // Turn on instant present if the game has been started and it hasn't been turned on yet.
+                    if (ultramodern::is_game_started() && !enabled_instant_present) {
+                        rt64.enable_instant_present();
+                        enabled_instant_present = true;
+                    }
+                    // Tell the game that the RSP completed instantly. This will allow it to queue other task types, but it won't
+                    // start another graphics task until the RDP is also complete. Games usually preserve the RSP inputs until the RDP
+                    // is finished as well, so sending this early shouldn't be an issue in most cases.
+                    // If this causes issues then the logic can be replaced with responding to yield requests.
+                    sp_complete();
+                    ultramodern::measure_input_latency();
 
-                auto rt64_start = std::chrono::high_resolution_clock::now();
-                rt64.send_dl(&task_action->task);
-                auto rt64_end = std::chrono::high_resolution_clock::now();
-                dp_complete();
-                // printf("RT64 ProcessDList time: %d us\n", static_cast<u32>(std::chrono::duration_cast<std::chrono::microseconds>(rt64_end - rt64_start).count()));
-            }
-            else if (const auto* swap_action = std::get_if<SwapBuffersAction>(&action)) {
-                events_context.vi.current_buffer = events_context.vi.next_buffer;
-                rt64.update_screen(swap_action->origin);
-                display_refresh_rate = rt64.get_display_framerate();
-            }
-            else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
-                ultramodern::GraphicsConfig new_config = cur_config;
-                if (old_config != new_config) {
+                    auto rt64_start = std::chrono::high_resolution_clock::now();
+                    rt64.send_dl(&task_action->task);
+                    auto rt64_end = std::chrono::high_resolution_clock::now();
+                    dp_complete();
+                },
+                [&](const SwapBuffersAction &action)
+                {
+                    events_context.vi.current_buffer = events_context.vi.next_buffer;
+                    rt64.update_screen(swap_action->origin);
+                    display_refresh_rate = rt64.get_display_framerate();
+                },
+                [&](const UpdateConfigAction &action)
+                {
+                    ultramodern::GraphicsConfig new_config = cur_config;
+                    if (old_config == new_config) return; 
+
                     rt64.update_config(old_config, new_config);
                     old_config = new_config;
+                },
+                [&](const LoadShaderCacheAction &action)
+                {
+                    rt64.load_shader_cache(load_shader_cache_action->data);
                 }
-            }
-            else if (const auto* load_shader_cache_action = std::get_if<LoadShaderCacheAction>(&action)) {
-                rt64.load_shader_cache(load_shader_cache_action->data);
-            }
+            );
         }
     }
     // TODO move recomp code out of ultramodern.

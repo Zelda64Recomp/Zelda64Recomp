@@ -3,6 +3,7 @@
 #include <set>
 #include "blockingconcurrentqueue.h"
 
+#include "utils.hpp"
 #include "ultra64.h"
 #include "ultramodern.hpp"
 
@@ -87,12 +88,16 @@ void timer_thread(RDRAM_ARG1) {
     
     // Lambda to process a timer action to handle adding and removing timers
     auto process_timer_action = [&](const Action& action) {
-        // Determine the action type and act on it
-        if (const auto* add_action = std::get_if<AddTimerAction>(&action)) {
-            active_timers.insert(add_action->timer);
-        } else if (const auto* remove_action = std::get_if<RemoveTimerAction>(&action)) {
-            active_timers.erase(remove_action->timer);
-        }
+        match(action, 
+            [&active_timers](const AddTimerAction& action)
+            {
+                active_timers.insert(action->timer);
+            },
+            [&active_timers](const RemoveTimerAction& action)
+            {
+                active_timers.erase(action->timer);
+            }
+        );
     };
 
     while (true) {
