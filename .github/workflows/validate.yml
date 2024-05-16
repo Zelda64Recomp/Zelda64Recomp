@@ -56,7 +56,10 @@ jobs:
         if: runner.os != 'Windows'
         run: |-
           git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
-          ./zre/process.sh
+          cd zre
+          ./process.sh
+        env:
+          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
