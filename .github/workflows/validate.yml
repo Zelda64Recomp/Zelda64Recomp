@@ -62,7 +62,7 @@ jobs:
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
-          git clone https://github.com/Mr-Wiseguy/N64Recomp.git
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules --branch symbol-file-toml-update
           cd N64Recomp
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config Debug --target N64Recomp -j 8
