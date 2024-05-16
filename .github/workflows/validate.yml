@@ -55,9 +55,8 @@ jobs:
       - name: Prepare Build
         if: runner.os != 'Windows'
         run: |-
-          git lfs clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
-          cd zre
-          ./process.sh
+          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          ./zre/process.sh
         env:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
