@@ -55,7 +55,7 @@ jobs:
       - name: Prepare Build
         if: runner.os != 'Windows'
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git lfs clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
           cd zre
           ./process.sh
         env:
