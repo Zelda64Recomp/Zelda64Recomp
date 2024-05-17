@@ -28,12 +28,12 @@ choco cmake install ninja sdl2 gtk3 llvm
 ```
 
 ## 3. Creating the ELF file & decompressed ROM
-You will need to build [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation. Follow their build instructions to generate the ELF file and decompressed ROM. While building you may get the following build error:
+You will need to build [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation. Follow their build instructions to generate the ELF file and decompressed ROM. However, while building you may get the following build error:
 ```bash
 RuntimeError: 'jr' instruction does not have an 'jump label' field
 ```
 
-To fix this you will have to modify the problematic file `tools/disasm/disasm.py` at line 1115. Replace the line:
+To fix this you will have to modify the problematic file `tools/disasm/disasm.py` at line 1115. This issue is due to a bug in this specific commit of the decomp project and will be resolved once we update the project to a more recent commit. To fix it, replace the line:
 ```diff
 - elif insn.isJump():
 + elif insn.isJumpWithAddress():
@@ -45,7 +45,7 @@ Upon successful build it will generate the two required files. Copy them to the 
 
 ## 4. Generating the C code
 
-Now that you have the required files, we have to build [N64Recomp](https://github.com/Mr-Wiseguy/N64Recomp) and run it to generate the C code to be compiled. The building instructions can be found in that repo. That will build the executables: `N64Recomp` and `RSPRecomp` which you should copy to the root of the Zelda64Recomp repository.
+Now that you have the required files, we have to build [N64Recomp](https://github.com/Mr-Wiseguy/N64Recomp) and run it to generate the C code to be compiled. The building instructions can be found [here](https://github.com/Mr-Wiseguy/N64Recomp?tab=readme-ov-file#building). That will build the executables: `N64Recomp` and `RSPRecomp` which you should copy to the root of the Zelda64Recomp repository.
 
 After that, go back to the repository root, and run the following commands:
 ```bash
@@ -62,7 +62,7 @@ cmake -S . -B cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you 
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
 ```
 
-## 6. Profit
+## 6. Success
 
 Voilà! You should now have a `Zelda64Recompiled[.exe]` file in the `build-cmake` directory!
 
