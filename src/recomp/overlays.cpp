@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include "recomp.h"
+#include "recomp_overlays.h"
 #include "../RecompiledFuncs/recomp_overlays.inl"
 
 constexpr size_t num_code_sections = ARRLEN(section_table);

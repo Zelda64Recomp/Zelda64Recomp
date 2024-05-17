@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include "recomp.h"
+#include "recomp_overlays.h"
 #include "recomp_game.h"
 #include "recomp_config.h"
 #include "xxHash/xxh3.h"
@@ -301,9 +302,6 @@ void run_thread_function(uint8_t* rdram, uint64_t addr, uint64_t sp, uint64_t ar
 extern "C" void recomp_entrypoint(uint8_t * rdram, recomp_context * ctx);
 gpr get_entrypoint_address();
 const char* get_rom_name();
-void init_overlays();
-extern "C" void load_overlays(uint32_t rom, int32_t ram_addr, uint32_t size);
-extern "C" void unload_overlays(int32_t ram_addr, uint32_t size);
 
 void read_patch_data(uint8_t* rdram, gpr patch_data_address) {
     for (size_t i = 0; i < sizeof(mm_patches_bin); i++) {

@@ -9,6 +9,7 @@
 #define osFlashWriteArray osFlashWriteArray_recomp
 #define osFlashWriteBuffer osFlashWriteBuffer_recomp
 #define osWritebackDCache osWritebackDCache_recomp
+#define osInvalICache osInvalICache_recomp
 #define osGetTime osGetTime_recomp
 
 #define osContStartReadData osContStartReadData_recomp
