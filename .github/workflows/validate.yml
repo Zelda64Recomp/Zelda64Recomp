@@ -27,7 +27,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang
+          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm-12 clang-12
           
           # Install SDL2
           echo ::group::install SDL2
@@ -66,6 +66,9 @@ jobs:
           # Copy N64Recomp & RSPRecomp to root directory
           cp cmake-build/N64Recomp ..
           cp cmake-build/RSPRecomp ..
+        env:
+          CC: clang-12
+          CXX: clang++-12
       - name: Run N64Recomp & RSPRecomp
         run: |
           ./N64Recomp us.rev1.toml
@@ -79,8 +82,8 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
         env:
-          CC: clang
-          CXX: clang++
+          CC: clang-12
+          CXX: clang++-12
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v2
         with:
