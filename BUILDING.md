@@ -17,14 +17,23 @@ git clone --recurse-submodules
 
 ## 2. Install Dependencies
 
-You will need a few dependencies. For Linux the instructions for Ubuntu are provided, but you can find the equivalent packages for your preferred distro.
+### Linux
+For Linux the instructions for Ubuntu are provided, but you can find the equivalent packages for your preferred distro.
 
 ```bash
 # For Ubuntu, simply run:
 sudo apt-get install cmake ninja libsdl2-dev libgtk-3-dev lld llvm clang-15
+```
 
-# For Windows, you can use Chocolatey:
-choco cmake install ninja sdl2 gtk3 llvm
+### Windows
+You will need to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/).
+In the setup process you'll need to select the following tools for installation:
+- C++ Clang Compiler for Windows
+- C++ CMake tools for Windows
+
+The other tool necessary will be `make` which can be installe via [Chocolatey](https://chocolatey.org/):
+```bash
+choco install make
 ```
 
 ## 3. Creating the ELF file & decompressed ROM
@@ -56,9 +65,12 @@ After that, go back to the repository root, and run the following commands:
 
 ## 5. Building the Project
 
-Finally, you can build the project using CMake:
+Finally, you can build the project! :rocket:
+
+On Windows, you can open the repository folder with Visual Studio, and you'll be able to `[build / run / debug]` the project from there. If you prefer the commandline or you're on a Unix platform you can build the project using CMake:
+
 ```bash
-cmake -S . -B cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
+cmake -S . -B cmake-build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
 ```
 
