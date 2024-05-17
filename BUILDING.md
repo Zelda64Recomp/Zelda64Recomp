@@ -21,7 +21,7 @@ You will need a few dependencies. For Linux we provide the instructions for Ubun
 
 ```bash
 # For Ubuntu, simply run:
-cmake ninja libsdl2-dev libgtk-3-dev lld llvm clang-15
+sudo apt-get install cmake ninja libsdl2-dev libgtk-3-dev lld llvm clang-15
 
 # For Windows, you can use Chocolatey:
 choco cmake install ninja sdl2 gtk3 llvm
