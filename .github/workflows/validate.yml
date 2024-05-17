@@ -64,8 +64,8 @@ jobs:
           cmake --build cmake-build --config Release --target RSPRecomp -j 8
           
           # Copy N64Recomp & RSPRecomp to root directory
-          cp cmake-build/N64Recomp .
-          cp cmake-build/RSPRecomp .
+          cp cmake-build/N64Recomp ..
+          cp cmake-build/RSPRecomp ..
       - name: Run N64Recomp & RSPRecomp
         run: |
           ./N64Recomp us.rev1.toml
@@ -115,6 +115,10 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config Release --target N64Recomp -j 8
           cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp.exe ..
+          cp cmake-build/RSPRecomp.exe ..
       - name: Run N64Recomp & RSPRecomp
         run: |
           ./N64Recomp.exe us.rev1.toml
