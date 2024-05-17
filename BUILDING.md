@@ -49,9 +49,9 @@ Now that you have the required files, we have to build [N64Recomp](https://githu
 
 After that, go back to the repository root, and run the following commands:
 ```bash
-./N64Recomp[.exe] us.rev1.toml
-./RSPRecomp[.exe] aspMain.us.rev1.toml
-./RSPRecomp[.exe] njpgdspMain.us.rev1.toml
+./N64Recomp us.rev1.toml
+./RSPRecomp aspMain.us.rev1.toml
+./RSPRecomp njpgdspMain.us.rev1.toml
 ```
 
 ## 5. Building the Project
@@ -64,6 +64,6 @@ cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release
 
 ## 6. Success
 
-Voilà! You should now have a `Zelda64Recompiled[.exe]` file in the `build-cmake` directory!
+Voilà! You should now have a `Zelda64Recompiled` file in the `build-cmake` directory!
 
 _Note: In the game itself, you should be using a standard ROM, not the decompressed one._
