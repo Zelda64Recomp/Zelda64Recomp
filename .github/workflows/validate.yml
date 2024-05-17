@@ -105,7 +105,7 @@ jobs:
           key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
       - name: Install Windows Dependencies
         run: |
-          choco install ninja gnupg
+          choco install ninja
           Remove-Item -Path "C:\ProgramData\Chocolatey\bin\ccache.exe" -Force -ErrorAction SilentlyContinue
       - name: Configure Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1

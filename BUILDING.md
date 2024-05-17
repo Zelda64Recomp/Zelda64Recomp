@@ -4,7 +4,7 @@ This guide will help you build the project on your local machine. The process wi
 - A decompressed ROM of the US version of the game.
 - An elf file created from [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation.
 
-We'll walk you through acquiring these, running the required processes and finally building the project.
+The steps cover: acquiring these, running the required processes and finally building the project.
 
 ## 1. Clone the Zelda64Recomp Repository
 This project makes use of submodules so you will need to clone the repository with the `--recurse-submodules` flag.
@@ -17,7 +17,7 @@ git clone --recurse-submodules
 
 ## 2. Install Dependencies
 
-You will need a few dependencies. For Linux we provide the instructions for Ubuntu, but you can find the equivalent packages for your preferred distro.
+You will need a few dependencies. For Linux the instructions for Ubuntu are provided, but you can find the equivalent packages for your preferred distro.
 
 ```bash
 # For Ubuntu, simply run:
@@ -33,7 +33,7 @@ You will need to build [this commit](https://github.com/zeldaret/mm/tree/23beee0
 RuntimeError: 'jr' instruction does not have an 'jump label' field
 ```
 
-To fix this you will have to modify the problematic file `tools/disasm/disasm.py` at line 1115. This issue is due to a bug in this specific commit of the decomp project and will be resolved once we update the project to a more recent commit. To fix it, replace the line:
+To fix this you will have to modify the problematic file `tools/disasm/disasm.py` at line 1115. This issue is due to a bug in this specific commit of the decomp project and will be resolved once Zelda64Recomp is updated to a more recent commit. To fix it, replace the line:
 ```diff
 - elif insn.isJump():
 + elif insn.isJumpWithAddress():
@@ -45,7 +45,7 @@ Upon successful build it will generate the two required files. Copy them to the 
 
 ## 4. Generating the C code
 
-Now that you have the required files, we have to build [N64Recomp](https://github.com/Mr-Wiseguy/N64Recomp) and run it to generate the C code to be compiled. The building instructions can be found [here](https://github.com/Mr-Wiseguy/N64Recomp?tab=readme-ov-file#building). That will build the executables: `N64Recomp` and `RSPRecomp` which you should copy to the root of the Zelda64Recomp repository.
+Now that you have the required files, you must build [N64Recomp](https://github.com/Mr-Wiseguy/N64Recomp) and run it to generate the C code to be compiled. The building instructions can be found [here](https://github.com/Mr-Wiseguy/N64Recomp?tab=readme-ov-file#building). That will build the executables: `N64Recomp` and `RSPRecomp` which you should copy to the root of the Zelda64Recomp repository.
 
 After that, go back to the repository root, and run the following commands:
 ```bash
@@ -56,7 +56,7 @@ After that, go back to the repository root, and run the following commands:
 
 ## 5. Building the Project
 
-Finally, you can build the project! We'll use be using CMake:
+Finally, you can build the project using CMake:
 ```bash
 cmake -S . -B cmake-build -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
