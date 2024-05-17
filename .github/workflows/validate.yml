@@ -71,7 +71,7 @@ jobs:
           ./N64Recomp us.rev1.toml
           ./RSPRecomp aspMain.us.rev1.toml
           ./RSPRecomp njpgdspMain.us.rev1.toml
-      - name: Build ZeldaRecomp (Unix)
+      - name: Build ZeldaRecomp
         run: |-
           # enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
@@ -135,10 +135,10 @@ jobs:
           ./N64Recomp.exe us.rev1.toml
           ./RSPRecomp.exe aspMain.us.rev1.toml
           ./RSPRecomp.exe njpgdspMain.us.rev1.toml
-      - name: Build ZeldaRecomp (Unix)
+      - name: Build ZeldaRecomp
         run: |-
           # enable ccache
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
 
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
