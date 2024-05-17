@@ -77,7 +77,7 @@ set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROP
 add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.bin
     COMMAND make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
-    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
+    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Generate patches_bin.c from patches.bin
