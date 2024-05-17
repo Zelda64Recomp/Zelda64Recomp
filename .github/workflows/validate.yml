@@ -52,7 +52,7 @@ jobs:
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
-          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules --branch symbol-file-toml-update
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules
           cd N64Recomp
           
           # enable ccache
@@ -106,7 +106,7 @@ jobs:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         run: |
-          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules --branch symbol-file-toml-update
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules
           cd N64Recomp
           
           # enable ccache
