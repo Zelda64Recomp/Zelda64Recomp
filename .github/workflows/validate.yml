@@ -22,7 +22,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-z64re-ccache
+          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: |
@@ -78,10 +78,9 @@ jobs:
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
-
-          cp cmake-build/Zelda64Recompiled ..
-      - name: Prepare Assets Folder
+      - name: Prepare Archive
         run: |
+          mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
@@ -103,7 +102,7 @@ jobs:
 #      - name: ccache
 #        uses: hendrikmuhs/ccache-action@v1.2
 #        with:
-#          key: ${{ runner.os }}-z64re-ccache
+#          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
 #      - name: Install Windows Dependencies
 #        run: |
 #          choco install ninja gnupg
