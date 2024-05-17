@@ -78,11 +78,16 @@ jobs:
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+      - name: Prepare Assets Folder
+        run: |
+          rm -rf assets/scss
       - name: Archive Zelda64Recomp
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled
-          path: cmake-build/Zelda64Recompiled
+          name: Zelda64Recompiled-${{ matrix.type }}
+          path: |
+            cmake-build/Zelda64Recompiled
+            assets/
 #  build-windows:
 #    runs-on: windows-latest
 #    strategy:

@@ -43,9 +43,7 @@ add_library(RecompiledFuncs STATIC)
 target_compile_options(RecompiledFuncs PRIVATE
     # -Wno-unused-but-set-variable
     -fno-strict-aliasing
-    -Wno-implicit-declarations
     -Wno-implicit-function-declaration
-    -Wunknown-warning-option
 )
 
 target_include_directories(RecompiledFuncs PRIVATE
