@@ -27,7 +27,8 @@ sudo apt-get install cmake ninja libsdl2-dev libgtk-3-dev lld llvm clang-15
 
 ### Windows
 You will need to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/).
-In the setup process you'll need to select the following tools for installation:
+In the setup process you'll need to select the following options and tools for installation:
+- Desktop development with C++
 - C++ Clang Compiler for Windows
 - C++ CMake tools for Windows
 
