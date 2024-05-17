@@ -1,10 +1,13 @@
 # Building Guide
 
+> [!NOTE]  
+> The need for an elf file from the Majora's Mask decompilation is temporary and will be removed in the future.
+
 This guide will help you build the project on your local machine. The process will require you to provide two items:
 - A decompressed ROM of the US version of the game.
 - An elf file created from [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation.
 
-The steps cover: acquiring these, running the required processes and finally building the project.
+These steps cover: acquiring these, running the required processes and finally building the project.
 
 ## 1. Clone the Zelda64Recomp Repository
 This project makes use of submodules so you will need to clone the repository with the `--recurse-submodules` flag.
@@ -79,4 +82,5 @@ cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release
 
 Voilà! You should now have a `Zelda64Recompiled` file in the `build-cmake` directory!
 
-_Note: In the game itself, you should be using a standard ROM, not the decompressed one._
+> [!IMPORTANT]  
+> In the game itself, you should be using a standard ROM, not the decompressed one.
