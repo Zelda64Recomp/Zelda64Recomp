@@ -77,7 +77,12 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config ${{ matrix.type }} --target rt64 -j 8
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v2
+        with:
+          name: Zelda64Recompiled
+          path: cmake-build/Zelda64Recompiled
   build-windows:
     runs-on: windows-latest
     strategy:
@@ -130,4 +135,4 @@ jobs:
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config ${{ matrix.type }} --target rt64 -j 8
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
