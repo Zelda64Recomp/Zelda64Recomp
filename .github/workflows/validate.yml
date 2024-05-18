@@ -144,7 +144,7 @@ jobs:
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
       - name: Prepare Archive
         run: |
-          Move-Item -Path "cmake-build/Zelda64Recompiled" -Destination "Zelda64Recompiled"
+          Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
           Remove-Item -Path "assets/scss" -Recurse -Force
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
