@@ -3,9 +3,10 @@
 [input]
 entrypoint = 0x80080000
 # Paths are relative to the location of this config file.
-elf_path = "mm.us.rev1.elf"
 output_func_path = "RecompiledFuncs"
 relocatable_sections_path = "overlays.us.rev1.txt"
+symbols_file_path = "us.rev1.syms.toml"
+rom_file_path = "mm.us.rev1.rom_uncompressed.z64"
 
 [patches]
 stubs = [
@@ -20,24 +21,6 @@ ignored = [
     # Not actually a function
     "D_80186028"
 ]
-
-# Hooks
-
-# Function definition for the overlay loading function.
-[[patches.func]]
-name = "load_overlays"
-args = ["u32", "u32", "u32"]
-
-# Function hooks for overlay loading.
-[[patches.hook]]
-func = "Main_Init"
-text = "    load_overlays((uint32_t)ctx->r6, (uint32_t)ctx->r5, (uint32_t)ctx->r7);"
-after_vram = 0x800802A4
-
-[[patches.hook]]
-func = "Overlay_Load"
-text = "    load_overlays((uint32_t)ctx->r4, MEM_W(0x10, ctx->r29), (uint32_t)(ctx->r5 - ctx->r4));"
-# No after_vram means this will be placed at the start of the function
 
 # Single-instruction patches
 

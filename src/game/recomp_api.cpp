@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "recomp.h"
+#include "recomp_overlays.h"
 #include "recomp_config.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
@@ -92,4 +93,12 @@ extern "C" void recomp_time_us(uint8_t* rdram, recomp_context* ctx) {
 
 extern "C" void recomp_autosave_enabled(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<s32>(recomp::get_autosave_mode() == recomp::AutosaveMode::On));
+}
+
+extern "C" void recomp_load_overlays(uint8_t * rdram, recomp_context * ctx) {
+    u32 rom = _arg<0, u32>(rdram, ctx);
+    PTR(void) ram = _arg<1, PTR(void)>(rdram, ctx);
+    u32 size = _arg<2, u32>(rdram, ctx);
+
+    load_overlays(rom, ram, size);
 }

@@ -1,0 +1,155 @@
+name: validate
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-unix:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15
+          
+          # Install SDL2
+          echo ::group::install SDL2
+
+          # Enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+
+          wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
+          tar -xzf SDL2-2.26.1.tar.gz
+          cd SDL2-2.26.1
+          ./configure
+          make -j 10
+          sudo make install
+          sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+          echo ::endgroup::
+      - name: Prepare Build
+        run: |-
+          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          ./zre/process.sh
+        env:
+          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
+      - name: Build N64Recomp & RSPRecomp
+        if: runner.os != 'Windows'
+        run: |
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
+          cd N64RecompSource
+          
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          # Build N64Recomp & RSPRecomp
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config Release --target N64Recomp -j 8
+          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp ..
+          cp cmake-build/RSPRecomp ..
+      - name: Run N64Recomp & RSPRecomp
+        run: |
+          ./N64Recomp us.rev1.toml
+          ./RSPRecomp aspMain.us.rev1.toml
+          ./RSPRecomp njpgdspMain.us.rev1.toml
+      - name: Build ZeldaRecomp
+        run: |-
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+      - name: Prepare Archive
+        run: |
+          mv cmake-build/Zelda64Recompiled Zelda64Recompiled
+          rm -rf assets/scss
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
+          path: |
+            Zelda64Recompiled
+            assets/
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
+      - name: Install Windows Dependencies
+        run: |
+          choco install ninja
+          Remove-Item -Path "C:\ProgramData\Chocolatey\bin\ccache.exe" -Force -ErrorAction SilentlyContinue
+      - name: Configure Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Prepare Build
+        run: |-
+          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          ./zre/process.ps1
+        env:
+          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
+      - name: Build N64Recomp & RSPRecomp
+        run: |
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
+          cd N64RecompSource
+
+          # enable ccache
+          set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
+
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config Release --target N64Recomp -j 8
+          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp.exe ..
+          cp cmake-build/RSPRecomp.exe ..
+      - name: Run N64Recomp & RSPRecomp
+        run: |
+          ./N64Recomp.exe us.rev1.toml
+          ./RSPRecomp.exe aspMain.us.rev1.toml
+          ./RSPRecomp.exe njpgdspMain.us.rev1.toml
+      - name: Build ZeldaRecomp
+        run: |-
+          # enable ccache
+          set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
+
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER=clang-cl -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-Xclang -fcxx-exceptions"
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+      - name: Prepare Archive
+        run: |
+          Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
+          Remove-Item -Path "assets/scss" -Recurse -Force
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
+          path: |
+            Zelda64Recompiled.exe
+            assets/

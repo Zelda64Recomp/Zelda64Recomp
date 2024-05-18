@@ -43,6 +43,7 @@ add_library(RecompiledFuncs STATIC)
 target_compile_options(RecompiledFuncs PRIVATE
     # -Wno-unused-but-set-variable
     -fno-strict-aliasing
+    -Wno-implicit-function-declaration
 )
 
 target_include_directories(RecompiledFuncs PRIVATE
@@ -74,10 +75,10 @@ target_sources(PatchesLib PRIVATE
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
-add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.bin
+add_custom_target(PatchesBin
     COMMAND make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
-    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
+    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Generate patches_bin.c from patches.bin
