@@ -2,7 +2,7 @@ name: validate
 on:
   push:
     branches:
-      - main
+      - dev
   pull_request:
     types: [opened, synchronize]
 concurrency:
