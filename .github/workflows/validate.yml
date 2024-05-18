@@ -47,8 +47,6 @@ jobs:
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.sh
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
@@ -113,8 +111,6 @@ jobs:
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.ps1
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
