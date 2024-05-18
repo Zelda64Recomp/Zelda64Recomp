@@ -2,7 +2,7 @@ name: validate
 on:
   push:
     branches:
-      - main
+      - dev
   pull_request:
     types: [opened, synchronize]
 concurrency:
@@ -45,10 +45,8 @@ jobs:
           echo ::endgroup::
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.sh
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
@@ -110,10 +108,8 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.ps1
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
