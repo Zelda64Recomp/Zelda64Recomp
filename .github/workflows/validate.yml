@@ -45,7 +45,7 @@ jobs:
           echo ::endgroup::
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.sh
         env:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
@@ -111,7 +111,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.ps1
         env:
           LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
