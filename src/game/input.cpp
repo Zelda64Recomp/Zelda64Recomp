@@ -172,7 +172,11 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         break;
     case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
         if (scanning_device != recomp::InputDevice::COUNT) {
-            if (event->cbutton.button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK) {
+            auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+            auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
+            // note - magic number: 0 is InputType::None
+            if ((menuToggleBinding0.input_type != 0 && event->cbutton.button == menuToggleBinding0.input_id) ||
+                (menuToggleBinding1.input_type != 0 && event->cbutton.button == menuToggleBinding1.input_id)) {
                 recomp::cancel_scanning_input();
             } else if (scanning_device == recomp::InputDevice::Controller) {
                 SDL_ControllerButtonEvent* button_event = &event->cbutton;
@@ -325,6 +329,9 @@ const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
     .analog_down = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_S}
     },
+    .toggle_menu = {
+        {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_ESCAPE}
+    },
 };
 
 const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
@@ -385,6 +392,9 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
     },
     .analog_down = {
         {.input_type = (uint32_t)InputType::ControllerAnalog, .input_id = SDL_CONTROLLER_AXIS_LEFTY + 1},
+    },
+    .toggle_menu = {
+        {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_BACK},
     },
 };
 

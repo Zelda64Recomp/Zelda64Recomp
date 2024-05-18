@@ -36,9 +36,13 @@ namespace recomp {
         DEFINE_INPUT(X_AXIS_NEG, 0, "Left") \
         DEFINE_INPUT(X_AXIS_POS, 0, "Right") \
 
+    #define DEFINE_RECOMP_UI_INPUTS() \
+        DEFINE_INPUT(TOGGLE_MENU, 0, "Toggle Menu")
+
     #define DEFINE_ALL_INPUTS() \
         DEFINE_N64_BUTTON_INPUTS() \
-        DEFINE_N64_AXIS_INPUTS()
+        DEFINE_N64_AXIS_INPUTS() \
+        DEFINE_RECOMP_UI_INPUTS()
 
     // Enum containing every recomp input.
     #define DEFINE_INPUT(name, value, readable) name,
@@ -104,6 +108,8 @@ namespace recomp {
         std::vector<InputField> analog_right;
         std::vector<InputField> analog_up;
         std::vector<InputField> analog_down;
+
+        std::vector<InputField> toggle_menu;
     };
 
     extern const DefaultN64Mappings default_n64_keyboard_mappings;

@@ -1193,10 +1193,17 @@ int cont_button_to_key(SDL_ControllerButtonEvent& button) {
         case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X:
         case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START:
             return SDLK_f;
-        // Allows closing the menu
-        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK:
-            return SDLK_ESCAPE;
     }
+
+    // Allows closing the menu
+    auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+    auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
+    // note - magic number: 0 is InputType::None
+    if ((menuToggleBinding0.input_type != 0 && button.button == menuToggleBinding0.input_id) ||
+        (menuToggleBinding1.input_type != 0 && button.button == menuToggleBinding1.input_id)) {
+        return SDLK_ESCAPE;
+    }
+
     return 0;
 }
 
@@ -1383,7 +1390,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 }
                 break;
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
-                if (cur_event.cbutton.button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK) {
+                auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+                auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
+                // note - magic number: 0 is InputType::None
+                if ((menuToggleBinding0.input_type != 0 && cur_event.cbutton.button == menuToggleBinding0.input_id) ||
+                    (menuToggleBinding1.input_type != 0 && cur_event.cbutton.button == menuToggleBinding1.input_id)) {
                     open_config = true;
                 }
                 break;

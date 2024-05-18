@@ -232,6 +232,7 @@ void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Map
     assign_mapping_complete(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
+    assign_mapping_complete(device, recomp::GameInput::TOGGLE_MENU, values.toggle_menu);
 };
 
 void recomp::reset_input_bindings() {
