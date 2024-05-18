@@ -70,7 +70,18 @@ void Sram_SyncWriteToFlash(SramContext* sramCtx, s32 curPage, s32 numPages);
 void autosave_reset_timer();
 void autosave_reset_timer_slow();
 
-void do_autosave(SramContext* sramCtx) {
+void do_autosave(PlayState* play) {
+    // Transfer the scene flags into the cycle flags.
+    Play_SaveCycleSceneFlags(&play->state);
+    // Transfer the cycle flags into the save buffer. Logic copied from func_8014546C.
+    for (s32 i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
+        gSaveContext.save.saveInfo.permanentSceneFlags[i].chest = gSaveContext.cycleSceneFlags[i].chest;
+        gSaveContext.save.saveInfo.permanentSceneFlags[i].switch0 = gSaveContext.cycleSceneFlags[i].switch0;
+        gSaveContext.save.saveInfo.permanentSceneFlags[i].switch1 = gSaveContext.cycleSceneFlags[i].switch1;
+        gSaveContext.save.saveInfo.permanentSceneFlags[i].clearedRoom = gSaveContext.cycleSceneFlags[i].clearedRoom;
+        gSaveContext.save.saveInfo.permanentSceneFlags[i].collectible = gSaveContext.cycleSceneFlags[i].collectible;
+    }
+
     s32 fileNum = gSaveContext.fileNum;
 
     gSaveContext.save.isOwlSave = SAVE_TYPE_AUTOSAVE;
@@ -78,6 +89,7 @@ void do_autosave(SramContext* sramCtx) {
     gSaveContext.save.saveInfo.checksum = 0;
     gSaveContext.save.saveInfo.checksum = Sram_CalcChecksum(&gSaveContext, offsetof(SaveContext, fileNum));
 
+    SramContext* sramCtx = &play->sramCtx;
     // Copy the saved parts of the global save context into the sram saving buffer.
     Lib_MemCpy(sramCtx->saveBuf, &gSaveContext, offsetof(SaveContext, fileNum));
     // Synchronously save into the owl save slot and the backup owl save slot. 
@@ -413,7 +425,7 @@ void autosave_post_play_update(PlayState* play) {
             frames_since_autosave_ready >= MIN_FRAMES_SINCE_READY &&
             time_now - last_autosave_time > (OS_USEC_TO_CYCLES(1000 * (recomp_autosave_interval() + extra_autosave_delay_milliseconds)))
         ) {
-            do_autosave(&play->sramCtx);
+            do_autosave(play);
             show_autosave_icon();
             autosave_reset_timer();
         }
