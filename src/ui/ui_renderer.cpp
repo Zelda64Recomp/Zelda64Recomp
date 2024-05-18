@@ -8,6 +8,7 @@
 #include "recomp_ui.h"
 #include "recomp_input.h"
 #include "recomp_game.h"
+#include "recomp_config.h"
 #include "ui_rml_hacks.hpp"
 
 #include "concurrentqueue.h"
@@ -1464,5 +1465,5 @@ recomp::Menu recomp::get_current_menu() {
 }
 
 void recomp::message_box(const char* msg) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", msg, nullptr);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, recomp::program_name.data(), msg, nullptr);
 }
