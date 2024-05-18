@@ -82,13 +82,12 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
+          tar -czf Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz Zelda64Recompiled assets/
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
           name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
-          path: |
-            Zelda64Recompiled
-            assets/
+          path: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz
   build-windows:
     runs-on: windows-latest
     strategy:
@@ -145,6 +144,9 @@ jobs:
       - name: Prepare Archive
         run: |
           Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
+          Move-Item -Path "cmake-build/dxcompiler.dll" -Destination "dxcompiler.dll"
+          Move-Item -Path "cmake-build/dxil.dll" -Destination "dxil.dll"
+          Move-Item -Path "cmake-build/SDL2.dll" -Destination "SDL2.dll"
           Remove-Item -Path "assets/scss" -Recurse -Force
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
@@ -152,4 +154,7 @@ jobs:
           name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
           path: |
             Zelda64Recompiled.exe
+            dxcompiler.dll
+            dxil.dll
+            SDL2.dll
             assets/
