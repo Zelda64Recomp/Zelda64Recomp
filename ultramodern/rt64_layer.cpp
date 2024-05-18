@@ -97,6 +97,21 @@ void set_application_user_config(RT64::Application* application, const ultramode
     application->userConfig.refreshRateTarget = config.rr_manual_value;
 }
 
+ultramodern::RT64SetupResult map_setup_result(RT64::Application::SetupResult rt64_result) {
+    switch (rt64_result) {
+        case RT64::Application::SetupResult::Success:
+            return ultramodern::RT64SetupResult::Success;
+        case RT64::Application::SetupResult::DynamicLibrariesNotFound:
+            return ultramodern::RT64SetupResult::DynamicLibrariesNotFound;
+        case RT64::Application::SetupResult::InvalidGraphicsAPI:
+            return ultramodern::RT64SetupResult::InvalidGraphicsAPI;
+        case RT64::Application::SetupResult::GraphicsAPINotFound:
+            return ultramodern::RT64SetupResult::GraphicsAPINotFound;
+        case RT64::Application::SetupResult::GraphicsDeviceNotFound:
+            return ultramodern::RT64SetupResult::GraphicsDeviceNotFound;
+    }
+}
+
 ultramodern::RT64Context::RT64Context(uint8_t* rdram, ultramodern::WindowHandle window_handle, bool debug) {
     static unsigned char dummy_rom_header[0x40];
     set_rt64_hooks();
@@ -179,7 +194,8 @@ ultramodern::RT64Context::RT64Context(uint8_t* rdram, ultramodern::WindowHandle 
 #ifdef _WIN32
     thread_id = window_handle.thread_id;
 #endif
-    if (app->setup(thread_id) != RT64::Application::SetupResult::Success) {
+    setup_result = map_setup_result(app->setup(thread_id));
+    if (setup_result != ultramodern::RT64SetupResult::Success) {
         app = nullptr;
         return;
     }
