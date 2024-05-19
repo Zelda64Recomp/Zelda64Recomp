@@ -11,5 +11,6 @@ RUN if [ "${INSTALL_SDL2_VERSION_FROM_SOURCE}" != "none" ]; then \
     fi \
     && rm -f /tmp/install-sdl2.sh
 
+COPY ./install-n64recomp.sh /tmp/
 RUN chmod +x /tmp/install-n64recomp.sh && /tmp/install-n64recomp.sh
 RUN rm -f /tmp/install-n64recomp.sh
