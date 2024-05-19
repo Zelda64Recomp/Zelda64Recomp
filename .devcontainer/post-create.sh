@@ -14,5 +14,10 @@ RSPRecomp njpgdspMain.us.rev1.toml
 # Cleanup 
 rm -rf zre
 
+# symlink recomp tools to root (CMake needs them there)
+# should be improved in the future
+ln -s $(which N64Recomp) .
+ln -s $(which RSPRecomp) .
+
 # Initialize submodules
 git submodule update --init --recursive
