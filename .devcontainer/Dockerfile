@@ -7,6 +7,6 @@ ARG INSTALL_SDL2_VERSION_FROM_SOURCE="2.26.1"
 
 COPY ./install-sdl2.sh /tmp/
 RUN if [ "${INSTALL_SDL2_VERSION_FROM_SOURCE}" != "none" ]; then \
-        chmod +x /tmp/install-sdl2.sh && /tmp/install-sdl2.sh ${INSTALL_SDL2_VERSION_FROM_SOURCE}; \
+    chmod +x /tmp/install-sdl2.sh && /tmp/install-sdl2.sh ${INSTALL_SDL2_VERSION_FROM_SOURCE}; \
     fi \
-    && rm -f /tmp/install-sdl2.sh \
+    && rm -f /tmp/install-sdl2.sh
