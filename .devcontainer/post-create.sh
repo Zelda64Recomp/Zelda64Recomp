@@ -3,7 +3,7 @@
 set -e
 
 # Clone ZRE repo
-git clone $ZRE_REPO_WITH_PATH
+git clone $ZRE_REPO_WITH_PAT
 ./zre/process.sh
 
 # Run N64Recomp
