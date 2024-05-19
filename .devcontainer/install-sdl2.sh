@@ -23,6 +23,23 @@ trap cleanup EXIT
 
 echo "Installing CMake..."
 
+architecture=$(dpkg --print-architecture)
+case "${architecture}" in
+    arm64)
+        ARCH=aarch64 ;;
+    amd64)
+        ARCH=x86_64 ;;
+    *)
+        echo "Unsupported architecture ${architecture}."
+        exit 1
+        ;;
+esac
+
+TMP_DIR=$(mktemp -d -t sdl2-XXXXXXXXXX)
+
+echo "${TMP_DIR}"
+cd "${TMP_DIR}"
+
 wget https://www.libsdl.org/release/SDL2-${SDL2_VERSION}.tar.gz
 tar -xzf SDL2-${SDL2_VERSION}.tar.gz
 cd SDL2-${SDL2_VERSION}

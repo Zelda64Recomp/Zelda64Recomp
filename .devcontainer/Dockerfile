@@ -10,3 +10,6 @@ RUN if [ "${INSTALL_SDL2_VERSION_FROM_SOURCE}" != "none" ]; then \
     chmod +x /tmp/install-sdl2.sh && /tmp/install-sdl2.sh ${INSTALL_SDL2_VERSION_FROM_SOURCE}; \
     fi \
     && rm -f /tmp/install-sdl2.sh
+
+RUN chmod +x /tmp/install-n64recomp.sh && /tmp/install-n64recomp.sh
+RUN rm -f /tmp/install-n64recomp.sh
