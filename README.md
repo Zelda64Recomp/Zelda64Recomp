@@ -1,7 +1,7 @@
 # Zelda 64: Recompiled
 Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp) to **statically recompile** Majora's Mask (and soon Ocarina of Time) into a native port with many new features and enhancements. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide some of these enhancements.
 
-### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/tag/v1.0.0).
+### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/latest).
 
 ### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
 
