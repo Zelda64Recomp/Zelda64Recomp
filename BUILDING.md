@@ -78,6 +78,10 @@ cmake -S . -B build-cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang 
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
 ```
 
+> [!NOTE]
+> Both the CI and Dev Containers require you to make available a secret: `ZRE_REPO_WITH_PAT` which should contain a the scripts: `process.sh` and `process.ps1` for Linux and Windows respectively. These scripts should make sure the required files for building the project are present in the repository root.
+
+
 ## 6. Success
 
 Voilà! You should now have a `Zelda64Recompiled` file in the `build-cmake` directory!
