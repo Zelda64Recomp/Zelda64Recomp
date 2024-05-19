@@ -10,7 +10,7 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
-  "postCreateCommand": "git submodule update --init --recursive"
+  "postCreateCommand": "./devcontainer/post-create.sh",
 
   // Configure tool-specific properties.
   // "customizations": {},
