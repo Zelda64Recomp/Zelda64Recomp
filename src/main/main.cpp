@@ -52,7 +52,7 @@ ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
-#if defined(__linux__) && defined(SDL_VIDEO_DRIVER_WAYLAND)
+#if defined(__linux__)
     SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
 #endif
 
