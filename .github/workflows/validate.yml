@@ -4,7 +4,6 @@ on:
     branches:
       - dev
   pull_request_target:
-    types: [opened, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
