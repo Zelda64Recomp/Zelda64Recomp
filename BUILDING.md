@@ -74,7 +74,7 @@ Finally, you can build the project! :rocket:
 On Windows, you can open the repository folder with Visual Studio, and you'll be able to `[build / run / debug]` the project from there. If you prefer the commandline or you're on a Unix platform you can build the project using CMake:
 
 ```bash
-cmake -S . -B cmake-build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
+cmake -S . -B build-cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
 ```
 
