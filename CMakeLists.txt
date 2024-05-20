@@ -181,11 +181,18 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_compile_options(Zelda64Recompiled PRIVATE
-    -march=nehalem
-    -fno-strict-aliasing
-    -fms-extensions
-)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+    target_compile_options(Zelda64Recompiled PRIVATE
+        -march=nehalem
+        -fno-strict-aliasing
+        -fms-extensions
+    )
+else()
+    target_compile_options(Zelda64Recompiled PRIVATE
+        -fno-strict-aliasing
+        -fms-extensions
+    )
+endif()
 
 if (WIN32)
     include(FetchContent)
