@@ -16,7 +16,7 @@ jobs:
       'external' || 'internal' }}
     runs-on: ubuntu-latest
     steps:
-      - run: true
+      - run: echo ✓
   build-unix:
     needs: authorize
     runs-on: ubuntu-22.04
