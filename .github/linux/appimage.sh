@@ -7,4 +7,10 @@ cp Zelda64Recompiled AppDir/usr/bin/
 cp -r assets/ AppDir/usr/bin/
 cp .github/linux/{Zelda64Recompiled.desktop,Zelda64Recompiled.png} AppDir/
 
-ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./linuxdeploy-static-x86_64.AppImage --appdir=AppDir/ -d AppDir/Zelda64Recompiled.desktop -i AppDir/Zelda64Recompiled.png -e AppDir/usr/bin/Zelda64Recompiled --plugin gtk --output appimage
+./linuxdeploy-static-x86_64.AppImage --appimage-extract
+mv squashfs-root/ deploy
+ARCH=x86_64 ./deploy/AppRun --appdir=AppDir/ -d AppDir/Zelda64Recompiled.desktop -i AppDir/Zelda64Recompiled.png -e AppDir/usr/bin/Zelda64Recompiled --plugin gtk
+sed -i 's/exec/#exec/g' AppDir/AppRun
+echo 'cd "$this_dir"/usr/bin/' >> AppDir/AppRun
+echo './Zelda64Recompiled' >> AppDir/AppRun
+ARCH=x86_64 ./deploy/usr/bin/linuxdeploy-plugin-appimage --appdir=AppDir
