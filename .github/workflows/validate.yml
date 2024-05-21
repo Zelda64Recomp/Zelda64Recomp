@@ -37,7 +37,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15
+          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15 libfuse2
           
           # Install SDL2
           echo ::group::install SDL2
@@ -96,6 +96,13 @@ jobs:
         with:
           name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
           path: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz
+      - name: Prepare AppImage
+        run: ./.github/linux/appimage.sh 
+      - name: Zelda64Recomp AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-AppImage-${{ matrix.type }}
+          path: Zelda64Recompiled-x86_64.AppImage
   build-windows:
     needs: authorize
     runs-on: windows-latest
