@@ -24,6 +24,18 @@ if (WIN32)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/lib/")
 endif()
 
+# Check CPU requirements
+include(cmake/ZREDetectSSE42.cmake)
+message(STATUS "SUPPORTS_SSE4.2 = ${SUPPORTS_SSE42}")
+include(cmake/ZREDetectNEON.cmake)
+message(STATUS "SUPPORTS_NEON = ${SUPPORTS_NEON}")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64" AND NOT SUPPORTS_AVX)
+    message(FATAL_ERROR "FATAL: A CPU supporting SSE4.2 is required.")
+elseif(NOT SUPPORTS_NEON)
+    message(FATAL_ERROR "FATAL: A CPU supporting NEON is required.")
+endif()
+
 set(RT64_STATIC TRUE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
