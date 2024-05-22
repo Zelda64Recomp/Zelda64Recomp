@@ -17,7 +17,9 @@
 #include "xxHash/xxh3.h"
 #include "../ultramodern/ultramodern.hpp"
 #include "../../RecompiledPatches/patches_bin.h"
+#ifdef HAS_MM_SHADER_CACHE
 #include "mm_shader_cache.h"
+#endif
 
 #ifdef _MSC_VER
 inline uint32_t byteswap(uint32_t val) {
