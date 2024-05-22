@@ -1,8 +1,6 @@
 {
   "name": "Zelda64Recomp",
-  "build": {
-    "dockerfile": "Dockerfile",
-  },
+  "image": "dcvz/n64recomp:0.0.1-ubuntu-22.04",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
