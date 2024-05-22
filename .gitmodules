@@ -13,3 +13,6 @@
 [submodule "lib/lunasvg"]
 	path = lib/lunasvg
 	url = https://github.com/sammycage/lunasvg
+[submodule "lib/sse2neon"]
+	path = lib/sse2neon
+	url = https://github.com/DLTcollab/sse2neon.git

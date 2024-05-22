@@ -20,14 +20,13 @@
 // ----------------------------------------------------------------------
 #include <cstdint>
 
-#define ARCHITECTURE_AMD64
+#if defined(__x86_64__) || defined(_M_X64)
 #define ARCHITECTURE_SUPPORTS_SSE4_1 1
-
-#if defined(ARCHITECTURE_AMD64)
 #include <nmmintrin.h>
 using v128 = __m128i;
-#elif defined(ARCHITECTURE_ARM64)
-#include <sse2neon.h>
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define ARCHITECTURE_SUPPORTS_SSE4_1 1
+#include "sse2neon.h"
 using v128 = __m128i;
 #endif
 
