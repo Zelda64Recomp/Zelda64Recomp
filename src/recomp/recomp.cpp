@@ -413,7 +413,11 @@ void recomp::start(ultramodern::WindowHandle window_handle, const ultramodern::a
                 if (!recomp::load_stored_rom(recomp::Game::MM)) {
                     recomp::message_box("Error opening stored ROM! Please restart this program.");
                 }
+
+                #ifdef HAS_MM_SHADER_CACHE
                 ultramodern::load_shader_cache({mm_shader_cache_bytes, sizeof(mm_shader_cache_bytes)});
+                #endif
+
                 init(rdram, &context);
                 try {
                     recomp_entrypoint(rdram, &context);
