@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/cpp:1-ubuntu-22.04
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15
+    && apt-get -y install --no-install-recommends ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15 file
 
 ARG INSTALL_SDL2_VERSION_FROM_SOURCE="2.26.1"
 
@@ -14,3 +14,5 @@ RUN if [ "${INSTALL_SDL2_VERSION_FROM_SOURCE}" != "none" ]; then \
 COPY ./install-n64recomp.sh /tmp/
 RUN chmod +x /tmp/install-n64recomp.sh && /tmp/install-n64recomp.sh
 RUN rm -f /tmp/install-n64recomp.sh
+
+RUN curl -Ssf https://pkgx.sh | sh
