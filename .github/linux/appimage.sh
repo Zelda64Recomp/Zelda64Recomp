@@ -5,7 +5,8 @@ chmod a+x linuxdeploy*
 mkdir -p AppDir/usr/bin
 cp Zelda64Recompiled AppDir/usr/bin/
 cp -r assets/ AppDir/usr/bin/
-cp .github/linux/{Zelda64Recompiled.desktop,Zelda64Recompiled.png} AppDir/
+cp icons/512.png AppDir/Zelda64Recompiled.png
+cp .github/linux/Zelda64Recompiled.desktop AppDir/
 
 ./linuxdeploy-static-x86_64.AppImage --appimage-extract
 mv squashfs-root/ deploy
