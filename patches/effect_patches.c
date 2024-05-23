@@ -100,7 +100,7 @@ void Play_DrawMotionBlur(PlayState* this) {
         // Clamp the blur alpha, which ensures that the output color converges to within a reasonable delta of the target color
         // when using an R8G8B8A8 framebuffer as RT64 currently does. Although this makes the effect less noticeable at high framerates,
         // not clamping leads to noticeable image retention.
-        alpha_float = MIN(alpha_float, 0.825f);
+        //alpha_float = MIN(alpha_float, 0.825f);
         alpha = (s32)(alpha_float * 255.0f);
 
         if (sMotionBlurStatus == MOTION_BLUR_PROCESS) {
