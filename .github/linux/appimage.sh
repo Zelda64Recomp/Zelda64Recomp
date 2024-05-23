@@ -1,18 +1,18 @@
-# check current arch and map it to either x86_64 or arm_aarch64
-
 ARCH=$(uname -m)
+LINUX_DEPLOY_ARCH=$(uname -m)
+
 if [ "$ARCH" == "x86_64" ]; then
   ARCH="x86_64"
+  LINUX_DEPLOY_ARCH="x86_64"
 elif [ "$ARCH" == "aarch64" ]; then
   ARCH="arm_aarch64"
+  LINUX_DEPLOY_ARCH="aarch64"
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
 fi
 
-
-
-curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-static-$ARCH.AppImage"
+curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$LINUX_DEPLOY_ARCH.AppImage"
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/raw/master/linuxdeploy-plugin-gtk.sh"
 chmod a+x linuxdeploy*
  
@@ -22,7 +22,7 @@ cp -r assets/ AppDir/usr/bin/
 cp icons/512.png AppDir/Zelda64Recompiled.png
 cp .github/linux/Zelda64Recompiled.desktop AppDir/
 
-"./linuxdeploy-static-$ARCH.AppImage" --appimage-extract
+"./linuxdeploy-$LINUX_DEPLOY_ARCH.AppImage" --appimage-extract
 mv squashfs-root/ deploy
 ./deploy/AppRun --appdir=AppDir/ -d AppDir/Zelda64Recompiled.desktop -i AppDir/Zelda64Recompiled.png -e AppDir/usr/bin/Zelda64Recompiled --plugin gtk
 sed -i 's/exec/#exec/g' AppDir/AppRun
