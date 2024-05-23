@@ -95,14 +95,14 @@ jobs:
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
-          path: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz
+          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          path: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-AppImage-${{ matrix.type }}
+          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
           path: Zelda64Recompiled-x86_64.AppImage
   build-windows:
     needs: authorize
