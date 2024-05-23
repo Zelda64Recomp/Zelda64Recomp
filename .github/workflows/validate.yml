@@ -19,10 +19,11 @@ jobs:
       - run: echo ✓
   build-unix:
     needs: authorize
-    runs-on: [ ubuntu-22.04, blaze/ubuntu-22.04 ]
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         type: [ Debug, Release ]
+        os: [ ubuntu-22.04, blaze/ubuntu-22.04 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
