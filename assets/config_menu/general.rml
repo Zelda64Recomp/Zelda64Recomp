@@ -92,6 +92,7 @@
                             />
                         </div>
                     </div>
+                    
                     <!-- joystick deadzone -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(4)">
                         <label class="config-option__title">Joystick Deadzone</label>
@@ -101,7 +102,7 @@
                                 class="nav-vert"
                                 data-event-blur="set_cur_config_index(-1)"
                                 data-event-focus="set_cur_config_index(4)"
-                                id="joystick_deadzone"
+                                id="joystick_deadzone_input"
                                 type="range"
                                 min="0"
                                 max="100"
@@ -112,60 +113,60 @@
                     </div>
 
                     <!-- background input -->
-                    <div class="config-option" data-event-mouseover="set_cur_config_index(4)" id="conf-general__Background-Input">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(5)" id="conf-general__Background-Input">
                         <label class="config-option__title">Background Input</label>
                         <div class="config-option__list">
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(4)"
+                                data-event-focus="set_cur_config_index(5)"
                                 name="background_input_mode"
                                 data-checked="background_input_mode"
                                 value="On"
                                 id="bg_input_enabled"
-                                style="nav-up: #mouse_sensitivity_input; nav-down: #autosave_enabled"
+                                style="nav-up: #joystick_deadzone_input; nav-down: #autosave_enabled"
                             />
                             <label class="config-option__tab-label" for="bg_input_enabled">On</label>
 
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(4)"
+                                data-event-focus="set_cur_config_index(5)"
                                 name="background_input_mode"
                                 data-checked="background_input_mode"
                                 value="Off"
                                 id="bg_input_disabled"
-                                style="nav-up: #mouse_sensitivity_input; nav-down: #autosave_disabled"
+                                style="nav-up: #joystick_deadzone_input; nav-down: #autosave_disabled"
                             />
                             <label class="config-option__tab-label" for="bg_input_disabled">Off</label>
                         </div>
                     </div>
 
                     <!-- autosave -->
-                    <div class="config-option" data-event-mouseover="set_cur_config_index(5)">
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(6)">
                         <label class="config-option__title">Autosaving</label>
                         <div class="config-option__list">
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(5)"
+                                data-event-focus="set_cur_config_index(6)"
                                 name="autosave_mode"
                                 data-checked="autosave_mode"
                                 value="On"
                                 id="autosave_enabled"
-                                style="nav-up: #bg_input_enabled"
+                                style="nav-up: #bg_input_enabled; nav-down: #analog_cam_enabled"
                             />
                             <label class="config-option__tab-label" for="autosave_enabled">On</label>
 
                             <input
                                 type="radio"
                                 data-event-blur="set_cur_config_index(-1)"
-                                data-event-focus="set_cur_config_index(5)"
+                                data-event-focus="set_cur_config_index(6)"
                                 name="autosave_mode"
                                 data-checked="autosave_mode"
                                 value="Off"
                                 id="autosave_disabled"
-                                style="nav-up: #bg_input_disabled"
+                                style="nav-up: #bg_input_disabled; nav-down: #analog_cam_disabled"
                             />
                             <label class="config-option__tab-label" for="autosave_disabled">Off</label>
                         </div>
@@ -197,6 +198,9 @@
                         <b>This setting does not affect keyboard input.</b>
                     </p>
                     <p data-if="cur_config_index == 5">
+                        Applies a deadzone to joystick inputs.
+                    </p>
+                    <p data-if="cur_config_index == 6">
                         Turns on autosaving and prevents owl saves from being deleted on load. Autosaves act as owl saves and take up the same slot as they do.
                         <br/>
                         <br/>

@@ -274,7 +274,7 @@ struct ControlOptionsContext {
 	int rumble_strength; // 0 to 100
 	int gyro_sensitivity; // 0 to 100
 	int mouse_sensitivity; // 0 to 100
-	float joystick_deadzone;
+	int joystick_deadzone; // 0 to 100
 	recomp::TargetingMode targeting_mode;
 	recomp::BackgroundInputMode background_input_mode;
 	recomp::AutosaveMode autosave_mode;
@@ -301,7 +301,7 @@ int recomp::get_mouse_sensitivity() {
 	return control_options_context.mouse_sensitivity;
 }
 
-float recomp::get_joystick_deadzone() {
+int recomp::get_joystick_deadzone() {
 	return control_options_context.joystick_deadzone;
 }
 
@@ -319,9 +319,9 @@ void recomp::set_mouse_sensitivity(int sensitivity) {
 	}
 }
 
-void recomp::set_joystick_deadzone(float value) {
-	control_options_context.joystick_deadzone = value;
-	if(general_model_handle) {
+void recomp::set_joystick_deadzone(int deadzone) {
+	control_options_context.joystick_deadzone = deadzone;
+	if (general_model_handle) {
 		general_model_handle.DirtyVariable("joystick_deadzone");
 	}
 }
