@@ -92,6 +92,24 @@
                             />
                         </div>
                     </div>
+                    <!-- joystick deadzone -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(4)">
+                        <label class="config-option__title">Joystick Deadzone</label>
+                        <div class="config-option__range-wrapper config-option__list">
+                            <label class="config-option__range-label">{{joystick_deadzone}}%</label>
+                            <input
+                                class="nav-vert"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(4)"
+                                id="joystick_deadzone"
+                                type="range"
+                                min="0"
+                                max="100"
+                                style="flex: 1; margin: 0dp;"
+                                data-value="joystick_deadzone"
+                            />
+                        </div>
+                    </div>
 
                     <!-- background input -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(4)" id="conf-general__Background-Input">

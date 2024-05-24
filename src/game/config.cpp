@@ -163,6 +163,7 @@ void save_general_config(const std::filesystem::path& path) {
     config_json["rumble_strength"] = recomp::get_rumble_strength();
     config_json["gyro_sensitivity"] = recomp::get_gyro_sensitivity();
     config_json["mouse_sensitivity"] = recomp::get_mouse_sensitivity();
+    config_json["joystick_deadzone"] = recomp::get_joystick_deadzone();
     config_json["autosave_mode"] = recomp::get_autosave_mode();
     config_json["debug_mode"] = recomp::get_debug_mode_enabled();
     config_file << std::setw(4) << config_json;
@@ -174,6 +175,7 @@ void set_general_settings_from_json(const nlohmann::json& config_json) {
     recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
     recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
     recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
+    recomp::set_joystick_deadzone(from_or_default(config_json, "joystick_deadzone", 0.0f));
     recomp::set_autosave_mode(from_or_default(config_json, "autosave_mode", recomp::AutosaveMode::On));
     recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }

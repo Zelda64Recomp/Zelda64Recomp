@@ -129,8 +129,10 @@ namespace recomp {
     // Gyro and mouse sensitivities range from 0 to 100.
     int get_gyro_sensitivity();
     int get_mouse_sensitivity();
+    float get_joystick_deadzone();
     void set_gyro_sensitivity(int strength);
     void set_mouse_sensitivity(int strength);
+    void set_joystick_deadzone(float value);
 
     enum class TargetingMode {
         Switch,
