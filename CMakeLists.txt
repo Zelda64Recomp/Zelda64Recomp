@@ -87,11 +87,15 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
     DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
-# Generate mm_shader_cache.c from the MM shader cache
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-    COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-    DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
-)
+# Generate mm_shader_cache.c from the MM shader cache if it exists
+if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
+    set(HAS_MM_SHADER_CACHE TRUE)
+    add_compile_definitions(HAS_MM_SHADER_CACHE)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+        COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
+    )
+endif()
 
 # Recompile patches elf into patches.c
 add_custom_command(OUTPUT
@@ -159,9 +163,11 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
-
-    ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c
 )
+
+if (HAS_MM_SHADER_CACHE)
+    list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c)
+endif()
 
 target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -175,17 +181,25 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/rt64/src
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
+    ${CMAKE_SOURCE_DIR}/lib/sse2neon
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_compile_options(Zelda64Recompiled PRIVATE
-    -march=nehalem
-    -fno-strict-aliasing
-    -fms-extensions
-)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+    target_compile_options(Zelda64Recompiled PRIVATE
+        -march=nehalem
+        -fno-strict-aliasing
+        -fms-extensions
+    )
+else()
+    target_compile_options(Zelda64Recompiled PRIVATE
+        -fno-strict-aliasing
+        -fms-extensions
+    )
+endif()
 
 if (WIN32)
     include(FetchContent)
@@ -289,7 +303,19 @@ if (${WIN32})
     set (DXC "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+        if (APPLE)
+            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+        else()
+            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+        endif()
+    else()
+        if (APPLE)
+            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-macos")
+        else()
+            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-linux")
+        endif()
+    endif()
 endif()
 
 build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")

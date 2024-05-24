@@ -16,6 +16,7 @@
 #include "config.hpp"
 #include "rt64_layer.h"
 #include "recomp.h"
+#include "recomp_game.h"
 #include "recomp_ui.h"
 #include "recomp_input.h"
 #include "rsp.h"
@@ -301,6 +302,8 @@ void ultramodern::load_shader_cache(std::span<const char> cache_data) {
     events_context.action_queue.enqueue(LoadShaderCacheAction{cache_data});
 }
 
+std::atomic<ultramodern::RT64SetupResult> rt64_setup_result = ultramodern::RT64SetupResult::Success;
+
 void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_ready, ultramodern::WindowHandle window_handle) {
     bool enabled_instant_present = false;
     using namespace std::chrono_literals;
@@ -313,7 +316,11 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
     ultramodern::RT64Context rt64{rdram, window_handle, cur_config.load().developer_mode};
 
     if (!rt64.valid()) {
-        throw std::runtime_error("Failed to initialize RT64!");
+        // TODO move recomp code out of ultramodern.
+        rt64_setup_result.store(rt64.get_setup_result());
+        // Notify the caller thread that this thread is ready.
+        thread_ready->signal();
+        return;
     }
 
     // TODO move recomp code out of ultramodern.
@@ -537,6 +544,27 @@ void ultramodern::send_si_message(RDRAM_ARG1) {
     osSendMesg(PASS_RDRAM events_context.si.mq, events_context.si.msg, OS_MESG_NOBLOCK);
 }
 
+std::string get_graphics_api_name(ultramodern::GraphicsApi api) {
+    if (api == ultramodern::GraphicsApi::Auto) {
+#if defined(_WIN32)
+        api = ultramodern::GraphicsApi::D3D12;
+#elif defined(__gnu_linux__)
+        api = ultramodern::GraphicsApi::Vulkan;
+#else
+        static_assert(false && "Unimplemented")
+#endif
+    }
+
+    switch (api) {
+        case ultramodern::GraphicsApi::D3D12:
+            return "D3D12";
+        case ultramodern::GraphicsApi::Vulkan:
+            return "Vulkan";
+        default:
+            return "[Unknown graphics API]";
+    }
+}
+
 void ultramodern::init_events(RDRAM_ARG ultramodern::WindowHandle window_handle) {
     moodycamel::LightweightSemaphore gfx_thread_ready;
     moodycamel::LightweightSemaphore task_thread_ready;
@@ -548,6 +576,30 @@ void ultramodern::init_events(RDRAM_ARG ultramodern::WindowHandle window_handle)
     // running before we're able to handle RSP tasks.
     gfx_thread_ready.wait();
     task_thread_ready.wait();
+
+    ultramodern::RT64SetupResult setup_result = rt64_setup_result.load();
+    if (rt64_setup_result != ultramodern::RT64SetupResult::Success) {
+        auto show_rt64_error = [](const std::string& msg) {
+            // TODO move recomp code out of ultramodern (message boxes).
+            recomp::message_box(("An error has been encountered on startup: " + msg).c_str());
+        };
+        const std::string driver_os_suffix = "\nPlease make sure your GPU drivers and your OS are up to date.";
+        switch (rt64_setup_result) {
+            case ultramodern::RT64SetupResult::DynamicLibrariesNotFound:
+                show_rt64_error("Failed to load dynamic libraries. Make sure the DLLs are next to the recomp executable.");
+                break;
+            case ultramodern::RT64SetupResult::InvalidGraphicsAPI:
+                show_rt64_error(get_graphics_api_name(cur_config.load().api_option) + " is not supported on this platform. Please select a different graphics API.");
+                break;
+            case ultramodern::RT64SetupResult::GraphicsAPINotFound:
+                show_rt64_error("Unable to initialize " + get_graphics_api_name(cur_config.load().api_option) + "." + driver_os_suffix);
+                break;
+            case ultramodern::RT64SetupResult::GraphicsDeviceNotFound:
+                show_rt64_error("Unable to find compatible graphics device." + driver_os_suffix);
+                break;
+        }
+        throw std::runtime_error("Failed to initialize RT64");
+    }
 
     events_context.vi.thread = std::thread{ vi_thread_func };
 }

@@ -2,14 +2,23 @@ name: validate
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - dev
+  pull_request_target:
     types: [opened, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  authorize:
+    environment:
+      ${{ github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ✓
   build-unix:
+    needs: authorize
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -18,6 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           submodules: recursive
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -27,7 +37,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15
+          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15 libfuse2
           
           # Install SDL2
           echo ::group::install SDL2
@@ -45,10 +55,8 @@ jobs:
           echo ::endgroup::
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.sh
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         if: runner.os != 'Windows'
         run: |
@@ -82,14 +90,21 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
+          tar -czf Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz Zelda64Recompiled assets/
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
           name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
-          path: |
-            Zelda64Recompiled
-            assets/
+          path: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz
+      - name: Prepare AppImage
+        run: ./.github/linux/appimage.sh 
+      - name: Zelda64Recomp AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-AppImage-${{ matrix.type }}
+          path: Zelda64Recompiled-x86_64.AppImage
   build-windows:
+    needs: authorize
     runs-on: windows-latest
     strategy:
       matrix:
@@ -98,6 +113,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           submodules: recursive
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -111,10 +127,8 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: Prepare Build
         run: |-
-          git clone https://${{ secrets.PAT }}@github.com/dcvz/zre.git
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           ./zre/process.ps1
-        env:
-          LARGE_SECRET_PASSPHRASE: ${{ secrets.LARGE_SECRET_PASSPHRASE }}
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
@@ -145,6 +159,9 @@ jobs:
       - name: Prepare Archive
         run: |
           Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
+          Move-Item -Path "cmake-build/dxcompiler.dll" -Destination "dxcompiler.dll"
+          Move-Item -Path "cmake-build/dxil.dll" -Destination "dxil.dll"
+          Move-Item -Path "cmake-build/SDL2.dll" -Destination "SDL2.dll"
           Remove-Item -Path "assets/scss" -Recurse -Force
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
@@ -152,4 +169,7 @@ jobs:
           name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
           path: |
             Zelda64Recompiled.exe
+            dxcompiler.dll
+            dxil.dll
+            SDL2.dll
             assets/

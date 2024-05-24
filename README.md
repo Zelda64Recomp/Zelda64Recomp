@@ -1,7 +1,7 @@
 # Zelda 64: Recompiled
 Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp) to **statically recompile** Majora's Mask (and soon Ocarina of Time) into a native port with many new features and enhancements. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide some of these enhancements.
 
-### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/tag/v1.0.0).
+### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/latest).
 
 ### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
 
@@ -101,6 +101,11 @@ You'll probably also want to change the default behavior so that you don't need 
 #### Where is the savefile stored?
 - Windows: `%LOCALAPPDATA%\Zelda64Recompiled\saves`
 - Linux: `~/.config/Zelda64Recompiled/saves`
+
+#### How do I choose a different ROM?
+**You don't.** This project is **only** a port of Majora's Mask (and Ocarina of Time in the future), and it will only accept one specific ROM: the US version of the N64 release of Majora's Mask. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.** 
+
+If you want to play a modded ROM or in another language, note that support for modding and other languages will be added to the project itself in the future and will not rely on you supplying a different ROM. 
 
 ## Known Issues
 * The motion blur effect used by the game was capped to prevent ghosting at incredibly high framerates, which causes it to be less noticeable (this is only really noticeable above 120FPS). This may be fixed in the future by offering the option to render to an HDR framebuffer internally, which would allow it to be uncapped.
