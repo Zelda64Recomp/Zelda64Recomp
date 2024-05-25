@@ -38,7 +38,6 @@
 #include "SDL_syswm.h"
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
 
 template<typename... Ts>
