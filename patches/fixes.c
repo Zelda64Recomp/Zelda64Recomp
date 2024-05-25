@@ -2,6 +2,8 @@
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 #include "overlays/actors/ovl_En_Fall/z_en_fall.h"
 #include "overlays/actors/ovl_Demo_Effect/z_demo_effect.h"
+#include "overlays/gamestates/ovl_daytelop/z_daytelop.h"
+#include "z64shrink_window.h"
 
 #define PAGE_BG_WIDTH (PAGE_BG_COLS * PAGE_BG_QUAD_WIDTH)
 #define PAGE_BG_HEIGHT (PAGE_BG_ROWS * PAGE_BG_QUAD_HEIGHT)
@@ -329,4 +331,48 @@ s32 DemoEffect_OverrideLimbDrawTimewarp(PlayState* play, SkelCurve* skelCurve, s
     }
 
     return true;
+}
+
+void* gamestate_relocate(void* addr, GameStateId id) {
+    GameStateOverlay* ovl = &gGameStateOverlayTable[id];
+    if ((uintptr_t)addr >= 0x80800000) {
+        return (void*)((uintptr_t)addr -
+                (intptr_t)((uintptr_t)ovl->vramStart - (uintptr_t)ovl->loadedRamAddr));
+    }
+    else {
+        recomp_printf("Not an overlay address!: 0x%08X 0x%08X 0x%08X\n", (u32)addr, (u32)ovl->vramStart, (u32)ovl->loadedRamAddr);
+        return addr;
+    }
+}
+
+void DayTelop_Main(GameState* thisx);
+void DayTelop_Destroy(GameState* thisx);
+void DayTelop_Noop(DayTelopState* this);
+void DayTelop_LoadGraphics(DayTelopState* this);
+
+// @recomp Increase the length of the "Dawn of the X Day" screen to account for faster loading.
+void DayTelop_Init(GameState* thisx) {
+    DayTelopState* this = (DayTelopState*)thisx;
+
+    GameState_SetFramerateDivisor(&this->state, 1);
+    Matrix_Init(&this->state);
+    ShrinkWindow_Destroy();
+    View_Init(&this->view, this->state.gfxCtx);
+    // @recomp Manual relocation, TODO remove when automated.
+    this->state.main = (GameStateFunc)gamestate_relocate(DayTelop_Main, GAMESTATE_DAYTELOP);
+    this->state.destroy = (GameStateFunc)gamestate_relocate(DayTelop_Destroy, GAMESTATE_DAYTELOP);
+    // @recomp Add 120 extra frames (2 seconds with a frame divisor of 1) to account for faster loading.
+    this->transitionCountdown = 260;
+    this->fadeInState = DAYTELOP_HOURSTEXT_OFF;
+
+    if (gSaveContext.save.day < 9) {
+        if (gSaveContext.save.day == 0) {
+            Sram_ClearFlagsAtDawnOfTheFirstDay();
+        }
+        Sram_IncrementDay();
+    }
+
+    DayTelop_Noop(this);
+    DayTelop_LoadGraphics(this);
+    Audio_PlaySfx(NA_SE_OC_TELOP_IMPACT);
 }
