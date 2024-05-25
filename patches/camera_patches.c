@@ -1,65 +1,44 @@
 #include "patches.h"
 #include "input.h"
 #include "z64quake.h"
-#if 0
-RecompCameraMode recomp_camera_mode = RECOMP_CAMERA_NORMAL;
+#include "play_patches.h"
 
-VecGeo recomp_camera_pos = { .r = 66.0f, .pitch = 0, .yaw = 0 };
+static bool was_in_analog_cam = false;
+static bool is_in_analog_cam = false;
 
-float recomp_camera_yaw_vel = 0.0f;
-float recomp_camera_pitch_vel = 0.0f;
+VecGeo analog_camera_pos = { .r = 66.0f, .pitch = 0, .yaw = 0 };
 
+float analog_camera_yaw_vel = 0.0f;
+float analog_camera_pitch_vel = 0.0f;
 
-float recomp_deadzone = 0.2f;
-float recomp_camera_x_sensitivity = 1500.0f;
-float recomp_camera_y_sensitivity = 500.0f;
-// float recomp_camera_acceleration = 500.0f;
+float analog_deadzone = 0.2f;
+float analog_camera_x_sensitivity = 1500.0f;
+float analog_camera_y_sensitivity = 500.0f;
+// float analog_camera_acceleration = 500.0f;
 
-void update_recomp_camera_params(Camera* camera) {
-    recomp_camera_pos.yaw = Math_Atan2S(-camera->at.x + camera->eye.x, -camera->at.z + camera->eye.z);
+void update_analog_camera_params(Camera* camera) {
+    analog_camera_pos.yaw = Math_Atan2S(-camera->at.x + camera->eye.x, -camera->at.z + camera->eye.z);
     // recomp_printf("Camera at: %.2f %.2f %.2f\n"
     //               "      eye: %.2f %.2f %.2f\n"
     //               "      yaw: %d",
     //               camera->at.x, camera->at.y, camera->at.z,
     //               camera->eye.x, camera->eye.y, camera->eye.z,
-    //               recomp_camera_pos.yaw);
+    //               analog_camera_pos.yaw);
 
-    float input_x, input_y;
-    recomp_get_camera_inputs(&input_x, &input_y);
+    if (was_in_analog_cam) {
+        float input_x, input_y;
+        recomp_get_camera_inputs(&input_x, &input_y);
 
-    // Math_StepToF(&recomp_camera_yaw_vel, input_x * recomp_camera_x_sensitivity, recomp_camera_acceleration);
-    // Math_StepToF(&recomp_camera_pitch_vel, input_y * recomp_camera_y_sensitivity, recomp_camera_acceleration);
-    if (fabsf(input_x) > recomp_deadzone) {
-        recomp_camera_yaw_vel = input_x * recomp_camera_x_sensitivity;
-    }
-    else {
-        recomp_camera_yaw_vel = 0;
-    }
-    
-    if (fabsf(input_y) > recomp_deadzone) {
-        recomp_camera_pitch_vel = input_y * recomp_camera_y_sensitivity;
-    }
-    else {
-        recomp_camera_pitch_vel = 0;
-    }
+        analog_camera_yaw_vel = input_x * analog_camera_x_sensitivity;
+        analog_camera_pitch_vel = input_y * analog_camera_y_sensitivity;
 
-    recomp_camera_pos.pitch += recomp_camera_pitch_vel;
-    recomp_camera_pos.yaw += recomp_camera_yaw_vel;
+        analog_camera_pos.pitch += analog_camera_pitch_vel;
+        analog_camera_pos.yaw += analog_camera_yaw_vel;
+    }
 }
 
 extern s32 sUpdateCameraDirection;
-static s32 sIsFalse = false;
-extern s32 sCameraInitSceneTimer;
-
-extern s16 sCameraNextUID;
 extern s32 sCameraInterfaceFlags;
-extern s32 sCameraHudVisibility;
-extern s32 sCameraLetterboxSize;
-extern s32 sCameraNegOne1;
-
-#define CAM_DATA_IS_BG (1 << 12) // if not set, then cam data is for actor cutscenes
-
-typedef s32 (*CameraUpdateFunc)(Camera*);
 
 typedef struct {
     /* 0x0 */ s16 val;
@@ -78,20 +57,34 @@ typedef struct {
     /* 0x8 */ CameraMode* cameraModes;
 } CameraSetting;
 
-extern CameraUpdateFunc sCameraUpdateHandlers[];
 extern CameraSetting sCameraSettings[];
+f32 Camera_GetFocalActorHeight(Camera* camera);
+f32 Camera_Vec3fMagnitude(Vec3f* vec);
+
+#if 0
+static s32 sIsFalse = false;
+extern s32 sCameraInitSceneTimer;
+
+extern s16 sCameraNextUID;
+extern s32 sCameraHudVisibility;
+extern s32 sCameraLetterboxSize;
+extern s32 sCameraNegOne1;
+
+#define CAM_DATA_IS_BG (1 << 12) // if not set, then cam data is for actor cutscenes
+
+typedef s32 (*CameraUpdateFunc)(Camera*);
+
+extern CameraUpdateFunc sCameraUpdateHandlers[];
 
 Vec3f Camera_CalcUpVec(s16 pitch, s16 yaw, s16 roll);
 f32 Camera_fabsf(f32 f);
 s32 Camera_GetBgCamIndex(Camera* camera, s32* bgId, CollisionPoly* poly);
-f32 Camera_GetFocalActorHeight(Camera* camera);
 f32 Camera_GetRunSpeedLimit(Camera* camera);
 s32 Camera_IsDekuHovering(Camera* camera);
 s32 Camera_IsMountedOnHorse(Camera* camera);
 s32 Camera_IsUnderwaterAsZora(Camera* camera);
 s32 Camera_IsUsingZoraFins(Camera* camera);
 void Camera_UpdateInterface(s32 interfaceFlags);
-f32 Camera_Vec3fMagnitude(Vec3f* vec);
 s32 func_800CB7CC(Camera* camera);
 s32 func_800CB854(Camera* camera);
 
@@ -275,7 +268,7 @@ Vec3s Camera_Update(Camera* camera) {
     sCameraUpdateHandlers[sCameraSettings[camera->setting].cameraModes[camera->mode].funcId](camera);
 
     // @recomp
-    update_recomp_camera_params(camera);
+    update_analog_camera_params(camera);
 
     // Update the interface
     if (sCameraInitSceneTimer != 0) {
@@ -356,6 +349,8 @@ Vec3s Camera_Update(Camera* camera) {
 
     return camera->inputDir;
 }
+
+#endif
 
 extern SwingAnimation D_801EDC30[4];
 s32 Camera_CalcAtDefault(Camera* camera, VecGeo* eyeAtDir, f32 yOffset, s16 calcSlope);
@@ -691,10 +686,11 @@ s32 Camera_Normal1(Camera* camera) {
     }
 
     // @recomp
-    if (recomp_camera_mode == RECOMP_CAMERA_DUALANALOG) {
-        spB4.pitch = recomp_camera_pos.pitch;
-        // spB4.r = recomp_camera_pos.r;
-        spB4.yaw = recomp_camera_pos.yaw;
+    if (recomp_analog_cam_enabled()) {
+        is_in_analog_cam = true;
+        spB4.pitch = analog_camera_pos.pitch;
+        // spB4.r = analog_camera_pos.r;
+        spB4.yaw = analog_camera_pos.yaw;
     }
 
     // 76.9 degrees
@@ -708,7 +704,7 @@ s32 Camera_Normal1(Camera* camera) {
     }
 
     // @recomp
-    recomp_camera_pos.pitch = spB4.pitch;
+    analog_camera_pos.pitch = spB4.pitch;
 
     *eyeNext = OLib_AddVecGeoToVec3f(at, &spB4);
 
@@ -755,11 +751,10 @@ s32 Camera_Normal1(Camera* camera) {
 
     phi_f2 = (gSaveContext.save.saveInfo.playerData.health <= 0x10) ? 0.8f : 1.0f;
 
-    // @recomp
-    // // Don't zoom in on low health when dual analog is used
-    // if (recomp_camera_mode == RECOMP_CAMERA_DUALANALOG) {
-    //     phi_f2;
-    // }
+    // @recomp Don't zoom in on low health when dual analog is used
+    if (recomp_analog_cam_enabled()) {
+        phi_f2 = 1.0f;
+    }
 
     camera->fov = Camera_ScaledStepToCeilF(roData->unk_18 * phi_f2, camera->fov, camera->fovUpdateRate, 0.1f);
 
@@ -783,4 +778,14 @@ s32 Camera_Normal1(Camera* camera) {
 
     return true;
 }
-#endif // #if 0
+
+void analog_cam_pre_play_update(PlayState* play) {
+    Camera *active_cam = play->cameraPtrs[play->activeCamId];
+    update_analog_camera_params(active_cam);
+}
+
+void analog_cam_post_play_update(PlayState* play) {
+    // recomp_printf("was_in_analog_cam: %d is_in_analog_cam: %d\n", was_in_analog_cam, is_in_analog_cam);
+    was_in_analog_cam = is_in_analog_cam;
+    is_in_analog_cam = false;
+}

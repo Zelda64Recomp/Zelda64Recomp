@@ -110,3 +110,23 @@ extern "C" void recomp_high_precision_fb_enabled(uint8_t * rdram, recomp_context
 extern "C" void recomp_get_resolution_scale(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, ultramodern::get_resolution_scale());
 }
+
+extern "C" void recomp_get_inverted_axes(uint8_t* rdram, recomp_context* ctx) {
+    s32* x_out = _arg<0, s32*>(rdram, ctx);
+    s32* y_out = _arg<1, s32*>(rdram, ctx);
+
+    // TODO implement this
+    *x_out = 0;
+    *y_out = 1;
+}
+
+extern "C" void recomp_analog_cam_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return<s32>(ctx, recomp::get_analog_cam_mode() == recomp::AnalogCamMode::On);
+}
+
+extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
+    float* x_out = _arg<0, float*>(rdram, ctx);
+    float* y_out = _arg<1, float*>(rdram, ctx);
+
+    recomp::get_right_analog(x_out, y_out);
+}

@@ -154,7 +154,7 @@
                                 data-checked="autosave_mode"
                                 value="On"
                                 id="autosave_enabled"
-                                style="nav-up: #bg_input_enabled; nav-down: #analog_cam_enabled"
+                                style="nav-up: #bg_input_enabled; nav-down: #camera_inversion_none"
                             />
                             <label class="config-option__tab-label" for="autosave_enabled">On</label>
 
@@ -166,9 +166,93 @@
                                 data-checked="autosave_mode"
                                 value="Off"
                                 id="autosave_disabled"
-                                style="nav-up: #bg_input_disabled; nav-down: #analog_cam_disabled"
+                                style="nav-up: #bg_input_disabled; nav-down: #camera_inversion_x"
                             />
                             <label class="config-option__tab-label" for="autosave_disabled">Off</label>
+                        </div>
+                    </div>
+                    
+                    <!-- camera inversion -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(7)">
+                        <label class="config-option__title">Inverted Camera Control</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertNone"
+                                id="camera_inversion_none"
+                                style="nav-up: #autosave_enabled; nav-down: #analog_cam_enabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_none">None</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertX"
+                                id="camera_inversion_x"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_x">Invert X</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertY"
+                                id="camera_inversion_y"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_y">Invert Y</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertBoth"
+                                id="camera_inversion_both"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_both">Invert Both</label>
+                        </div>
+                    </div>
+                    
+                    <!-- analog camera -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(8)">
+                        <label class="config-option__title">Analog Camera</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(8)"
+                                name="analog_cam_mode"
+                                data-checked="analog_cam_mode"
+                                value="On"
+                                id="analog_cam_enabled"
+                                style="nav-up: #camera_inversion_none"
+                            />
+                            <label class="config-option__tab-label" for="analog_cam_enabled">On</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(8)"
+                                name="analog_cam_mode"
+                                data-checked="analog_cam_mode"
+                                value="Off"
+                                id="analog_cam_disabled"
+                                style="nav-up: #camera_inversion_x"
+                            />
+                            <label class="config-option__tab-label" for="analog_cam_disabled">Off</label>
                         </div>
                     </div>
                 </div>
@@ -208,6 +292,12 @@
                         <br/>
                         <br/>
                         <b>If autosaving is disabled, existing autosaves will be deleted when loaded.</b>
+                    </p>
+                    <p data-if="cur_config_index == 7">
+                        Camera inversion description.
+                    </p>
+                    <p data-if="cur_config_index == 8">
+                        Analog cam description.
                     </p>
                 </div>
             </div>

@@ -28,13 +28,27 @@ namespace recomp {
 		OptionCount
     };
 
+    enum class AnalogCamMode {
+        On,
+        Off,
+		OptionCount
+    };
+
     NLOHMANN_JSON_SERIALIZE_ENUM(recomp::AutosaveMode, {
         {recomp::AutosaveMode::On, "On"},
         {recomp::AutosaveMode::Off, "Off"}
     });
 
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::AnalogCamMode, {
+        {recomp::AnalogCamMode::On, "On"},
+        {recomp::AnalogCamMode::Off, "Off"}
+    });
+
     AutosaveMode get_autosave_mode();
     void set_autosave_mode(AutosaveMode mode);
+
+    AnalogCamMode get_analog_cam_mode();
+    void set_analog_cam_mode(AnalogCamMode mode);
 };
 
 #endif

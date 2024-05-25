@@ -52,5 +52,7 @@ osGetTime_recomp = 0x8F000088;
 recomp_autosave_enabled = 0x8F00008C;
 recomp_load_overlays = 0x8F000090;
 osInvalICache_recomp = 0x8F000094;
+recomp_analog_cam_enabled = 0x8F000098;
+recomp_get_camera_inputs = 0x8F00009C;
 recomp_high_precision_fb_enabled = 0x8F0000A8;
 recomp_get_resolution_scale = 0x8F0000AC;

@@ -67,6 +67,7 @@ namespace recomp {
     bool get_input_digital(const std::span<const recomp::InputField> fields);
     void get_gyro_deltas(float* x, float* y);
     void get_mouse_deltas(float* x, float* y);
+    void get_right_analog(float* x, float* y);
 
     enum class InputDevice {
         Controller,
@@ -133,6 +134,7 @@ namespace recomp {
     void set_gyro_sensitivity(int strength);
     void set_mouse_sensitivity(int strength);
     void set_joystick_deadzone(int strength);
+    void apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out);
 
     enum class TargetingMode {
         Switch,
@@ -161,6 +163,24 @@ namespace recomp {
 
     BackgroundInputMode get_background_input_mode();
     void set_background_input_mode(BackgroundInputMode mode);
+
+    enum class CameraInvertMode {
+        InvertNone,
+        InvertX,
+        InvertY,
+        InvertBoth,
+		OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::CameraInvertMode, {
+        {recomp::CameraInvertMode::InvertNone, "InvertNone"},
+        {recomp::CameraInvertMode::InvertX, "InvertX"},
+        {recomp::CameraInvertMode::InvertY, "InvertY"},
+        {recomp::CameraInvertMode::InvertBoth, "InvertBoth"}
+    });
+
+    CameraInvertMode get_camera_invert_mode();
+    void set_camera_invert_mode(CameraInvertMode mode);
 
     bool game_input_disabled();
     bool all_input_disabled();

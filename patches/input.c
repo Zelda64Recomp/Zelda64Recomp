@@ -95,18 +95,6 @@ u32 sPlayerItemButtons[] = {
     BTN_CRIGHT,
 };
 
-// u32 sPlayerItemButtonsDualAnalog[] = {
-//     BTN_B,
-//     BTN_DLEFT,
-//     BTN_DDOWN,
-//     BTN_DRIGHT
-// };
-
-// u32 prev_item_buttons = 0;
-// u32 cur_item_buttons = 0;
-// u32 pressed_item_buttons = 0;
-// u32 released_item_buttons = 0;
-
 // D-Pad items
 
 #define EXTRA_ITEM_SLOT_COUNT 4
@@ -128,31 +116,6 @@ typedef enum {
     EQUIP_SLOT_EX_DRIGHT,
     EQUIP_SLOT_EX_DDOWN,
 } EquipSlotEx;
-
-// static inline void dup_to_cup(u16* button) {
-//     if (*button & BTN_DUP) {
-//         *button |= BTN_CUP; 
-//     }
-// }
-
-void GameState_GetInput(GameState* gameState) {
-    PadMgr_GetInput(gameState->input, true);
-
-    // if (recomp_camera_mode == RECOMP_CAMERA_DUALANALOG) {
-    //     gameState->input[0].cur.button &= ~BTN_CUP;
-    //     gameState->input[0].press.button &= ~BTN_CUP;
-    //     gameState->input[0].rel.button &= ~BTN_CUP;
-    //     dup_to_cup(&gameState->input[0].cur.button);
-    //     dup_to_cup(&gameState->input[0].press.button);
-    //     dup_to_cup(&gameState->input[0].rel.button);
-    // }
-
-    // prev_item_buttons = cur_item_buttons;
-    // recomp_get_item_inputs(&cur_item_buttons);
-    // u32 button_diff = prev_item_buttons ^ cur_item_buttons;
-    // pressed_item_buttons = cur_item_buttons & button_diff;
-    // released_item_buttons = prev_item_buttons & button_diff;
-}
 
 struct ExButtonMapping {
     u32 button;

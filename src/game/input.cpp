@@ -580,6 +580,51 @@ void recomp::get_mouse_deltas(float* x, float* y) {
     *y = cur_mouse_delta[1] * sensitivity;
 }
 
+void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {
+    float joystick_deadzone = (float)recomp::get_joystick_deadzone() / 100.0f;
+
+    if(fabsf(x_in) < joystick_deadzone) {
+        x_in = 0.0f;
+    }
+    else {
+        if(x_in > 0.0f) {
+            x_in -= joystick_deadzone;
+        } 
+        else {
+            x_in += joystick_deadzone;
+        }
+
+        x_in /= (1.0f - joystick_deadzone);
+    }
+
+    if(fabsf(y_in) < joystick_deadzone) {
+        y_in = 0.0f;
+    }
+    else {
+        if(y_in > 0.0f) {
+            y_in -= joystick_deadzone;
+        } 
+        else {
+            y_in += joystick_deadzone;
+        }
+
+        y_in /= (1.0f - joystick_deadzone);
+    }
+
+    *x_out = x_in;
+    *y_out = y_in;
+}
+
+void recomp::get_right_analog(float* x, float* y) {
+    float x_val =
+        controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1)) -
+        controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1));
+    float y_val =
+        controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1)) -
+        controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1));
+    recomp::apply_joystick_deadzone(x_val, y_val, x, y);
+}
+
 bool recomp::game_input_disabled() {
     // Disable input if any menu is open.
     return recomp::get_current_menu() != recomp::Menu::None;
