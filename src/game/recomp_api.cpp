@@ -130,3 +130,9 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
 
     recomp::get_right_analog(x_out, y_out);
 }
+
+extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_context* ctx) {
+    s32 suppressed = _arg<0, s32>(rdram, ctx);
+
+    recomp::set_right_analog_suppressed(suppressed);
+}

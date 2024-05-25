@@ -8,6 +8,7 @@
 #include "z64viscvg.h"
 #include "z64vismono.h"
 #include "z64viszbuf.h"
+#include "input.h"
 
 void recomp_set_current_frame_poll_id();
 void PadMgr_HandleRetrace(void);
@@ -62,10 +63,15 @@ void PadMgr_HandleRetrace(void) {
     }
 }
 
+extern u8 sOcarinaInstrumentId;
+
 void poll_inputs(void) {
     OSMesgQueue* serialEventQueue = PadMgr_AcquireSerialEventQueue();
     // Begin reading controller data
     osContStartReadData(serialEventQueue);
+
+    // Suppress the right analog stick if analog camera is active unless the ocarina is in use.
+    recomp_set_right_analog_suppressed(recomp_analog_cam_enabled() && sOcarinaInstrumentId == OCARINA_INSTRUMENT_OFF);
 
     // Wait for controller data
     osRecvMesg(serialEventQueue, NULL, OS_MESG_BLOCK);

@@ -135,6 +135,7 @@ namespace recomp {
     void set_mouse_sensitivity(int strength);
     void set_joystick_deadzone(int strength);
     void apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out);
+    void set_right_analog_suppressed(bool suppressed);
 
     enum class TargetingMode {
         Switch,
