@@ -1,7 +1,6 @@
 #include "patches.h"
 #include "transform_ids.h"
 #include "overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h"
-#include "overlays/actors/ovl_Eff_Stk/z_eff_stk.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "z64effect.h"
 
@@ -391,51 +390,6 @@ void Effect_DrawAll(GraphicsContext* gfxCtx) {
         pop_effect_tag(gfxCtx);
     }
 }
-
-extern Gfx object_stk2_DL_008920[];
-extern Gfx object_stk2_DL_008A38[];
-extern AnimatedMaterial object_stk2_Matanimheader_009F60[];
-
-void EffStk_Draw(Actor* thisx, PlayState* play) {
-    EffStk* this = (EffStk*)thisx;
-    s32 pad;
-    Camera* activeCam = GET_ACTIVE_CAM(play);
-    Vec3f eye = activeCam->eye;
-    Vec3f quakeOffset;
-
-    quakeOffset = Camera_GetQuakeOffset(activeCam);
-
-    OPEN_DISPS(play->state.gfxCtx);
-
-    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
-    Matrix_Translate(eye.x + quakeOffset.x, eye.y + quakeOffset.y, eye.z + quakeOffset.z, MTXMODE_NEW);
-    Matrix_Scale(0.2f, 0.2f, 0.2f, MTXMODE_APPLY);
-    Matrix_ReplaceRotation(&play->billboardMtxF);
-    Matrix_Translate(0.0f, 0.0f, this->unk148, MTXMODE_APPLY);
-
-    Mtx* mtx = Matrix_NewMtx(play->state.gfxCtx);
-
-    // @recomp Tag the transform. Do not allow edits as this will get edited by the billboard detection and we'll want to skip position during a camera cut too.
-    if (camera_was_skipped()) {
-        gEXMatrixGroupDecomposedSkipPosRot(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-    }
-    else {
-        gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-    }
-
-    gSPMatrix(POLY_XLU_DISP++, mtx, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-    AnimatedMat_DrawAlphaStep(play, Lib_SegmentedToVirtual(object_stk2_Matanimheader_009F60), 1.0f, this->unk144);
-    gDPSetColorDither(POLY_XLU_DISP++, G_CD_NOISE);
-    gDPSetAlphaDither(POLY_XLU_DISP++, G_AD_NOISE);
-    gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008920);
-    gSPDisplayList(POLY_XLU_DISP++, object_stk2_DL_008A38);
-
-    // @recomp Pop the transform tag.
-    gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
-
-    CLOSE_DISPS(play->state.gfxCtx);
-}
-
 
 typedef enum {
     /* 0x00 */ CLEAR_TAG_EFFECT_AVAILABLE,
