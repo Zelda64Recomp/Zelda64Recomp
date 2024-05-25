@@ -55,5 +55,6 @@ osInvalICache_recomp = 0x8F000094;
 recomp_analog_cam_enabled = 0x8F000098;
 recomp_get_camera_inputs = 0x8F00009C;
 recomp_set_right_analog_suppressed = 0x8F0000A0;
+recomp_get_inverted_axes = 0x8F0000A4;
 recomp_high_precision_fb_enabled = 0x8F0000A8;
 recomp_get_resolution_scale = 0x8F0000AC;

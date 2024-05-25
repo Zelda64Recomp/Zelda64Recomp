@@ -115,9 +115,10 @@ extern "C" void recomp_get_inverted_axes(uint8_t* rdram, recomp_context* ctx) {
     s32* x_out = _arg<0, s32*>(rdram, ctx);
     s32* y_out = _arg<1, s32*>(rdram, ctx);
 
-    // TODO implement this
-    *x_out = 0;
-    *y_out = 1;
+    recomp::CameraInvertMode mode = recomp::get_camera_invert_mode();
+
+    *x_out = (mode == recomp::CameraInvertMode::InvertX || mode == recomp::CameraInvertMode::InvertBoth);
+    *y_out = (mode == recomp::CameraInvertMode::InvertY || mode == recomp::CameraInvertMode::InvertBoth);
 }
 
 extern "C" void recomp_analog_cam_enabled(uint8_t* rdram, recomp_context* ctx) {
