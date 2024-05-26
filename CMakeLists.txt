@@ -87,16 +87,6 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
     DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
-# Generate mm_shader_cache.c from the MM shader cache if it exists
-if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
-    set(HAS_MM_SHADER_CACHE TRUE)
-    add_compile_definitions(HAS_MM_SHADER_CACHE)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-        COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-        DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
-    )
-endif()
-
 # Recompile patches elf into patches.c
 add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
@@ -110,6 +100,16 @@ add_custom_command(OUTPUT
 
 # Main executable
 add_executable(Zelda64Recompiled)
+
+# Generate mm_shader_cache.c from the MM shader cache if it exists
+if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
+    set(HAS_MM_SHADER_CACHE TRUE)
+    target_compile_definitions(Zelda64Recompiled PRIVATE HAS_MM_SHADER_CACHE)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+        COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
+    )
+endif()
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/audio.cpp
