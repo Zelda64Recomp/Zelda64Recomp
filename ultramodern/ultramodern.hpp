@@ -111,9 +111,9 @@ void sleep_milliseconds(uint32_t millis);
 void sleep_until(const std::chrono::high_resolution_clock::time_point& time_point);
 
 // Graphics
-void get_window_size(uint32_t& width, uint32_t& height);
 uint32_t get_target_framerate(uint32_t original);
 uint32_t get_display_refresh_rate();
+float get_resolution_scale();
 void load_shader_cache(std::span<const char> cache_data);
 
 // Audio

@@ -107,3 +107,7 @@ extern "C" void recomp_load_overlays(uint8_t * rdram, recomp_context * ctx) {
 extern "C" void recomp_high_precision_fb_enabled(uint8_t * rdram, recomp_context * ctx) {
     _return(ctx, static_cast<s32>(ultramodern::RT64HighPrecisionFBEnabled()));
 }
+
+extern "C" void recomp_get_resolution_scale(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, ultramodern::get_resolution_scale());
+}

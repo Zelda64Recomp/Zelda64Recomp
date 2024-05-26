@@ -278,6 +278,24 @@ uint32_t ultramodern::RT64Context::get_display_framerate() {
     return app->presentQueue->ext.sharedResources->swapChainRate;
 }
 
+float ultramodern::RT64Context::get_resolution_scale() {
+    constexpr int ReferenceHeight = 240;
+    switch (app->userConfig.resolution) {
+        case RT64::UserConfiguration::Resolution::WindowIntegerScale:
+            if (app->sharedQueueResources->swapChainHeight > 0) {
+                return std::max(float((app->sharedQueueResources->swapChainHeight + ReferenceHeight - 1) / ReferenceHeight), 1.0f);
+            }
+            else {
+                return 1.0f;
+            }
+        case RT64::UserConfiguration::Resolution::Manual:
+            return float(app->userConfig.resolutionMultiplier);
+        case RT64::UserConfiguration::Resolution::Original:
+        default:
+            return 1.0f;
+    }
+}
+
 void ultramodern::RT64Context::load_shader_cache(std::span<const char> cache_binary) {
     // TODO figure out how to avoid a copy here.
     std::istringstream cache_stream{std::string{cache_binary.data(), cache_binary.size()}};

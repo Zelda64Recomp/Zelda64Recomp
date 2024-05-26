@@ -279,6 +279,7 @@ ultramodern::GraphicsConfig ultramodern::get_graphics_config() {
 }
 
 std::atomic_uint32_t display_refresh_rate = 60;
+std::atomic<float> resolution_scale = 1.0f;
 
 uint32_t ultramodern::get_target_framerate(uint32_t original) {
     ultramodern::GraphicsConfig graphics_config = ultramodern::get_graphics_config();
@@ -296,6 +297,10 @@ uint32_t ultramodern::get_target_framerate(uint32_t original) {
 
 uint32_t ultramodern::get_display_refresh_rate() {
     return display_refresh_rate.load();
+}
+
+float ultramodern::get_resolution_scale() {
+    return resolution_scale.load();
 }
 
 void ultramodern::load_shader_cache(std::span<const char> cache_data) {
@@ -359,6 +364,7 @@ void gfx_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_re
                 events_context.vi.current_buffer = events_context.vi.next_buffer;
                 rt64.update_screen(swap_action->origin);
                 display_refresh_rate = rt64.get_display_framerate();
+                resolution_scale = rt64.get_resolution_scale();
             }
             else if (const auto* config_action = std::get_if<UpdateConfigAction>(&action)) {
                 ultramodern::GraphicsConfig new_config = cur_config;

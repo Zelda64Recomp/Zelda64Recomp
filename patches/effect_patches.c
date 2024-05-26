@@ -106,6 +106,12 @@ void Play_DrawMotionBlur(PlayState* this) {
         }
         alpha = (s32)(alpha_float * 255.0f);
 
+        // @recomp Set the dither noise strength based on the resolution scale to make it easier to see at higher resolutions.
+        float res_scale = recomp_get_resolution_scale();
+        float dither_noise_strength = CLAMP(1.0 + (res_scale - 1.0f) / 8.0f, 1.0f, 2.0f);
+        // recomp_printf("res scale: %5.3f   dither noise strength: %5.3f\n", res_scale, dither_noise_strength);
+        gEXSetDitherNoiseStrength(OVERLAY_DISP++, dither_noise_strength);
+
         if (sMotionBlurStatus == MOTION_BLUR_PROCESS) {
             func_80170AE0(&this->pauseBgPreRender, &gfx, alpha);
         } else {
