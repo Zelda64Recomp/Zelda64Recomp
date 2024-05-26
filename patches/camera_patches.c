@@ -1860,10 +1860,16 @@ void analog_cam_post_play_update(PlayState* play) {
     Camera *active_cam = play->cameraPtrs[play->activeCamId];
     // recomp_printf("prev_analog_cam_active: %d can_use_analog_cam: %d\n", prev_analog_cam_active, can_use_analog_cam);
     // recomp_printf("setting: %d mode: %d func: %d\n", active_cam->setting, active_cam->mode, sCameraSettings[active_cam->setting].cameraModes[active_cam->mode].funcId);
+    // recomp_printf("active cam yaw %d\n", Camera_GetInputDirYaw(GET_ACTIVE_CAM(play)));
     
     // Update parameters for the analog cam if the game is unpaused.
     if (play->pauseCtx.state == PAUSE_STATE_OFF && R_PAUSE_BG_PRERENDER_STATE == PAUSE_BG_PRERENDER_OFF) {
         update_analog_camera_params(active_cam);
         can_use_analog_cam = false;
+    }
+
+    if (analog_cam_active) {
+        active_cam->inputDir.x = analog_camera_pos.pitch;
+        active_cam->inputDir.y = analog_camera_pos.yaw + DEG_TO_BINANG(180);
     }
 }

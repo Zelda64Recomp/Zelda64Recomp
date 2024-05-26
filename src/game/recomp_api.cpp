@@ -139,7 +139,26 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
 
-    recomp::get_right_analog(x_out, y_out);
+    // TODO expose this in the menu
+    constexpr float radial_deadzone = 0.05f;
+
+    float x, y;
+
+    recomp::get_right_analog(&x, &y);
+
+    float magnitude = std::sqrtf(x * x + y * y);
+
+    if (magnitude < radial_deadzone) {
+        *x_out = 0.0f;
+        *y_out = 0.0f;
+    }
+    else {
+        float x_normalized = x / magnitude;
+        float y_normalized = y / magnitude;
+
+        *x_out = x_normalized * ((magnitude - radial_deadzone) / (1 - radial_deadzone));
+        *y_out = y_normalized * ((magnitude - radial_deadzone) / (1 - radial_deadzone));
+    }
 }
 
 extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_context* ctx) {
