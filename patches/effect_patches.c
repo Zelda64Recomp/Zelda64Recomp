@@ -98,10 +98,19 @@ void Play_DrawMotionBlur(PlayState* this) {
         f32 exponent = 20.0f / recomp_get_target_framerate(gFramerateDivisor);
         f32 alpha_float = recomp_powf(alpha / 255.0f, exponent);
         // Clamp the blur alpha, which ensures that the output color converges to within a reasonable delta of the target color
-        // when using an R8G8B8A8 framebuffer as RT64 currently does. Although this makes the effect less noticeable at high framerates,
+        // when using an R8G8B8A8 framebuffer. Although this makes the effect less noticeable at high framerates,
         // not clamping leads to noticeable image retention.
-        alpha_float = MIN(alpha_float, 0.825f);
+        // Skip clamping if high precision framebuffers are in use, as there's no risk of ghosting with those.
+        if (!recomp_high_precision_fb_enabled()) {
+            alpha_float = MIN(alpha_float, 0.825f);
+        }
         alpha = (s32)(alpha_float * 255.0f);
+
+        // @recomp Set the dither noise strength based on the resolution scale to make it easier to see at higher resolutions.
+        float res_scale = recomp_get_resolution_scale();
+        float dither_noise_strength = CLAMP(1.0 + (res_scale - 1.0f) / 8.0f, 1.0f, 2.0f);
+        // recomp_printf("res scale: %5.3f   dither noise strength: %5.3f\n", res_scale, dither_noise_strength);
+        gEXSetDitherNoiseStrength(OVERLAY_DISP++, dither_noise_strength);
 
         if (sMotionBlurStatus == MOTION_BLUR_PROCESS) {
             func_80170AE0(&this->pauseBgPreRender, &gfx, alpha);

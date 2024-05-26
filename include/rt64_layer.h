@@ -32,6 +32,7 @@ namespace ultramodern {
             void shutdown();
             void set_dummy_vi();
             uint32_t get_display_framerate();
+            float get_resolution_scale();
             void load_shader_cache(std::span<const char> cache_binary);
         private:
             RT64SetupResult setup_result;
@@ -40,6 +41,7 @@ namespace ultramodern {
     
     RT64::UserConfiguration::Antialiasing RT64MaxMSAA();
     bool RT64SamplePositionsSupported();
+    bool RT64HighPrecisionFBEnabled();
 }
 
 void set_rt64_hooks();
