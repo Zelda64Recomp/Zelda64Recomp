@@ -106,7 +106,7 @@
                                 type="range"
                                 min="0"
                                 max="100"
-                                style="flex: 1; margin: 0dp;"
+                                style="flex: 1; margin: 0dp; nav-down: #bg_input_enabled"
                                 data-value="joystick_deadzone"
                             />
                         </div>
@@ -238,7 +238,7 @@
                                 data-checked="analog_cam_mode"
                                 value="On"
                                 id="analog_cam_enabled"
-                                style="nav-up: #camera_inversion_none; nav-down: analog_camera_inversion_none"
+                                style="nav-up: #camera_inversion_none; nav-down: #analog_camera_inversion_none"
                             />
                             <label class="config-option__tab-label" for="analog_cam_enabled">On</label>
 
@@ -250,7 +250,7 @@
                                 data-checked="analog_cam_mode"
                                 value="Off"
                                 id="analog_cam_disabled"
-                                style="nav-up: #camera_inversion_x; nav-down: analog_camera_inversion_x"
+                                style="nav-up: #camera_inversion_x; nav-down: #analog_camera_inversion_x"
                             />
                             <label class="config-option__tab-label" for="analog_cam_disabled">Off</label>
                         </div>
