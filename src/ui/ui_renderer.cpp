@@ -1477,4 +1477,5 @@ recomp::Menu recomp::get_current_menu() {
 
 void recomp::message_box(const char* msg) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, recomp::program_name.data(), msg, nullptr);
+    printf("[ERROR] %s\n", msg);
 }
