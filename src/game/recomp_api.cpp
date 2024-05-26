@@ -146,7 +146,7 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
 
     recomp::get_right_analog(&x, &y);
 
-    float magnitude = std::sqrtf(x * x + y * y);
+    float magnitude = sqrtf(x * x + y * y);
 
     if (magnitude < radial_deadzone) {
         *x_out = 0.0f;
