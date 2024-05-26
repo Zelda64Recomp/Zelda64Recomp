@@ -324,6 +324,16 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
         // Check if the json object for the given input exists and that it's an array.
         auto find_input_it = mappings_json.find(input_name);
         if (find_input_it == mappings_json.end() || !find_input_it->is_array()) {
+            assign_mapping(
+                device,
+                cur_input,
+                recomp::get_default_mapping_for_input(
+                    device == recomp::InputDevice::Keyboard ?
+                        recomp::default_n64_keyboard_mappings :
+                        recomp::default_n64_controller_mappings,
+                    cur_input
+                )
+            );
             continue;
         }
         const nlohmann::json& input_json = *find_input_it;
