@@ -323,6 +323,10 @@ int main(int argc, char** argv) {
     SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi);
 #endif
 
+#ifdef _WIN32
+    // Force wasapi on Windows, as there seems to be some issue with sample queueing with directsound currently.
+    SDL_setenv("SDL_AUDIODRIVER", "wasapi", true);
+#endif
     //printf("Current dir: %ls\n", std::filesystem::current_path().c_str());
 
     // Initialize SDL audio and set the output frequency.
