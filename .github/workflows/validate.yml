@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,13 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
-  build-unix:
+  build-linux:
     needs: authorize
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
     strategy:
       matrix:
         type: [ Debug, Release ]
-        os: [ ubuntu-22.04, blaze/ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
+        arch: [ x64, arm64 ]
+    name: ${{ matrix.os }} (${{ matrix.arch }}, ${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,6 +112,7 @@ jobs:
     strategy:
       matrix:
         type: [ Debug, Release ]
+    name: windows (${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
