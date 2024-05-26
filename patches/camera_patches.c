@@ -3,6 +3,7 @@
 #include "z64quake.h"
 #include "play_patches.h"
 #include "camera_patches.h"
+#include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
 
 static bool prev_analog_cam_active = false;
 static bool can_use_analog_cam = false;
@@ -34,20 +35,35 @@ void update_analog_camera_params(Camera* camera) {
     }
     prev_analog_cam_active = analog_cam_active;
     if (!analog_cam_active) {
-        recomp_printf("Analog cam not active\n");
-        analog_camera_pos.yaw = Math_Atan2S(-camera->at.x + camera->eye.x, -camera->at.z + camera->eye.z);
+        // recomp_printf("Analog cam not active\n");
+        analog_camera_pos.yaw = Math_Atan2S(camera->eye.x - camera->at.x, camera->eye.z - camera->at.z);
+        analog_camera_pos.pitch = Math_Vec3f_Pitch(&camera->eye, &camera->at);
     }
 }
 
 void update_analog_cam(Camera* c) {
     can_use_analog_cam = true;
     
+    Player* player = GET_PLAYER(c->play);
+    // recomp_printf("  val: %d\n", func_80123434(player));
+    
+    // Check if the player just started Z targeting and reset to auto cam if so.
+    static bool prev_targeting_held = false;
+    bool targeting_held = func_80123434(player) || player->lockOnActor != NULL;
+    if (targeting_held && !prev_targeting_held) {
+        analog_cam_active = false;
+    }
+    
+    // Enable analog cam if the right stick is held.
     float input_x, input_y;
     recomp_get_camera_inputs(&input_x, &input_y);
 
     if (fabsf(input_x) >= analog_cam_threshold || fabsf(input_y) >= analog_cam_threshold) {
         analog_cam_active = true;
     }
+    
+    // Record the Z targeting state.
+    prev_targeting_held = targeting_held;
 
     if (analog_cam_active) {
         s32 inverted_x, inverted_y;
@@ -1398,9 +1414,11 @@ void analog_cam_pre_play_update(PlayState* play) {
 void analog_cam_post_play_update(PlayState* play) {
     Camera *active_cam = play->cameraPtrs[play->activeCamId];
     // recomp_printf("prev_analog_cam_active: %d can_use_analog_cam: %d\n", prev_analog_cam_active, can_use_analog_cam);
-    recomp_printf("setting: %d mode: %d func: %d\n", active_cam->setting, active_cam->mode, sCameraSettings[active_cam->setting].cameraModes[active_cam->mode].funcId);
-
-    // Update parameters for the analog cam.
-    update_analog_camera_params(active_cam);
-    can_use_analog_cam = false;
+    // recomp_printf("setting: %d mode: %d func: %d\n", active_cam->setting, active_cam->mode, sCameraSettings[active_cam->setting].cameraModes[active_cam->mode].funcId);
+    
+    // Update parameters for the analog cam if the game is unpaused.
+    if (play->pauseCtx.state == PAUSE_STATE_OFF && R_PAUSE_BG_PRERENDER_STATE == PAUSE_BG_PRERENDER_OFF) {
+        update_analog_camera_params(active_cam);
+        can_use_analog_cam = false;
+    }
 }
