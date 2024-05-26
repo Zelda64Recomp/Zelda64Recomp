@@ -30,9 +30,9 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         analog_y = CLAMP(analog_y, -60, 60);
     }
 
-    recomp_printf("stick_x: %d stick_y: %d analog_x: %d analog_y: %d\n",
-        play->state.input[0].rel.stick_x, play->state.input[0].rel.stick_y,
-        analog_x, analog_y);
+    // recomp_printf("stick_x: %d stick_y: %d analog_x: %d analog_y: %d\n",
+    //     play->state.input[0].rel.stick_x, play->state.input[0].rel.stick_y,
+    //     analog_x, analog_y);
 
     if (!func_800B7128(this) && !func_8082EF20(this) && !arg2) {
         // @recomp Add in the analog camera Y input. Clamp to prevent moving the camera twice as fast if both sticks are held.

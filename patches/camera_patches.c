@@ -91,7 +91,7 @@ void update_analog_cam(Camera* c) {
             analog_camera_pos.pitch = -0x16D0;
         }
 
-        recomp_printf("analog cam pitch: %05X\n", analog_camera_pos.pitch);
+        // recomp_printf("analog cam pitch: %05X\n", analog_camera_pos.pitch);
     }
 }
 
@@ -1006,17 +1006,6 @@ s32 Camera_Jump2(Camera* camera) {
     } else {
         camera->pitchUpdateRateInv = 100.0f;
         camera->rUpdateRateInv = 100.0f;
-    }
-    
-    // @recomp
-    if (recomp_analog_cam_enabled()) {
-        update_analog_cam(camera);
-        
-        if (analog_cam_active) {
-            spB4.pitch = analog_camera_pos.pitch;
-            // spB4.r = analog_camera_pos.r;
-            spB4.yaw = analog_camera_pos.yaw;
-        }
     }
     
     spB4.pitch = CLAMP_MAX(spB4.pitch, DEG_TO_BINANG(60.43f));
