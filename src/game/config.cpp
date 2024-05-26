@@ -232,6 +232,7 @@ void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Map
     assign_mapping_complete(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
+    assign_mapping_complete(device, recomp::GameInput::TOGGLE_MENU, values.toggle_menu);
 };
 
 void recomp::reset_input_bindings() {
@@ -323,6 +324,16 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
         // Check if the json object for the given input exists and that it's an array.
         auto find_input_it = mappings_json.find(input_name);
         if (find_input_it == mappings_json.end() || !find_input_it->is_array()) {
+            assign_mapping(
+                device,
+                cur_input,
+                recomp::get_default_mapping_for_input(
+                    device == recomp::InputDevice::Keyboard ?
+                        recomp::default_n64_keyboard_mappings :
+                        recomp::default_n64_controller_mappings,
+                    cur_input
+                )
+            );
             continue;
         }
         const nlohmann::json& input_json = *find_input_it;

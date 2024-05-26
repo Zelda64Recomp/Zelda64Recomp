@@ -41,6 +41,7 @@
                                     data-for="input_bindings, i : inputs.array"
                                     data-event-mouseover="set_input_row_focus(i)"
                                     data-class-control-option--active="get_input_enum_name(i)==cur_input_row"
+                                    data-if="!input_device_is_keyboard || get_input_enum_name(i) != 'TOGGLE_MENU'"
                                 >
                                     <label
                                         class="control-option__label"
