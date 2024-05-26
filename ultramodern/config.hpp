@@ -27,6 +27,12 @@ namespace ultramodern {
 		Vulkan,
 		OptionCount
 	};
+	enum class HighPrecisionFramebuffer {
+		Auto,
+		On,
+		Off,
+		OptionCount
+	};
 
 	struct GraphicsConfig {
 		Resolution res_option;
@@ -36,6 +42,7 @@ namespace ultramodern {
 		RT64::UserConfiguration::AspectRatio ar_option;
 		RT64::UserConfiguration::Antialiasing msaa_option;
 		RT64::UserConfiguration::RefreshRate rr_option;
+		HighPrecisionFramebuffer hpfb_option;
 		int rr_manual_value;
 		int ds_option;
 		bool developer_mode;
@@ -67,6 +74,12 @@ namespace ultramodern {
 		{ultramodern::GraphicsApi::Auto, "Auto"},
 		{ultramodern::GraphicsApi::D3D12, "D3D12"},
 		{ultramodern::GraphicsApi::Vulkan, "Vulkan"},
+	});
+
+	NLOHMANN_JSON_SERIALIZE_ENUM(ultramodern::HighPrecisionFramebuffer, {
+		{ultramodern::HighPrecisionFramebuffer::Auto, "Auto"},
+		{ultramodern::HighPrecisionFramebuffer::On, "On"},
+		{ultramodern::HighPrecisionFramebuffer::Off, "Off"},
 	});
 };
 

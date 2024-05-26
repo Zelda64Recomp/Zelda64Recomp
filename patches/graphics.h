@@ -5,5 +5,6 @@
 
 DECLARE_FUNC(float, recomp_get_aspect_ratio, float);
 DECLARE_FUNC(s32, recomp_get_target_framerate, s32);
+DECLARE_FUNC(s32, recomp_high_precision_fb_enabled);
 
 #endif

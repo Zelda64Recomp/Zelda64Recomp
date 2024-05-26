@@ -40,6 +40,7 @@ namespace ultramodern {
     
     RT64::UserConfiguration::Antialiasing RT64MaxMSAA();
     bool RT64SamplePositionsSupported();
+    bool RT64HighPrecisionFBEnabled();
 }
 
 void set_rt64_hooks();

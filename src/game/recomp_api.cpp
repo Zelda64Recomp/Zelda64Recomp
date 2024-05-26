@@ -7,6 +7,7 @@
 #include "recomp_ui.h"
 #include "recomp_sound.h"
 #include "recomp_helpers.h"
+#include "rt64_layer.h"
 #include "../patches/input.h"
 #include "../patches/graphics.h"
 #include "../patches/sound.h"
@@ -101,4 +102,8 @@ extern "C" void recomp_load_overlays(uint8_t * rdram, recomp_context * ctx) {
     u32 size = _arg<2, u32>(rdram, ctx);
 
     load_overlays(rom, ram, size);
+}
+
+extern "C" void recomp_high_precision_fb_enabled(uint8_t * rdram, recomp_context * ctx) {
+    _return(ctx, static_cast<s32>(ultramodern::RT64HighPrecisionFBEnabled()));
 }
