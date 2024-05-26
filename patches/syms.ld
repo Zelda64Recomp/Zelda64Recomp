@@ -58,3 +58,4 @@ recomp_set_right_analog_suppressed = 0x8F0000A0;
 recomp_get_inverted_axes = 0x8F0000A4;
 recomp_high_precision_fb_enabled = 0x8F0000A8;
 recomp_get_resolution_scale = 0x8F0000AC;
+recomp_get_analog_inverted_axes = 0x8F0000B0;

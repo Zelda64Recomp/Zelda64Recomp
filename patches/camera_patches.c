@@ -67,7 +67,7 @@ void update_analog_cam(Camera* c) {
 
     if (analog_cam_active) {
         s32 inverted_x, inverted_y;
-        recomp_get_inverted_axes(&inverted_x, &inverted_y);
+        recomp_get_analog_inverted_axes(&inverted_x, &inverted_y);
 
         if (inverted_x) {
             input_x = -input_x;
@@ -78,7 +78,7 @@ void update_analog_cam(Camera* c) {
         }
 
         analog_camera_yaw_vel = -input_x * analog_camera_x_sensitivity;
-        analog_camera_pitch_vel = -input_y * analog_camera_y_sensitivity;
+        analog_camera_pitch_vel = input_y * analog_camera_y_sensitivity;
 
         analog_camera_pos.pitch += analog_camera_pitch_vel;
         analog_camera_pos.yaw += analog_camera_yaw_vel;
@@ -87,10 +87,11 @@ void update_analog_cam(Camera* c) {
             analog_camera_pos.pitch = 0x36B0;
         }
 
-        // -76.9 degrees
-        if (analog_camera_pos.pitch < -0x36B0) {
-            analog_camera_pos.pitch = -0x36B0;
+        if (analog_camera_pos.pitch < -0x16D0) {
+            analog_camera_pos.pitch = -0x16D0;
         }
+
+        recomp_printf("analog cam pitch: %05X\n", analog_camera_pos.pitch);
     }
 }
 

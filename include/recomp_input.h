@@ -183,6 +183,9 @@ namespace recomp {
     CameraInvertMode get_camera_invert_mode();
     void set_camera_invert_mode(CameraInvertMode mode);
 
+    CameraInvertMode get_analog_camera_invert_mode();
+    void set_analog_camera_invert_mode(CameraInvertMode mode);
+
     bool game_input_disabled();
     bool all_input_disabled();
 

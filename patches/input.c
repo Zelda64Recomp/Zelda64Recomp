@@ -13,12 +13,25 @@ s32 func_8082EF20(Player* this);
 s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
     s32 pad;
     s16 var_s0;
+    // @recomp Get the aiming camera inversion state.
+    s32 inverted_x, inverted_y;
+    recomp_get_inverted_axes(&inverted_x, &inverted_y);
 
     if (!func_800B7128(this) && !func_8082EF20(this) && !arg2) {
+
         var_s0 = play->state.input[0].rel.stick_y * 0xF0;
+        
+        // @recomp Invert the Y axis accordingly (default is inverted, so negate if not inverted).
+        if (!inverted_y) {
+            var_s0 = -var_s0;
+        }
         Math_SmoothStepToS(&this->actor.focus.rot.x, var_s0, 0xE, 0xFA0, 0x1E);
 
         var_s0 = play->state.input[0].rel.stick_x * -0x10;
+        // @recomp Invert the X axis accordingly
+        if (inverted_x) {
+            var_s0 = -var_s0;
+        }
         var_s0 = CLAMP(var_s0, -0xBB8, 0xBB8);
         this->actor.focus.rot.y += var_s0;
     }
@@ -62,8 +75,14 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
 
         s16 temp3;
 
-        temp3 = ((play->state.input[0].rel.stick_y >= 0) ? 1 : -1) *
-            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_y * 0xC8)) * 1500.0f);
+        // @recomp Invert the Y axis accordingly (default is inverted, so negate if not inverted).
+        s8 stick_y = play->state.input[0].rel.stick_y;
+        if (!inverted_y) {
+            stick_y = -stick_y;
+        }
+
+        temp3 = ((stick_y >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(stick_y * 0xC8)) * 1500.0f);
         this->actor.focus.rot.x += temp3 + (s32)(target_aim_x - applied_aim_x);
         applied_aim_x = target_aim_x;
 
@@ -75,8 +94,14 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         }
 
         var_s0 = this->actor.focus.rot.y - this->actor.shape.rot.y;
-        temp3 = ((play->state.input[0].rel.stick_x >= 0) ? 1 : -1) *
-            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_x * 0xC8)) * -1500.0f);
+
+        // @recomp Invert the X axis accordingly.
+        s8 stick_x = play->state.input[0].rel.stick_x;
+        if (inverted_x) {
+            stick_x = -stick_x;
+        }
+        temp3 = ((stick_x >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(stick_x * 0xC8)) * -1500.0f);
         var_s0 += temp3 + (s32)(target_aim_y - applied_aim_y);
         applied_aim_y = target_aim_y;
 
