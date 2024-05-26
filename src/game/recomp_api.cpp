@@ -78,7 +78,6 @@ extern "C" void recomp_get_targeting_mode(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<int>(recomp::get_targeting_mode()));
 }
 
-
 extern "C" void recomp_get_bgm_volume(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, recomp::get_bgm_volume() / 100.0f);
 }

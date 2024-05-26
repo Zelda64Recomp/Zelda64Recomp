@@ -7,30 +7,47 @@
                 <!-- Options -->
                 <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)">
                         <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
+                            <label class="config-option__title">Main Volume</label>
+                            <div class="config-option__range-wrapper config-option__list">
+                                <label class="config-option__range-label">{{main_volume}}%</label>
+                                <input
+                                    data-event-blur="set_cur_config_index(-1)"
+                                    data-event-focus="set_cur_config_index(0)"
+                                    class="nav-vert"
+                                    id="main_volume_input"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    style="flex: 1; margin: 0dp; nav-up: #tab_sound; nav-down: #bgm_volume_input;"
+                                    data-value="main_volume"
+                                />
+                            </div>
+                        </div>
+                        <div class="config-option" data-event-mouseover="set_cur_config_index(1)">
                             <label class="config-option__title">Background Music Volume</label>
                             <div class="config-option__range-wrapper config-option__list">
                                 <label class="config-option__range-label">{{bgm_volume}}%</label>
                                 <input
                                     data-event-blur="set_cur_config_index(-1)"
-                                    data-event-focus="set_cur_config_index(0)"
+                                    data-event-focus="set_cur_config_index(1)"
                                     class="nav-vert"
                                     id="bgm_volume_input"
                                     type="range"
                                     min="0"
                                     max="100"
-                                    style="flex: 1; margin: 0dp; nav-up: #tab_sound; nav-down: #lhb_on;"
+                                    style="flex: 1; margin: 0dp; nav-up: #main_volume_input; nav-down: #lhb_on;"
                                     data-value="bgm_volume"
                                 />
                             </div>
                         </div>
 
-                        <div class="config-option" data-event-mouseover="set_cur_config_index(1)">
+                        <div class="config-option" data-event-mouseover="set_cur_config_index(2)">
                             <label class="config-option__title">Low Health Beeps</label>
                             <div class="config-option__list">
                                 <input
                                     type="radio"
                                     data-event-blur="set_cur_config_index(-1)"
-                                    data-event-focus="set_cur_config_index(1)"
+                                    data-event-focus="set_cur_config_index(2)"
                                     name="lhb"
                                     data-checked="low_health_beeps_enabled"
                                     value="1"
@@ -42,7 +59,7 @@
                                 <input
                                     type="radio"
                                     data-event-blur="set_cur_config_index(-1)"
-                                    data-event-focus="set_cur_config_index(1)"
+                                    data-event-focus="set_cur_config_index(2)"
                                     name="lhb"
                                     data-checked="low_health_beeps_enabled"
                                     value="0"
@@ -55,10 +72,13 @@
                 </div>
                 <!-- Descriptions -->
                 <div class="config__wrapper">
-                    <p data-if="cur_config_index == 0">
+					<p data-if="cur_config_index == 0">
+						Controls the main volume of the game.
+					</p>
+                    <p data-if="cur_config_index == 1">
                         Controls the overall volume of background music.
                     </p>
-                    <p data-if="cur_config_index == 1">
+                    <p data-if="cur_config_index == 2">
                         Toggles whether or not the low-health beeping sound plays.
                     </p>
                 </div>

@@ -344,6 +344,7 @@ void load_controls_config(const std::filesystem::path& path) {
 void save_sound_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
+    config_json["main_volume"] = recomp::get_main_volume();
     config_json["bgm_volume"] = recomp::get_bgm_volume();
     config_json["low_health_beeps"] = recomp::get_low_health_beeps_enabled();
     
@@ -357,8 +358,8 @@ void load_sound_config(const std::filesystem::path& path) {
 
     config_file >> config_json;
 
-    
     recomp::reset_sound_settings();
+    call_if_key_exists(recomp::set_main_volume, config_json, "main_volume");
     call_if_key_exists(recomp::set_bgm_volume, config_json, "bgm_volume");
     call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "low_health_beeps");
 }
