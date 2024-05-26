@@ -112,20 +112,27 @@ std::filesystem::path get_save_file_path_backup() {
 }
 
 void update_save_file() {
-    std::ofstream save_file{ get_save_file_path_temp(), std::ios_base::binary };
+    {
+        std::ofstream save_file{ get_save_file_path_temp(), std::ios_base::binary };
 
-    if (save_file.good()) {
-        std::lock_guard lock{ save_context.save_buffer_mutex };
-        save_file.write(save_context.save_buffer.data(), save_context.save_buffer.size());
-        if (std::filesystem::exists(get_save_file_path())) {
-            std::filesystem::rename(get_save_file_path(),get_save_file_path_backup());
-        } else {
-            printf("\nSavefile doesn't exist. Skip renaming.");
+        if (save_file.good()) {
+            std::lock_guard lock{ save_context.save_buffer_mutex };
+            save_file.write(save_context.save_buffer.data(), save_context.save_buffer.size());
         }
-        std::filesystem::rename(get_save_file_path_temp(),get_save_file_path());
-    } else {
+        else {
+            recomp::message_box("Failed to write to the save file. Check your file permissions. If you have moved your appdata folder to Dropbox or similar, this can cause issues.");
+        }
+    }
+    std::error_code ec;
+    if (std::filesystem::exists(get_save_file_path(), ec)) {
+        std::filesystem::copy_file(get_save_file_path(), get_save_file_path_backup(), std::filesystem::copy_options::overwrite_existing, ec);
+        if (ec) {
+            printf("[ERROR] Failed to copy save file backup\n");
+        }
+    }
+    std::filesystem::copy_file(get_save_file_path_temp(), get_save_file_path(), std::filesystem::copy_options::overwrite_existing, ec);
+    if (ec) {
         recomp::message_box("Failed to write to the save file. Check your file permissions. If you have moved your appdata folder to Dropbox or similar, this can cause issues.");
-        //std::exit(EXIT_FAILURE);
     }
 }
 
