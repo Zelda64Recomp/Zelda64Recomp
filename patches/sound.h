@@ -3,7 +3,6 @@
 
 #include "patch_helpers.h"
 
-DECLARE_FUNC(float, recomp_get_main_volume);
 DECLARE_FUNC(float, recomp_get_bgm_volume);
 DECLARE_FUNC(u32, recomp_get_low_health_beeps_enabled);
 

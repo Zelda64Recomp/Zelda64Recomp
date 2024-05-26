@@ -18,7 +18,7 @@
                                     type="range"
                                     min="0"
                                     max="100"
-                                    style="flex: 1; margin: 0dp; nav-up: #tab_sound; nav-down: #lhb_on;"
+                                    style="flex: 1; margin: 0dp; nav-up: #tab_sound; nav-down: #bgm_volume_input;"
                                     data-value="main_volume"
                                 />
                             </div>
@@ -35,7 +35,7 @@
                                     type="range"
                                     min="0"
                                     max="100"
-                                    style="flex: 1; margin: 0dp; nav-up: #tab_sound; nav-down: #lhb_on;"
+                                    style="flex: 1; margin: 0dp; nav-up: #main_volume_input; nav-down: #lhb_on;"
                                     data-value="bgm_volume"
                                 />
                             </div>
