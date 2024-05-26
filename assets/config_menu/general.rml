@@ -106,7 +106,7 @@
                                 type="range"
                                 min="0"
                                 max="100"
-                                style="flex: 1; margin: 0dp;"
+                                style="flex: 1; margin: 0dp; nav-down: #bg_input_enabled"
                                 data-value="joystick_deadzone"
                             />
                         </div>
@@ -154,7 +154,7 @@
                                 data-checked="autosave_mode"
                                 value="On"
                                 id="autosave_enabled"
-                                style="nav-up: #bg_input_enabled; nav-down: #analog_cam_enabled"
+                                style="nav-up: #bg_input_enabled; nav-down: #camera_inversion_none"
                             />
                             <label class="config-option__tab-label" for="autosave_enabled">On</label>
 
@@ -166,9 +166,147 @@
                                 data-checked="autosave_mode"
                                 value="Off"
                                 id="autosave_disabled"
-                                style="nav-up: #bg_input_disabled; nav-down: #analog_cam_disabled"
+                                style="nav-up: #bg_input_disabled; nav-down: #camera_inversion_x"
                             />
                             <label class="config-option__tab-label" for="autosave_disabled">Off</label>
+                        </div>
+                    </div>
+                    
+                    <!-- camera inversion -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(7)">
+                        <label class="config-option__title">Aiming Camera Mode</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertNone"
+                                id="camera_inversion_none"
+                                style="nav-up: #autosave_enabled; nav-down: #analog_cam_enabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_none">None</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertX"
+                                id="camera_inversion_x"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_x">Invert X</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertY"
+                                id="camera_inversion_y"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_y">Invert Y</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="camera_invert_mode"
+                                data-checked="camera_invert_mode"
+                                value="InvertBoth"
+                                id="camera_inversion_both"
+                                style="nav-up: #autosave_disabled; nav-down: #analog_cam_disabled"
+                            />
+                            <label class="config-option__tab-label" for="camera_inversion_both">Invert Both</label>
+                        </div>
+                    </div>
+                    
+                    <!-- analog camera -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(8)">
+                        <label class="config-option__title">Analog Camera</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(8)"
+                                name="analog_cam_mode"
+                                data-checked="analog_cam_mode"
+                                value="On"
+                                id="analog_cam_enabled"
+                                style="nav-up: #camera_inversion_none; nav-down: #analog_camera_inversion_none"
+                            />
+                            <label class="config-option__tab-label" for="analog_cam_enabled">On</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(8)"
+                                name="analog_cam_mode"
+                                data-checked="analog_cam_mode"
+                                value="Off"
+                                id="analog_cam_disabled"
+                                style="nav-up: #camera_inversion_x; nav-down: #analog_camera_inversion_x"
+                            />
+                            <label class="config-option__tab-label" for="analog_cam_disabled">Off</label>
+                        </div>
+                    </div>
+                    
+                    <!-- analog camera inversion -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(9)">
+                        <label class="config-option__title">Analog Camera Mode</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(9)"
+                                name="analog_camera_invert_mode"
+                                data-checked="analog_camera_invert_mode"
+                                value="InvertNone"
+                                id="analog_camera_inversion_none"
+                                style="nav-up: #analog_cam_enabled;"
+                            />
+                            <label class="config-option__tab-label" for="analog_camera_inversion_none">None</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(9)"
+                                name="analog_camera_invert_mode"
+                                data-checked="analog_camera_invert_mode"
+                                value="InvertX"
+                                id="analog_camera_inversion_x"
+                                style="nav-up: #analog_cam_disabled;"
+                            />
+                            <label class="config-option__tab-label" for="analog_camera_inversion_x">Invert X</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(9)"
+                                name="analog_camera_invert_mode"
+                                data-checked="analog_camera_invert_mode"
+                                value="InvertY"
+                                id="analog_camera_inversion_y"
+                                style="nav-up: #analog_cam_disabled;"
+                            />
+                            <label class="config-option__tab-label" for="analog_camera_inversion_y">Invert Y</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(9)"
+                                name="analog_camera_invert_mode"
+                                data-checked="analog_camera_invert_mode"
+                                value="InvertBoth"
+                                id="analog_camera_inversion_both"
+                                style="nav-up: #analog_cam_disabled;"
+                            />
+                            <label class="config-option__tab-label" for="analog_camera_inversion_both">Invert Both</label>
                         </div>
                     </div>
                 </div>
@@ -208,6 +346,21 @@
                         <br/>
                         <br/>
                         <b>If autosaving is disabled, existing autosaves will be deleted when loaded.</b>
+                    </p>
+                    <p data-if="cur_config_index == 7">
+                        Inverts the camera controls for first-person aiming. <b>Invert Y</b> is the default and matches the original game.
+                    </p>
+                    <p data-if="cur_config_index == 8">
+                        Enables an analog "free" camera similar to later entries in the series that's mapped to the right analog stick on the controller.
+                        <br/>
+                        <br/>
+                        When you move the right stick, the camera will enter free mode and stop centering behind Link. Press the <b>Target</b> button at any time to go back into the normal camera mode. The camera will also return to normal mode after a cutscene plays or when you move between areas.
+                        <br/>
+                        <br/>
+                        This option also enables right stick control while looking and aiming.
+                    </p>
+                    <p data-if="cur_config_index == 9">
+                        Inverts the camera controls for the analog camera if it's enabled. <b>None</b> is the default.
                     </p>
                 </div>
             </div>

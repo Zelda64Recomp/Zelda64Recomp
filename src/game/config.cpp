@@ -165,6 +165,9 @@ void save_general_config(const std::filesystem::path& path) {
     config_json["mouse_sensitivity"] = recomp::get_mouse_sensitivity();
     config_json["joystick_deadzone"] = recomp::get_joystick_deadzone();
     config_json["autosave_mode"] = recomp::get_autosave_mode();
+    config_json["camera_invert_mode"] = recomp::get_camera_invert_mode();
+    config_json["analog_cam_mode"] = recomp::get_analog_cam_mode();
+    config_json["analog_camera_invert_mode"] = recomp::get_analog_camera_invert_mode();
     config_json["debug_mode"] = recomp::get_debug_mode_enabled();
     config_file << std::setw(4) << config_json;
 }
@@ -177,6 +180,9 @@ void set_general_settings_from_json(const nlohmann::json& config_json) {
     recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
     recomp::set_joystick_deadzone(from_or_default(config_json, "joystick_deadzone", 5));
     recomp::set_autosave_mode(from_or_default(config_json, "autosave_mode", recomp::AutosaveMode::On));
+    recomp::set_camera_invert_mode(from_or_default(config_json, "camera_invert_mode", recomp::CameraInvertMode::InvertY));
+    recomp::set_analog_cam_mode(from_or_default(config_json, "analog_cam_mode", recomp::AnalogCamMode::Off));
+    recomp::set_analog_camera_invert_mode(from_or_default(config_json, "analog_camera_invert_mode", recomp::CameraInvertMode::InvertNone));
     recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 

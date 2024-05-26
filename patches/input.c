@@ -13,12 +13,44 @@ s32 func_8082EF20(Player* this);
 s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
     s32 pad;
     s16 var_s0;
+    // @recomp Get the aiming camera inversion state.
+    s32 inverted_x, inverted_y;
+    recomp_get_inverted_axes(&inverted_x, &inverted_y);
+    // @recomp Get the analog camera input values if analog cam is enabled.
+    s32 analog_x = 0;
+    s32 analog_y = 0;
+    if (recomp_analog_cam_enabled()) {
+        float analog_x_float = 0.0f;
+        float analog_y_float = 0.0f;
+        recomp_get_camera_inputs(&analog_x_float, &analog_y_float);
+        // Scale by 127 to match what ultramodern does, then clamp to 60 to match the game's handling.
+        analog_x = (s32)(analog_x_float * 127.0f);
+        analog_x = CLAMP(analog_x, -60, 60);
+        analog_y = (s32)(analog_y_float * -127.0f);
+        analog_y = CLAMP(analog_y, -60, 60);
+    }
+
+    // recomp_printf("stick_x: %d stick_y: %d analog_x: %d analog_y: %d\n",
+    //     play->state.input[0].rel.stick_x, play->state.input[0].rel.stick_y,
+    //     analog_x, analog_y);
 
     if (!func_800B7128(this) && !func_8082EF20(this) && !arg2) {
-        var_s0 = play->state.input[0].rel.stick_y * 0xF0;
+        // @recomp Add in the analog camera Y input. Clamp to prevent moving the camera twice as fast if both sticks are held.
+        var_s0 = CLAMP(play->state.input[0].rel.stick_y + analog_y, -61, 61) * 0xF0;
+        
+        // @recomp Invert the Y axis accordingly (default is inverted, so negate if not inverted).
+        if (!inverted_y) {
+            var_s0 = -var_s0;
+        }
         Math_SmoothStepToS(&this->actor.focus.rot.x, var_s0, 0xE, 0xFA0, 0x1E);
 
-        var_s0 = play->state.input[0].rel.stick_x * -0x10;
+        // @recomp Add in the analog camera X input. Clamp to prevent moving the camera twice as fast if both sticks are held.
+        var_s0 = CLAMP(play->state.input[0].rel.stick_x + analog_x, -61, 61) * -0x10;
+
+        // @recomp Invert the X axis accordingly
+        if (inverted_x) {
+            var_s0 = -var_s0;
+        }
         var_s0 = CLAMP(var_s0, -0xBB8, 0xBB8);
         this->actor.focus.rot.y += var_s0;
     }
@@ -62,8 +94,15 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
 
         s16 temp3;
 
-        temp3 = ((play->state.input[0].rel.stick_y >= 0) ? 1 : -1) *
-            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_y * 0xC8)) * 1500.0f);
+        // @recomp Invert the Y axis accordingly (default is inverted, so negate if not inverted).
+        // Also add in the analog camera Y input. Clamp to prevent moving the camera twice as fast if both sticks are held.
+        s32 stick_y = CLAMP(play->state.input[0].rel.stick_y + analog_y, -61, 61);
+        if (!inverted_y) {
+            stick_y = -stick_y;
+        }
+
+        temp3 = ((stick_y >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(stick_y * 0xC8)) * 1500.0f);
         this->actor.focus.rot.x += temp3 + (s32)(target_aim_x - applied_aim_x);
         applied_aim_x = target_aim_x;
 
@@ -75,8 +114,15 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
         }
 
         var_s0 = this->actor.focus.rot.y - this->actor.shape.rot.y;
-        temp3 = ((play->state.input[0].rel.stick_x >= 0) ? 1 : -1) *
-            (s32)((1.0f - Math_CosS(play->state.input[0].rel.stick_x * 0xC8)) * -1500.0f);
+
+        // @recomp Invert the X axis accordingly. Also add in the analog camera Y input.
+        // Clamp to prevent moving the camera twice as fast if both sticks are held.
+        s32 stick_x = CLAMP(play->state.input[0].rel.stick_x + analog_x, -61, 61);
+        if (inverted_x) {
+            stick_x = -stick_x;
+        }
+        temp3 = ((stick_x >= 0) ? 1 : -1) *
+            (s32)((1.0f - Math_CosS(stick_x * 0xC8)) * -1500.0f);
         var_s0 += temp3 + (s32)(target_aim_y - applied_aim_y);
         applied_aim_y = target_aim_y;
 
@@ -88,24 +134,139 @@ s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
     return func_80832754(this, (play->unk_1887C != 0) || func_800B7128(this) || func_8082EF20(this));
 }
 
+extern Input* sPlayerControlInput;
+
+/**
+ * Update for using telescopes. SCENE_AYASHIISHOP acts quite differently: it has a different camera mode and cannot use
+ * zooming.
+ *
+ * - Stick inputs move the view; shape.rot.y is used as a base position which cannot be looked too far away from. (This
+ * is not necessarily the same as the original angle of the spawn.)
+ * - A can be used to zoom (except in SCENE_AYASHIISHOP)
+ * - B exits, using the RESPAWN_MODE_DOWN entrance
+ */
+// @recomp Patched for aiming inversion and supporting the right stick in dual analog.
+void func_8083A98C(Actor* thisx, PlayState* play2) {
+    PlayState* play = play2;
+    Player* this = (Player*)thisx;
+    s32 camMode;
+
+    if (play->csCtx.state != CS_STATE_IDLE) {
+        return;
+    }
+
+    // @recomp Get the aiming camera inversion state.
+    s32 inverted_x, inverted_y;
+    recomp_get_inverted_axes(&inverted_x, &inverted_y);
+    // @recomp Get the analog camera input values if analog cam is enabled.
+    s32 analog_x = 0;
+    s32 analog_y = 0;
+    if (recomp_analog_cam_enabled()) {
+        float analog_x_float = 0.0f;
+        float analog_y_float = 0.0f;
+        recomp_get_camera_inputs(&analog_x_float, &analog_y_float);
+        // Scale by 127 to match what ultramodern does, then clamp to 60 to match the game's handling.
+        analog_x = (s32)(analog_x_float * 127.0f);
+        analog_x = CLAMP(analog_x, -60, 60);
+        analog_y = (s32)(analog_y_float * -127.0f);
+        analog_y = CLAMP(analog_y, -60, 60);
+    }
+
+    if (DECR(this->av2.actionVar2) != 0) {
+        camMode = (play->sceneId != SCENE_AYASHIISHOP) ? CAM_MODE_FIRSTPERSON : CAM_MODE_DEKUHIDE;
+
+        // Show controls overlay. SCENE_AYASHIISHOP does not have Zoom, so has a different one.
+        if (this->av2.actionVar2 == 1) {
+            Message_StartTextbox(play, (play->sceneId == SCENE_AYASHIISHOP) ? 0x2A00 : 0x5E6, NULL);
+        }
+    } else {
+        // @recomp Manual relocation, TODO remove when automated.
+        Input* player_control_input = play->state.input;
+        *(Input**)KaleidoManager_GetRamAddr(&sPlayerControlInput) = player_control_input;
+        if (play->view.fovy >= 25.0f) {
+            s16 prevFocusX = thisx->focus.rot.x;
+            s16 prevFocusY = thisx->focus.rot.y;
+            s16 inputY;
+            s16 inputX;
+            s16 newYaw; // from base position shape.rot.y
+
+            // @recomp Add in the analog camera Y input. Clamp to prevent moving the camera twice as fast if both sticks are held.
+            // Pitch:
+            inputY = CLAMP(player_control_input->rel.stick_y + analog_y, -60, 60) * 4;
+            // @recomp Invert the Y axis accordingly (default is inverted, so negate if not inverted).
+            if (!inverted_y) {
+                inputY = -inputY;
+            }
+            // Add input, clamped to prevent turning too fast
+            thisx->focus.rot.x += CLAMP(inputY, -0x12C, 0x12C);
+            // Prevent looking too far up or down
+            thisx->focus.rot.x = CLAMP(thisx->focus.rot.x, -0x2EE0, 0x2EE0);
+
+            // @recomp Add in the analog camera X input. Clamp to prevent moving the camera twice as fast if both sticks are held.
+            // Yaw: shape.rot.y is used as a fixed starting position
+            inputX = CLAMP(player_control_input->rel.stick_x + analog_x, -60, 60) * -4;
+            // @recomp Invert the X axis accordingly.
+            if (inverted_x) {
+                inputX = -inputX;
+            }
+            // Start from current position: no input -> no change
+            newYaw = thisx->focus.rot.y - thisx->shape.rot.y;
+            // Add input, clamped to prevent turning too fast
+            newYaw += CLAMP(inputX, -0x12C, 0x12C);
+            // Prevent looking too far left or right of base position
+            newYaw = CLAMP(newYaw, -0x3E80, 0x3E80);
+            thisx->focus.rot.y = thisx->shape.rot.y + newYaw;
+
+            if (play->sceneId == SCENE_00KEIKOKU) {
+                f32 focusDeltaX = (s16)(thisx->focus.rot.x - prevFocusX);
+                f32 focusDeltaY = (s16)(thisx->focus.rot.y - prevFocusY);
+
+                Audio_PlaySfx_AtPosWithFreq(&gSfxDefaultPos, NA_SE_PL_TELESCOPE_MOVEMENT - SFX_FLAG,
+                                            sqrtf(SQ(focusDeltaX) + SQ(focusDeltaY)) / 300.0f);
+            }
+        }
+
+        if (play->sceneId == SCENE_AYASHIISHOP) {
+            camMode = CAM_MODE_DEKUHIDE;
+        } else if (CHECK_BTN_ALL(player_control_input->cur.button, BTN_A)) { // Zoom
+            camMode = CAM_MODE_TARGET;
+        } else {
+            camMode = CAM_MODE_NORMAL;
+        }
+
+        // Exit
+        if (CHECK_BTN_ALL(player_control_input->press.button, BTN_B)) {
+            Message_CloseTextbox(play);
+
+            if (play->sceneId == SCENE_00KEIKOKU) {
+                gSaveContext.respawn[RESPAWN_MODE_DOWN].entrance = ENTRANCE(ASTRAL_OBSERVATORY, 2);
+            } else {
+                u16 entrance;
+
+                if (play->sceneId == SCENE_AYASHIISHOP) {
+                    entrance = ENTRANCE(CURIOSITY_SHOP, 3);
+                } else {
+                    entrance = ENTRANCE(PIRATES_FORTRESS_INTERIOR, 8);
+                }
+                gSaveContext.respawn[RESPAWN_MODE_DOWN].entrance = entrance;
+            }
+
+            func_80169EFC(&play->state);
+            gSaveContext.respawnFlag = -2;
+            play->transitionType = TRANS_TYPE_CIRCLE;
+        }
+    }
+
+    Camera_ChangeSetting(Play_GetCamera(play, CAM_ID_MAIN), CAM_SET_TELESCOPE);
+    Camera_ChangeMode(Play_GetCamera(play, CAM_ID_MAIN), camMode);
+}
+
 u32 sPlayerItemButtons[] = {
     BTN_B,
     BTN_CLEFT,
     BTN_CDOWN,
     BTN_CRIGHT,
 };
-
-// u32 sPlayerItemButtonsDualAnalog[] = {
-//     BTN_B,
-//     BTN_DLEFT,
-//     BTN_DDOWN,
-//     BTN_DRIGHT
-// };
-
-// u32 prev_item_buttons = 0;
-// u32 cur_item_buttons = 0;
-// u32 pressed_item_buttons = 0;
-// u32 released_item_buttons = 0;
 
 // D-Pad items
 
@@ -128,31 +289,6 @@ typedef enum {
     EQUIP_SLOT_EX_DRIGHT,
     EQUIP_SLOT_EX_DDOWN,
 } EquipSlotEx;
-
-// static inline void dup_to_cup(u16* button) {
-//     if (*button & BTN_DUP) {
-//         *button |= BTN_CUP; 
-//     }
-// }
-
-void GameState_GetInput(GameState* gameState) {
-    PadMgr_GetInput(gameState->input, true);
-
-    // if (recomp_camera_mode == RECOMP_CAMERA_DUALANALOG) {
-    //     gameState->input[0].cur.button &= ~BTN_CUP;
-    //     gameState->input[0].press.button &= ~BTN_CUP;
-    //     gameState->input[0].rel.button &= ~BTN_CUP;
-    //     dup_to_cup(&gameState->input[0].cur.button);
-    //     dup_to_cup(&gameState->input[0].press.button);
-    //     dup_to_cup(&gameState->input[0].rel.button);
-    // }
-
-    // prev_item_buttons = cur_item_buttons;
-    // recomp_get_item_inputs(&cur_item_buttons);
-    // u32 button_diff = prev_item_buttons ^ cur_item_buttons;
-    // pressed_item_buttons = cur_item_buttons & button_diff;
-    // released_item_buttons = prev_item_buttons & button_diff;
-}
 
 struct ExButtonMapping {
     u32 button;
@@ -214,9 +350,6 @@ u8* get_button_item_equip_ptr(u32 form, u32 button) {
         return &gSaveContext.save.saveInfo.equips.buttonItems[form][button];
     }
 }
-
-
-extern Input* sPlayerControlInput;
 
 // Return currently-pressed button, in order of priority D-Pad, B, CLEFT, CDOWN, CRIGHT.
 EquipSlot func_8082FDC4(void) {
@@ -320,7 +453,8 @@ void Player_Action_86(Player *this, PlayState *play) {
     s32 sp48 = false;
 
     func_808323C0(this, play->playerCsIds[PLAYER_CS_ID_MASK_TRANSFORMATION]);
-    sPlayerControlInput = play->state.input;
+    // @recomp Manual relocation, TODO remove when automated.
+    *(Input**)KaleidoManager_GetRamAddr(&sPlayerControlInput) = play->state.input;
 
     Camera_ChangeMode(GET_ACTIVE_CAM(play),
         (this->transformation == PLAYER_FORM_HUMAN) ? CAM_MODE_NORMAL : CAM_MODE_JUMP);
@@ -349,7 +483,7 @@ void Player_Action_86(Player *this, PlayState *play) {
             (sp48 =
                 ((this->transformation != PLAYER_FORM_HUMAN) || CHECK_WEEKEVENTREG(D_8085D908[GET_PLAYER_FORM])) &&
                 // @recomp Patched to also check for d-pad buttons for skipping the transformation cutscene.
-                CHECK_BTN_ANY(sPlayerControlInput->press.button,
+                CHECK_BTN_ANY(play->state.input[0].press.button,
                     BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_B | BTN_A | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)))) {
         R_PLAY_FILL_SCREEN_ON = 45;
         R_PLAY_FILL_SCREEN_R = 220;

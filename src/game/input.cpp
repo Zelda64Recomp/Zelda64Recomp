@@ -483,7 +483,9 @@ bool controller_button_state(int32_t input_id) {
     return false;
 }
 
-float controller_axis_state(int32_t input_id) {
+static std::atomic_bool right_analog_suppressed = false;
+
+float controller_axis_state(int32_t input_id, bool allow_suppression) {
     if (abs(input_id) - 1 < SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_MAX) {
         SDL_GameControllerAxis axis = (SDL_GameControllerAxis)(abs(input_id) - 1);
         bool negative_range = input_id < 0;
@@ -495,6 +497,12 @@ float controller_axis_state(int32_t input_id) {
                 float cur_val = SDL_GameControllerGetAxis(controller, axis) * (1/32768.0f);
                 if (negative_range) {
                     cur_val = -cur_val;
+                }
+
+                // Check if this input is a right analog axis and suppress it accordingly.
+                if (allow_suppression && right_analog_suppressed.load() &&
+                    (axis == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX || axis == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY)) {
+                    cur_val = 0;
                 }
                 ret += std::clamp(cur_val, 0.0f, 1.0f);
             }
@@ -518,7 +526,7 @@ float recomp::get_input_analog(const recomp::InputField& field) {
     case InputType::ControllerDigital:
         return controller_button_state(field.input_id) ? 1.0f : 0.0f;
     case InputType::ControllerAnalog:
-        return controller_axis_state(field.input_id);
+        return controller_axis_state(field.input_id, true);
     case InputType::Mouse:
         // TODO mouse support
         return 0.0f;
@@ -549,7 +557,7 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
         return controller_button_state(field.input_id);
     case InputType::ControllerAnalog:
         // TODO adjustable threshold
-        return controller_axis_state(field.input_id) >= axis_threshold;
+        return controller_axis_state(field.input_id, true) >= axis_threshold;
     case InputType::Mouse:
         // TODO mouse support
         return false;
@@ -578,6 +586,55 @@ void recomp::get_mouse_deltas(float* x, float* y) {
     float sensitivity = (float)recomp::get_mouse_sensitivity() / 100.0f;
     *x = cur_mouse_delta[0] * sensitivity;
     *y = cur_mouse_delta[1] * sensitivity;
+}
+
+void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {
+    float joystick_deadzone = (float)recomp::get_joystick_deadzone() / 100.0f;
+
+    if(fabsf(x_in) < joystick_deadzone) {
+        x_in = 0.0f;
+    }
+    else {
+        if(x_in > 0.0f) {
+            x_in -= joystick_deadzone;
+        } 
+        else {
+            x_in += joystick_deadzone;
+        }
+
+        x_in /= (1.0f - joystick_deadzone);
+    }
+
+    if(fabsf(y_in) < joystick_deadzone) {
+        y_in = 0.0f;
+    }
+    else {
+        if(y_in > 0.0f) {
+            y_in -= joystick_deadzone;
+        } 
+        else {
+            y_in += joystick_deadzone;
+        }
+
+        y_in /= (1.0f - joystick_deadzone);
+    }
+
+    *x_out = x_in;
+    *y_out = y_in;
+}
+
+void recomp::get_right_analog(float* x, float* y) {
+    float x_val =
+        controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1), false) -
+        controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1), false);
+    float y_val =
+        controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1), false) -
+        controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1), false);
+    recomp::apply_joystick_deadzone(x_val, y_val, x, y);
+}
+
+void recomp::set_right_analog_suppressed(bool suppressed) {
+    right_analog_suppressed.store(suppressed);
 }
 
 bool recomp::game_input_disabled() {

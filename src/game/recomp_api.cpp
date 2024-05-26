@@ -110,3 +110,59 @@ extern "C" void recomp_high_precision_fb_enabled(uint8_t * rdram, recomp_context
 extern "C" void recomp_get_resolution_scale(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, ultramodern::get_resolution_scale());
 }
+
+extern "C" void recomp_get_inverted_axes(uint8_t* rdram, recomp_context* ctx) {
+    s32* x_out = _arg<0, s32*>(rdram, ctx);
+    s32* y_out = _arg<1, s32*>(rdram, ctx);
+
+    recomp::CameraInvertMode mode = recomp::get_camera_invert_mode();
+
+    *x_out = (mode == recomp::CameraInvertMode::InvertX || mode == recomp::CameraInvertMode::InvertBoth);
+    *y_out = (mode == recomp::CameraInvertMode::InvertY || mode == recomp::CameraInvertMode::InvertBoth);
+}
+
+extern "C" void recomp_get_analog_inverted_axes(uint8_t* rdram, recomp_context* ctx) {
+    s32* x_out = _arg<0, s32*>(rdram, ctx);
+    s32* y_out = _arg<1, s32*>(rdram, ctx);
+
+    recomp::CameraInvertMode mode = recomp::get_analog_camera_invert_mode();
+
+    *x_out = (mode == recomp::CameraInvertMode::InvertX || mode == recomp::CameraInvertMode::InvertBoth);
+    *y_out = (mode == recomp::CameraInvertMode::InvertY || mode == recomp::CameraInvertMode::InvertBoth);
+}
+
+extern "C" void recomp_analog_cam_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return<s32>(ctx, recomp::get_analog_cam_mode() == recomp::AnalogCamMode::On);
+}
+
+extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
+    float* x_out = _arg<0, float*>(rdram, ctx);
+    float* y_out = _arg<1, float*>(rdram, ctx);
+
+    // TODO expose this in the menu
+    constexpr float radial_deadzone = 0.05f;
+
+    float x, y;
+
+    recomp::get_right_analog(&x, &y);
+
+    float magnitude = sqrtf(x * x + y * y);
+
+    if (magnitude < radial_deadzone) {
+        *x_out = 0.0f;
+        *y_out = 0.0f;
+    }
+    else {
+        float x_normalized = x / magnitude;
+        float y_normalized = y / magnitude;
+
+        *x_out = x_normalized * ((magnitude - radial_deadzone) / (1 - radial_deadzone));
+        *y_out = y_normalized * ((magnitude - radial_deadzone) / (1 - radial_deadzone));
+    }
+}
+
+extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_context* ctx) {
+    s32 suppressed = _arg<0, s32>(rdram, ctx);
+
+    recomp::set_right_analog_suppressed(suppressed);
+}

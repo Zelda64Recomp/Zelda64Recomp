@@ -278,6 +278,9 @@ struct ControlOptionsContext {
 	recomp::TargetingMode targeting_mode;
 	recomp::BackgroundInputMode background_input_mode;
 	recomp::AutosaveMode autosave_mode;
+	recomp::CameraInvertMode camera_invert_mode;
+	recomp::AnalogCamMode analog_cam_mode;
+	recomp::CameraInvertMode analog_camera_invert_mode;
 };
 
 ControlOptionsContext control_options_context;
@@ -362,6 +365,39 @@ void recomp::set_autosave_mode(recomp::AutosaveMode mode) {
 	control_options_context.autosave_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("autosave_mode");
+	}
+}
+
+recomp::CameraInvertMode recomp::get_camera_invert_mode() {
+	return control_options_context.camera_invert_mode;
+}
+
+void recomp::set_camera_invert_mode(recomp::CameraInvertMode mode) {
+	control_options_context.camera_invert_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("camera_invert_mode");
+	}
+}
+
+recomp::AnalogCamMode recomp::get_analog_cam_mode() {
+	return control_options_context.analog_cam_mode;
+}
+
+void recomp::set_analog_cam_mode(recomp::AnalogCamMode mode) {
+	control_options_context.analog_cam_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("analog_cam_mode");
+	}
+}
+
+recomp::CameraInvertMode recomp::get_analog_camera_invert_mode() {
+	return control_options_context.analog_camera_invert_mode;
+}
+
+void recomp::set_analog_camera_invert_mode(recomp::CameraInvertMode mode) {
+	control_options_context.analog_camera_invert_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("analog_camera_invert_mode");
 	}
 }
 
@@ -864,6 +900,9 @@ public:
 		bind_option(constructor, "targeting_mode", &control_options_context.targeting_mode);
 		bind_option(constructor, "background_input_mode", &control_options_context.background_input_mode);
 		bind_option(constructor, "autosave_mode", &control_options_context.autosave_mode);
+		bind_option(constructor, "camera_invert_mode", &control_options_context.camera_invert_mode);
+		bind_option(constructor, "analog_cam_mode", &control_options_context.analog_cam_mode);
+		bind_option(constructor, "analog_camera_invert_mode", &control_options_context.analog_camera_invert_mode);
 
 		general_model_handle = constructor.GetModelHandle();
 	}

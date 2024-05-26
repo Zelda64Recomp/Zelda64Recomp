@@ -16,6 +16,7 @@ void Play_Main(GameState* thisx) {
     // @recomp
     debug_play_update(this);
     controls_play_update(this);
+    analog_cam_pre_play_update(this);
     matrix_play_update(this);
     
     // @recomp avoid unused variable warning
@@ -33,6 +34,7 @@ void Play_Main(GameState* thisx) {
         camera_pre_play_update(this);
         Play_Update(this);
         camera_post_play_update(this);
+        analog_cam_post_play_update(this);
         autosave_post_play_update(this);
         this->state.gfxCtx = gfxCtx;
     }

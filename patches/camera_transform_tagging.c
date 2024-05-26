@@ -1,4 +1,5 @@
 #include "patches.h"
+#include "camera_patches.h"
 #include "transform_ids.h"
 #include "z64cutscene.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
@@ -286,11 +287,6 @@ void Camera_ScaledStepToCeilVec3f(Vec3f* target, Vec3f* cur, f32 xzStepScale, f3
 void Camera_SetFocalActorAtOffset(Camera* camera, Vec3f* focalActorPos);
 void Camera_SetUpdateRatesSlow(Camera* camera);
 Vec3f Camera_Vec3sToVec3f(Vec3s* src);
-#define RELOAD_PARAMS(camera) ((camera->animState == 0) || (camera->animState == 10) || (camera->animState == 20))
-#define CAM_RODATA_SCALE(x) ((x)*100.0f)
-#define CAM_RODATA_UNSCALE(x) ((x)*0.01f)
-#define GET_NEXT_RO_DATA(values) ((values++)->val)
-#define GET_NEXT_SCALED_RO_DATA(values) CAM_RODATA_UNSCALE(GET_NEXT_RO_DATA(values))
 
 /**
  * Used for many fixed-based camera settings i.e. camera is fixed in rotation, and often position (but not always)

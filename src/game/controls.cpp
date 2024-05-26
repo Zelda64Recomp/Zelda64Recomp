@@ -95,33 +95,7 @@ void recomp::get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out) {
         float joystick_y = recomp::get_input_analog(controller_input_mappings[(size_t)GameInput::Y_AXIS_POS])
                         - recomp::get_input_analog(controller_input_mappings[(size_t)GameInput::Y_AXIS_NEG]);
 
-        if(fabsf(joystick_x) < joystick_deadzone) {
-            joystick_x = 0.0f;
-        }
-        else {
-            if(joystick_x > 0.0f) {
-                joystick_x -= joystick_deadzone;
-            } 
-            else {
-                joystick_x += joystick_deadzone;
-            }
-
-            joystick_x /= (1.0f - joystick_deadzone);
-        }
-
-        if(fabsf(joystick_y) < joystick_deadzone) {
-            joystick_y = 0.0f;
-        }
-        else {
-            if(joystick_y > 0.0f) {
-                joystick_y -= joystick_deadzone;
-            } 
-            else {
-                joystick_y += joystick_deadzone;
-            }
-
-            joystick_y /= (1.0f - joystick_deadzone);
-        }
+        recomp::apply_joystick_deadzone(joystick_x, joystick_y, &joystick_x, &joystick_y);
 
         cur_x = recomp::get_input_analog(keyboard_input_mappings[(size_t)GameInput::X_AXIS_POS])
                 - recomp::get_input_analog(keyboard_input_mappings[(size_t)GameInput::X_AXIS_NEG]) + joystick_x;
