@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - dev
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,12 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
-  build-unix:
+  build-linux:
     needs: authorize
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
     strategy:
       matrix:
         type: [ Debug, Release ]
+        os: [ ubuntu-22.04 ]
+        arch: [ x64, arm64 ]
+    name: ${{ matrix.os }} (${{ matrix.arch }}, ${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +35,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: |
@@ -90,25 +93,26 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
-          tar -czf Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz Zelda64Recompiled assets/
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
-          path: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}.tar.gz
+          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          path: Zelda64Recompiled.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-AppImage-${{ matrix.type }}
-          path: Zelda64Recompiled-x86_64.AppImage
+          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
+          path: Zelda64Recompiled-*.AppImage
   build-windows:
     needs: authorize
     runs-on: windows-latest
     strategy:
       matrix:
         type: [ Debug, Release ]
+    name: windows (${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
