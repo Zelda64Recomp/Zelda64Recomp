@@ -4,6 +4,7 @@
 // Decomp rename, TODO update decomp and remove this
 #define AudioVoice_GetWord func_801A5100
 #include "z64voice.h"
+#include "audiothread_cmd.h"
 
 s32 func_80847190(PlayState* play, Player* this, s32 arg2);
 s16 func_80832754(Player* this, s32 arg1);
@@ -2296,4 +2297,233 @@ void draw_dpad_icons(PlayState* play) {
     gEXForceUpscale2D(OVERLAY_DISP++, 0);
 
     CLOSE_DISPS(play->state.gfxCtx);
+}
+
+typedef struct {
+    /* 0x0 */ s8 x;
+    /* 0x1 */ s8 y;
+} OcarinaControlStick; // size = 0x2
+
+typedef enum {
+    /* 0x0 */ SFX_CHANNEL_PLAYER0, // SfxPlayerBank
+    /* 0x1 */ SFX_CHANNEL_PLAYER1,
+    /* 0x2 */ SFX_CHANNEL_PLAYER2,
+    /* 0x3 */ SFX_CHANNEL_ITEM0, // SfxItemBank
+    /* 0x4 */ SFX_CHANNEL_ITEM1,
+    /* 0x5 */ SFX_CHANNEL_ENV0, // SfxEnvironmentBank
+    /* 0x6 */ SFX_CHANNEL_ENV1,
+    /* 0x7 */ SFX_CHANNEL_ENV2,
+    /* 0x8 */ SFX_CHANNEL_ENEMY0, // SfxEnemyBank
+    /* 0x9 */ SFX_CHANNEL_ENEMY1,
+    /* 0xA */ SFX_CHANNEL_ENEMY2,
+    /* 0xB */ SFX_CHANNEL_SYSTEM0, // SfxSystemBank
+    /* 0xC */ SFX_CHANNEL_SYSTEM1,
+    /* 0xD */ SFX_CHANNEL_OCARINA, // SfxOcarinaBank
+    /* 0xE */ SFX_CHANNEL_VOICE0,  // SfxVoiceBank
+    /* 0xF */ SFX_CHANNEL_VOICE1
+} SfxChannelIndex; // seqPlayerIndex = 2
+
+extern u32 sOcarinaFlags;
+extern u8 sOcarinaDropInputTimer;
+extern u32 sOcarinaInputButtonStart;
+extern u32 sOcarinaInputButtonCur;
+extern u8 sCurOcarinaPitch;
+extern u8 sCurOcarinaButtonIndex;
+extern u32 sOcarinaInputButtonPrev;
+extern s32 sOcarinaInputButtonPress; 
+extern u8 sRecordingState;
+extern s8 sCurOcarinaBendIndex;
+extern f32 sCurOcarinaBendFreq;
+extern s8 sCurOcarinaVibrato;
+extern OcarinaControlStick sOcarinaInputStickRel;
+extern u8 sPrevOcarinaPitch;
+extern f32 sDefaultOcarinaVolume;
+extern s8 sOcarinaInstrumentId;
+extern f32 AudioOcarina_BendPitchTwoSemitones(s8 bendIndex);
+
+// @recomp Patch the function in order to read DPad inputs for the ocarina as well as CButton inputs. 
+void AudioOcarina_PlayControllerInput(u8 isOcarinaSfxSuppressedWhenCancelled) {
+    u32 ocarinaBtnsHeld;
+
+    // Prevents two different ocarina notes from being played on two consecutive frames
+    if ((sOcarinaFlags != 0) && (sOcarinaDropInputTimer != 0)) {
+        sOcarinaDropInputTimer--;
+        return;
+    }
+
+    // Ensures the button pressed to start the ocarina does not also play an ocarina note
+    // @recomp Check for DPad inputs as well.
+    if ((sOcarinaInputButtonStart == 0) ||
+        ((sOcarinaInputButtonStart & (BTN_A | BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)) !=
+         (sOcarinaInputButtonCur & (BTN_A | BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)))) {
+        sOcarinaInputButtonStart = 0;
+        if (1) {}
+        sCurOcarinaPitch = OCARINA_PITCH_NONE;
+        sCurOcarinaButtonIndex = OCARINA_BTN_INVALID;
+        // @recomp Check for DPad inputs as well.
+        ocarinaBtnsHeld = (sOcarinaInputButtonCur & (BTN_A | BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)) &
+                          (sOcarinaInputButtonPrev & (BTN_A | BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP));
+
+        if (!(sOcarinaInputButtonPress & ocarinaBtnsHeld) && (sOcarinaInputButtonCur != 0)) {
+            sOcarinaInputButtonPress = sOcarinaInputButtonCur;
+        } else {
+            sOcarinaInputButtonPress &= ocarinaBtnsHeld;
+        }
+
+        // Interprets and transforms controller input into ocarina buttons and notes
+        if (CHECK_BTN_ANY(sOcarinaInputButtonPress, BTN_A)) {
+            sCurOcarinaPitch = OCARINA_PITCH_D4;
+            sCurOcarinaButtonIndex = OCARINA_BTN_A;
+
+        // @recomp Check for DPad down input as well.
+        } else if (CHECK_BTN_ANY(sOcarinaInputButtonPress, (BTN_CDOWN | BTN_DDOWN))) {
+            sCurOcarinaPitch = OCARINA_PITCH_F4;
+            sCurOcarinaButtonIndex = OCARINA_BTN_C_DOWN;
+
+        // @recomp Check for DPad right input as well.
+        } else if (CHECK_BTN_ANY(sOcarinaInputButtonPress, BTN_CRIGHT | BTN_DRIGHT)) {
+            sCurOcarinaPitch = OCARINA_PITCH_A4;
+            sCurOcarinaButtonIndex = OCARINA_BTN_C_RIGHT;
+            
+        // @recomp Check for DPad left input as well.
+        } else if (CHECK_BTN_ANY(sOcarinaInputButtonPress, BTN_CLEFT | BTN_DLEFT)) {
+            sCurOcarinaPitch = OCARINA_PITCH_B4;
+            sCurOcarinaButtonIndex = OCARINA_BTN_C_LEFT;
+
+        // @recomp Check for DPad up input as well.
+        } else if (CHECK_BTN_ANY(sOcarinaInputButtonPress, BTN_CUP | BTN_DUP)) {
+            sCurOcarinaPitch = OCARINA_PITCH_D5;
+            sCurOcarinaButtonIndex = OCARINA_BTN_C_UP;
+        }
+
+        if (sOcarinaInputButtonCur) {}
+
+        // Pressing the R Button will raise the pitch by 1 semitone
+        if ((sCurOcarinaPitch != OCARINA_PITCH_NONE) && CHECK_BTN_ANY(sOcarinaInputButtonCur, BTN_R) &&
+            (sRecordingState != OCARINA_RECORD_SCARECROW_SPAWN)) {
+            sCurOcarinaButtonIndex += OCARINA_BUTTON_FLAG_BFLAT_RAISE; // Flag to resolve B Flat 4
+            sCurOcarinaPitch++;                                        // Raise the pitch by 1 semitone
+        }
+
+        // Pressing the Z Button will lower the pitch by 1 semitone
+        if ((sCurOcarinaPitch != OCARINA_PITCH_NONE) && CHECK_BTN_ANY(sOcarinaInputButtonCur, BTN_Z) &&
+            (sRecordingState != OCARINA_RECORD_SCARECROW_SPAWN)) {
+            sCurOcarinaButtonIndex += OCARINA_BUTTON_FLAG_BFLAT_LOWER; // Flag to resolve B Flat 4
+            sCurOcarinaPitch--;                                        // Lower the pitch by 1 semitone
+        }
+
+        if (sRecordingState != OCARINA_RECORD_SCARECROW_SPAWN) {
+            // Bend the pitch of the note based on y control stick
+            sCurOcarinaBendIndex = sOcarinaInputStickRel.y;
+            sCurOcarinaBendFreq = AudioOcarina_BendPitchTwoSemitones(sCurOcarinaBendIndex);
+
+            // Add vibrato of the ocarina note based on the x control stick
+            sCurOcarinaVibrato = ABS_ALT(sOcarinaInputStickRel.x) >> 2;
+            // Sets vibrato to io port 6
+            AUDIOCMD_CHANNEL_SET_IO(SEQ_PLAYER_SFX, SFX_CHANNEL_OCARINA, 6, sCurOcarinaVibrato);
+        } else {
+            // no bending or vibrato for recording state OCARINA_RECORD_SCARECROW_SPAWN
+            sCurOcarinaBendIndex = 0;
+            sCurOcarinaVibrato = 0;
+            sCurOcarinaBendFreq = 1.0f; // No bend
+        }
+
+        // Processes new and valid notes
+        if ((sCurOcarinaPitch != OCARINA_PITCH_NONE) && (sPrevOcarinaPitch != sCurOcarinaPitch)) {
+            // Sets ocarina instrument Id to io port 7, which is used
+            // as an index in seq 0 to get the true instrument Id
+            AUDIOCMD_CHANNEL_SET_IO(SEQ_PLAYER_SFX, SFX_CHANNEL_OCARINA, 7, sOcarinaInstrumentId - 1);
+            // Sets pitch to io port 5
+            AUDIOCMD_CHANNEL_SET_IO(SEQ_PLAYER_SFX, SFX_CHANNEL_OCARINA, 5, sCurOcarinaPitch);
+            AudioSfx_PlaySfx(NA_SE_OC_OCARINA, &gSfxDefaultPos, 4, &sCurOcarinaBendFreq, &sDefaultOcarinaVolume,
+                             &gSfxDefaultReverb);
+        } else if ((sPrevOcarinaPitch != OCARINA_PITCH_NONE) && (sCurOcarinaPitch == OCARINA_PITCH_NONE) &&
+                   !isOcarinaSfxSuppressedWhenCancelled) {
+            // Stops ocarina sound when transitioning from playing to not playing a note
+            AudioSfx_StopById(NA_SE_OC_OCARINA);
+        }
+    }
+}
+
+extern u8 sOcarinaHasStartedSong;
+extern u8 sOcarinaStaffPlayingPos;
+extern u8 sCurOcarinaSongWithoutMusicStaff[8];
+extern u8 sOcarinaWithoutMusicStaffPos;
+extern u8 sFirstOcarinaSongIndex;
+extern u32 sOcarinaAvailableSongFlags;
+extern u8 sLastOcarinaSongIndex;
+extern u8 sButtonToPitchMap[5];
+extern u8 sPlayedOcarinaSongIndexPlusOne;
+extern u8 sIsOcarinaInputEnabled;
+extern void AudioOcarina_CheckIfStartedSong(void);
+extern void AudioOcarina_UpdateCurOcarinaSong(void);
+
+// @recomp Patch the L button check (for free ocarina playing) to account for DPad ocarina.
+void AudioOcarina_CheckSongsWithoutMusicStaff(void) {
+    u32 pitch;
+    u8 ocarinaStaffPlayingPosStart;
+    u8 songIndex;
+    u8 j;
+    u8 k;
+
+    // @recomp Add the DPad inputs to the check.
+    if (CHECK_BTN_ANY(sOcarinaInputButtonCur, BTN_L) &&
+        CHECK_BTN_ANY(sOcarinaInputButtonCur, BTN_A | BTN_CRIGHT | BTN_CLEFT | BTN_CDOWN | BTN_CUP | BTN_DRIGHT | BTN_DLEFT | BTN_DDOWN | BTN_DUP)) {
+        AudioOcarina_StartDefault(sOcarinaFlags);
+        return;
+    }
+
+    AudioOcarina_CheckIfStartedSong();
+
+    if (!sOcarinaHasStartedSong) {
+        return;
+    }
+
+    ocarinaStaffPlayingPosStart = sOcarinaStaffPlayingPos;
+    if ((sPrevOcarinaPitch != sCurOcarinaPitch) && (sCurOcarinaPitch != OCARINA_PITCH_NONE)) {
+        sOcarinaStaffPlayingPos++;
+        if (sOcarinaStaffPlayingPos > ARRAY_COUNT(sCurOcarinaSongWithoutMusicStaff)) {
+            sOcarinaStaffPlayingPos = 1;
+        }
+
+        AudioOcarina_UpdateCurOcarinaSong();
+
+        if ((ABS_ALT(sCurOcarinaBendIndex) > 20) && (ocarinaStaffPlayingPosStart != sOcarinaStaffPlayingPos)) {
+            sCurOcarinaSongWithoutMusicStaff[sOcarinaWithoutMusicStaffPos - 1] = OCARINA_PITCH_NONE;
+        } else {
+            sCurOcarinaSongWithoutMusicStaff[sOcarinaWithoutMusicStaffPos - 1] = sCurOcarinaPitch;
+        }
+
+        // This nested for-loop tests to see if the notes from the ocarina are identical
+        // to any of the songIndex from sFirstOcarinaSongIndex to sLastOcarinaSongIndex
+
+        // Loop through each of the songs
+        for (songIndex = sFirstOcarinaSongIndex; songIndex < sLastOcarinaSongIndex; songIndex++) {
+            // Checks to see if the song is available to be played
+            if ((u32)sOcarinaAvailableSongFlags & (1 << songIndex)) {
+                // Loops through all possible starting indices?
+                // Loops through the notes of the song?
+                for (j = 0, k = 0; (j < gOcarinaSongButtons[songIndex].numButtons) && (k == 0) &&
+                                   (sOcarinaWithoutMusicStaffPos >= gOcarinaSongButtons[songIndex].numButtons);) {
+
+                    pitch = sCurOcarinaSongWithoutMusicStaff[(sOcarinaWithoutMusicStaffPos -
+                                                              gOcarinaSongButtons[songIndex].numButtons) +
+                                                             j];
+
+                    if (pitch == sButtonToPitchMap[gOcarinaSongButtons[songIndex].buttonIndex[j]]) {
+                        j++;
+                    } else {
+                        k++;
+                    }
+                }
+
+                // This conditional is true if songIndex = i is detected
+                if (j == gOcarinaSongButtons[songIndex].numButtons) {
+                    sPlayedOcarinaSongIndexPlusOne = songIndex + 1;
+                    sIsOcarinaInputEnabled = false;
+                    sOcarinaFlags = 0;
+                }
+            }
+        }
+    }
 }
