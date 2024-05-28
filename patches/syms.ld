@@ -14,6 +14,7 @@ D_808DE5B0 = 0x808DE5B0;
 sHappyMaskSalesmanAnimationInfo = 0x80AD22C0;
 D_808890F0 = 0x808890F0;
 D_8088911C = 0x8088911C;
+D_809EE4D0 = 0x809EE4D0;
 
 /* Dummy addresses that get recompiled into function calls */
 recomp_puts = 0x8F000000;
