@@ -1873,3 +1873,11 @@ void analog_cam_post_play_update(PlayState* play) {
         active_cam->inputDir.y = analog_camera_pos.yaw + DEG_TO_BINANG(180);
     }
 }
+
+bool get_analog_cam_active() {
+    return analog_cam_active;
+}
+
+void set_analog_cam_active(bool is_active) {
+    analog_cam_active = is_active;
+}
