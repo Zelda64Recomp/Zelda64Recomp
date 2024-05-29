@@ -67,7 +67,7 @@ void update_analog_cam(Camera* c) {
         analog_cam_active = false;
         analog_cam_skip_once = false;
     }
-
+    
     // Record the Z targeting state.
     prev_targeting_held = targeting_held;
 
@@ -1884,8 +1884,11 @@ bool get_analog_cam_active() {
     return analog_cam_active;
 }
 
-void set_analog_cam_active(bool is_active) {
-    analog_cam_active = is_active;
+// Calling this will avoid analog cam taking over for the following game loop.
+// E.g. using left stick inputs while in a deku flower taking priority over right stick.
+void skip_analog_cam_once() {
+    analog_cam_skip_once = true;
+    analog_cam_active = false;
 }
 
 // Calling this will avoid analog cam taking over for the following game loop.
