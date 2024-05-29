@@ -2301,7 +2301,7 @@ void draw_dpad_icons(PlayState* play) {
 extern s32 Player_GetMovementSpeedAndYaw(Player* this, f32* outSpeedTarget, s16* outYawTarget, f32 speedMode,
                                   PlayState* play);
 extern bool get_analog_cam_active();
-extern void set_analog_cam_active(bool is_active);
+extern void skip_analog_cam_once();
 
 // @recomp Updates yaw while inside of deku flower.
 void func_80855F9C(PlayState* play, Player* this) {
@@ -2311,12 +2311,9 @@ void func_80855F9C(PlayState* play, Player* this) {
     this->stateFlags2 |= PLAYER_STATE2_20;
     Player_GetMovementSpeedAndYaw(this, &speedTarget, &yawTarget, 0.018f, play);
 
-    // @recomp If analog cam is active and left stick inputs are occurring, reset auto cam.
-    if (
-        get_analog_cam_active() &&
-        (play->state.input[0].rel.stick_y != 0 || play->state.input[0].rel.stick_x != 0)
-    ) {
-        set_analog_cam_active(false);
+    // @recomp If left stick inputs are occurring, prevent analog cam.
+    if ((play->state.input[0].rel.stick_y != 0 || play->state.input[0].rel.stick_x != 0)) {
+        skip_analog_cam_once();
     }
 
     if (get_analog_cam_active()) {
