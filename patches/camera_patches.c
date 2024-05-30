@@ -4,6 +4,10 @@
 #include "play_patches.h"
 #include "camera_patches.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
+#include "overlays/actors/ovl_Boss_04/z_boss_04.h"
+#include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
+#include "z64shrink_window.h"
+#include "z64player.h"
 
 static bool prev_analog_cam_active = false;
 static bool can_use_analog_cam = false;
@@ -1893,4 +1897,207 @@ void set_analog_cam_active(bool isActive) {
 void skip_analog_cam_once() {
     analog_cam_skip_once = true;
     analog_cam_active = false;
+}
+
+extern void func_809ECD00(Boss04* this, PlayState* play);
+extern s32 func_800B7298(struct PlayState* play, Actor* csActor, u8 csAction);
+extern u8 D_809EE4D0;
+
+// @recomp Patch the Wart boss fight in the Great Bay temple so that the fight starts if you look at it with the right stick analog camera,
+// instead of requiring entering first person mode mode.
+void func_809EC568(Boss04* this, PlayState* play) {
+    Player* player = GET_PLAYER(play);
+    f32 x;
+    f32 y;
+    f32 z;
+    s32 pad;
+    // @recomp Manual relocation, TODO remove when automated.
+    u8* D_809EE4D0_relocated = (u8*)actor_relocate(&this->actor, &D_809EE4D0);
+    u16 maxProjectedPosToStartFight;
+
+    // @recomp Change the maximun projected position to start the fight depending on whether analog camera is enabled or not.
+    // The default vanilla value makes it so that you have to pretty much start in the corner in order to be able to get the angle it wants.
+    if (analog_cam_active) {
+        maxProjectedPosToStartFight = 600.0f;
+    } else {
+        maxProjectedPosToStartFight = 300.0f; // vanilla value
+    }
+
+    this->unk_704++;
+    this->unk_1FE = 15;
+    if ((this->unk_708 != 0) && (this->unk_708 < 10)) {
+        this->actor.world.pos.y = (Math_SinS(this->unk_1F4 * 512) * 10.0f) + (this->actor.floorHeight + 160.0f);
+        Matrix_RotateYS(this->actor.yawTowardsPlayer, MTXMODE_NEW);
+    }
+
+    switch (this->unk_708) {
+        case 0:
+            this->unk_2C8 = 50;
+            this->unk_2D0 = 2000.0f;
+            // @recomp do not require being in c-up mode if analog cam is enabled
+            // also, use the new variable instead of the vanilla value to check if the player is looking at the boss.
+            if (((player->stateFlags1 & PLAYER_STATE1_100000) || (recomp_analog_cam_enabled())) && (this->actor.projectedPos.z > 0.0f) &&
+                (fabsf(this->actor.projectedPos.x) < maxProjectedPosToStartFight) && (fabsf(this->actor.projectedPos.y) < maxProjectedPosToStartFight)) {
+                if ((this->unk_704 >= 15) && (CutsceneManager_GetCurrentCsId() == CS_ID_NONE)) {
+                    Actor* boss;
+
+                    this->unk_708 = 10;
+                    this->unk_704 = 0;
+                    Cutscene_StartManual(play, &play->csCtx);
+                    this->subCamId = Play_CreateSubCamera(play);
+                    Play_ChangeCameraStatus(play, CAM_ID_MAIN, CAM_STATUS_WAIT);
+                    Play_ChangeCameraStatus(play, this->subCamId, CAM_STATUS_ACTIVE);
+                    func_800B7298(play, &this->actor, PLAYER_CSACTION_WAIT);
+                    player->actor.world.pos.x = this->unk_6E8;
+                    player->actor.world.pos.z = this->unk_6F0 + 410.0f;
+                    player->actor.shape.rot.y = 0x7FFF;
+                    player->actor.world.rot.y = player->actor.shape.rot.y;
+                    Math_Vec3f_Copy(&this->subCamEye, &player->actor.world.pos);
+                    this->subCamEye.y += 100.0f;
+                    Math_Vec3f_Copy(&this->subCamAt, &this->actor.world.pos);
+                    Play_EnableMotionBlur(150);
+                    this->subCamFov = 60.0f;
+
+                    boss = play->actorCtx.actorLists[ACTORCAT_BOSS].first;
+                    while (boss != NULL) {
+                        if (boss->id == ACTOR_EN_WATER_EFFECT) {
+                            Actor_Kill(boss);
+                        }
+                        boss = boss->next;
+                    }
+                }
+            } else {
+                this->unk_704 = 0;
+            }
+            break;
+
+        case 10:
+            if (this->unk_704 == 3) {
+                Actor_PlaySfx(&this->actor, NA_SE_EN_EYEGOLE_DEMO_EYE);
+                this->unk_74A = 1;
+            }
+            this->unk_2D0 = 10000.0f;
+            this->unk_2C8 = 300;
+            Math_ApproachF(&this->subCamFov, 20.0f, 0.3f, 11.0f);
+            if (this->unk_704 == 40) {
+                this->unk_708 = 11;
+                this->unk_704 = 0;
+            }
+            break;
+
+        case 11:
+            if (this->unk_704 > 50) {
+                this->unk_708 = 12;
+                this->unk_704 = 0;
+                this->actor.gravity = -3.0f;
+            }
+            break;
+
+        case 13:
+            if (this->unk_704 == 45) {
+                this->unk_708 = 1;
+                this->unk_704 = 0;
+                func_800B7298(play, &this->actor, PLAYER_CSACTION_21);
+                this->actor.gravity = 0.0f;
+                break;
+            }
+
+        case 12:
+            Actor_PlaySfx(&this->actor, NA_SE_EN_ME_ATTACK - SFX_FLAG);
+            Math_ApproachF(&this->subCamAt.x, this->actor.world.pos.x, 0.5f, 1000.0f);
+            Math_ApproachF(&this->subCamAt.y, this->actor.world.pos.y, 0.5f, 1000.0f);
+            Math_ApproachF(&this->subCamAt.z, this->actor.world.pos.z, 0.5f, 1000.0f);
+            if (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND_TOUCH) {
+                Audio_PlaySfx(NA_SE_IT_BIG_BOMB_EXPLOSION);
+                this->unk_6F4 = 15;
+                this->unk_708 = 13;
+                this->unk_704 = 0;
+                this->unk_2DA = 10;
+                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->actor.world.pos.x, this->actor.world.pos.y,
+                            this->actor.world.pos.z, 0, 0, 0, CLEAR_TAG_PARAMS(CLEAR_TAG_SPLASH));
+                Actor_PlaySfx(&this->actor, NA_SE_EN_KONB_JUMP_LEV_OLD - SFX_FLAG);
+                this->subCamAtOscillator = 20;
+            }
+            break;
+
+        case 1:
+            player->actor.shape.rot.y = 0x7FFF;
+            player->actor.world.rot.y = player->actor.shape.rot.y;
+            Matrix_MultVecZ(-100.0f, &this->subCamEye);
+
+            this->subCamEye.x += player->actor.world.pos.x;
+            this->subCamEye.y = Player_GetHeight(player) + player->actor.world.pos.y + 36.0f;
+            this->subCamEye.z += player->actor.world.pos.z;
+
+            this->subCamAt.x = player->actor.world.pos.x;
+            this->subCamAt.y = (Player_GetHeight(player) + player->actor.world.pos.y) - 4.0f;
+            this->subCamAt.z = player->actor.world.pos.z;
+
+            if (this->unk_704 >= 35) {
+                this->unk_704 = 0;
+                this->unk_708 = 2;
+                this->unk_728 = -200.0f;
+            }
+            break;
+
+        case 2:
+        case 3:
+            Matrix_MultVecZ(500.0f, &this->subCamEye);
+            this->subCamEye.x += this->actor.world.pos.x;
+            this->subCamEye.y += this->actor.world.pos.y - 50.0f;
+            this->subCamEye.z += this->actor.world.pos.z;
+            this->subCamAt.x = this->actor.world.pos.x;
+            this->subCamAt.z = this->actor.world.pos.z;
+            this->subCamAt.y = (this->actor.world.pos.y - 70.0f) + this->unk_728;
+            Math_ApproachZeroF(&this->unk_728, 0.05f, this->unk_73C);
+            Math_ApproachF(&this->unk_73C, 3.0f, 1.0f, 0.05f);
+            if (this->unk_704 == 20) {
+                this->unk_708 = 3;
+            }
+
+            if (this->unk_704 == 70) {
+                this->unk_2C8 = 300;
+                this->unk_2D0 = 0.0f;
+                
+                *D_809EE4D0_relocated = 1;
+                this->unk_2E2 = 60;
+                this->unk_2E0 = 93;
+            }
+
+            if (this->unk_704 > 140) {
+                Camera* mainCam = Play_GetCamera(play, CAM_ID_MAIN);
+
+                this->unk_708 = 0;
+                func_809ECD00(this, play);
+                mainCam->eye = this->subCamEye;
+                mainCam->eyeNext = this->subCamEye;
+                mainCam->at = this->subCamAt;
+                func_80169AFC(play, this->subCamId, 0);
+                this->subCamId = SUB_CAM_ID_DONE;
+                Cutscene_StopManual(play, &play->csCtx);
+                func_800B7298(play, &this->actor, PLAYER_CSACTION_END);
+                Play_DisableMotionBlur();
+                SET_EVENTINF(EVENTINF_60);
+            }
+            break;
+    }
+
+    if (this->subCamId != SUB_CAM_ID_DONE) {
+        Vec3f subCamAt;
+
+        ShrinkWindow_Letterbox_SetSizeTarget(27);
+        if (this->subCamAtOscillator != 0) {
+            this->subCamAtOscillator--;
+        }
+        Math_Vec3f_Copy(&subCamAt, &this->subCamAt);
+        subCamAt.y += Math_SinS(this->subCamAtOscillator * 0x4000) * this->subCamAtOscillator * 1.5f;
+        Play_SetCameraAtEye(play, this->subCamId, &subCamAt, &this->subCamEye);
+        Play_SetCameraFov(play, this->subCamId, this->subCamFov);
+        Math_ApproachF(&this->subCamFov, 60.0f, 0.1f, 1.0f);
+    }
+    this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
+    x = player->actor.world.pos.x - this->actor.world.pos.x;
+    y = player->actor.world.pos.y - this->actor.world.pos.y;
+    z = player->actor.world.pos.z - this->actor.world.pos.z;
+    this->actor.shape.rot.x = Math_Atan2S(-y, sqrtf(SQ(x) + SQ(z)));
 }
