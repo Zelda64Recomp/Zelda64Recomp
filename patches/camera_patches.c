@@ -1894,10 +1894,3 @@ void skip_analog_cam_once() {
     analog_cam_skip_once = true;
     analog_cam_active = false;
 }
-
-// Calling this will avoid analog cam taking over for the following game loop.
-// E.g. using left stick inputs while in a deku flower taking priority over right stick.
-void skip_analog_cam_once() {
-    analog_cam_skip_once = true;
-    analog_cam_active = false;
-}
