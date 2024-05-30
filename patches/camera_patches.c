@@ -8,6 +8,7 @@
 static bool prev_analog_cam_active = false;
 static bool can_use_analog_cam = false;
 static bool analog_cam_active = false;
+static bool analog_cam_skip_once = false;
 
 VecGeo analog_camera_pos = { .r = 66.0f, .pitch = 0, .yaw = 0 };
 
@@ -60,6 +61,11 @@ void update_analog_cam(Camera* c) {
 
     if (fabsf(input_x) >= analog_cam_threshold || fabsf(input_y) >= analog_cam_threshold) {
         analog_cam_active = true;
+    }
+    
+    if (analog_cam_skip_once) {
+        analog_cam_active = false;
+        analog_cam_skip_once = false;
     }
     
     // Record the Z targeting state.
@@ -1872,4 +1878,19 @@ void analog_cam_post_play_update(PlayState* play) {
         active_cam->inputDir.x = analog_camera_pos.pitch;
         active_cam->inputDir.y = analog_camera_pos.yaw + DEG_TO_BINANG(180);
     }
+}
+
+bool get_analog_cam_active() {
+    return analog_cam_active;
+}
+
+void set_analog_cam_active(bool isActive) {
+    analog_cam_active = isActive;
+}
+
+// Calling this will avoid analog cam taking over for the following game loop.
+// E.g. using left stick inputs while in a deku flower taking priority over right stick.
+void skip_analog_cam_once() {
+    analog_cam_skip_once = true;
+    analog_cam_active = false;
 }

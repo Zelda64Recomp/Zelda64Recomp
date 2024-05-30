@@ -2527,3 +2527,65 @@ void AudioOcarina_CheckSongsWithoutMusicStaff(void) {
         }
     }
 }
+
+extern s32 Player_GetMovementSpeedAndYaw(Player* this, f32* outSpeedTarget, s16* outYawTarget, f32 speedMode,
+                                  PlayState* play);
+extern bool get_analog_cam_active();
+extern void skip_analog_cam_once();
+
+// @recomp Updates yaw while inside of deku flower.
+void func_80855F9C(PlayState* play, Player* this) {
+    f32 speedTarget;
+    s16 yawTarget;
+
+    this->stateFlags2 |= PLAYER_STATE2_20;
+    Player_GetMovementSpeedAndYaw(this, &speedTarget, &yawTarget, 0.018f, play);
+
+    // @recomp If left stick inputs are occurring, prevent analog cam.
+    if ((play->state.input[0].rel.stick_y != 0 || play->state.input[0].rel.stick_x != 0)) {
+        skip_analog_cam_once();
+    }
+
+    if (get_analog_cam_active()) {
+        // @recomp set current yaw to active camera's yaw.
+        this->currentYaw = Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
+    } else {
+        Math_ScaledStepToS(&this->currentYaw, yawTarget, 0x258);
+    }
+}
+
+extern void set_analog_cam_active(bool isActive);
+extern void Player_Action_4(Player* this, PlayState* play);
+extern s32 Player_SetAction(PlayState* play, Player* this, PlayerActionFunc actionFunc, s32 arg3);
+extern LinkAnimationHeader gPlayerAnim_pg_maru_change;
+
+s32 func_80857950(PlayState* play, Player* this) {
+    // @recomp track if newly going from non-spike roll to spike roll (spike rolling when this->unk_B86[1] == 1)
+    static bool wasOff = true;
+    bool isOff = this->unk_B86[1] == 0;
+    if (wasOff && !isOff) {
+        // @recomp set analog cam to be active now that rolling has started
+        set_analog_cam_active(false);
+    }
+    wasOff = isOff;
+
+    // @recomp Manual relocation, TODO remove when automated.
+    Input* player_control_input = *(Input**)KaleidoManager_GetRamAddr(&sPlayerControlInput);
+
+    if (((this->unk_B86[1] == 0) && !CHECK_BTN_ALL(player_control_input->cur.button, BTN_A)) ||
+        ((this->av1.actionVar1 == 3) && (this->actor.velocity.y < 0.0f))) {
+
+        // @recomp Manual relocation, TODO remove when automated.
+        PlayerActionFunc Player_Action_4_reloc = KaleidoManager_GetRamAddr(Player_Action_4);
+        Player_SetAction(play, this, Player_Action_4_reloc, 1);
+
+        Math_Vec3f_Copy(&this->actor.world.pos, &this->actor.prevPos);
+        PlayerAnimation_Change(play, &this->skelAnime, &gPlayerAnim_pg_maru_change, -2.0f / 3.0f, 7.0f, 0.0f,
+                               ANIMMODE_ONCE, 0.0f);
+        Player_PlaySfx(this, NA_SE_PL_BALL_TO_GORON);
+        wasOff = true;
+        return true;
+    }
+
+    return false;
+}
