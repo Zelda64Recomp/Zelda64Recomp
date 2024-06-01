@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
-  external:
+  build:
     needs: authorize
     uses: ./.github/workflows/validate.yml
     secrets:
