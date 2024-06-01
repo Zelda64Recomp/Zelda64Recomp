@@ -1,6 +1,7 @@
 # VSCode file settings
 .vscode/settings.json
 .vscode/c_cpp_properties.json
+.vscode/launch.json
 
 # Input elf and rom files
 *.elf
@@ -56,3 +57,4 @@ node_modules/
 
 # Recompiler Linux binary
 N64Recomp
+.DS_Store

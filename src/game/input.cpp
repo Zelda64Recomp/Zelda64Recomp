@@ -1,12 +1,11 @@
 #include <atomic>
 #include <mutex>
 
-#include "../ultramodern/ultramodern.hpp"
-#include "recomp.h"
-#include "recomp_input.h"
-#include "recomp_ui.h"
+#include "ultramodern/ultramodern.hpp"
+#include "librecomp/recomp.h"
+#include "zelda_input.h"
+#include "zelda_ui.h"
 #include "SDL.h"
-#include "rt64_layer.h"
 #include "promptfont.h"
 #include "GamepadMotion.hpp"
 
@@ -42,8 +41,8 @@ static struct {
     bool rumble_active;
 } InputState;
 
-std::atomic<recomp::InputDevice> scanning_device = recomp::InputDevice::COUNT;
-std::atomic<recomp::InputField> scanned_input;
+std::atomic<zelda64::InputDevice> scanning_device = zelda64::InputDevice::COUNT;
+std::atomic<zelda64::InputField> scanned_input;
 
 enum class InputType {
     None = 0, // Using zero for None ensures that default initialized InputFields are unbound.
@@ -53,35 +52,35 @@ enum class InputType {
     ControllerAnalog // Axis input_id values are the SDL value + 1
 };
 
-void set_scanned_input(recomp::InputField value) {
-    scanning_device.store(recomp::InputDevice::COUNT);
+void set_scanned_input(zelda64::InputField value) {
+    scanning_device.store(zelda64::InputDevice::COUNT);
     scanned_input.store(value);
 }
 
-recomp::InputField recomp::get_scanned_input() {
-    recomp::InputField ret = scanned_input.load();
+zelda64::InputField zelda64::get_scanned_input() {
+    zelda64::InputField ret = scanned_input.load();
     scanned_input.store({});
     return ret;
 }
 
-void recomp::start_scanning_input(recomp::InputDevice device) {
+void zelda64::start_scanning_input(zelda64::InputDevice device) {
     scanned_input.store({});
     scanning_device.store(device);
 }
 
-void recomp::stop_scanning_input() {
-    scanning_device.store(recomp::InputDevice::COUNT);
+void zelda64::stop_scanning_input() {
+    scanning_device.store(zelda64::InputDevice::COUNT);
 }
 
 void queue_if_enabled(SDL_Event* event) {
-    if (!recomp::all_input_disabled()) {
-        recomp::queue_event(*event);
+    if (!zelda64::all_input_disabled()) {
+        recompui::queue_event(*event);
     }
 }
 
 static std::atomic_bool cursor_enabled = true;
 
-void recomp::set_cursor_visible(bool visible) {
+void recompui::set_cursor_visible(bool visible) {
     cursor_enabled.store(visible);
 }
 
@@ -110,12 +109,12 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             if ((keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) ||
                 keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_F11
             ) {
-                recomp::toggle_fullscreen();
+                recompui::toggle_fullscreen();
             }
-            if (scanning_device != recomp::InputDevice::COUNT) {
+            if (scanning_device != zelda64::InputDevice::COUNT) {
                 if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
-                    recomp::cancel_scanning_input();
-                } else if (scanning_device == recomp::InputDevice::Keyboard) {
+                    zelda64::cancel_scanning_input();
+                } else if (scanning_device == zelda64::InputDevice::Keyboard) {
                     set_scanned_input({(uint32_t)InputType::Keyboard, keyevent->keysym.scancode});
                 }
             } else {
@@ -155,12 +154,12 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             return true;
         }
 
-        if (recomp::get_current_menu() != recomp::Menu::Config) {
-            recomp::set_current_menu(recomp::Menu::Config);
+        if (recompui::get_current_menu() != recompui::Menu::Config) {
+            recompui::set_current_menu(recompui::Menu::Config);
         }
 
-        recomp::open_quit_game_prompt();
-        recomp::activate_mouse();
+        zelda64::open_quit_game_prompt();
+        recompui::activate_mouse();
         break;
     }
     case SDL_EventType::SDL_MOUSEWHEEL:
@@ -171,14 +170,14 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         queue_if_enabled(event);
         break;
     case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
-        if (scanning_device != recomp::InputDevice::COUNT) {
-            auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
-            auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
+        if (scanning_device != zelda64::InputDevice::COUNT) {
+            auto menuToggleBinding0 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 0, zelda64::InputDevice::Controller);
+            auto menuToggleBinding1 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 1, zelda64::InputDevice::Controller);
             // note - magic number: 0 is InputType::None
             if ((menuToggleBinding0.input_type != 0 && event->cbutton.button == menuToggleBinding0.input_id) ||
                 (menuToggleBinding1.input_type != 0 && event->cbutton.button == menuToggleBinding1.input_id)) {
-                recomp::cancel_scanning_input();
-            } else if (scanning_device == recomp::InputDevice::Controller) {
+                zelda64::cancel_scanning_input();
+            } else if (scanning_device == zelda64::InputDevice::Controller) {
                 SDL_ControllerButtonEvent* button_event = &event->cbutton;
                 set_scanned_input({(uint32_t)InputType::ControllerDigital, button_event->button});
             }
@@ -187,7 +186,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         }
         break;
     case SDL_EventType::SDL_CONTROLLERAXISMOTION:
-        if (scanning_device == recomp::InputDevice::Controller) {
+        if (scanning_device == zelda64::InputDevice::Controller) {
             SDL_ControllerAxisEvent* axis_event = &event->caxis;
             float axis_value = axis_event->value * (1/32768.0f);
             if (axis_value > axis_threshold) {
@@ -236,7 +235,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         }
         break;
     case SDL_EventType::SDL_MOUSEMOTION:
-        if (!recomp::game_input_disabled()) {
+        if (!zelda64::game_input_disabled()) {
             SDL_MouseMotionEvent* motion_event = &event->motion;
             std::lock_guard lock{ InputState.pending_input_mutex };
             InputState.pending_mouse_delta[0] += motion_event->xrel;
@@ -249,14 +248,14 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
     return false;
 }
 
-void recomp::handle_events() {
+void zelda64::handle_events() {
     SDL_Event cur_event;
     static bool exited = false;
     while (SDL_PollEvent(&cur_event) && !exited) {
         exited = sdl_event_filter(nullptr, &cur_event);
 
         // Lock the cursor if all three conditions are true: mouse aiming is enabled, game input is not disabled, and the game has been started. 
-        bool cursor_locked = (recomp::get_mouse_sensitivity() != 0) && !recomp::game_input_disabled() && ultramodern::is_game_started();
+        bool cursor_locked = (zelda64::get_mouse_sensitivity() != 0) && !zelda64::game_input_disabled() && ultramodern::is_game_started();
 
         // Hide the cursor based on its enable state, but override visibility to false if the cursor is locked.
         bool cursor_visible = cursor_enabled;
@@ -274,7 +273,7 @@ constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_EAST = SDL_CONTROLLER_B
 constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_WEST = SDL_CONTROLLER_BUTTON_X;
 constexpr SDL_GameControllerButton SDL_CONTROLLER_BUTTON_NORTH = SDL_CONTROLLER_BUTTON_Y;
 
-const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
+const zelda64::DefaultN64Mappings zelda64::default_n64_keyboard_mappings = {
     .a = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_SPACE}
     },
@@ -334,7 +333,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
     },
 };
 
-const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
+const zelda64::DefaultN64Mappings zelda64::default_n64_controller_mappings = {
     .a = {
         {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_SOUTH},
     },
@@ -398,7 +397,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
     },
 };
 
-void recomp::poll_inputs() {
+void zelda64::poll_inputs() {
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
     InputState.keymod = SDL_GetModState();
 
@@ -435,17 +434,17 @@ void recomp::poll_inputs() {
         bool save_is_held = InputState.keys[SDL_SCANCODE_F5] != 0;
         bool load_is_held = InputState.keys[SDL_SCANCODE_F7] != 0;
         if (save_is_held && !save_was_held) {
-            recomp::quicksave_save();
+            zelda64::quicksave_save();
         }
         else if (load_is_held && !load_was_held) {
-            recomp::quicksave_load();
+            zelda64::quicksave_load();
         }
         save_was_held = save_is_held;
     }
     #endif
 }
 
-void recomp::set_rumble(bool on) {
+void zelda64::set_rumble(bool on) {
     InputState.rumble_active = on;
 }
 
@@ -455,7 +454,7 @@ static float smoothstep(float from, float to, float amount) {
 }
 
 // Update rumble to attempt to mimic the way n64 rumble ramps up and falls off
-void recomp::update_rumble() {
+void zelda64::update_rumble() {
     // Note: values are not accurate! just approximations based on feel
     if (InputState.rumble_active) {
         InputState.cur_rumble += 0.17f;
@@ -467,7 +466,7 @@ void recomp::update_rumble() {
     }
     float smooth_rumble = smoothstep(0, 1, InputState.cur_rumble);
 
-    uint16_t rumble_strength = smooth_rumble * (recomp::get_rumble_strength() * 0xFFFF / 100);
+    uint16_t rumble_strength = smooth_rumble * (zelda64::get_rumble_strength() * 0xFFFF / 100);
     uint32_t duration = 1000000; // Dummy duration value that lasts long enough to matter as the game will reset rumble on its own.
     {
         std::lock_guard lock{ InputState.cur_controllers_mutex };
@@ -523,7 +522,7 @@ float controller_axis_state(int32_t input_id, bool allow_suppression) {
     return false;
 }
 
-float recomp::get_input_analog(const recomp::InputField& field) {
+float zelda64::get_input_analog(const zelda64::InputField& field) {
     switch ((InputType)field.input_type) {
     case InputType::Keyboard:
         if (InputState.keys && field.input_id >= 0 && field.input_id < InputState.numkeys) {
@@ -545,7 +544,7 @@ float recomp::get_input_analog(const recomp::InputField& field) {
     }
 }
 
-float recomp::get_input_analog(const std::span<const recomp::InputField> fields) {
+float zelda64::get_input_analog(const std::span<const zelda64::InputField> fields) {
     float ret = 0.0f;
     for (const auto& field : fields) {
         ret += get_input_analog(field);
@@ -553,7 +552,7 @@ float recomp::get_input_analog(const std::span<const recomp::InputField> fields)
     return std::clamp(ret, 0.0f, 1.0f);
 }
 
-bool recomp::get_input_digital(const recomp::InputField& field) {
+bool zelda64::get_input_digital(const zelda64::InputField& field) {
     switch ((InputType)field.input_type) {
     case InputType::Keyboard:
         if (InputState.keys && field.input_id >= 0 && field.input_id < InputState.numkeys) {
@@ -576,7 +575,7 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
     }
 }
 
-bool recomp::get_input_digital(const std::span<const recomp::InputField> fields) {
+bool zelda64::get_input_digital(const std::span<const zelda64::InputField> fields) {
     bool ret = 0;
     for (const auto& field : fields) {
         ret |= get_input_digital(field);
@@ -584,22 +583,22 @@ bool recomp::get_input_digital(const std::span<const recomp::InputField> fields)
     return ret;
 }
 
-void recomp::get_gyro_deltas(float* x, float* y) {
+void zelda64::get_gyro_deltas(float* x, float* y) {
     std::array<float, 2> cur_rotation_delta = InputState.rotation_delta;
-    float sensitivity = (float)recomp::get_gyro_sensitivity() / 100.0f;
+    float sensitivity = (float)zelda64::get_gyro_sensitivity() / 100.0f;
     *x = cur_rotation_delta[0] * sensitivity;
     *y = cur_rotation_delta[1] * sensitivity;
 }
 
-void recomp::get_mouse_deltas(float* x, float* y) {
+void zelda64::get_mouse_deltas(float* x, float* y) {
     std::array<float, 2> cur_mouse_delta = InputState.mouse_delta;
-    float sensitivity = (float)recomp::get_mouse_sensitivity() / 100.0f;
+    float sensitivity = (float)zelda64::get_mouse_sensitivity() / 100.0f;
     *x = cur_mouse_delta[0] * sensitivity;
     *y = cur_mouse_delta[1] * sensitivity;
 }
 
-void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {
-    float joystick_deadzone = (float)recomp::get_joystick_deadzone() / 100.0f;
+void zelda64::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {
+    float joystick_deadzone = (float)zelda64::get_joystick_deadzone() / 100.0f;
 
     if(fabsf(x_in) < joystick_deadzone) {
         x_in = 0.0f;
@@ -633,28 +632,28 @@ void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float
     *y_out = y_in;
 }
 
-void recomp::get_right_analog(float* x, float* y) {
+void zelda64::get_right_analog(float* x, float* y) {
     float x_val =
         controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1), false) -
         controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX + 1), false);
     float y_val =
         controller_axis_state((SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1), false) -
         controller_axis_state(-(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY + 1), false);
-    recomp::apply_joystick_deadzone(x_val, y_val, x, y);
+    zelda64::apply_joystick_deadzone(x_val, y_val, x, y);
 }
 
-void recomp::set_right_analog_suppressed(bool suppressed) {
+void zelda64::set_right_analog_suppressed(bool suppressed) {
     right_analog_suppressed.store(suppressed);
 }
 
-bool recomp::game_input_disabled() {
+bool zelda64::game_input_disabled() {
     // Disable input if any menu is open.
-    return recomp::get_current_menu() != recomp::Menu::None;
+    return recompui::get_current_menu() != recompui::Menu::None;
 }
 
-bool recomp::all_input_disabled() {
+bool zelda64::all_input_disabled() {
     // Disable all input if an input is being polled.
-    return scanning_device != recomp::InputDevice::COUNT;
+    return scanning_device != zelda64::InputDevice::COUNT;
 }
 
 std::string controller_button_to_string(SDL_GameControllerButton button) {
@@ -806,7 +805,7 @@ std::string controller_axis_to_string(int axis) {
     }
 }
 
-std::string recomp::InputField::to_string() const {
+std::string zelda64::InputField::to_string() const {
     switch ((InputType)input_type) {
         case InputType::None:
             return "";

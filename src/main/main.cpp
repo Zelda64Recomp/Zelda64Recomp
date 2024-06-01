@@ -9,8 +9,8 @@
 
 #include "nfd.h"
 
-#include "../../ultramodern/ultra64.h"
-#include "../../ultramodern/ultramodern.hpp"
+#include "ultramodern/ultra64.h"
+#include "ultramodern/ultramodern.hpp"
 #define SDL_MAIN_HANDLED
 #ifdef _WIN32
 #include "SDL.h"
@@ -19,11 +19,16 @@
 #include "SDL2/SDL_syswm.h"
 #endif
 
-#include "recomp_ui.h"
-#include "recomp_input.h"
-#include "recomp_config.h"
-#include "recomp_game.h"
-#include "recomp_sound.h"
+#include "zelda_ui.h"
+#include "zelda_input.h"
+#include "zelda_config.h"
+#include "zelda_sound.h"
+#include "ovl_patches.hpp"
+#include "librecomp/recomp_game.h"
+
+#ifdef HAS_MM_SHADER_CACHE
+#include "mm_shader_cache.h"
+#endif
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -135,7 +140,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
     SDL_GetWindowWMInfo(window, &wmInfo);
 
 #if defined(_WIN32)
-    return ultramodern::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
+    return zelda64::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
@@ -150,7 +155,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
 }
 
 void update_gfx(void*) {
-    recomp::handle_events();
+    zelda64::handle_events();
 }
 
 static SDL_AudioCVT audio_convert;
@@ -192,7 +197,7 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
 
     // Convert the audio from 16-bit values to floats and swap the audio channels into the
     // swap buffer to correct for the address xor caused by endianness handling.
-    float cur_main_volume = recomp::get_main_volume() / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
+    float cur_main_volume = zelda64::get_main_volume() / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
     for (size_t i = 0; i < sample_count; i += input_channels) {
         swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f) * cur_main_volume;
         swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f) * cur_main_volume;
@@ -302,6 +307,42 @@ void reset_audio(uint32_t output_freq) {
     update_audio_converter();
 }
 
+extern RspUcodeFunc njpgdspMain;
+extern RspUcodeFunc aspMain;
+
+RspUcodeFunc* get_rsp_microcode(const OSTask* task) {
+    switch (task->t.type) {
+    case M_AUDTASK:
+        return aspMain;
+
+    case M_NJPEGTASK:
+        return njpgdspMain;
+
+    default:
+        fprintf(stderr, "Unknown task: %" PRIu32 "\n", task->t.type);
+        return nullptr;
+    }
+}
+
+extern "C" void recomp_entrypoint(uint8_t * rdram, recomp_context * ctx);
+gpr get_entrypoint_address();
+
+// array of supported GameEntry objects
+std::vector<recomp::GameEntry> supported_games = {
+    {
+        .rom_hash = 0xEF18B4A9E2386169ULL,
+        .internal_name = "ZELDA MAJORA'S MASK",
+        .game_id = u8"mm.n64.us.1.0",
+#ifdef HAS_MM_SHADER_CACHE
+        .cache_data = {mm_shader_cache_bytes, sizeof(mm_shader_cache_bytes)},
+#endif
+        .is_enabled = true,
+        .entrypoint_address = get_entrypoint_address(),
+        .entrypoint = recomp_entrypoint,
+    },
+};
+
+
 int main(int argc, char** argv) {
 
 #ifdef _WIN32
@@ -333,28 +374,50 @@ int main(int argc, char** argv) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     reset_audio(48000);
 
-    recomp::load_config();
+    // Register supported games and patches
+    for (const auto& game : supported_games) {
+        recomp::register_game(game);
+    }
 
-    ultramodern::gfx_callbacks_t gfx_callbacks{
+    zelda64::register_overlays();
+    zelda64::register_patches();
+
+    recomp::register_config_path(zelda64::get_app_folder_path());
+    zelda64::load_config();
+
+    const static recomp::rsp::callbacks_t &rsp_callbacks{
+        .get_rsp_microcode = get_rsp_microcode,
+    };
+
+    const static ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,
         .create_window = create_window,
         .update_gfx = update_gfx,
     };
 
-    ultramodern::audio_callbacks_t audio_callbacks{
+    const static ultramodern::audio_callbacks_t audio_callbacks{
         .queue_samples = queue_samples,
         .get_frames_remaining = get_frames_remaining,
         .set_frequency = set_frequency,
     };
 
-    ultramodern::input_callbacks_t input_callbacks{
-        .poll_input = recomp::poll_inputs,
-        .get_input = recomp::get_n64_input,
-        .set_rumble = recomp::set_rumble,
+    const static ultramodern::input_callbacks_t input_callbacks{
+        .poll_input = zelda64::poll_inputs,
+        .get_input = zelda64::get_n64_input,
+        .set_rumble = zelda64::set_rumble,
     };
 
-    recomp::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
-    
+    const static ultramodern::events::callbacks_t thread_callbacks{
+        .vi_callback = zelda64::update_rumble,
+        .gfx_init_callback = recompui::update_supported_options,
+    };
+
+    const static ultramodern::error_handling::callbacks_t error_handling_callbacks{
+        .message_box = recompui::message_box,
+    };
+
+    recomp::start({}, rsp_callbacks, audio_callbacks, input_callbacks, gfx_callbacks, thread_callbacks, error_handling_callbacks);
+
     NFD_Quit();
 
     return EXIT_SUCCESS;

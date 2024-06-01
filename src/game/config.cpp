@@ -1,8 +1,8 @@
-#include "recomp_config.h"
-#include "recomp_input.h"
-#include "recomp_sound.h"
-#include "recomp_files.h"
-#include "../../ultramodern/config.hpp"
+#include "zelda_config.h"
+#include "zelda_input.h"
+#include "zelda_sound.h"
+#include "ultramodern/config.hpp"
+#include "librecomp/recomp_files.h"
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -18,6 +18,7 @@ constexpr std::u8string_view general_filename = u8"general.json";
 constexpr std::u8string_view graphics_filename = u8"graphics.json";
 constexpr std::u8string_view controls_filename = u8"controls.json";
 constexpr std::u8string_view sound_filename = u8"sound.json";
+constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
 
 constexpr auto res_default            = ultramodern::Resolution::Auto;
 constexpr auto hr_default             = ultramodern::HUDRatioMode::Clamp16x9;
@@ -116,7 +117,7 @@ namespace ultramodern {
     }
 }
 
-namespace recomp {
+namespace zelda64 {
     void to_json(json& j, const InputField& field) {
         j = json{ {"input_type", field.input_type}, {"input_id", field.input_id} };
     }
@@ -127,7 +128,7 @@ namespace recomp {
     }
 }
 
-std::filesystem::path recomp::get_app_folder_path() {
+std::filesystem::path zelda64::get_app_folder_path() {
    std::filesystem::path recomp_dir{};
 
 #if defined(_WIN32)
@@ -135,7 +136,7 @@ std::filesystem::path recomp::get_app_folder_path() {
    PWSTR known_path = NULL;
    HRESULT result = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &known_path);
    if (result == S_OK) {
-       recomp_dir = std::filesystem::path{known_path} / recomp::program_id;
+       recomp_dir = std::filesystem::path{known_path} / zelda64::program_id;
    }
 
    CoTaskMemFree(known_path);
@@ -147,7 +148,7 @@ std::filesystem::path recomp::get_app_folder_path() {
    }
 
    if (homedir != nullptr) {
-       recomp_dir = std::filesystem::path{homedir} / (std::u8string{u8".config/"} + std::u8string{recomp::program_id});
+       recomp_dir = std::filesystem::path{homedir} / (std::u8string{u8".config/"} + std::u8string{zelda64::program_id});
    }
 #endif
 
@@ -198,33 +199,33 @@ bool save_json_with_backups(const std::filesystem::path& path, const nlohmann::j
 bool save_general_config(const std::filesystem::path& path) {    
     nlohmann::json config_json{};
 
-    recomp::to_json(config_json["targeting_mode"], recomp::get_targeting_mode());
-    recomp::to_json(config_json["background_input_mode"], recomp::get_background_input_mode());
-    config_json["rumble_strength"] = recomp::get_rumble_strength();
-    config_json["gyro_sensitivity"] = recomp::get_gyro_sensitivity();
-    config_json["mouse_sensitivity"] = recomp::get_mouse_sensitivity();
-    config_json["joystick_deadzone"] = recomp::get_joystick_deadzone();
-    config_json["autosave_mode"] = recomp::get_autosave_mode();
-    config_json["camera_invert_mode"] = recomp::get_camera_invert_mode();
-    config_json["analog_cam_mode"] = recomp::get_analog_cam_mode();
-    config_json["analog_camera_invert_mode"] = recomp::get_analog_camera_invert_mode();
-    config_json["debug_mode"] = recomp::get_debug_mode_enabled();
+    zelda64::to_json(config_json["targeting_mode"], zelda64::get_targeting_mode());
+    zelda64::to_json(config_json["background_input_mode"], zelda64::get_background_input_mode());
+    config_json["rumble_strength"] = zelda64::get_rumble_strength();
+    config_json["gyro_sensitivity"] = zelda64::get_gyro_sensitivity();
+    config_json["mouse_sensitivity"] = zelda64::get_mouse_sensitivity();
+    config_json["joystick_deadzone"] = zelda64::get_joystick_deadzone();
+    config_json["autosave_mode"] = zelda64::get_autosave_mode();
+    config_json["camera_invert_mode"] = zelda64::get_camera_invert_mode();
+    config_json["analog_cam_mode"] = zelda64::get_analog_cam_mode();
+    config_json["analog_camera_invert_mode"] = zelda64::get_analog_camera_invert_mode();
+    config_json["debug_mode"] = zelda64::get_debug_mode_enabled();
     
     return save_json_with_backups(path, config_json);
 }
 
 void set_general_settings_from_json(const nlohmann::json& config_json) {
-    recomp::set_targeting_mode(from_or_default(config_json, "targeting_mode", recomp::TargetingMode::Switch));
-    recomp::set_background_input_mode(from_or_default(config_json, "background_input_mode", recomp::BackgroundInputMode::On));
-    recomp::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
-    recomp::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
-    recomp::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
-    recomp::set_joystick_deadzone(from_or_default(config_json, "joystick_deadzone", 5));
-    recomp::set_autosave_mode(from_or_default(config_json, "autosave_mode", recomp::AutosaveMode::On));
-    recomp::set_camera_invert_mode(from_or_default(config_json, "camera_invert_mode", recomp::CameraInvertMode::InvertY));
-    recomp::set_analog_cam_mode(from_or_default(config_json, "analog_cam_mode", recomp::AnalogCamMode::Off));
-    recomp::set_analog_camera_invert_mode(from_or_default(config_json, "analog_camera_invert_mode", recomp::CameraInvertMode::InvertNone));
-    recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
+    zelda64::set_targeting_mode(from_or_default(config_json, "targeting_mode", zelda64::TargetingMode::Switch));
+    zelda64::set_background_input_mode(from_or_default(config_json, "background_input_mode", zelda64::BackgroundInputMode::On));
+    zelda64::set_rumble_strength(from_or_default(config_json, "rumble_strength", 25));
+    zelda64::set_gyro_sensitivity(from_or_default(config_json, "gyro_sensitivity", 50));
+    zelda64::set_mouse_sensitivity(from_or_default(config_json, "mouse_sensitivity", is_steam_deck ? 50 : 0));
+    zelda64::set_joystick_deadzone(from_or_default(config_json, "joystick_deadzone", 5));
+    zelda64::set_autosave_mode(from_or_default(config_json, "autosave_mode", zelda64::AutosaveMode::On));
+    zelda64::set_camera_invert_mode(from_or_default(config_json, "camera_invert_mode", zelda64::CameraInvertMode::InvertY));
+    zelda64::set_analog_cam_mode(from_or_default(config_json, "analog_cam_mode", zelda64::AnalogCamMode::Off));
+    zelda64::set_analog_camera_invert_mode(from_or_default(config_json, "analog_camera_invert_mode", zelda64::CameraInvertMode::InvertNone));
+    zelda64::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 
 bool load_general_config(const std::filesystem::path& path) {
@@ -237,57 +238,57 @@ bool load_general_config(const std::filesystem::path& path) {
     return true;
 }
 
-void assign_mapping(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
-    for (size_t binding_index = 0; binding_index < std::min(value.size(), recomp::bindings_per_input); binding_index++) {
-        recomp::set_input_binding(input, binding_index, device, value[binding_index]);
+void assign_mapping(zelda64::InputDevice device, zelda64::GameInput input, const std::vector<zelda64::InputField>& value) {
+    for (size_t binding_index = 0; binding_index < std::min(value.size(), zelda64::bindings_per_input); binding_index++) {
+        zelda64::set_input_binding(input, binding_index, device, value[binding_index]);
     }
 };
 
 // same as assign_mapping, except will clear unassigned bindings if not in value
-void assign_mapping_complete(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
-    for (size_t binding_index = 0; binding_index < recomp::bindings_per_input; binding_index++) {
+void assign_mapping_complete(zelda64::InputDevice device, zelda64::GameInput input, const std::vector<zelda64::InputField>& value) {
+    for (size_t binding_index = 0; binding_index < zelda64::bindings_per_input; binding_index++) {
         if (binding_index >= value.size()) {
-            recomp::set_input_binding(input, binding_index, device, recomp::InputField{});
+            zelda64::set_input_binding(input, binding_index, device, zelda64::InputField{});
         } else {
-            recomp::set_input_binding(input, binding_index, device, value[binding_index]);
+            zelda64::set_input_binding(input, binding_index, device, value[binding_index]);
         }
     }
 };
 
-void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Mappings& values) {
-    assign_mapping_complete(device, recomp::GameInput::A, values.a);
-    assign_mapping_complete(device, recomp::GameInput::B, values.b);
-    assign_mapping_complete(device, recomp::GameInput::Z, values.z);
-    assign_mapping_complete(device, recomp::GameInput::START, values.start);
-    assign_mapping_complete(device, recomp::GameInput::DPAD_UP, values.dpad_up);
-    assign_mapping_complete(device, recomp::GameInput::DPAD_DOWN, values.dpad_down);
-    assign_mapping_complete(device, recomp::GameInput::DPAD_LEFT, values.dpad_left);
-    assign_mapping_complete(device, recomp::GameInput::DPAD_RIGHT, values.dpad_right);
-    assign_mapping_complete(device, recomp::GameInput::L, values.l);
-    assign_mapping_complete(device, recomp::GameInput::R, values.r);
-    assign_mapping_complete(device, recomp::GameInput::C_UP, values.c_up);
-    assign_mapping_complete(device, recomp::GameInput::C_DOWN, values.c_down);
-    assign_mapping_complete(device, recomp::GameInput::C_LEFT, values.c_left);
-    assign_mapping_complete(device, recomp::GameInput::C_RIGHT, values.c_right);
+void assign_all_mappings(zelda64::InputDevice device, const zelda64::DefaultN64Mappings& values) {
+    assign_mapping_complete(device, zelda64::GameInput::A, values.a);
+    assign_mapping_complete(device, zelda64::GameInput::B, values.b);
+    assign_mapping_complete(device, zelda64::GameInput::Z, values.z);
+    assign_mapping_complete(device, zelda64::GameInput::START, values.start);
+    assign_mapping_complete(device, zelda64::GameInput::DPAD_UP, values.dpad_up);
+    assign_mapping_complete(device, zelda64::GameInput::DPAD_DOWN, values.dpad_down);
+    assign_mapping_complete(device, zelda64::GameInput::DPAD_LEFT, values.dpad_left);
+    assign_mapping_complete(device, zelda64::GameInput::DPAD_RIGHT, values.dpad_right);
+    assign_mapping_complete(device, zelda64::GameInput::L, values.l);
+    assign_mapping_complete(device, zelda64::GameInput::R, values.r);
+    assign_mapping_complete(device, zelda64::GameInput::C_UP, values.c_up);
+    assign_mapping_complete(device, zelda64::GameInput::C_DOWN, values.c_down);
+    assign_mapping_complete(device, zelda64::GameInput::C_LEFT, values.c_left);
+    assign_mapping_complete(device, zelda64::GameInput::C_RIGHT, values.c_right);
 
-    assign_mapping_complete(device, recomp::GameInput::X_AXIS_NEG, values.analog_left);
-    assign_mapping_complete(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
-    assign_mapping_complete(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
-    assign_mapping_complete(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
-    assign_mapping_complete(device, recomp::GameInput::TOGGLE_MENU, values.toggle_menu);
+    assign_mapping_complete(device, zelda64::GameInput::X_AXIS_NEG, values.analog_left);
+    assign_mapping_complete(device, zelda64::GameInput::X_AXIS_POS, values.analog_right);
+    assign_mapping_complete(device, zelda64::GameInput::Y_AXIS_NEG, values.analog_down);
+    assign_mapping_complete(device, zelda64::GameInput::Y_AXIS_POS, values.analog_up);
+    assign_mapping_complete(device, zelda64::GameInput::TOGGLE_MENU, values.toggle_menu);
 };
 
-void recomp::reset_input_bindings() {
-    assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
-    assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
+void zelda64::reset_input_bindings() {
+    assign_all_mappings(zelda64::InputDevice::Keyboard, zelda64::default_n64_keyboard_mappings);
+    assign_all_mappings(zelda64::InputDevice::Controller, zelda64::default_n64_controller_mappings);
 }
 
-void recomp::reset_cont_input_bindings() {
-    assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
+void zelda64::reset_cont_input_bindings() {
+    assign_all_mappings(zelda64::InputDevice::Controller, zelda64::default_n64_controller_mappings);
 }
 
-void recomp::reset_kb_input_bindings() {
-    assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
+void zelda64::reset_kb_input_bindings() {
+    assign_all_mappings(zelda64::InputDevice::Keyboard, zelda64::default_n64_keyboard_mappings);
 }
 
 void reset_graphics_options() {
@@ -323,12 +324,12 @@ bool load_graphics_config(const std::filesystem::path& path) {
     return true;
 }
 
-void add_input_bindings(nlohmann::json& out, recomp::GameInput input, recomp::InputDevice device) {
-    const std::string& input_name = recomp::get_input_enum_name(input);
+void add_input_bindings(nlohmann::json& out, zelda64::GameInput input, zelda64::InputDevice device) {
+    const std::string& input_name = zelda64::get_input_enum_name(input);
     nlohmann::json& out_array = out[input_name];
     out_array = nlohmann::json::array();
-    for (size_t binding_index = 0; binding_index < recomp::bindings_per_input; binding_index++) {
-        out_array[binding_index] = recomp::get_input_binding(input, binding_index, device);
+    for (size_t binding_index = 0; binding_index < zelda64::bindings_per_input; binding_index++) {
+        out_array[binding_index] = zelda64::get_input_binding(input, binding_index, device);
     }
 };
 
@@ -338,17 +339,17 @@ bool save_controls_config(const std::filesystem::path& path) {
     config_json["keyboard"] = {};
     config_json["controller"] = {};
 
-    for (size_t i = 0; i < recomp::get_num_inputs(); i++) {
-        recomp::GameInput cur_input = static_cast<recomp::GameInput>(i);
+    for (size_t i = 0; i < zelda64::get_num_inputs(); i++) {
+        zelda64::GameInput cur_input = static_cast<zelda64::GameInput>(i);
 
-        add_input_bindings(config_json["keyboard"], cur_input, recomp::InputDevice::Keyboard);
-        add_input_bindings(config_json["controller"], cur_input, recomp::InputDevice::Controller);
+        add_input_bindings(config_json["keyboard"], cur_input, zelda64::InputDevice::Keyboard);
+        add_input_bindings(config_json["controller"], cur_input, zelda64::InputDevice::Controller);
     }
 
     return save_json_with_backups(path, config_json);
 }
 
-bool load_input_device_from_json(const nlohmann::json& config_json, recomp::InputDevice device, const std::string& key) {
+bool load_input_device_from_json(const nlohmann::json& config_json, zelda64::InputDevice device, const std::string& key) {
     // Check if the json object for the given key exists.
     auto find_it = config_json.find(key);
     if (find_it == config_json.end()) {
@@ -357,9 +358,9 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
 
     const nlohmann::json& mappings_json = *find_it;
 
-    for (size_t i = 0; i < recomp::get_num_inputs(); i++) {
-        recomp::GameInput cur_input = static_cast<recomp::GameInput>(i);
-        const std::string& input_name = recomp::get_input_enum_name(cur_input);
+    for (size_t i = 0; i < zelda64::get_num_inputs(); i++) {
+        zelda64::GameInput cur_input = static_cast<zelda64::GameInput>(i);
+        const std::string& input_name = zelda64::get_input_enum_name(cur_input);
 
         // Check if the json object for the given input exists and that it's an array.
         auto find_input_it = mappings_json.find(input_name);
@@ -367,10 +368,10 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
             assign_mapping(
                 device,
                 cur_input,
-                recomp::get_default_mapping_for_input(
-                    device == recomp::InputDevice::Keyboard ?
-                        recomp::default_n64_keyboard_mappings :
-                        recomp::default_n64_controller_mappings,
+                zelda64::get_default_mapping_for_input(
+                    device == zelda64::InputDevice::Keyboard ?
+                    zelda64::default_n64_keyboard_mappings :
+                    zelda64::default_n64_controller_mappings,
                     cur_input
                 )
             );
@@ -379,10 +380,10 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
         const nlohmann::json& input_json = *find_input_it;
 
         // Deserialize all the bindings from the json array (up to the max number of bindings per input).
-        for (size_t binding_index = 0; binding_index < std::min(recomp::bindings_per_input, input_json.size()); binding_index++) {
-            recomp::InputField cur_field{};
-            recomp::from_json(input_json[binding_index], cur_field);
-            recomp::set_input_binding(cur_input, binding_index, device, cur_field);
+        for (size_t binding_index = 0; binding_index < std::min(zelda64::bindings_per_input, input_json.size()); binding_index++) {
+            zelda64::InputField cur_field{};
+            zelda64::from_json(input_json[binding_index], cur_field);
+            zelda64::set_input_binding(cur_input, binding_index, device, cur_field);
         }
     }
 
@@ -395,12 +396,12 @@ bool load_controls_config(const std::filesystem::path& path) {
         return false;
     }
 
-    if (!load_input_device_from_json(config_json, recomp::InputDevice::Keyboard, "keyboard")) {
-        assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
+    if (!load_input_device_from_json(config_json, zelda64::InputDevice::Keyboard, "keyboard")) {
+        assign_all_mappings(zelda64::InputDevice::Keyboard, zelda64::default_n64_keyboard_mappings);
     }
 
-    if (!load_input_device_from_json(config_json, recomp::InputDevice::Controller, "controller")) {
-        assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
+    if (!load_input_device_from_json(config_json, zelda64::InputDevice::Controller, "controller")) {
+        assign_all_mappings(zelda64::InputDevice::Controller, zelda64::default_n64_controller_mappings);
     }
     return true;
 }
@@ -408,10 +409,10 @@ bool load_controls_config(const std::filesystem::path& path) {
 bool save_sound_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
-    config_json["main_volume"] = recomp::get_main_volume();
-    config_json["bgm_volume"] = recomp::get_bgm_volume();
-    config_json["low_health_beeps"] = recomp::get_low_health_beeps_enabled();
-
+    config_json["main_volume"] = zelda64::get_main_volume();
+    config_json["bgm_volume"] = zelda64::get_bgm_volume();
+    config_json["low_health_beeps"] = zelda64::get_low_health_beeps_enabled();
+    
     return save_json_with_backups(path, config_json);
 }
 
@@ -421,17 +422,17 @@ bool load_sound_config(const std::filesystem::path& path) {
         return false;
     }
 
-    recomp::reset_sound_settings();
-    call_if_key_exists(recomp::set_main_volume, config_json, "main_volume");
-    call_if_key_exists(recomp::set_bgm_volume, config_json, "bgm_volume");
-    call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "low_health_beeps");
+    zelda64::reset_sound_settings();
+    call_if_key_exists(zelda64::set_main_volume, config_json, "main_volume");
+    call_if_key_exists(zelda64::set_bgm_volume, config_json, "bgm_volume");
+    call_if_key_exists(zelda64::set_low_health_beeps_enabled, config_json, "low_health_beeps");
     return true;
 }
 
-void recomp::load_config() {
+void zelda64::load_config() {
     detect_steam_deck();
 
-    std::filesystem::path recomp_dir = recomp::get_app_folder_path();
+    std::filesystem::path recomp_dir = zelda64::get_app_folder_path();
     std::filesystem::path general_path = recomp_dir / general_filename;
     std::filesystem::path graphics_path = recomp_dir / graphics_filename;
     std::filesystem::path controls_path = recomp_dir / controls_filename;
@@ -455,18 +456,18 @@ void recomp::load_config() {
     }
 
     if (!load_controls_config(controls_path)) {
-        recomp::reset_input_bindings();
+        zelda64::reset_input_bindings();
         save_controls_config(controls_path);
     }
 
     if (!load_sound_config(sound_path)) {
-        recomp::reset_sound_settings();
+        zelda64::reset_sound_settings();
         save_sound_config(sound_path);
     }
 }
 
-void recomp::save_config() {
-    std::filesystem::path recomp_dir = recomp::get_app_folder_path();
+void zelda64::save_config() {
+    std::filesystem::path recomp_dir = zelda64::get_app_folder_path();
 
     if (recomp_dir.empty()) {
         return;

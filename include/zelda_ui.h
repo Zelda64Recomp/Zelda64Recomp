@@ -14,7 +14,7 @@ namespace Rml {
 	class Event;
 }
 
-namespace recomp {
+namespace recompui {
 	class UiEventListenerInstancer;
 
 	class MenuController {
@@ -118,6 +118,8 @@ namespace recomp {
 	bool get_cont_active(void);
 	void set_cont_active(bool active);
 	void activate_mouse();
+
+    void message_box(const char* msg);
 }
 
 #endif

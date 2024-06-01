@@ -3,9 +3,9 @@
 
 #include <filesystem>
 #include <string_view>
-#include "../ultramodern/config.hpp"
+#include "ultramodern/config.hpp"
 
-namespace recomp {
+namespace zelda64 {
     constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
     constexpr std::u8string_view mm_game_id = u8"mm.n64.us.1.0";
     constexpr std::string_view program_name = "Zelda 64: Recompiled";
@@ -21,12 +21,17 @@ namespace recomp {
     
     bool get_debug_mode_enabled();
     void set_debug_mode_enabled(bool enabled);
-
+    
     enum class AutosaveMode {
         On,
         Off,
 		OptionCount
     };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::AutosaveMode, {
+        {zelda64::AutosaveMode::On, "On"},
+        {zelda64::AutosaveMode::Off, "Off"}
+    });
 
     enum class AnalogCamMode {
         On,
@@ -34,14 +39,9 @@ namespace recomp {
 		OptionCount
     };
 
-    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::AutosaveMode, {
-        {recomp::AutosaveMode::On, "On"},
-        {recomp::AutosaveMode::Off, "Off"}
-    });
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::AnalogCamMode, {
-        {recomp::AnalogCamMode::On, "On"},
-        {recomp::AnalogCamMode::Off, "Off"}
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::AnalogCamMode, {
+        {zelda64::AnalogCamMode::On, "On"},
+        {zelda64::AnalogCamMode::Off, "Off"}
     });
 
     AutosaveMode get_autosave_mode();

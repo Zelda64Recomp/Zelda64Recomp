@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace recomp {
+namespace zelda64 {
     struct SceneWarps {
         int index;
         std::string name;

@@ -1,13 +1,13 @@
-#include "recomp_ui.h"
-#include "recomp_input.h"
-#include "recomp_sound.h"
-#include "recomp_config.h"
-#include "recomp_debug.h"
+#include "zelda_ui.h"
+#include "zelda_input.h"
+#include "zelda_sound.h"
+#include "zelda_config.h"
+#include "zelda_debug.h"
 #include "promptfont.h"
-#include "../../ultramodern/config.hpp"
-#include "../../ultramodern/ultramodern.hpp"
+#include "ultramodern/config.hpp"
+#include "ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
-#include "rt64_layer.h"
+#include "ultramodern/rt64_layer.h"
 
 ultramodern::GraphicsConfig new_options;
 Rml::DataModelHandle nav_help_model_handle;
@@ -16,9 +16,9 @@ Rml::DataModelHandle controls_model_handle;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle sound_options_model_handle;
 
-recomp::PromptContext prompt_context;
+recompui::PromptContext prompt_context;
 
-namespace recomp {
+namespace recompui {
 	const std::unordered_map<ButtonVariant, std::string> button_variants {
 		{ButtonVariant::Primary, "primary"},
 		{ButtonVariant::Secondary, "secondary"},
@@ -161,10 +161,10 @@ static bool sample_positions_supported = false;
 
 static bool cont_active = true;
 
-static recomp::InputDevice cur_device = recomp::InputDevice::Controller;
+static zelda64::InputDevice cur_device = zelda64::InputDevice::Controller;
 
-void recomp::finish_scanning_input(recomp::InputField scanned_field) {
-	recomp::set_input_binding(static_cast<recomp::GameInput>(scanned_input_index), scanned_binding_index, cur_device, scanned_field);
+void zelda64::finish_scanning_input(zelda64::InputField scanned_field) {
+    zelda64::set_input_binding(static_cast<zelda64::GameInput>(scanned_input_index), scanned_binding_index, cur_device, scanned_field);
 	scanned_input_index = -1;
 	scanned_binding_index = -1;
 	controls_model_handle.DirtyVariable("inputs");
@@ -172,8 +172,8 @@ void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	controls_model_handle.DirtyVariable("active_binding_slot");
 }
 
-void recomp::cancel_scanning_input() {
-	recomp::stop_scanning_input();
+void zelda64::cancel_scanning_input() {
+    zelda64::stop_scanning_input();
 	scanned_input_index = -1;
 	scanned_binding_index = -1;
 	controls_model_handle.DirtyVariable("inputs");
@@ -181,7 +181,7 @@ void recomp::cancel_scanning_input() {
 	controls_model_handle.DirtyVariable("active_binding_slot");
 }
 
-void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
+void zelda64::config_menu_set_cont_or_kb(bool cont_interacted) {
 	if (cont_active != cont_interacted) {
 		cont_active = cont_interacted;
 
@@ -198,13 +198,13 @@ void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
 }
 
 void close_config_menu_impl() {
-	recomp::save_config();
+    zelda64::save_config();
 
 	if (ultramodern::is_game_started()) {
-		recomp::set_current_menu(recomp::Menu::None);
+        recompui::set_current_menu(recompui::Menu::None);
 	}
 	else {
-		recomp::set_current_menu(recomp::Menu::Launcher);
+        recompui::set_current_menu(recompui::Menu::Launcher);
 	}
 }
 
@@ -241,8 +241,8 @@ void close_config_menu() {
 				graphics_model_handle.DirtyAllVariables();
 				close_config_menu_impl();
 			},
-			recomp::ButtonVariant::Success,
-			recomp::ButtonVariant::Error,
+            recompui::ButtonVariant::Success,
+            recompui::ButtonVariant::Error,
 			true,
 			"config__close-menu-button"
 		);
@@ -252,7 +252,7 @@ void close_config_menu() {
 	close_config_menu_impl();
 }
 
-void recomp::open_quit_game_prompt() {
+void zelda64::open_quit_game_prompt() {
 	prompt_context.open_prompt(
 		"Are you sure you want to quit?",
 		"Any progress since your last save will be lost.",
@@ -262,8 +262,8 @@ void recomp::open_quit_game_prompt() {
 			ultramodern::quit();
 		},
 		[]() {},
-		recomp::ButtonVariant::Error,
-		recomp::ButtonVariant::Tertiary,
+        recompui::ButtonVariant::Error,
+        recompui::ButtonVariant::Tertiary,
 		true,
 		"config__quit-game-button"
 	);
@@ -275,126 +275,126 @@ struct ControlOptionsContext {
 	int gyro_sensitivity; // 0 to 100
 	int mouse_sensitivity; // 0 to 100
 	int joystick_deadzone; // 0 to 100
-	recomp::TargetingMode targeting_mode;
-	recomp::BackgroundInputMode background_input_mode;
-	recomp::AutosaveMode autosave_mode;
-	recomp::CameraInvertMode camera_invert_mode;
-	recomp::AnalogCamMode analog_cam_mode;
-	recomp::CameraInvertMode analog_camera_invert_mode;
+	zelda64::TargetingMode targeting_mode;
+	zelda64::BackgroundInputMode background_input_mode;
+	zelda64::AutosaveMode autosave_mode;
+	zelda64::CameraInvertMode camera_invert_mode;
+	zelda64::AnalogCamMode analog_cam_mode;
+	zelda64::CameraInvertMode analog_camera_invert_mode;
 };
 
 ControlOptionsContext control_options_context;
 
-int recomp::get_rumble_strength() {
+int zelda64::get_rumble_strength() {
 	return control_options_context.rumble_strength;
 }
 
-void recomp::set_rumble_strength(int strength) {
+void zelda64::set_rumble_strength(int strength) {
 	control_options_context.rumble_strength = strength;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("rumble_strength");
 	}
 }
 
-int recomp::get_gyro_sensitivity() {
+int zelda64::get_gyro_sensitivity() {
 	return control_options_context.gyro_sensitivity;
 }
 
-int recomp::get_mouse_sensitivity() {
+int zelda64::get_mouse_sensitivity() {
 	return control_options_context.mouse_sensitivity;
 }
 
-int recomp::get_joystick_deadzone() {
+int zelda64::get_joystick_deadzone() {
 	return control_options_context.joystick_deadzone;
 }
 
-void recomp::set_gyro_sensitivity(int sensitivity) {
+void zelda64::set_gyro_sensitivity(int sensitivity) {
 	control_options_context.gyro_sensitivity = sensitivity;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("gyro_sensitivity");
 	}
 }
 
-void recomp::set_mouse_sensitivity(int sensitivity) {
+void zelda64::set_mouse_sensitivity(int sensitivity) {
 	control_options_context.mouse_sensitivity = sensitivity;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("mouse_sensitivity");
 	}
 }
 
-void recomp::set_joystick_deadzone(int deadzone) {
+void zelda64::set_joystick_deadzone(int deadzone) {
 	control_options_context.joystick_deadzone = deadzone;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("joystick_deadzone");
 	}
 }
 
-recomp::TargetingMode recomp::get_targeting_mode() {
+zelda64::TargetingMode zelda64::get_targeting_mode() {
 	return control_options_context.targeting_mode;
 }
 
-void recomp::set_targeting_mode(recomp::TargetingMode mode) {
+void zelda64::set_targeting_mode(zelda64::TargetingMode mode) {
 	control_options_context.targeting_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("targeting_mode");
 	}
 }
 
-recomp::BackgroundInputMode recomp::get_background_input_mode() {
+zelda64::BackgroundInputMode zelda64::get_background_input_mode() {
 	return control_options_context.background_input_mode;
 }
 
-void recomp::set_background_input_mode(recomp::BackgroundInputMode mode) {
+void zelda64::set_background_input_mode(zelda64::BackgroundInputMode mode) {
 	control_options_context.background_input_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("background_input_mode");
 	}
 	SDL_SetHint(
 		SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-		mode == recomp::BackgroundInputMode::On
+		mode == zelda64::BackgroundInputMode::On
 			? "1"
 			: "0"
 	);
 }
 
-recomp::AutosaveMode recomp::get_autosave_mode() {
+zelda64::AutosaveMode zelda64::get_autosave_mode() {
 	return control_options_context.autosave_mode;
 }
 
-void recomp::set_autosave_mode(recomp::AutosaveMode mode) {
+void zelda64::set_autosave_mode(zelda64::AutosaveMode mode) {
 	control_options_context.autosave_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("autosave_mode");
 	}
 }
 
-recomp::CameraInvertMode recomp::get_camera_invert_mode() {
+zelda64::CameraInvertMode zelda64::get_camera_invert_mode() {
 	return control_options_context.camera_invert_mode;
 }
 
-void recomp::set_camera_invert_mode(recomp::CameraInvertMode mode) {
+void zelda64::set_camera_invert_mode(zelda64::CameraInvertMode mode) {
 	control_options_context.camera_invert_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("camera_invert_mode");
 	}
 }
 
-recomp::AnalogCamMode recomp::get_analog_cam_mode() {
+zelda64::AnalogCamMode zelda64::get_analog_cam_mode() {
 	return control_options_context.analog_cam_mode;
 }
 
-void recomp::set_analog_cam_mode(recomp::AnalogCamMode mode) {
+void zelda64::set_analog_cam_mode(zelda64::AnalogCamMode mode) {
 	control_options_context.analog_cam_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("analog_cam_mode");
 	}
 }
 
-recomp::CameraInvertMode recomp::get_analog_camera_invert_mode() {
+zelda64::CameraInvertMode zelda64::get_analog_camera_invert_mode() {
 	return control_options_context.analog_camera_invert_mode;
 }
 
-void recomp::set_analog_camera_invert_mode(recomp::CameraInvertMode mode) {
+void zelda64::set_analog_camera_invert_mode(zelda64::CameraInvertMode mode) {
 	control_options_context.analog_camera_invert_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("analog_camera_invert_mode");
@@ -417,43 +417,43 @@ struct SoundOptionsContext {
 
 SoundOptionsContext sound_options_context;
 
-void recomp::reset_sound_settings() {
+void zelda64::reset_sound_settings() {
 	sound_options_context.reset();
 	if (sound_options_model_handle) {
 		sound_options_model_handle.DirtyAllVariables();
 	}
 }
 
-void recomp::set_main_volume(int volume) {
+void zelda64::set_main_volume(int volume) {
 	sound_options_context.main_volume.store(volume);
 	if (sound_options_model_handle) {
 		sound_options_model_handle.DirtyVariable("main_volume");
 	}
 }
 
-int recomp::get_main_volume() {
+int zelda64::get_main_volume() {
 	return sound_options_context.main_volume.load();
 }
 
-void recomp::set_bgm_volume(int volume) {
+void zelda64::set_bgm_volume(int volume) {
     sound_options_context.bgm_volume.store(volume);
 	if (sound_options_model_handle) {
 		sound_options_model_handle.DirtyVariable("bgm_volume");
 	}
 }
 
-int recomp::get_bgm_volume() {
+int zelda64::get_bgm_volume() {
     return sound_options_context.bgm_volume.load();
 }
 
-void recomp::set_low_health_beeps_enabled(bool enabled) {
+void zelda64::set_low_health_beeps_enabled(bool enabled) {
     sound_options_context.low_health_beeps_enabled.store((int)enabled);
 	if (sound_options_model_handle) {
 		sound_options_model_handle.DirtyVariable("low_health_beeps_enabled");
 	}
 }
 
-bool recomp::get_low_health_beeps_enabled() {
+bool zelda64::get_low_health_beeps_enabled() {
     return (bool)sound_options_context.low_health_beeps_enabled.load();
 }
 
@@ -471,7 +471,7 @@ struct DebugContext {
 	bool debug_enabled = false;
 
 	DebugContext() {
-		for (const auto& area : recomp::game_warps) {
+		for (const auto& area : zelda64::game_warps) {
 			area_names.emplace_back(area.name);
 		}
 		update_warp_names();
@@ -479,15 +479,15 @@ struct DebugContext {
 
 	void update_warp_names() {
 		scene_names.clear();
-		for (const auto& scene : recomp::game_warps[area_index].scenes) {
+		for (const auto& scene : zelda64::game_warps[area_index].scenes) {
 			scene_names.emplace_back(scene.name);
 		}
 		
-		entrance_names = recomp::game_warps[area_index].scenes[scene_index].entrances;
+		entrance_names = zelda64::game_warps[area_index].scenes[scene_index].entrances;
 	}
 };
 
-void recomp::update_rml_display_refresh_rate() {
+void recompui::update_rml_display_refresh_rate() {
 	static uint32_t lastRate = 0;
 	if (!graphics_model_handle) return;
 
@@ -500,7 +500,7 @@ void recomp::update_rml_display_refresh_rate() {
 
 DebugContext debug_context;
 
-class ConfigMenu : public recomp::MenuController {
+class ConfigMenu : public recompui::MenuController {
 public:
 	ConfigMenu() {
 
@@ -511,13 +511,13 @@ public:
 	Rml::ElementDocument* load_document(Rml::Context* context) override {
         return context->LoadDocument("assets/config_menu.rml");
 	}
-	void register_events(recomp::UiEventListenerInstancer& listener) override {
-		recomp::register_event(listener, "apply_options",
+	void register_events(recompui::UiEventListenerInstancer& listener) override {
+		recompui::register_event(listener, "apply_options",
 			[](const std::string& param, Rml::Event& event) {
 				graphics_model_handle.DirtyVariable("options_changed");
 				apply_graphics_config();
 			});
-		recomp::register_event(listener, "config_keydown",
+		recompui::register_event(listener, "config_keydown",
 			[](const std::string& param, Rml::Event& event) {
 				if (!prompt_context.open && event.GetId() == Rml::EventId::Keydown) {
 					auto key = event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN);
@@ -533,32 +533,32 @@ public:
 				}
 			});
 		// This needs to be separate from `close_config_menu` so it ensures that the event is only on the target
-		recomp::register_event(listener, "close_config_menu_backdrop",
+		recompui::register_event(listener, "close_config_menu_backdrop",
 			[](const std::string& param, Rml::Event& event) {
 				if (event.GetPhase() == Rml::EventPhase::Target) {
 					close_config_menu();
 				}
 			});
-		recomp::register_event(listener, "close_config_menu",
+		recompui::register_event(listener, "close_config_menu",
 			[](const std::string& param, Rml::Event& event) {
 				close_config_menu();
 			});
 
-		recomp::register_event(listener, "open_quit_game_prompt",
+		recompui::register_event(listener, "open_quit_game_prompt",
 			[](const std::string& param, Rml::Event& event) {
-				recomp::open_quit_game_prompt();
+                zelda64::open_quit_game_prompt();
 			});
 
-		recomp::register_event(listener, "toggle_input_device",
+		recompui::register_event(listener, "toggle_input_device",
 			[](const std::string& param, Rml::Event& event) {
-				cur_device = cur_device == recomp::InputDevice::Controller
-					? recomp::InputDevice::Keyboard
-					: recomp::InputDevice::Controller;
+				cur_device = cur_device == zelda64::InputDevice::Controller
+					? zelda64::InputDevice::Keyboard
+					: zelda64::InputDevice::Controller;
 				controls_model_handle.DirtyVariable("input_device_is_keyboard");
 				controls_model_handle.DirtyVariable("inputs");
 			});
 			
-		recomp::register_event(listener, "area_index_changed",
+		recompui::register_event(listener, "area_index_changed",
 			[](const std::string& param, Rml::Event& event) {
 				debug_context.area_index = event.GetParameter<int>("value", 0);
 				debug_context.scene_index = 0;
@@ -570,7 +570,7 @@ public:
 				debug_context.model_handle.DirtyVariable("entrance_names");
 			});
 			
-		recomp::register_event(listener, "scene_index_changed",
+		recompui::register_event(listener, "scene_index_changed",
 			[](const std::string& param, Rml::Event& event) {
 				debug_context.scene_index = event.GetParameter<int>("value", 0);
 				debug_context.entrance_index = 0;
@@ -579,14 +579,14 @@ public:
 				debug_context.model_handle.DirtyVariable("entrance_names");
 			});
 
-		recomp::register_event(listener, "do_warp",
+		recompui::register_event(listener, "do_warp",
 			[](const std::string& param, Rml::Event& event) {
-				recomp::do_warp(debug_context.area_index, debug_context.scene_index, debug_context.entrance_index);
+                zelda64::do_warp(debug_context.area_index, debug_context.scene_index, debug_context.entrance_index);
 			});
 
-		recomp::register_event(listener, "set_time",
+		recompui::register_event(listener, "set_time",
 			[](const std::string& param, Rml::Event& event) {
-				recomp::set_time(debug_context.set_time_day, debug_context.set_time_hour, debug_context.set_time_minute);
+                zelda64::set_time(debug_context.set_time_day, debug_context.set_time_hour, debug_context.set_time_minute);
 			});
 	}
 
@@ -707,41 +707,41 @@ public:
 			throw std::runtime_error("Failed to make RmlUi data model for the controls config menu");
 		}
 
-		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = recomp::get_num_inputs(); } );
-		constructor.BindFunc("input_device_is_keyboard", [](Rml::Variant& out) { out = cur_device == recomp::InputDevice::Keyboard; } );
+		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = zelda64::get_num_inputs(); } );
+		constructor.BindFunc("input_device_is_keyboard", [](Rml::Variant& out) { out = cur_device == zelda64::InputDevice::Keyboard; } );
 
 		constructor.RegisterTransformFunc("get_input_name", [](const Rml::VariantList& inputs) {
-			return Rml::Variant{recomp::get_input_name(static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>()))};
+			return Rml::Variant{zelda64::get_input_name(static_cast<zelda64::GameInput>(inputs.at(0).Get<size_t>()))};
 		});
 
 		constructor.RegisterTransformFunc("get_input_enum_name", [](const Rml::VariantList& inputs) {
-			return Rml::Variant{recomp::get_input_enum_name(static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>()))};
+			return Rml::Variant{zelda64::get_input_enum_name(static_cast<zelda64::GameInput>(inputs.at(0).Get<size_t>()))};
 		});
 
 		constructor.BindEventCallback("set_input_binding",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
 				scanned_input_index = inputs.at(0).Get<size_t>();
 				scanned_binding_index = inputs.at(1).Get<size_t>();
-				recomp::start_scanning_input(cur_device);
+                zelda64::start_scanning_input(cur_device);
 				model_handle.DirtyVariable("active_binding_input");
 				model_handle.DirtyVariable("active_binding_slot");
 			});
 
 		constructor.BindEventCallback("reset_input_bindings_to_defaults",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
-				if (cur_device == recomp::InputDevice::Controller) {
-					recomp::reset_cont_input_bindings();
+				if (cur_device == zelda64::InputDevice::Controller) {
+                    zelda64::reset_cont_input_bindings();
 				} else {
-					recomp::reset_kb_input_bindings();
+                    zelda64::reset_kb_input_bindings();
 				}
 				model_handle.DirtyAllVariables();
 			});
 
 		constructor.BindEventCallback("clear_input_bindings",
 			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
-				recomp::GameInput input = static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>());
-				for (size_t binding_index = 0; binding_index < recomp::bindings_per_input; binding_index++) {
-					recomp::set_input_binding(input, binding_index, cur_device, recomp::InputField{});
+                zelda64::GameInput input = static_cast<zelda64::GameInput>(inputs.at(0).Get<size_t>());
+				for (size_t binding_index = 0; binding_index < zelda64::bindings_per_input; binding_index++) {
+                    zelda64::set_input_binding(input, binding_index, cur_device, zelda64::InputField{});
 				}
 				model_handle.DirtyVariable("inputs");
 			});
@@ -761,7 +761,7 @@ public:
 		struct InputFieldVariableDefinition : public Rml::VariableDefinition {
 			InputFieldVariableDefinition() : Rml::VariableDefinition(Rml::DataVariableType::Scalar) {}
 
-			virtual bool Get(void* ptr, Rml::Variant& variant) override { variant = reinterpret_cast<recomp::InputField*>(ptr)->to_string(); return true; }
+			virtual bool Get(void* ptr, Rml::Variant& variant) override { variant = reinterpret_cast<zelda64::InputField*>(ptr)->to_string(); return true; }
 			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
 		};
 		// Static instance of the InputField variable definition to have a pointer to return to RmlUi.
@@ -774,10 +774,10 @@ public:
 			virtual bool Get(void* ptr, Rml::Variant& variant) override { return false; }
 			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
 
-			virtual int Size(void* ptr) override { return recomp::bindings_per_input; }
+			virtual int Size(void* ptr) override { return zelda64::bindings_per_input; }
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
-				recomp::GameInput input = static_cast<recomp::GameInput>((uintptr_t)ptr);
-				return Rml::DataVariable{&input_field_definition_instance, &recomp::get_input_binding(input, address.index, cur_device)};
+                zelda64::GameInput input = static_cast<zelda64::GameInput>((uintptr_t)ptr);
+				return Rml::DataVariable{&input_field_definition_instance, &zelda64::get_input_binding(input, address.index, cur_device)};
 			}
 		};
 		// Static instance of the InputField array variable definition to have a fixed pointer to return to RmlUi.
@@ -790,7 +790,7 @@ public:
 			virtual bool Get(void* ptr, Rml::Variant& variant) override { return false; }
 			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
 
-			virtual int Size(void* ptr) override { return recomp::get_num_inputs(); }
+			virtual int Size(void* ptr) override { return zelda64::get_num_inputs(); }
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
 				// Encode the input index as the pointer to avoid needing to do any allocations.
 				return Rml::DataVariable(&binding_container_var_instance, (void*)(uintptr_t)address.index);
@@ -806,14 +806,14 @@ public:
 			virtual bool Get(void* ptr, Rml::Variant& variant) override { return true; }
 			virtual bool Set(void* ptr, const Rml::Variant& variant) override { return false; }
 
-			virtual int Size(void* ptr) override { return recomp::get_num_inputs(); }
+			virtual int Size(void* ptr) override { return zelda64::get_num_inputs(); }
 			virtual Rml::DataVariable Child(void* ptr, const Rml::DataAddressEntry& address) override {
 				if (address.name == "array") {
 					return Rml::DataVariable(&binding_array_var_instance, nullptr);
 				}
 				else {
-					recomp::GameInput input = recomp::get_input_from_enum_name(address.name);
-					if (input != recomp::GameInput::COUNT) {
+                    zelda64::GameInput input = zelda64::get_input_from_enum_name(address.name);
+					if (input != zelda64::GameInput::COUNT) {
 						return Rml::DataVariable(&binding_container_var_instance, (void*)(uintptr_t)input);
 					}
 				}
@@ -834,7 +834,7 @@ public:
 				out = "NONE";
 			}
 			else {
-				out = recomp::get_input_enum_name(static_cast<recomp::GameInput>(focused_input_index));
+				out = zelda64::get_input_enum_name(static_cast<zelda64::GameInput>(focused_input_index));
 			}
 		});
 
@@ -843,7 +843,7 @@ public:
 				out = "NONE";
 			}
 			else {
-				out = recomp::get_input_enum_name(static_cast<recomp::GameInput>(scanned_input_index));
+				out = zelda64::get_input_enum_name(static_cast<zelda64::GameInput>(scanned_input_index));
 			}
 		});
 
@@ -966,14 +966,14 @@ public:
 		constructor.Bind("prompt__confirmLabel", &prompt_context.confirmLabel);
 		constructor.Bind("prompt__cancelLabel", &prompt_context.cancelLabel);
 
-		constructor.BindEventCallback("prompt__on_click", &recomp::PromptContext::on_click, &prompt_context);
+		constructor.BindEventCallback("prompt__on_click", &recompui::PromptContext::on_click, &prompt_context);
 
 		prompt_context.model_handle = constructor.GetModelHandle();
 	}
 
 	void make_bindings(Rml::Context* context) override {
 		// initially set cont state for ui help
-		recomp::config_menu_set_cont_or_kb(recomp::get_cont_active());
+        zelda64::config_menu_set_cont_or_kb(recompui::get_cont_active());
 		make_nav_help_bindings(context);
 		make_general_bindings(context);
 		make_controls_bindings(context);
@@ -984,22 +984,22 @@ public:
 	}
 };
 
-std::unique_ptr<recomp::MenuController> recomp::create_config_menu() {
+std::unique_ptr<recompui::MenuController> recompui::create_config_menu() {
 	return std::make_unique<ConfigMenu>();
 }
 
-bool recomp::get_debug_mode_enabled() {
+bool zelda64::get_debug_mode_enabled() {
 	return debug_context.debug_enabled;
 }
 
-void recomp::set_debug_mode_enabled(bool enabled) {
+void zelda64::set_debug_mode_enabled(bool enabled) {
 	debug_context.debug_enabled = enabled;
 	if (debug_context.model_handle) {
 		debug_context.model_handle.DirtyVariable("debug_enabled");
 	}
 }
 
-void recomp::update_supported_options() {
+void recompui::update_supported_options() {
 	msaa2x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
 	msaa4x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
 	msaa8x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
@@ -1010,7 +1010,7 @@ void recomp::update_supported_options() {
 	graphics_model_handle.DirtyAllVariables();
 }
 
-void recomp::toggle_fullscreen() {
+void recompui::toggle_fullscreen() {
 	new_options.wm_option = (new_options.wm_option == ultramodern::WindowMode::Windowed) ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
 	apply_graphics_config();
 	graphics_model_handle.DirtyVariable("wm_option");
