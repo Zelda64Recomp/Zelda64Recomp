@@ -1,4 +1,4 @@
-name: validate
+name: validate-internal
 on:
   push:
     branches:

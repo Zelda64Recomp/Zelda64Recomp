@@ -1,4 +1,4 @@
-name: validate
+name: validate-external
 on:
   pull_request_target:
     types: [opened, synchronize]
