@@ -1,6 +1,7 @@
 #include "recomp_config.h"
 #include "recomp_input.h"
 #include "recomp_sound.h"
+#include "recomp_files.h"
 #include "../../ultramodern/config.hpp"
 #include <filesystem>
 #include <fstream>
@@ -153,9 +154,48 @@ std::filesystem::path recomp::get_app_folder_path() {
     return recomp_dir;
 }
 
-void save_general_config(const std::filesystem::path& path) {
-    std::ofstream config_file{path};
-    
+bool read_json(std::ifstream input_file, nlohmann::json& json_out) {
+    if (!input_file.good()) {
+        return false;
+    }
+
+    try {
+        input_file >> json_out;
+    }
+    catch (nlohmann::json::parse_error&) {
+        return false;
+    }
+    return true;
+}
+
+bool read_json_with_backups(const std::filesystem::path& path, nlohmann::json& json_out) {
+    // Try reading and parsing the base file.
+    if (read_json(std::ifstream{path}, json_out)) {
+        return true;
+    }
+
+    // Try reading and parsing the backup file.
+    if (read_json(recomp::open_input_backup_file(path), json_out)) {
+        return true;
+    }
+
+    // Both reads failed.
+    return false;
+}
+
+bool save_json_with_backups(const std::filesystem::path& path, const nlohmann::json& json_data) {
+    {
+        std::ofstream output_file = recomp::open_output_file_with_backup(path);
+        if (!output_file.good()) {
+            return false;
+        }
+
+        output_file << std::setw(4) << json_data;
+    }
+    return recomp::finalize_output_file_with_backup(path);
+}
+
+bool save_general_config(const std::filesystem::path& path) {    
     nlohmann::json config_json{};
 
     recomp::to_json(config_json["targeting_mode"], recomp::get_targeting_mode());
@@ -169,7 +209,8 @@ void save_general_config(const std::filesystem::path& path) {
     config_json["analog_cam_mode"] = recomp::get_analog_cam_mode();
     config_json["analog_camera_invert_mode"] = recomp::get_analog_camera_invert_mode();
     config_json["debug_mode"] = recomp::get_debug_mode_enabled();
-    config_file << std::setw(4) << config_json;
+    
+    return save_json_with_backups(path, config_json);
 }
 
 void set_general_settings_from_json(const nlohmann::json& config_json) {
@@ -186,13 +227,14 @@ void set_general_settings_from_json(const nlohmann::json& config_json) {
     recomp::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
 }
 
-void load_general_config(const std::filesystem::path& path) {
-    std::ifstream config_file{path};
+bool load_general_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
-
-    config_file >> config_json;
+    if (!read_json_with_backups(path, config_json)) {
+        return false;
+    }
 
     set_general_settings_from_json(config_json);
+    return true;
 }
 
 void assign_mapping(recomp::InputDevice device, recomp::GameInput input, const std::vector<recomp::InputField>& value) {
@@ -263,23 +305,22 @@ void reset_graphics_options() {
     ultramodern::set_graphics_config(new_config);
 }
 
-void save_graphics_config(const std::filesystem::path& path) {
-    std::ofstream config_file{path};
-    
+bool save_graphics_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
     ultramodern::to_json(config_json, ultramodern::get_graphics_config());
-    config_file << std::setw(4) << config_json;
+    return save_json_with_backups(path, config_json);
 }
 
-void load_graphics_config(const std::filesystem::path& path) {
-    std::ifstream config_file{path};
+bool load_graphics_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
-
-    config_file >> config_json;
+    if (!read_json_with_backups(path, config_json)) {
+        return false;
+    }
 
     ultramodern::GraphicsConfig new_config{};
     ultramodern::from_json(config_json, new_config);
     ultramodern::set_graphics_config(new_config);
+    return true;
 }
 
 void add_input_bindings(nlohmann::json& out, recomp::GameInput input, recomp::InputDevice device) {
@@ -291,7 +332,7 @@ void add_input_bindings(nlohmann::json& out, recomp::GameInput input, recomp::In
     }
 };
 
-void save_controls_config(const std::filesystem::path& path) {
+bool save_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     config_json["keyboard"] = {};
@@ -304,8 +345,7 @@ void save_controls_config(const std::filesystem::path& path) {
         add_input_bindings(config_json["controller"], cur_input, recomp::InputDevice::Controller);
     }
 
-    std::ofstream config_file{path};
-    config_file << std::setw(4) << config_json;
+    return save_json_with_backups(path, config_json);
 }
 
 bool load_input_device_from_json(const nlohmann::json& config_json, recomp::InputDevice device, const std::string& key) {
@@ -349,11 +389,11 @@ bool load_input_device_from_json(const nlohmann::json& config_json, recomp::Inpu
     return true;
 }
 
-void load_controls_config(const std::filesystem::path& path) {
-    std::ifstream config_file{path};
+bool load_controls_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
-
-    config_file >> config_json;
+    if (!read_json_with_backups(path, config_json)) {
+        return false;
+    }
 
     if (!load_input_device_from_json(config_json, recomp::InputDevice::Keyboard, "keyboard")) {
         assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
@@ -362,29 +402,30 @@ void load_controls_config(const std::filesystem::path& path) {
     if (!load_input_device_from_json(config_json, recomp::InputDevice::Controller, "controller")) {
         assign_all_mappings(recomp::InputDevice::Controller, recomp::default_n64_controller_mappings);
     }
+    return true;
 }
 
-void save_sound_config(const std::filesystem::path& path) {
+bool save_sound_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     config_json["main_volume"] = recomp::get_main_volume();
     config_json["bgm_volume"] = recomp::get_bgm_volume();
     config_json["low_health_beeps"] = recomp::get_low_health_beeps_enabled();
-    
-    std::ofstream config_file{path};
-    config_file << std::setw(4) << config_json;
+
+    return save_json_with_backups(path, config_json);
 }
 
-void load_sound_config(const std::filesystem::path& path) {
-    std::ifstream config_file{path};
+bool load_sound_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
-
-    config_file >> config_json;
+    if (!read_json_with_backups(path, config_json)) {
+        return false;
+    }
 
     recomp::reset_sound_settings();
     call_if_key_exists(recomp::set_main_volume, config_json, "main_volume");
     call_if_key_exists(recomp::set_bgm_volume, config_json, "bgm_volume");
     call_if_key_exists(recomp::set_low_health_beeps_enabled, config_json, "low_health_beeps");
+    return true;
 }
 
 void recomp::load_config() {
@@ -400,35 +441,25 @@ void recomp::load_config() {
         std::filesystem::create_directories(recomp_dir);
     }
 
-    if (std::filesystem::exists(general_path)) {
-        load_general_config(general_path);
-    }
-    else {
+    // TODO error handling for failing to save config files after resetting them.
+
+    if (!load_general_config(general_path)) {
         // Set the general settings from an empty json to use defaults.
         set_general_settings_from_json({});
         save_general_config(general_path);
     }
 
-    if (std::filesystem::exists(graphics_path)) {
-        load_graphics_config(graphics_path);
-    }
-    else {
+    if (!load_graphics_config(graphics_path)) {
         reset_graphics_options();
         save_graphics_config(graphics_path);
     }
 
-    if (std::filesystem::exists(controls_path)) {
-        load_controls_config(controls_path);
-    }
-    else {
+    if (!load_controls_config(controls_path)) {
         recomp::reset_input_bindings();
         save_controls_config(controls_path);
     }
 
-    if (std::filesystem::exists(sound_path)) {
-        load_sound_config(sound_path);
-    }
-    else {
+    if (!load_sound_config(sound_path)) {
         recomp::reset_sound_settings();
         save_sound_config(sound_path);
     }
@@ -442,6 +473,8 @@ void recomp::save_config() {
     }
 
     std::filesystem::create_directories(recomp_dir);
+    
+    // TODO error handling for failing to save config files.
 
     save_general_config(recomp_dir / general_filename);
     save_graphics_config(recomp_dir / graphics_filename);
