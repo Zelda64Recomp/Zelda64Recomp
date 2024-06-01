@@ -9,7 +9,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  build:
+  internal:
     if: github.repository == github.event.pull_request.head.repo.full_name
     uses: ./.github/workflows/validate.yml
     secrets: inherit
