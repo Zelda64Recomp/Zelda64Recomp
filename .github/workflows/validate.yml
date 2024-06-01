@@ -4,6 +4,9 @@ on:
     secrets:
       ZRE_REPO_WITH_PAT:
         required: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-linux:
     runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}

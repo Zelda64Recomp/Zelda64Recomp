@@ -5,9 +5,6 @@ on:
       - dev
   pull_request:
     types: [opened, synchronize]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   internal:
     if: github.repository == github.event.pull_request.head.repo.full_name
