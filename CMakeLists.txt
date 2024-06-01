@@ -130,6 +130,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/dp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/eep.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/euc-jp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/files.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/flash.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/math_routines.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/overlays.cpp

@@ -7,6 +7,7 @@
 #include "recomp.h"
 #include "recomp_game.h"
 #include "recomp_config.h"
+#include "recomp_files.h"
 #include "../ultramodern/ultra64.h"
 #include "../ultramodern/ultramodern.hpp"
 
@@ -96,42 +97,28 @@ struct {
 
 const std::u8string save_folder = u8"saves";
 const std::u8string save_filename = std::u8string{recomp::mm_game_id} + u8".bin";
-const std::u8string save_filename_temp = std::u8string{recomp::mm_game_id} + u8".bin.temp";
-const std::u8string save_filename_backup = std::u8string{recomp::mm_game_id} + u8".bin.bak";
 
 std::filesystem::path get_save_file_path() {
     return recomp::get_app_folder_path() / save_folder / save_filename;
 }
 
-std::filesystem::path get_save_file_path_temp() {
-    return recomp::get_app_folder_path() / save_folder / save_filename_temp;
-}
-
-std::filesystem::path get_save_file_path_backup() {
-    return recomp::get_app_folder_path() / save_folder / save_filename_backup;
-}
-
 void update_save_file() {
+    bool saving_failed = false;
     {
-        std::ofstream save_file{ get_save_file_path_temp(), std::ios_base::binary };
+        std::ofstream save_file = recomp::open_output_file_with_backup(get_save_file_path(), std::ios_base::binary);
 
         if (save_file.good()) {
             std::lock_guard lock{ save_context.save_buffer_mutex };
             save_file.write(save_context.save_buffer.data(), save_context.save_buffer.size());
         }
         else {
-            recomp::message_box("Failed to write to the save file. Check your file permissions. If you have moved your appdata folder to Dropbox or similar, this can cause issues.");
+            saving_failed = false;
         }
     }
-    std::error_code ec;
-    if (std::filesystem::exists(get_save_file_path(), ec)) {
-        std::filesystem::copy_file(get_save_file_path(), get_save_file_path_backup(), std::filesystem::copy_options::overwrite_existing, ec);
-        if (ec) {
-            printf("[ERROR] Failed to copy save file backup\n");
-        }
+    if (!saving_failed) {
+        saving_failed = recomp::finalize_output_file_with_backup(get_save_file_path());
     }
-    std::filesystem::copy_file(get_save_file_path_temp(), get_save_file_path(), std::filesystem::copy_options::overwrite_existing, ec);
-    if (ec) {
+    if (saving_failed) {
         recomp::message_box("Failed to write to the save file. Check your file permissions. If you have moved your appdata folder to Dropbox or similar, this can cause issues.");
     }
 }
@@ -199,24 +186,18 @@ void save_clear(uint32_t start, uint32_t size, char value) {
 
 void ultramodern::init_saving(RDRAM_ARG1) {
     std::filesystem::path save_file_path = get_save_file_path();
-    std::filesystem::path save_file_path_backup = get_save_file_path_backup();
 
     // Ensure the save file directory exists.
     std::filesystem::create_directories(save_file_path.parent_path());
 
     // Read the save file if it exists.
-    std::ifstream save_file{ save_file_path, std::ios_base::binary };
+    std::ifstream save_file = recomp::open_input_file_with_backup(save_file_path, std::ios_base::binary);
     if (save_file.good()) {
         save_file.read(save_context.save_buffer.data(), save_context.save_buffer.size());
-    } else {
-        // Reading the save file faield, so try to read the backup save file.
-        std::ifstream save_file_backup{ save_file_path_backup, std::ios_base::binary };
-        if (save_file_backup.good()) {
-            save_file_backup.read(save_context.save_buffer.data(), save_context.save_buffer.size());
-        } else {
-            // Otherwise clear the save file to all zeroes.
-            save_context.save_buffer.fill(0);
-        }
+    }
+    else {
+        // Otherwise clear the save file to all zeroes.
+        save_context.save_buffer.fill(0);
     }
 
     save_context.saving_thread = std::thread{saving_thread_func, PASS_RDRAM};
