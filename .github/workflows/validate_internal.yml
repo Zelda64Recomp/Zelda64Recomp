@@ -1,0 +1,15 @@
+name: validate
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    types: [opened, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    if: github.repository == github.event.pull_request.head.repo.full_name
+    uses: ./.github/workflows/validate.yml
+    secrets: inherit
