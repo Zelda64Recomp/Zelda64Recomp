@@ -10,6 +10,8 @@ concurrency:
 jobs:
   build-linux:
     runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
+    container:
+      image: dcvz/n64recomp:0.0.1-ubuntu-18.04
     strategy:
       matrix:
         type: [ Debug, Release ]
