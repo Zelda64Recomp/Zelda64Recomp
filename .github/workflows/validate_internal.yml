@@ -1,0 +1,12 @@
+name: validate-internal
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  build:
+    if: github.repository == github.event.pull_request.head.repo.full_name
+    uses: ./.github/workflows/validate.yml
+    secrets: inherit

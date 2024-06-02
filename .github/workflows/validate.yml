@@ -1,24 +1,14 @@
 name: validate
 on:
-  push:
-    branches:
-      - dev
-  pull_request:
-    types: [opened, synchronize]
+  workflow_call:
+    secrets:
+      ZRE_REPO_WITH_PAT:
+        required: true
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  authorize:
-    environment:
-      ${{ github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.full_name != github.repository &&
-      'external' || 'internal' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ✓
   build-linux:
-    needs: authorize
     runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
     strategy:
       matrix:
@@ -107,7 +97,6 @@ jobs:
           name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-windows:
-    needs: authorize
     runs-on: windows-latest
     strategy:
       matrix:
