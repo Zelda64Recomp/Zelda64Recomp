@@ -2589,3 +2589,146 @@ s32 func_80857950(PlayState* play, Player* this) {
 
     return false;
 }
+
+typedef PlayerAnimationHeader* D_8085BE84_t[PLAYER_ANIMTYPE_MAX]; 
+extern PlayerAnimationHeader* D_8085BE84[PLAYER_ANIMGROUP_MAX][PLAYER_ANIMTYPE_MAX];
+extern LinkAnimationHeader gPlayerAnim_link_normal_backspace;
+
+extern s32 func_80832F24(Player* this);
+extern s32 func_8083FE38(Player* this, PlayState* play);
+extern s32 Player_ActionChange_11(Player* this, PlayState* play);
+extern void func_8083A98C(Actor* thisx, PlayState* play2);
+extern void func_80836A98(Player* this, PlayerAnimationHeader* anim, PlayState* play);
+extern void func_80830B38(Player* this);
+extern void Player_AnimationPlayLoop(PlayState* play, Player* this, PlayerAnimationHeader* anim);
+extern s32 Player_UpdateUpperBody(Player* this, PlayState* play);
+extern void func_8082F164(Player* this, u16 button);
+extern s32 func_808401F4(PlayState* play, Player* this);
+extern void func_8082FA5C(PlayState* play, Player* this, PlayerMeleeWeaponState meleeWeaponState);
+extern s32 func_8083FD80(Player* this, PlayState* play);
+extern void func_8082DC38(Player* this);
+extern void func_80836A5C(Player* this, PlayState* play);
+
+// @recomp Patch the shielding function to respect the aiming axis inversion setting.
+void Player_Action_18(Player* this, PlayState* play) {
+    //@recomp Manual relocation. TODO remove when automated
+    D_8085BE84_t* D_8085BE84_reloc = (D_8085BE84_t*)KaleidoManager_GetRamAddr(D_8085BE84);
+    Input* sPlayerControlInput_reloc = *(Input**)KaleidoManager_GetRamAddr(&sPlayerControlInput);
+    func_80832F24(this);
+
+    if (this->transformation == PLAYER_FORM_GORON) {
+        SkelAnime_Update(&this->unk_2C8);
+
+        if (!func_8083FE38(this, play)) {
+            if (!Player_ActionChange_11(this, play)) {
+                this->stateFlags1 &= ~PLAYER_STATE1_400000;
+
+                if (this->itemAction <= PLAYER_IA_MINUS1) {
+                    func_80123C58(this);
+                }
+
+                func_80836A98(this, D_8085BE84_reloc[PLAYER_ANIMGROUP_defense_end][this->modelAnimType], play);
+                func_80830B38(this);
+            } else {
+                this->stateFlags1 |= PLAYER_STATE1_400000;
+            }
+        }
+
+        return;
+    }
+
+    if (PlayerAnimation_Update(play, &this->skelAnime)) {
+        if (!Player_IsGoronOrDeku(this)) {
+            Player_AnimationPlayLoop(play, this, D_8085BE84_reloc[PLAYER_ANIMGROUP_defense_wait][this->modelAnimType]);
+        }
+
+        this->av2.actionVar2 = 1;
+        this->av1.actionVar1 = 0;
+    }
+
+    if (!Player_IsGoronOrDeku(this)) {
+        this->stateFlags1 |= PLAYER_STATE1_400000;
+        Player_UpdateUpperBody(this, play);
+        this->stateFlags1 &= ~PLAYER_STATE1_400000;
+        if (this->transformation == PLAYER_FORM_ZORA) {
+            func_8082F164(this, BTN_R | BTN_B);
+        }
+    }
+
+    if (this->av2.actionVar2 != 0) {
+        f32 yStick = sPlayerControlInput_reloc->rel.stick_y * 180;
+        f32 xStick = sPlayerControlInput_reloc->rel.stick_x * -120;
+        s16 temp_a0 = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
+        s16 var_a1;
+        s16 temp_ft5;
+        s16 var_a2;
+        s16 var_a3;
+        // @recomp Get the aiming camera inversion state.
+        s32 inverted_x, inverted_y;
+        recomp_get_inverted_axes(&inverted_x, &inverted_y);
+
+        // @recomp Invert the Y and X stick values based on the inverted aiming setting.
+        if (!inverted_y) {
+            yStick = -yStick;
+        }
+        if (inverted_x) {
+            xStick = -xStick;
+        }
+
+        var_a1 = (yStick * Math_CosS(temp_a0)) + (Math_SinS(temp_a0) * xStick);
+        temp_ft5 = (xStick * Math_CosS(temp_a0)) - (Math_SinS(temp_a0) * yStick);
+
+        var_a1 = CLAMP_MAX(var_a1, 0xDAC);
+
+        var_a2 = ABS_ALT(var_a1 - this->actor.focus.rot.x) * 0.25f;
+        var_a2 = CLAMP_MIN(var_a2, 0x64);
+        
+
+        var_a3 = ABS_ALT(temp_ft5 - this->upperLimbRot.y) * 0.25f;
+        var_a3 = CLAMP_MIN(var_a3, 0x32);
+
+        Math_ScaledStepToS(&this->actor.focus.rot.x, var_a1, var_a2);
+
+        this->upperLimbRot.x = this->actor.focus.rot.x;
+        Math_ScaledStepToS(&this->upperLimbRot.y, temp_ft5, var_a3);
+
+        if (this->av1.actionVar1 != 0) {
+            if (!func_808401F4(play, this)) {
+                if (this->skelAnime.curFrame < 2.0f) {
+                    func_8082FA5C(play, this, PLAYER_MELEE_WEAPON_STATE_1);
+                }
+            } else {
+                this->av2.actionVar2 = 1;
+                this->av1.actionVar1 = 0;
+            }
+        } else if (!func_8083FE38(this, play)) {
+            if (Player_ActionChange_11(this, play)) {
+                func_8083FD80(this, play);
+            } else {
+                this->stateFlags1 &= ~PLAYER_STATE1_400000;
+                func_8082DC38(this);
+
+                if (Player_IsGoronOrDeku(this)) {
+                    func_80836A5C(this, play);
+                    PlayerAnimation_Change(play, &this->skelAnime, this->skelAnime.animation, 1.0f,
+                                           Animation_GetLastFrame(this->skelAnime.animation), 0.0f, 2, 0.0f);
+                } else {
+                    if (this->itemAction <= PLAYER_IA_MINUS1) {
+                        func_80123C58(this);
+                    }
+
+                    func_80836A98(this, D_8085BE84_reloc[PLAYER_ANIMGROUP_defense_end][this->modelAnimType], play);
+                }
+
+                Player_PlaySfx(this, NA_SE_IT_SHIELD_REMOVE);
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+
+    this->stateFlags1 |= PLAYER_STATE1_400000;
+    Player_SetModelsForHoldingShield(this);
+    this->unk_AA6 |= 0xC1;
+}
