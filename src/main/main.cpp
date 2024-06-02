@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <numeric>
 #include <stdexcept>
+#include <cinttypes>
 
 #include "nfd.h"
 
@@ -140,7 +141,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
     SDL_GetWindowWMInfo(window, &wmInfo);
 
 #if defined(_WIN32)
-    return zelda64::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
+    return ultramodern::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)

@@ -4,7 +4,12 @@
 
 #include <fstream>
 #include <filesystem>
+#ifdef _WIN32
+#include <SDL_video.h>
+#else
 #include <SDL2/SDL_video.h>
+#endif
+
 
 #include "zelda_ui.h"
 #include "zelda_input.h"
