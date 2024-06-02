@@ -24,7 +24,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           submodules: recursive
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@v1.2.11
         with:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Install Linux Dependencies
@@ -92,7 +92,7 @@ jobs:
     name: ${{ matrix.os }} (arm64, ${{ matrix.type }})
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           submodules: recursive
