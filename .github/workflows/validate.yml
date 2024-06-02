@@ -9,15 +9,14 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
-    runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
+    runs-on: ${{ matrix.os }}
     container:
       image: dcvz/n64recomp:0.0.1-ubuntu-18.04
     strategy:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
-        arch: [ x64, arm64 ]
-    name: ${{ matrix.os }} (${{ matrix.arch }}, ${{ matrix.type }})
+    name: ${{ matrix.os }} (x64, ${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,7 +26,80 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15 libfuse2
+          
+          # Install SDL2
+          echo ::group::install SDL2
+
+          # Enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+
+          wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
+          tar -xzf SDL2-2.26.1.tar.gz
+          cd SDL2-2.26.1
+          ./configure
+          make -j 10
+          sudo make install
+          sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+          echo ::endgroup::
+      - name: Prepare Build
+        run: |-
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
+          ./zre/process.sh
+      - name: Run N64Recomp & RSPRecomp
+        run: |
+          N64Recomp us.rev1.toml
+          RSPRecomp aspMain.us.rev1.toml
+          RSPRecomp njpgdspMain.us.rev1.toml
+      - name: Build ZeldaRecomp
+        run: |-
+          # move N64Recomp to root for CMake to find
+          ln -s $(which N64Recomp) .
+
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+      - name: Prepare Archive
+        run: |
+          mv cmake-build/Zelda64Recompiled Zelda64Recompiled
+          rm -rf assets/scss
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          path: Zelda64Recompiled.tar.gz
+      - name: Prepare AppImage
+        run: ./.github/linux/appimage.sh 
+      - name: Zelda64Recomp AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
+          path: Zelda64Recompiled-*.AppImage
+  build-linux-arm64:
+    runs-on: ${{ format('blaze/{0}', matrix.os) }}
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+        os: [ ubuntu-22.04 ]
+    name: ${{ matrix.os }} (arm64, ${{ matrix.type }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: |
