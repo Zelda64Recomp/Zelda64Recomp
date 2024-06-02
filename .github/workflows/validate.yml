@@ -29,13 +29,9 @@ jobs:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Prepare Build
         run: |-
-          echo "::group::Clone ZRE"
+          apt-get install -y unzip
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
-          echo "::endgroup::"
-
-          echo "::group::Process ZRE"
-          ./zre/process.sh
-          echo "::endgroup::"
+          unzip zre/files.zip > /dev/null 2>&1
       - name: Run N64Recomp & RSPRecomp
         run: |
           N64Recomp us.rev1.toml
