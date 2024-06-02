@@ -116,10 +116,10 @@ void update_save_file() {
         }
     }
     if (!saving_failed) {
-        saving_failed = recomp::finalize_output_file_with_backup(get_save_file_path());
+        saving_failed = !recomp::finalize_output_file_with_backup(get_save_file_path());
     }
     if (saving_failed) {
-        recomp::message_box("Failed to write to the save file. Check your file permissions. If you have moved your appdata folder to Dropbox or similar, this can cause issues.");
+        recomp::message_box("Failed to write to the save file. Check your file permissions and whether the save folder has been moved to Dropbox or similar, as this can cause issues.");
     }
 }
 
