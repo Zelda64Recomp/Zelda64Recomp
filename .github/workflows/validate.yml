@@ -56,6 +56,8 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
+          git checkout 6eb7d5bd3ee7f0b79f3fd7adbe931dccbacf7e1b
+          git submodule update --init --recursive
           
           # enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
@@ -128,6 +130,8 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
+          git checkout 6eb7d5bd3ee7f0b79f3fd7adbe931dccbacf7e1b
+          git submodule update --init --recursive
 
           # enable ccache
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
