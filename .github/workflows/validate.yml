@@ -29,14 +29,29 @@ jobs:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Prepare Build
         run: |-
-          apt-get install -y unzip llvm-17 llvm-17-tools lld-17 curl file gcc-11 libstdc++-11-dev
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           unzip zre/files.zip > /dev/null 2>&1
+      - name: Build N64Recomp & RSPRecomp
+        run: |
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
+          cd N64RecompSource
+          
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          # Build N64Recomp & RSPRecomp
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config Release --target N64Recomp -j 8
+          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp ..
+          cp cmake-build/RSPRecomp ..
       - name: Run N64Recomp & RSPRecomp
         run: |
-          N64Recomp us.rev1.toml
-          RSPRecomp aspMain.us.rev1.toml
-          RSPRecomp njpgdspMain.us.rev1.toml
+          ./N64Recomp us.rev1.toml
+          ./RSPRecomp aspMain.us.rev1.toml
+          ./RSPRecomp njpgdspMain.us.rev1.toml
       - name: Build ZeldaRecomp
         run: |-
           # move N64Recomp to root for CMake to find
