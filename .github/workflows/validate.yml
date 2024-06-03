@@ -60,9 +60,6 @@ jobs:
           ./RSPRecomp njpgdspMain.us.rev1.toml
       - name: Build ZeldaRecomp
         run: |-
-          # move N64Recomp to root for CMake to find
-          ln -s $(which N64Recomp) .
-
           # enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           
