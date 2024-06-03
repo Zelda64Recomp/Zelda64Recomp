@@ -29,7 +29,7 @@ jobs:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Prepare Build
         run: |-
-          apt-get install -y unzip
+          apt-get install -y unzip llvm-17 llvm-17-tools lld-17
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           unzip zre/files.zip > /dev/null 2>&1
       - name: Run N64Recomp & RSPRecomp
@@ -45,7 +45,7 @@ jobs:
           # enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_C_COMPILER=clang-17 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++"
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_C_COMPILER=clang-17 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" -DPATCHES_C_COMPILER=clang-17  -DPATCHES_LD=ld.lld-17 -DPATCHES_OBJCOPY=llvm-objcopy-17
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
       - name: Prepare Archive
         run: |

@@ -76,7 +76,7 @@ set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROP
 
 # Build patches elf
 add_custom_target(PatchesBin
-    COMMAND make
+    COMMAND CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} OBJCOPY=${PATCHES_OBJCOPY} make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )

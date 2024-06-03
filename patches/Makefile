@@ -1,8 +1,8 @@
 TARGET = patches.elf
 
-CC      := clang
-LD      := ld.lld
-OBJCOPY := llvm-objcopy
+CC      ?= clang
+LD      ?= ld.lld
+OBJCOPY ?= llvm-objcopy
 
 CFLAGS   := -target mips -mips2 -mabi=32 -O2 -G0 -mno-abicalls -mno-odd-spreg -mno-check-zero-division \
 			-fomit-frame-pointer -ffast-math -fno-unsafe-math-optimizations -fno-builtin-memset \
