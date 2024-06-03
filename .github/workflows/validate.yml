@@ -27,6 +27,10 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.11
         with:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
+      - name: Install Linux Dependencies
+        run: |
+          apt-get update
+          apt-get install -y g++-11
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
