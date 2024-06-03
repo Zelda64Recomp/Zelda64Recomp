@@ -1,10 +1,10 @@
 ARCH=$(uname -m)
 LINUX_DEPLOY_ARCH=$(uname -m)
 
-if [ "$ARCH" == "x86_64" ]; then
+if [ "$ARCH" = "x86_64" ]; then
   ARCH="x86_64"
   LINUX_DEPLOY_ARCH="x86_64"
-elif [ "$ARCH" == "aarch64" ]; then
+elif [ "$ARCH" = "aarch64" ]; then
   ARCH="arm_aarch64"
   LINUX_DEPLOY_ARCH="aarch64"
 else

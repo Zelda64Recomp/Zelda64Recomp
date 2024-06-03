@@ -75,10 +75,25 @@ target_sources(PatchesLib PRIVATE
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
+set(PATCHES_COMMAND "")
+
+if(DEFINED PATCHES_C_COMPILER)
+    set(PATCHES_COMMAND "${PATCHES_COMMAND} CC=${PATCHES_C_COMPILER}")
+endif()
+
+if(DEFINED PATCHES_LD)
+    set(PATCHES_COMMAND "${PATCHES_COMMAND} LD=${PATCHES_LD}")
+endif()
+
+if(DEFINED PATCHES_OBJCOPY)
+    set(PATCHES_COMMAND "${PATCHES_COMMAND} OBJCOPY=${PATCHES_OBJCOPY}")
+endif()
+
 add_custom_target(PatchesBin
-    COMMAND CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} OBJCOPY=${PATCHES_OBJCOPY} make
+    COMMAND ${PATCHES_COMMAND} make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    VERBATIM
 )
 
 # Generate patches_bin.c from patches.bin

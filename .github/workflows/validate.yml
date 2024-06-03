@@ -29,7 +29,7 @@ jobs:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Prepare Build
         run: |-
-          apt-get install -y unzip llvm-17 llvm-17-tools lld-17
+          apt-get install -y unzip llvm-17 llvm-17-tools lld-17 curl
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           unzip zre/files.zip > /dev/null 2>&1
       - name: Run N64Recomp & RSPRecomp
@@ -53,14 +53,14 @@ jobs:
           rm -rf assets/scss
           tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/
       - name: Archive Zelda64Recomp
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
