@@ -16,7 +16,7 @@ jobs:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
-    name: ${{ matrix.os }} (x64, ${{ matrix.type }})
+    name: ubuntu-18.04 (x64, ${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,7 +29,7 @@ jobs:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
       - name: Prepare Build
         run: |-
-          apt-get install -y unzip llvm-17 llvm-17-tools lld-17 curl file gcc-11
+          apt-get install -y unzip llvm-17 llvm-17-tools lld-17 curl file gcc-11 libstdc++-11-dev
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
           unzip zre/files.zip > /dev/null 2>&1
       - name: Run N64Recomp & RSPRecomp
@@ -55,14 +55,14 @@ jobs:
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v3
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-${{ runner.os }}-X64-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v3
         with:
-          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-linux-arm64:
     runs-on: ${{ format('blaze/{0}', matrix.os) }}
@@ -145,14 +145,14 @@ jobs:
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-${{ runner.os }}-ARM64-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-AppImage-ARM64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-windows:
     runs-on: windows-latest
