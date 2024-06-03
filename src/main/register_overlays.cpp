@@ -1,7 +1,7 @@
 #include "ovl_patches.hpp"
 #include "../../RecompiledFuncs/recomp_overlays.inl"
 
-#include "recomp_overlays.h"
+#include "librecomp/overlays.hpp"
 
 void zelda64::register_overlays() {
     const static recomp::overlay_section_table_data_t sections {

@@ -13,13 +13,13 @@
 
 #include "zelda_ui.h"
 #include "zelda_input.h"
-#include "recomp_game.h"
+#include "librecomp/game.hpp"
 #include "zelda_config.h"
 #include "ui_rml_hacks.hpp"
 
 #include "concurrentqueue.h"
 
-#include "ultramodern/rt64_layer.h"
+#include "ultramodern/rt64_layer.hpp"
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
 

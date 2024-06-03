@@ -1,6 +1,6 @@
 #include <array>
 
-#include "librecomp/recomp_helpers.h"
+#include "librecomp/helpers.hpp"
 #include "zelda_input.h"
 #include "ultramodern/ultramodern.hpp"
 

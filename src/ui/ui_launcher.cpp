@@ -1,6 +1,6 @@
 #include "zelda_ui.h"
 #include "zelda_config.h"
-#include "recomp_game.h"
+#include "librecomp/game.hpp"
 #include "ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
 #include "nfd.h"

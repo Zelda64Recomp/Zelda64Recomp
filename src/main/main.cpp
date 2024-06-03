@@ -25,7 +25,7 @@
 #include "zelda_config.h"
 #include "zelda_sound.h"
 #include "ovl_patches.hpp"
-#include "librecomp/recomp_game.h"
+#include "librecomp/game.hpp"
 
 #ifdef HAS_MM_SHADER_CACHE
 #include "mm_shader_cache.h"

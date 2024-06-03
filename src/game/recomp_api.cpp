@@ -1,18 +1,18 @@
 #include <cmath>
 
-#include "recomp.h"
-#include "recomp_overlays.h"
+#include "librecomp/recomp.h"
+#include "librecomp/overlays.hpp"
 #include "zelda_config.h"
 #include "zelda_input.h"
 #include "zelda_ui.h"
 #include "zelda_sound.h"
-#include "recomp_helpers.h"
+#include "librecomp/helpers.hpp"
 #include "../patches/input.h"
 #include "../patches/graphics.h"
 #include "../patches/sound.h"
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
-#include "ultramodern/rt64_layer.h"
+#include "ultramodern/rt64_layer.hpp"
 
 extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
     zelda64::poll_inputs();

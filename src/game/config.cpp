@@ -2,7 +2,7 @@
 #include "zelda_input.h"
 #include "zelda_sound.h"
 #include "ultramodern/config.hpp"
-#include "librecomp/recomp_files.h"
+#include "librecomp/files.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iomanip>

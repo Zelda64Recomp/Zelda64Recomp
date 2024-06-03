@@ -2,8 +2,8 @@
 
 #if 0
 
-#include "recomp_helpers.h"
-#include "recomp_input.h"
+#include "librecomp/helpers.hpp"
+#include "librecomp/input.hpp"
 #include "ultramodern/ultramodern.hpp"
 
 enum class QuicksaveAction {
