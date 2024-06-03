@@ -75,26 +75,31 @@ target_sources(PatchesLib PRIVATE
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
-set(PATCHES_COMMAND "")
-
-if(DEFINED PATCHES_C_COMPILER)
-    set(PATCHES_COMMAND "${PATCHES_COMMAND} CC=${PATCHES_C_COMPILER}")
+if (DEFINED PATCHES_C_COMPILER AND DEFINED PATCHES_LD AND DEFINED PATCHES_OBJCOPY)
+    add_custom_target(PatchesBin
+        COMMAND CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} OBJCOPY=${PATCHES_OBJCOPY} make
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    )
+elseif(DEFINED PATCHES_C_COMPILER AND DEFINED PATCHES_LD)
+    add_custom_target(PatchesBin
+        COMMAND CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} make
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    )
+elseif(DEFINED PATCHES_C_COMPILER)
+    add_custom_target(PatchesBin
+        COMMAND CC=${PATCHES_C_COMPILER} make
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    )
+else()
+    add_custom_target(PatchesBin
+        COMMAND make
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
+        BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    )
 endif()
-
-if(DEFINED PATCHES_LD)
-    set(PATCHES_COMMAND "${PATCHES_COMMAND} LD=${PATCHES_LD}")
-endif()
-
-if(DEFINED PATCHES_OBJCOPY)
-    set(PATCHES_COMMAND "${PATCHES_COMMAND} OBJCOPY=${PATCHES_OBJCOPY}")
-endif()
-
-add_custom_target(PatchesBin
-    COMMAND ${PATCHES_COMMAND} make
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
-    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
-    VERBATIM
-)
 
 # Generate patches_bin.c from patches.bin
 add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
