@@ -30,7 +30,7 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           apt-get update
-          apt-get install -y g++-11
+          apt-get install -y libcanberra-gtk-module libcanberra-gtk3-module
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
