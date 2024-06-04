@@ -13,10 +13,6 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
-
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -35,6 +31,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime)
+
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
 
 # RecompiledFuncs - Library containing the primary recompiler output
@@ -48,6 +46,8 @@ target_compile_options(RecompiledFuncs PRIVATE
 
 target_include_directories(RecompiledFuncs PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/ultramodern/include
+    ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/librecomp/include
 )
 
 file(GLOB FUNC_C_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.c)
@@ -65,6 +65,8 @@ target_compile_options(PatchesLib PRIVATE
 
 target_include_directories(PatchesLib PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/ultramodern/include
+    ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/librecomp/include
 )
 
 target_sources(PatchesLib PRIVATE
@@ -92,8 +94,8 @@ add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h
-                       ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
-                   COMMAND ./N64Recomp patches.toml && ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
+                   # TODO: Look into why modifying patches requires two builds to take
+                   COMMAND ./N64Recomp patches.toml
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
@@ -112,40 +114,10 @@ if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
 endif()
 
 set (SOURCES
-    ${CMAKE_SOURCE_DIR}/ultramodern/audio.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/events.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/mesgqueue.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/misc_ultra.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/port_main.c
-    ${CMAKE_SOURCE_DIR}/ultramodern/scheduling.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/threadqueue.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/task_win32.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/threads.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/timer.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/ultrainit.cpp
-    ${CMAKE_SOURCE_DIR}/ultramodern/rt64_layer.cpp
-
-    ${CMAKE_SOURCE_DIR}/src/recomp/ai.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/cont.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/dp.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/eep.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/euc-jp.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/files.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/flash.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/math_routines.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/overlays.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/patch_loading.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/pak.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/pi.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/ultra_stubs.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/ultra_translation.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/print.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/recomp.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
-
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
-    
+    ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp
+    ${CMAKE_SOURCE_DIR}/src/main/register_patches.cpp
+
     ${CMAKE_SOURCE_DIR}/src/game/input.cpp
     ${CMAKE_SOURCE_DIR}/src/game/controls.cpp
     ${CMAKE_SOURCE_DIR}/src/game/config.cpp
@@ -225,7 +197,7 @@ if (WIN32)
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxil.dll"
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxcompiler.dll"
             $<TARGET_FILE_DIR:Zelda64Recompiled>)
-            
+
     set_target_properties(
         Zelda64Recompiled
         PROPERTIES
@@ -238,10 +210,10 @@ if (WIN32)
     target_sources(Zelda64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
 endif()
 
-if (LINUX)
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(SDL2 REQUIRED)
     find_package(X11 REQUIRED)
-    
+
     # Generate icon_bytes.c from the app icon PNG.
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h
         COMMAND file_to_c ${CMAKE_SOURCE_DIR}/icons/512.png icon_bytes ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h 
@@ -274,7 +246,7 @@ if (LINUX)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
-    
+
     target_link_libraries(Zelda64Recompiled PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
 
@@ -282,6 +254,8 @@ target_link_libraries(Zelda64Recompiled PRIVATE
     PatchesLib
     RecompiledFuncs
     SDL2
+    librecomp
+    ultramodern
     rt64
     RmlCore
     RmlDebugger

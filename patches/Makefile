@@ -27,7 +27,7 @@ $(C_OBJS): %.o : %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
 
 clean:
-	rm -rf $(C_OBJS) $(TARGET) $(DATABIN)
+	rm -rf $(C_OBJS) $(TARGET) $(DATABIN) $(C_DEPS)
 
 -include $(C_DEPS)
 

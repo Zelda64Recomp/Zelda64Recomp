@@ -1,8 +1,8 @@
 #include <array>
 
-#include "recomp_helpers.h"
+#include "librecomp/helpers.hpp"
 #include "recomp_input.h"
-#include "../ultramodern/ultramodern.hpp"
+#include "ultramodern/ultramodern.hpp"
 
 // Arrays that hold the mappings for every input for keyboard and controller respectively.
 using input_mapping = std::array<recomp::InputField, recomp::bindings_per_input>;

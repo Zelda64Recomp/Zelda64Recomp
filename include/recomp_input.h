@@ -14,6 +14,7 @@
 namespace recomp {
     // x-macros to build input enums and arrays.
     // First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
+    // TODO refactor this to allow projects to rename these, or get rid of the readable name and leave that up to individual projects to map.
     #define DEFINE_N64_BUTTON_INPUTS() \
         DEFINE_INPUT(A, 0x8000, "Action") \
         DEFINE_INPUT(B, 0x4000, "Attack/Cancel") \
@@ -168,20 +169,6 @@ namespace recomp {
     void apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out);
     void set_right_analog_suppressed(bool suppressed);
 
-    enum class TargetingMode {
-        Switch,
-        Hold,
-		OptionCount
-    };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::TargetingMode, {
-        {recomp::TargetingMode::Switch, "Switch"},
-        {recomp::TargetingMode::Hold, "Hold"}
-    });
-
-    TargetingMode get_targeting_mode();
-    void set_targeting_mode(TargetingMode mode);
-
     enum class BackgroundInputMode {
         On,
         Off,
@@ -196,35 +183,8 @@ namespace recomp {
     BackgroundInputMode get_background_input_mode();
     void set_background_input_mode(BackgroundInputMode mode);
 
-    enum class CameraInvertMode {
-        InvertNone,
-        InvertX,
-        InvertY,
-        InvertBoth,
-		OptionCount
-    };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::CameraInvertMode, {
-        {recomp::CameraInvertMode::InvertNone, "InvertNone"},
-        {recomp::CameraInvertMode::InvertX, "InvertX"},
-        {recomp::CameraInvertMode::InvertY, "InvertY"},
-        {recomp::CameraInvertMode::InvertBoth, "InvertBoth"}
-    });
-
-    CameraInvertMode get_camera_invert_mode();
-    void set_camera_invert_mode(CameraInvertMode mode);
-
-    CameraInvertMode get_analog_camera_invert_mode();
-    void set_analog_camera_invert_mode(CameraInvertMode mode);
-
     bool game_input_disabled();
     bool all_input_disabled();
-
-    // TODO move these
-    void quicksave_save();
-    void quicksave_load();
-
-    void open_quit_game_prompt();
 }
 
 #endif

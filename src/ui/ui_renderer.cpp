@@ -4,16 +4,22 @@
 
 #include <fstream>
 #include <filesystem>
+#ifdef _WIN32
+#include <SDL_video.h>
+#else
+#include <SDL2/SDL_video.h>
+#endif
+
 
 #include "recomp_ui.h"
 #include "recomp_input.h"
-#include "recomp_game.h"
-#include "recomp_config.h"
+#include "librecomp/game.hpp"
+#include "zelda_config.h"
 #include "ui_rml_hacks.hpp"
 
 #include "concurrentqueue.h"
 
-#include "rt64_layer.h"
+#include "ultramodern/rt64_layer.hpp"
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
 
@@ -718,7 +724,7 @@ Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) 
     return element;
 }
 
-namespace recomp {
+namespace recompui {
     class UiEventListener : public Rml::EventListener {
         event_handler_t* handler_;
         Rml::String param_;
@@ -759,7 +765,7 @@ namespace recomp {
     };
 }
 
-void recomp::register_event(UiEventListenerInstancer& listener, const std::string& name, event_handler_t* handler) {
+void recompui::register_event(UiEventListenerInstancer& listener, const std::string& name, event_handler_t* handler) {
     listener.register_event(name, handler);
 }
 
@@ -779,8 +785,8 @@ Rml::Element* find_autofocus_element(Rml::Element* start) {
 struct UIContext {
     struct UIRenderContext render;
     class {
-        std::unordered_map<recomp::Menu, std::unique_ptr<recomp::MenuController>> menus;
-        std::unordered_map<recomp::Menu, Rml::ElementDocument*> documents;
+        std::unordered_map<recompui::Menu, std::unique_ptr<recompui::MenuController>> menus;
+        std::unordered_map<recompui::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
         Rml::Element* prev_focused;
         bool mouse_is_active_changed = false;
@@ -794,13 +800,13 @@ struct UIContext {
         std::unique_ptr<SystemInterface_SDL> system_interface;
         std::unique_ptr<RmlRenderInterface_RT64> render_interface;
         Rml::Context* context;
-        recomp::UiEventListenerInstancer event_listener_instancer;
+        recompui::UiEventListenerInstancer event_listener_instancer;
 
         void unload() {
             render_interface.reset();
         }
 
-        void swap_document(recomp::Menu menu) {
+        void swap_document(recompui::Menu menu) {
             if (current_document != nullptr) {
                 Rml::Element* window_el = current_document->GetElementById("window");
                 if (window_el != nullptr) {
@@ -831,7 +837,7 @@ struct UIContext {
             mouse_is_active_initialized = false;
         }
 
-        void swap_config_menu(recomp::ConfigSubmenu submenu) {
+        void swap_config_menu(recompui::ConfigSubmenu submenu) {
             if (current_document != nullptr) {
                 Rml::Element* config_tabset_base = current_document->GetElementById("config_tabset");
                 if (config_tabset_base != nullptr) {
@@ -911,7 +917,7 @@ struct UIContext {
             }
 
             if (mouse_is_active_initialized) {
-                recomp::set_cursor_visible(mouse_is_active);
+                recompui::set_cursor_visible(mouse_is_active);
             }
 
             if (current_document == nullptr) {
@@ -939,7 +945,6 @@ struct UIContext {
             if (cont_is_active || non_mouse_interacted) {
                 if (non_mouse_interacted) {
                     auto focusedEl = current_document->GetFocusLeafNode();
-                    Rml::Variant* ti = focusedEl == nullptr ? nullptr : focusedEl->GetAttribute("tab-index");
                     if (focusedEl == nullptr || RecompRml::CanFocusElement(focusedEl) != RecompRml::CanFocus::Yes) {
                         Rml::Element* element = find_autofocus_element(current_document);
                         if (element != nullptr) {
@@ -981,14 +986,14 @@ struct UIContext {
             }
         }
 
-        void add_menu(recomp::Menu menu, std::unique_ptr<recomp::MenuController>&& controller) {
+        void add_menu(recompui::Menu menu, std::unique_ptr<recompui::MenuController>&& controller) {
             menus.emplace(menu, std::move(controller));
         }
         
         void update_config_menu_loop(bool menu_changed) {
             static int prevTab = -1;
             if (menu_changed) prevTab = -1;
-            recomp::update_rml_display_refresh_rate();
+            recompui::update_rml_display_refresh_rate();
 
             Rml::ElementTabSet *tabset = (Rml::ElementTabSet *)current_document->GetElementById("config_tabset");
             if (tabset == nullptr) return;
@@ -1022,7 +1027,7 @@ struct UIContext {
         void update_prompt_loop(void) {
             static bool wasShowingPrompt = false;
 
-            recomp::PromptContext *ctx = recomp::get_prompt_context();
+            recompui::PromptContext *ctx = recompui::get_prompt_context();
             if (!ctx->open && wasShowingPrompt) {
                 Rml::Element* focused = current_document->GetFocusLeafNode();
                 if (focused) focused->Blur();
@@ -1088,8 +1093,8 @@ struct UIContext {
 
             Rml::Element *confirmButton = current_document->GetElementById("prompt__confirm-button");
             Rml::Element *cancelButton  = current_document->GetElementById("prompt__cancel-button");
-            if (confirmButton != nullptr) confirmButton->SetClassNames("button button--" + recomp::button_variants.at(ctx->confirmVariant));
-            if (cancelButton  != nullptr) cancelButton->SetClassNames( "button button--" + recomp::button_variants.at(ctx->cancelVariant));
+            if (confirmButton != nullptr) confirmButton->SetClassNames("button button--" + recompui::button_variants.at(ctx->confirmVariant));
+            if (cancelButton  != nullptr) cancelButton->SetClassNames( "button button--" + recompui::button_variants.at(ctx->cancelVariant));
         }
     } rml;
 };
@@ -1100,7 +1105,7 @@ std::mutex ui_context_mutex{};
 // TODO make this not be global
 extern SDL_Window* window;
 
-void recomp::get_window_size(int& width, int& height) {
+void recompui::get_window_size(int& width, int& height) {
     SDL_GetWindowSizeInPixels(window, &width, &height);
 }
 
@@ -1110,8 +1115,8 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 #endif
     ui_context = std::make_unique<UIContext>();
 
-    ui_context->rml.add_menu(recomp::Menu::Config, recomp::create_config_menu());
-    ui_context->rml.add_menu(recomp::Menu::Launcher, recomp::create_launcher_menu());
+    ui_context->rml.add_menu(recompui::Menu::Config, recompui::create_config_menu());
+    ui_context->rml.add_menu(recompui::Menu::Launcher, recompui::create_launcher_menu());
 
     ui_context->render.interface = interface;
     ui_context->render.device = device;
@@ -1129,7 +1134,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::Initialise();
 
     // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility
-    recomp::apply_color_hack();
+    recompui::apply_color_hack();
 
     int width, height;
     SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -1167,16 +1172,16 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
 
-void recomp::queue_event(const SDL_Event& event) {
+void recompui::queue_event(const SDL_Event& event) {
     ui_event_queue.enqueue(event);
 }
 
-bool recomp::try_deque_event(SDL_Event& out) {
+bool recompui::try_deque_event(SDL_Event& out) {
     return ui_event_queue.try_dequeue(out);
 }
 
-std::atomic<recomp::Menu> open_menu = recomp::Menu::Launcher;
-std::atomic<recomp::ConfigSubmenu> open_config_submenu = recomp::ConfigSubmenu::Count;
+std::atomic<recompui::Menu> open_menu = recompui::Menu::Launcher;
+std::atomic<recompui::ConfigSubmenu> open_config_submenu = recompui::ConfigSubmenu::Count;
 
 int cont_button_to_key(SDL_ControllerButtonEvent& button) {
     switch (button.button) {
@@ -1236,15 +1241,15 @@ void apply_background_input_mode() {
     last_input_mode = cur_input_mode;
 }
 
-bool recomp::get_cont_active() {
+bool recompui::get_cont_active() {
     return ui_context->rml.cont_is_active;
 }
 
-void recomp::set_cont_active(bool active) {
+void recompui::set_cont_active(bool active) {
     ui_context->rml.cont_is_active = active;
 }
 
-void recomp::activate_mouse() {
+void recompui::activate_mouse() {
     ui_context->rml.update_primary_input(true, false);
     ui_context->rml.update_focus(true, false);
 }
@@ -1267,12 +1272,12 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool reload_sheets = is_reload_held && !was_reload_held;
     was_reload_held = is_reload_held;
 
-    static recomp::Menu prev_menu = recomp::Menu::None;
-    recomp::Menu cur_menu = open_menu.load();
+    static recompui::Menu prev_menu = recompui::Menu::None;
+    recompui::Menu cur_menu = open_menu.load();
 
     if (reload_sheets) {
         ui_context->rml.load_documents();
-        prev_menu = recomp::Menu::None;
+        prev_menu = recompui::Menu::None;
     }
 
     bool menu_changed = cur_menu != prev_menu;
@@ -1280,10 +1285,10 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
         ui_context->rml.swap_document(cur_menu);
     }
 
-    recomp::ConfigSubmenu config_submenu = open_config_submenu.load();
-    if (config_submenu != recomp::ConfigSubmenu::Count) {
+    recompui::ConfigSubmenu config_submenu = open_config_submenu.load();
+    if (config_submenu != recompui::ConfigSubmenu::Count) {
         ui_context->rml.swap_config_menu(config_submenu);
-        open_config_submenu.store(recomp::ConfigSubmenu::Count);
+        open_config_submenu.store(recompui::ConfigSubmenu::Count);
     }
 
     prev_menu = cur_menu;
@@ -1296,15 +1301,15 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool cont_interacted = false;
     bool kb_interacted = false;
 
-    if (cur_menu == recomp::Menu::Config) {
+    if (cur_menu == recompui::Menu::Config) {
         ui_context->rml.update_config_menu_loop(menu_changed);
     }
-    if (cur_menu != recomp::Menu::None) {
+    if (cur_menu != recompui::Menu::None) {
         ui_context->rml.update_prompt_loop();
     }
 
-    while (recomp::try_deque_event(cur_event)) {
-        bool menu_is_open = cur_menu != recomp::Menu::None;
+    while (recompui::try_deque_event(cur_event)) {
+        bool menu_is_open = cur_menu != recompui::Menu::None;
 
         if (!recomp::all_input_disabled()) {
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
@@ -1323,7 +1328,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 last_mouse_pos[1] = cur_event.motion.y;
 
                 // if controller is the primary input, don't use mouse movement to allow cursor to reactivate
-                if (recomp::get_cont_active()) {
+                if (recompui::get_cont_active()) {
                     break;
                 }
             }
@@ -1401,15 +1406,15 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             }
 
             if (open_config) {
-                cur_menu = recomp::Menu::Config;
-                open_menu.store(recomp::Menu::Config);
+                cur_menu = recompui::Menu::Config;
+                open_menu.store(recompui::Menu::Config);
                 ui_context->rml.swap_document(cur_menu);
             }
         }
     } // end dequeue event loop
 
     if (cont_interacted || kb_interacted || mouse_clicked) {
-        recomp::set_cont_active(cont_interacted);
+        recompui::set_cont_active(cont_interacted);
     }
     recomp::config_menu_set_cont_or_kb(ui_context->rml.cont_is_active);
 
@@ -1421,7 +1426,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     ui_context->rml.update_primary_input(mouse_moved, non_mouse_interacted);
     ui_context->rml.update_focus(mouse_moved, non_mouse_interacted);
 
-    if (cur_menu != recomp::Menu::None) {
+    if (cur_menu != recompui::Menu::None) {
         int width = swap_chain_framebuffer->getWidth();
         int height = swap_chain_framebuffer->getHeight();
 
@@ -1457,25 +1462,25 @@ void set_rt64_hooks() {
     RT64::SetRenderHooks(init_hook, draw_hook, deinit_hook);
 }
 
-void recomp::set_current_menu(Menu menu) {
+void recompui::set_current_menu(Menu menu) {
     open_menu.store(menu);
-    if (menu == recomp::Menu::None) {
+    if (menu == recompui::Menu::None) {
         ui_context->rml.system_interface->SetMouseCursor("arrow");
     }
 }
 
-void recomp::set_config_submenu(recomp::ConfigSubmenu submenu) {
+void recompui::set_config_submenu(recompui::ConfigSubmenu submenu) {
 	open_config_submenu.store(submenu);
 }
 
-void recomp::destroy_ui() {
+void recompui::destroy_ui() {
 }
 
-recomp::Menu recomp::get_current_menu() {
+recompui::Menu recompui::get_current_menu() {
     return open_menu.load();
 }
 
-void recomp::message_box(const char* msg) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, recomp::program_name.data(), msg, nullptr);
+void recompui::message_box(const char* msg) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, zelda64::program_name.data(), msg, nullptr);
     printf("[ERROR] %s\n", msg);
 }

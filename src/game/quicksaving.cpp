@@ -2,9 +2,9 @@
 
 #if 0
 
-#include "recomp_helpers.h"
-#include "recomp_input.h"
-#include "../ultramodern/ultramodern.hpp"
+#include "librecomp/helpers.hpp"
+#include "librecomp/input.hpp"
+#include "ultramodern/ultramodern.hpp"
 
 enum class QuicksaveAction {
     None,
@@ -14,11 +14,11 @@ enum class QuicksaveAction {
 
 std::atomic<QuicksaveAction> cur_quicksave_action = QuicksaveAction::None;
 
-void recomp::quicksave_save() {
+void zelda64::quicksave_save() {
     cur_quicksave_action.store(QuicksaveAction::Save);
 }
 
-void recomp::quicksave_load() {
+void zelda64::quicksave_load() {
     cur_quicksave_action.store(QuicksaveAction::Load);
 }
 
