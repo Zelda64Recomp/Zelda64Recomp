@@ -56,7 +56,7 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
-          git checkout 8dfed04919b7bfdd0fd34ff049eed7020dea0d71
+          git checkout 2a2df89349ff25a3afb3a09617deb3a166efe2f3
           git submodule update --init --recursive
           
           # enable ccache
@@ -130,7 +130,7 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
-          git checkout 8dfed04919b7bfdd0fd34ff049eed7020dea0d71
+          git checkout 2a2df89349ff25a3afb3a09617deb3a166efe2f3
           git submodule update --init --recursive
 
           # enable ccache
