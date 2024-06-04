@@ -9,6 +9,7 @@ namespace zelda64 {
     constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
     constexpr std::string_view program_name = "Zelda 64: Recompiled";
 
+    // TODO: Move loading configs to the runtime once we have a way to allow per-project customization.
     void load_config();
     void save_config();
     
@@ -24,7 +25,7 @@ namespace zelda64 {
     enum class AutosaveMode {
         On,
         Off,
-		OptionCount
+        OptionCount
     };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::AutosaveMode, {

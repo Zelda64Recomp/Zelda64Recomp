@@ -386,34 +386,34 @@ int main(int argc, char** argv) {
     recomp::register_config_path(zelda64::get_app_folder_path());
     zelda64::load_config();
 
-    const static recomp::rsp::callbacks_t &rsp_callbacks{
+    recomp::rsp::callbacks_t rsp_callbacks{
         .get_rsp_microcode = get_rsp_microcode,
     };
 
-    const static ultramodern::gfx_callbacks_t gfx_callbacks{
+    ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,
         .create_window = create_window,
         .update_gfx = update_gfx,
     };
 
-    const static ultramodern::audio_callbacks_t audio_callbacks{
+    ultramodern::audio_callbacks_t audio_callbacks{
         .queue_samples = queue_samples,
         .get_frames_remaining = get_frames_remaining,
         .set_frequency = set_frequency,
     };
 
-    const static ultramodern::input_callbacks_t input_callbacks{
+    ultramodern::input_callbacks_t input_callbacks{
         .poll_input = recomp::poll_inputs,
         .get_input = recomp::get_n64_input,
         .set_rumble = recomp::set_rumble,
     };
 
-    const static ultramodern::events::callbacks_t thread_callbacks{
+    ultramodern::events::callbacks_t thread_callbacks{
         .vi_callback = recomp::update_rumble,
         .gfx_init_callback = recompui::update_supported_options,
     };
 
-    const static ultramodern::error_handling::callbacks_t error_handling_callbacks{
+    ultramodern::error_handling::callbacks_t error_handling_callbacks{
         .message_box = recompui::message_box,
     };
 
