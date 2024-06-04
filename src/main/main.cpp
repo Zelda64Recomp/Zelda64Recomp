@@ -20,8 +20,8 @@
 #include "SDL2/SDL_syswm.h"
 #endif
 
-#include "zelda_ui.h"
-#include "zelda_input.h"
+#include "recomp_ui.h"
+#include "recomp_input.h"
 #include "zelda_config.h"
 #include "zelda_sound.h"
 #include "ovl_patches.hpp"
@@ -156,7 +156,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
 }
 
 void update_gfx(void*) {
-    zelda64::handle_events();
+    recomp::handle_events();
 }
 
 static SDL_AudioCVT audio_convert;
@@ -403,13 +403,13 @@ int main(int argc, char** argv) {
     };
 
     const static ultramodern::input_callbacks_t input_callbacks{
-        .poll_input = zelda64::poll_inputs,
-        .get_input = zelda64::get_n64_input,
-        .set_rumble = zelda64::set_rumble,
+        .poll_input = recomp::poll_inputs,
+        .get_input = recomp::get_n64_input,
+        .set_rumble = recomp::set_rumble,
     };
 
     const static ultramodern::events::callbacks_t thread_callbacks{
-        .vi_callback = zelda64::update_rumble,
+        .vi_callback = recomp::update_rumble,
         .gfx_init_callback = recompui::update_supported_options,
     };
 

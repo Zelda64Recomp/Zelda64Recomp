@@ -1,5 +1,5 @@
-#ifndef __RECOMP_DEBUG_H__
-#define __RECOMP_DEBUG_H__
+#ifndef __ZELDA_DEBUG_H__
+#define __ZELDA_DEBUG_H__
 
 #include <vector>
 #include <string>

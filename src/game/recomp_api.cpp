@@ -3,8 +3,8 @@
 #include "librecomp/recomp.h"
 #include "librecomp/overlays.hpp"
 #include "zelda_config.h"
-#include "zelda_input.h"
-#include "zelda_ui.h"
+#include "recomp_input.h"
+#include "recomp_ui.h"
 #include "zelda_sound.h"
 #include "librecomp/helpers.hpp"
 #include "../patches/input.h"
@@ -15,7 +15,7 @@
 #include "ultramodern/rt64_layer.hpp"
 
 extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
-    zelda64::poll_inputs();
+    recomp::poll_inputs();
 }
 
 extern "C" void recomp_puts(uint8_t* rdram, recomp_context* ctx) {
@@ -35,14 +35,14 @@ extern "C" void recomp_get_gyro_deltas(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
 
-    zelda64::get_gyro_deltas(x_out, y_out);
+    recomp::get_gyro_deltas(x_out, y_out);
 }
 
 extern "C" void recomp_get_mouse_deltas(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
 
-    zelda64::get_mouse_deltas(x_out, y_out);
+    recomp::get_mouse_deltas(x_out, y_out);
 }
 
 extern "C" void recomp_powf(uint8_t* rdram, recomp_context* ctx) {
@@ -144,7 +144,7 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
 
     float x, y;
 
-    zelda64::get_right_analog(&x, &y);
+    recomp::get_right_analog(&x, &y);
 
     float magnitude = sqrtf(x * x + y * y);
 
@@ -164,5 +164,5 @@ extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
 extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_context* ctx) {
     s32 suppressed = _arg<0, s32>(rdram, ctx);
 
-    zelda64::set_right_analog_suppressed(suppressed);
+    recomp::set_right_analog_suppressed(suppressed);
 }

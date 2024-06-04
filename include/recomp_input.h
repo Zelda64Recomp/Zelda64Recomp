@@ -11,7 +11,7 @@
 
 #include "json/json.hpp"
 
-namespace zelda64 {
+namespace recomp {
     // x-macros to build input enums and arrays.
     // First parameter is the enum name, second parameter is the bit field for the input (or 0 if there is no associated one), third is the readable name.
     // TODO refactor this to allow projects to rename these, or get rid of the readable name and leave that up to individual projects to map.
@@ -67,9 +67,9 @@ namespace zelda64 {
 
     void poll_inputs();
     float get_input_analog(const InputField& field);
-    float get_input_analog(const std::span<const zelda64::InputField> fields);
+    float get_input_analog(const std::span<const recomp::InputField> fields);
     bool get_input_digital(const InputField& field);
-    bool get_input_digital(const std::span<const zelda64::InputField> fields);
+    bool get_input_digital(const std::span<const recomp::InputField> fields);
     void get_gyro_deltas(float* x, float* y);
     void get_mouse_deltas(float* x, float* y);
     void get_right_analog(float* x, float* y);
@@ -169,63 +169,22 @@ namespace zelda64 {
     void apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out);
     void set_right_analog_suppressed(bool suppressed);
 
-    enum class TargetingMode {
-        Switch,
-        Hold,
-		OptionCount
-    };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::TargetingMode, {
-        {zelda64::TargetingMode::Switch, "Switch"},
-        {zelda64::TargetingMode::Hold, "Hold"}
-    });
-
-    TargetingMode get_targeting_mode();
-    void set_targeting_mode(TargetingMode mode);
-
     enum class BackgroundInputMode {
         On,
         Off,
 		OptionCount
     };
 
-    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::BackgroundInputMode, {
-        {zelda64::BackgroundInputMode::On, "On"},
-        {zelda64::BackgroundInputMode::Off, "Off"}
+    NLOHMANN_JSON_SERIALIZE_ENUM(recomp::BackgroundInputMode, {
+        {recomp::BackgroundInputMode::On, "On"},
+        {recomp::BackgroundInputMode::Off, "Off"}
     });
 
     BackgroundInputMode get_background_input_mode();
     void set_background_input_mode(BackgroundInputMode mode);
 
-    enum class CameraInvertMode {
-        InvertNone,
-        InvertX,
-        InvertY,
-        InvertBoth,
-		OptionCount
-    };
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::CameraInvertMode, {
-        {zelda64::CameraInvertMode::InvertNone, "InvertNone"},
-        {zelda64::CameraInvertMode::InvertX, "InvertX"},
-        {zelda64::CameraInvertMode::InvertY, "InvertY"},
-        {zelda64::CameraInvertMode::InvertBoth, "InvertBoth"}
-    });
-
-    CameraInvertMode get_camera_invert_mode();
-    void set_camera_invert_mode(CameraInvertMode mode);
-
-    CameraInvertMode get_analog_camera_invert_mode();
-    void set_analog_camera_invert_mode(CameraInvertMode mode);
-
     bool game_input_disabled();
     bool all_input_disabled();
-
-    // TODO move these somewhere else.
-    void quicksave_save();
-    void quicksave_load();
-
-    void open_quit_game_prompt();
 }
 
 #endif

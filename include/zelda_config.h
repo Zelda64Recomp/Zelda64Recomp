@@ -1,5 +1,5 @@
-#ifndef __RECOMP_CONFIG_H__
-#define __RECOMP_CONFIG_H__
+#ifndef __ZELDA_CONFIG_H__
+#define __ZELDA_CONFIG_H__
 
 #include <filesystem>
 #include <string_view>
@@ -7,7 +7,6 @@
 
 namespace zelda64 {
     constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
-    constexpr std::u8string_view mm_game_id = u8"mm.n64.us.1.0";
     constexpr std::string_view program_name = "Zelda 64: Recompiled";
 
     void load_config();
@@ -33,6 +32,41 @@ namespace zelda64 {
         {zelda64::AutosaveMode::Off, "Off"}
     });
 
+    enum class TargetingMode {
+        Switch,
+        Hold,
+        OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::TargetingMode, {
+        {zelda64::TargetingMode::Switch, "Switch"},
+        {zelda64::TargetingMode::Hold, "Hold"}
+    });
+
+    TargetingMode get_targeting_mode();
+    void set_targeting_mode(TargetingMode mode);
+
+    enum class CameraInvertMode {
+        InvertNone,
+        InvertX,
+        InvertY,
+        InvertBoth,
+        OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::CameraInvertMode, {
+        {zelda64::CameraInvertMode::InvertNone, "InvertNone"},
+        {zelda64::CameraInvertMode::InvertX, "InvertX"},
+        {zelda64::CameraInvertMode::InvertY, "InvertY"},
+        {zelda64::CameraInvertMode::InvertBoth, "InvertBoth"}
+    });
+
+    CameraInvertMode get_camera_invert_mode();
+    void set_camera_invert_mode(CameraInvertMode mode);
+
+    CameraInvertMode get_analog_camera_invert_mode();
+    void set_analog_camera_invert_mode(CameraInvertMode mode);
+
     enum class AnalogCamMode {
         On,
         Off,
@@ -49,6 +83,8 @@ namespace zelda64 {
 
     AnalogCamMode get_analog_cam_mode();
     void set_analog_cam_mode(AnalogCamMode mode);
+
+    void open_quit_game_prompt();
 };
 
 #endif

@@ -1,4 +1,4 @@
-#include "zelda_ui.h"
+#include "recomp_ui.h"
 #include "zelda_config.h"
 #include "librecomp/game.hpp"
 #include "ultramodern/ultramodern.hpp"

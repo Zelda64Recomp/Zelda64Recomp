@@ -11,8 +11,8 @@
 #endif
 
 
-#include "zelda_ui.h"
-#include "zelda_input.h"
+#include "recomp_ui.h"
+#include "recomp_input.h"
 #include "librecomp/game.hpp"
 #include "zelda_config.h"
 #include "ui_rml_hacks.hpp"
@@ -1201,8 +1201,8 @@ int cont_button_to_key(SDL_ControllerButtonEvent& button) {
     }
 
     // Allows closing the menu
-    auto menuToggleBinding0 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 0, zelda64::InputDevice::Controller);
-    auto menuToggleBinding1 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 1, zelda64::InputDevice::Controller);
+    auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+    auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
     // note - magic number: 0 is InputType::None
     if ((menuToggleBinding0.input_type != 0 && button.button == menuToggleBinding0.input_id) ||
         (menuToggleBinding1.input_type != 0 && button.button == menuToggleBinding1.input_id)) {
@@ -1226,14 +1226,14 @@ int cont_axis_to_key(SDL_ControllerAxisEvent& axis, float value) {
 }
 
 void apply_background_input_mode() {
-    static zelda64::BackgroundInputMode last_input_mode = zelda64::BackgroundInputMode::OptionCount;
+    static recomp::BackgroundInputMode last_input_mode = recomp::BackgroundInputMode::OptionCount;
 
-    zelda64::BackgroundInputMode cur_input_mode = zelda64::get_background_input_mode();
+    recomp::BackgroundInputMode cur_input_mode = recomp::get_background_input_mode();
 
     if (last_input_mode != cur_input_mode) {
         SDL_SetHint(
             SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-            cur_input_mode == zelda64::BackgroundInputMode::On
+            cur_input_mode == recomp::BackgroundInputMode::On
                 ? "1"
                 : "0"
         );
@@ -1311,7 +1311,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     while (recompui::try_deque_event(cur_event)) {
         bool menu_is_open = cur_menu != recompui::Menu::None;
 
-        if (!zelda64::all_input_disabled()) {
+        if (!recomp::all_input_disabled()) {
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION: {
@@ -1395,8 +1395,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 }
                 break;
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN:
-                auto menuToggleBinding0 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 0, zelda64::InputDevice::Controller);
-                auto menuToggleBinding1 = zelda64::get_input_binding(zelda64::GameInput::TOGGLE_MENU, 1, zelda64::InputDevice::Controller);
+                auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+                auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
                 // note - magic number: 0 is InputType::None
                 if ((menuToggleBinding0.input_type != 0 && cur_event.cbutton.button == menuToggleBinding0.input_id) ||
                     (menuToggleBinding1.input_type != 0 && cur_event.cbutton.button == menuToggleBinding1.input_id)) {
@@ -1416,11 +1416,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     if (cont_interacted || kb_interacted || mouse_clicked) {
         recompui::set_cont_active(cont_interacted);
     }
-    zelda64::config_menu_set_cont_or_kb(ui_context->rml.cont_is_active);
+    recomp::config_menu_set_cont_or_kb(ui_context->rml.cont_is_active);
 
-    zelda64::InputField scanned_field = zelda64::get_scanned_input();
-    if (scanned_field != zelda64::InputField{}) {
-        zelda64::finish_scanning_input(scanned_field);
+    recomp::InputField scanned_field = recomp::get_scanned_input();
+    if (scanned_field != recomp::InputField{}) {
+        recomp::finish_scanning_input(scanned_field);
     }
 
     ui_context->rml.update_primary_input(mouse_moved, non_mouse_interacted);
