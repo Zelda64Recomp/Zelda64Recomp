@@ -41,6 +41,7 @@ add_library(RecompiledFuncs STATIC)
 target_compile_options(RecompiledFuncs PRIVATE
     # -Wno-unused-but-set-variable
     -fno-strict-aliasing
+    -Wno-unused-variable
     -Wno-implicit-function-declaration
 )
 
@@ -61,6 +62,8 @@ add_library(PatchesLib STATIC)
 target_compile_options(PatchesLib PRIVATE
     # -Wno-unused-but-set-variable
     -fno-strict-aliasing
+    -Wno-unused-variable
+    -Wno-implicit-function-declaration
 )
 
 target_include_directories(PatchesLib PRIVATE
