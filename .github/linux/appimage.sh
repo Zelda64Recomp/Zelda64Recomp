@@ -26,6 +26,12 @@ cp .github/linux/Zelda64Recompiled.desktop AppDir/
 mv squashfs-root/ deploy
 ./deploy/AppRun --appdir=AppDir/ -d AppDir/Zelda64Recompiled.desktop -i AppDir/Zelda64Recompiled.png -e AppDir/usr/bin/Zelda64Recompiled --plugin gtk
 sed -i 's/exec/#exec/g' AppDir/AppRun
-echo 'cd "$this_dir"/usr/bin/' >> AppDir/AppRun
-echo './Zelda64Recompiled' >> AppDir/AppRun
+echo 'if [ -f "portable.txt" ]; then' >> AppDir/AppRun
+echo '    APP_FOLDER_PATH=$PWD' >> AppDir/AppRun
+echo '    cd "$this_dir"/usr/bin/' >> AppDir/AppRun
+echo '    APP_FOLDER_PATH=$APP_FOLDER_PATH ./Zelda64Recompiled' >> AppDir/AppRun
+echo 'else' >> AppDir/AppRun
+echo '    cd "$this_dir"/usr/bin/' >> AppDir/AppRun
+echo '    ./Zelda64Recompiled' >> AppDir/AppRun
+echo 'fi' >> AppDir/AppRun
 ./deploy/usr/bin/linuxdeploy-plugin-appimage --appdir=AppDir

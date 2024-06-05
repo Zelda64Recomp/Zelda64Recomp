@@ -129,6 +129,11 @@ namespace recomp {
 }
 
 std::filesystem::path zelda64::get_app_folder_path() {
+   // directly check for portable.txt (windows and native linux binary)    
+   if (std::filesystem::exists("portable.txt")) {
+       return std::filesystem::current_path();
+   }
+
    std::filesystem::path recomp_dir{};
 
 #if defined(_WIN32)
@@ -141,6 +146,11 @@ std::filesystem::path zelda64::get_app_folder_path() {
 
    CoTaskMemFree(known_path);
 #elif defined(__linux__)
+   // check for APP_FOLDER_PATH env var used by AppImage
+   if (getenv("APP_FOLDER_PATH") != nullptr) {
+       return std::filesystem::path{getenv("APP_FOLDER_PATH")};
+   }
+
    const char *homedir;
 
    if ((homedir = getenv("HOME")) == nullptr) {
