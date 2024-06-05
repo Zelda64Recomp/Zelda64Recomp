@@ -10,6 +10,7 @@
 #include "ultramodern/rt64_layer.hpp"
 
 ultramodern::GraphicsConfig new_options;
+Rml::DataModelHandle config_menu_model_handle;
 Rml::DataModelHandle nav_help_model_handle;
 Rml::DataModelHandle general_model_handle;
 Rml::DataModelHandle controls_model_handle;
@@ -17,6 +18,19 @@ Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle sound_options_model_handle;
 
 recompui::PromptContext prompt_context;
+
+struct ConfigMenuContext {
+	bool hide_for_prompt;
+	void reset() {
+		hide_for_prompt = false;
+	}
+	ConfigMenuContext() {
+		reset();
+	}
+};
+
+ConfigMenuContext config_menu_context;
+
 
 namespace recompui {
 	const std::unordered_map<ButtonVariant, std::string> button_variants {
@@ -252,7 +266,17 @@ void close_config_menu() {
 	close_config_menu_impl();
 }
 
+bool menuWasOpenBeforeOpeningPrompt = false;
 void zelda64::open_quit_game_prompt() {
+	menuWasOpenBeforeOpeningPrompt = true;
+	if (recompui::get_current_menu() != recompui::Menu::Config) {
+		recompui::set_current_menu(recompui::Menu::Config);
+		menuWasOpenBeforeOpeningPrompt = false;
+	}
+
+	config_menu_context.hide_for_prompt = !menuWasOpenBeforeOpeningPrompt;
+	config_menu_model_handle.DirtyVariable("hide_for_prompt");
+
 	prompt_context.open_prompt(
 		"Are you sure you want to quit?",
 		"Any progress since your last save will be lost.",
@@ -261,7 +285,13 @@ void zelda64::open_quit_game_prompt() {
 		[]() {
 			ultramodern::quit();
 		},
-		[]() {},
+		[]() {
+			if (!menuWasOpenBeforeOpeningPrompt) {
+				recompui::set_current_menu(recompui::Menu::None);
+			}
+			config_menu_context.hide_for_prompt = false;
+			config_menu_model_handle.DirtyVariable("hide_for_prompt");
+		},
         recompui::ButtonVariant::Error,
         recompui::ButtonVariant::Tertiary,
 		true,
@@ -972,6 +1002,10 @@ public:
 	}
 
 	void make_bindings(Rml::Context* context) override {
+		Rml::DataModelConstructor constructor = context->CreateDataModel("config_menu_model");
+		constructor.Bind("hide_for_prompt", &config_menu_context.hide_for_prompt);
+		config_menu_model_handle = constructor.GetModelHandle();
+
 		// initially set cont state for ui help
         recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
 		make_nav_help_bindings(context);
