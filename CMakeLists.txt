@@ -250,6 +250,12 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(Zelda64Recompiled PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
 
+add_custom_command(
+    TARGET Zelda64Recompiled PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${CMAKE_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets
+    COMMENT "Copying assets if different"
+)
+
 target_link_libraries(Zelda64Recompiled PRIVATE
     PatchesLib
     RecompiledFuncs
