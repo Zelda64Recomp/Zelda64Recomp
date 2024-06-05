@@ -102,8 +102,9 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         {
             SDL_KeyboardEvent* keyevent = &event->key;
 
-            // Skip repeated events.
-            if (event->key.repeat) {
+            // Skip repeated events when not in the menu
+            if (recompui::get_current_menu() == recompui::Menu::None &&
+                event->key.repeat) {
                 break;
             }
 
