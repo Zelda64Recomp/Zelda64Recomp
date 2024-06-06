@@ -143,6 +143,7 @@ jobs:
           # Copy N64Recomp & RSPRecomp to root directory
           cp cmake-build/N64Recomp.exe ..
           cp cmake-build/RSPRecomp.exe ..
+          echo "N64Recomp & RSPRecomp built"
       - name: Run N64Recomp & RSPRecomp
         run: |
           ./N64Recomp.exe us.rev1.toml
