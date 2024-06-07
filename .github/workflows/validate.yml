@@ -27,7 +27,6 @@ jobs:
         with:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-${{ matrix.arch }}
       - name: Install Linux Dependencies
-        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15 libfuse2
@@ -52,7 +51,6 @@ jobs:
           ./zre/process.sh
           cp ./zre/mm_shader_cache.bin ./shadercache/
       - name: Build N64Recomp & RSPRecomp
-        if: runner.os != 'Windows'
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
@@ -64,8 +62,8 @@ jobs:
           
           # Build N64Recomp & RSPRecomp
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j 8
-          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          cmake --build cmake-build --config Release --target N64Recomp -j $(nproc)
+          cmake --build cmake-build --config Release --target RSPRecomp -j $(nproc)
           
           # Copy N64Recomp & RSPRecomp to root directory
           cp cmake-build/N64Recomp ..
@@ -81,7 +79,7 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $(nproc)
       - name: Prepare Archive
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
@@ -135,10 +133,11 @@ jobs:
 
           # enable ccache
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
+          $cpuCores = (Get-CimInstance -ClassName Win32_Processor).NumberOfLogicalProcessors
 
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j 8
-          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          cmake --build cmake-build --config Release --target N64Recomp -j $cpuCores
+          cmake --build cmake-build --config Release --target RSPRecomp -j $cpuCores
 
           # Copy N64Recomp & RSPRecomp to root directory
           cp cmake-build/N64Recomp.exe ..
@@ -152,9 +151,13 @@ jobs:
         run: |-
           # enable ccache
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
+          $cpuCores = (Get-CimInstance -ClassName Win32_Processor).NumberOfLogicalProcessors
+
+          # remove LLVM from PATH so it doesn't overshadow the one provided by VS
+          $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -ne 'C:\Program Files\LLVM\bin' }) -join ';'
 
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER=clang-cl -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-Xclang -fexceptions -Xclang -fcxx-exceptions"
-          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $cpuCores
       - name: Prepare Archive
         run: |
           Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
