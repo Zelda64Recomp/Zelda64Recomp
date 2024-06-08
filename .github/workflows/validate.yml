@@ -37,7 +37,7 @@ jobs:
           # Enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
 
-          wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
+          wget https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.tar.gz
           tar -xzf SDL2-2.26.1.tar.gz
           cd SDL2-2.26.1
           ./configure
