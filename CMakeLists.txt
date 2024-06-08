@@ -179,11 +179,17 @@ endif()
 
 if (WIN32)
     include(FetchContent)
+
+    if (DEFINED ENV{SDL2_VERSION})
+        set(SDL2_VERSION $ENV{SDL2_VERSION})
+    else()
+        set(SDL2_VERSION "2.28.5")
+    endif()
+
     # Fetch SDL2 on windows
     FetchContent_Declare(
         sdl2
-        URL https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-devel-2.28.5-VC.zip
-        URL_HASH MD5=d8173db078e54040c666f411c5a6afff
+        URL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-devel-${SDL2_VERSION}-VC.zip
     )
     FetchContent_MakeAvailable(sdl2)
     target_include_directories(Zelda64Recompiled PRIVATE

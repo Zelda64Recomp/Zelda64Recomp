@@ -167,6 +167,8 @@ jobs:
 
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER=clang-cl -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-Xclang -fexceptions -Xclang -fcxx-exceptions"
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $cpuCores
+        env:
+          SDL2_VERSION: ${{ inputs.SDL2_VERSION }}
       - name: Prepare Archive
         run: |
           Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
