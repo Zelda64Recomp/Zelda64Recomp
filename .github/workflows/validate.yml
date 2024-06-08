@@ -1,6 +1,15 @@
 name: validate
 on:
   workflow_call:
+    inputs:
+      SDL2_VERSION:
+        type: string
+        required: false
+        default: '2.28.5'
+      N64RECOMP_COMMIT:
+        type: string
+        required: false
+        default: '2a2df89349ff25a3afb3a09617deb3a166efe2f3'
     secrets:
       ZRE_REPO_WITH_PAT:
         required: true
@@ -37,9 +46,9 @@ jobs:
           # Enable ccache
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
 
-          wget https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.tar.gz
-          tar -xzf SDL2-2.26.1.tar.gz
-          cd SDL2-2.26.1
+          wget https://github.com/libsdl-org/SDL/releases/download/release-${{ inputs.SDL2_VERSION }}/SDL2-${{ inputs.SDL2_VERSION }}.tar.gz
+          tar -xzf SDL2-${{ inputs.SDL2_VERSION }}.tar.gz
+          cd SDL2-${{ inputs.SDL2_VERSION }}
           ./configure
           make -j 10
           sudo make install
@@ -54,7 +63,7 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
-          git checkout 2a2df89349ff25a3afb3a09617deb3a166efe2f3
+          git checkout ${{ inputs.N64RECOMP_COMMIT }}
           git submodule update --init --recursive
           
           # enable ccache
@@ -128,7 +137,7 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
-          git checkout 2a2df89349ff25a3afb3a09617deb3a166efe2f3
+          git checkout ${{ inputs.N64RECOMP_COMMIT }}
           git submodule update --init --recursive
 
           # enable ccache
@@ -158,6 +167,8 @@ jobs:
 
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER=clang-cl -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DCMAKE_CXX_FLAGS="-Xclang -fexceptions -Xclang -fcxx-exceptions"
           cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $cpuCores
+        env:
+          SDL2_VERSION: ${{ inputs.SDL2_VERSION }}
       - name: Prepare Archive
         run: |
           Move-Item -Path "cmake-build/Zelda64Recompiled.exe" -Destination "Zelda64Recompiled.exe"
