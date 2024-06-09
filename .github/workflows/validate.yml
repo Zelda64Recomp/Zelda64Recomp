@@ -30,7 +30,7 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           apt-get update
-          apt-get install -y libcanberra-gtk-module libcanberra-gtk3-module
+          apt-get install -y libcanberra-gtk-module libcanberra-gtk3-module libgbm-dev
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
@@ -75,8 +75,15 @@ jobs:
         with:
           name: Zelda64Recompiled-${{ runner.os }}-X64-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
-      - name: Prepare AppImage
-        run: ./.github/linux/appimage.sh 
+      - name: Build AppImage
+        run: |-
+          ./.github/linux/appimage.sh 
+      - name: Adjust AppImage
+        run: |
+          ./Zelda64Recompiled-x86_64.AppImage --appimage-extract
+          rm -rf squashfs-root/usr/lib/libgmodule*
+          appimagetool-x86_64.AppImage -v squashfs-root
+          rm -rf squashfs-root/
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v3
         with:
@@ -117,7 +124,7 @@ jobs:
           ./configure
           make -j 10
           sudo make install
-          sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+          sudo cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
           echo ::endgroup::
       - name: Prepare Build
         run: |-

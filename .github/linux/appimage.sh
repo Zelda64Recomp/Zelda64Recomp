@@ -14,6 +14,8 @@ fi
 
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$LINUX_DEPLOY_ARCH.AppImage"
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/raw/master/linuxdeploy-plugin-gtk.sh"
+curl -sSfLO "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$LINUX_DEPLOY_ARCH.AppImage"
+
 chmod a+x linuxdeploy*
  
 mkdir -p AppDir/usr/bin
