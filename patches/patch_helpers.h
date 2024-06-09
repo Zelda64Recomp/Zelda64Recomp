@@ -4,7 +4,7 @@
 #ifdef MIPS
 #include "ultra64.h"
 #else
-#include "recomp.h"
+#include "librecomp/recomp.h"
 #endif
 
 #ifdef __cplusplus

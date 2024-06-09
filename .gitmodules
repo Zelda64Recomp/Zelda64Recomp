@@ -16,3 +16,6 @@
 [submodule "lib/sse2neon"]
 	path = lib/sse2neon
 	url = https://github.com/DLTcollab/sse2neon.git
+[submodule "lib/N64ModernRuntime"]
+	path = lib/N64ModernRuntime
+	url = git@github.com:N64Recomp/N64ModernRuntime.git

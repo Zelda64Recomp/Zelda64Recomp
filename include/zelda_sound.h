@@ -1,7 +1,7 @@
-#ifndef __RECOMP_SOUND_H__
-#define __RECOMP_SOUND_H__
+#ifndef __ZELDA_SOUND_H__
+#define __ZELDA_SOUND_H__
 
-namespace recomp {
+namespace zelda64 {
     void reset_sound_settings();
     void set_main_volume(int volume);
     int get_main_volume();

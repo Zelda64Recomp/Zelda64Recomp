@@ -6,7 +6,7 @@
 
 using ColourMap = Rml::UnorderedMap<Rml::String, Rml::Colourb>;
 
-namespace recomp {
+namespace recompui {
 	class PropertyParserColorHack : public Rml::PropertyParser {
 	public:
 		PropertyParserColorHack();

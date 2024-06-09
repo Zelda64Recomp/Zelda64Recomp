@@ -1,12 +1,12 @@
 #include <atomic>
 #include <mutex>
 
-#include "../ultramodern/ultramodern.hpp"
-#include "recomp.h"
+#include "ultramodern/ultramodern.hpp"
+#include "librecomp/recomp.h"
 #include "recomp_input.h"
+#include "zelda_config.h"
 #include "recomp_ui.h"
 #include "SDL.h"
-#include "rt64_layer.h"
 #include "promptfont.h"
 #include "GamepadMotion.hpp"
 
@@ -75,13 +75,13 @@ void recomp::stop_scanning_input() {
 
 void queue_if_enabled(SDL_Event* event) {
     if (!recomp::all_input_disabled()) {
-        recomp::queue_event(*event);
+        recompui::queue_event(*event);
     }
 }
 
 static std::atomic_bool cursor_enabled = true;
 
-void recomp::set_cursor_visible(bool visible) {
+void recompui::set_cursor_visible(bool visible) {
     cursor_enabled.store(visible);
 }
 
@@ -102,15 +102,16 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         {
             SDL_KeyboardEvent* keyevent = &event->key;
 
-            // Skip repeated events.
-            if (event->key.repeat) {
+            // Skip repeated events when not in the menu
+            if (recompui::get_current_menu() == recompui::Menu::None &&
+                event->key.repeat) {
                 break;
             }
 
             if ((keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_RETURN && (keyevent->keysym.mod & SDL_Keymod::KMOD_ALT)) ||
                 keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_F11
             ) {
-                recomp::toggle_fullscreen();
+                recompui::toggle_fullscreen();
             }
             if (scanning_device != recomp::InputDevice::COUNT) {
                 if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
@@ -155,12 +156,12 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             return true;
         }
 
-        if (recomp::get_current_menu() != recomp::Menu::Config) {
-            recomp::set_current_menu(recomp::Menu::Config);
+        if (recompui::get_current_menu() != recompui::Menu::Config) {
+            recompui::set_current_menu(recompui::Menu::Config);
         }
 
-        recomp::open_quit_game_prompt();
-        recomp::activate_mouse();
+        zelda64::open_quit_game_prompt();
+        recompui::activate_mouse();
         break;
     }
     case SDL_EventType::SDL_MOUSEWHEEL:
@@ -435,10 +436,10 @@ void recomp::poll_inputs() {
         bool save_is_held = InputState.keys[SDL_SCANCODE_F5] != 0;
         bool load_is_held = InputState.keys[SDL_SCANCODE_F7] != 0;
         if (save_is_held && !save_was_held) {
-            recomp::quicksave_save();
+            zelda64::quicksave_save();
         }
         else if (load_is_held && !load_was_held) {
-            recomp::quicksave_load();
+            zelda64::quicksave_load();
         }
         save_was_held = save_is_held;
     }
@@ -649,7 +650,7 @@ void recomp::set_right_analog_suppressed(bool suppressed) {
 
 bool recomp::game_input_disabled() {
     // Disable input if any menu is open.
-    return recomp::get_current_menu() != recomp::Menu::None;
+    return recompui::get_current_menu() != recompui::Menu::None;
 }
 
 bool recomp::all_input_disabled() {

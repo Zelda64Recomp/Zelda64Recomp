@@ -1,9 +1,9 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-#include "recomp_debug.h"
+#include "zelda_debug.h"
 
-std::vector<recomp::AreaWarps> recomp::game_warps {
+std::vector<zelda64::AreaWarps> zelda64::game_warps {
     { "Clock Town", {
         {
             0, "Mayor's Residence", {
