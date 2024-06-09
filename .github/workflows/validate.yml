@@ -35,7 +35,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.11
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
       - name: Install Linux Dependencies
         run: |
           apt-get update
@@ -48,7 +48,7 @@ jobs:
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
           cd N64RecompSource
-          git checkout 6eb7d5bd3ee7f0b79f3fd7adbe931dccbacf7e1b
+          git checkout ${{ inputs.N64RECOMP_COMMIT }}
           git submodule update --init --recursive
           
           # enable ccache
@@ -56,8 +56,8 @@ jobs:
           
           # Build N64Recomp & RSPRecomp
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j 8
-          cmake --build cmake-build --config Release --target RSPRecomp -j 8
+          cmake --build cmake-build --config Release --target N64Recomp -j $(nproc)
+          cmake --build cmake-build --config Release --target RSPRecomp -j $(nproc)
           
           # Copy N64Recomp & RSPRecomp to root directory
           cp cmake-build/N64Recomp ..
@@ -73,7 +73,7 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_C_COMPILER=clang-17 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DPATCHES_C_COMPILER=clang-17  -DPATCHES_LD=ld.lld-17 -DPATCHES_OBJCOPY=llvm-objcopy-17
-          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j 8
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $(nproc)
       - name: Prepare Archive
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
@@ -114,7 +114,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64-${{ inputs.N64RECOMP_COMMIT }}
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
