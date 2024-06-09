@@ -286,7 +286,10 @@ void assign_all_mappings(recomp::InputDevice device, const recomp::DefaultN64Map
     assign_mapping_complete(device, recomp::GameInput::X_AXIS_POS, values.analog_right);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_NEG, values.analog_down);
     assign_mapping_complete(device, recomp::GameInput::Y_AXIS_POS, values.analog_up);
+
     assign_mapping_complete(device, recomp::GameInput::TOGGLE_MENU, values.toggle_menu);
+    assign_mapping_complete(device, recomp::GameInput::ACCEPT_MENU, values.accept_menu);
+    assign_mapping_complete(device, recomp::GameInput::APPLY_MENU, values.apply_menu);
 };
 
 void zelda64::reset_input_bindings() {
@@ -300,6 +303,19 @@ void zelda64::reset_cont_input_bindings() {
 
 void zelda64::reset_kb_input_bindings() {
     assign_all_mappings(recomp::InputDevice::Keyboard, recomp::default_n64_keyboard_mappings);
+}
+
+void zelda64::reset_single_input_binding(recomp::InputDevice device, recomp::GameInput input) {
+    assign_mapping_complete(
+        device,
+        input,
+        recomp::get_default_mapping_for_input(
+            device == recomp::InputDevice::Keyboard ?
+                recomp::default_n64_keyboard_mappings :
+                recomp::default_n64_controller_mappings,
+            input
+        )
+    );
 }
 
 void reset_graphics_options() {

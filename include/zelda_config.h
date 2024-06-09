@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <string_view>
 #include "ultramodern/config.hpp"
+#include "recomp_input.h"
 
 namespace zelda64 {
     constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
@@ -16,6 +17,7 @@ namespace zelda64 {
     void reset_input_bindings();
     void reset_cont_input_bindings();
     void reset_kb_input_bindings();
+    void reset_single_input_binding(recomp::InputDevice device, recomp::GameInput input);
 
     std::filesystem::path get_app_folder_path();
     

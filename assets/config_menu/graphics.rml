@@ -316,7 +316,7 @@
                         id="apply_button"
                         style="nav-up:#hr_original"
                     >
-                        <div class="button__label">Apply <span class="prompt-font-sm">{{gfx_help__apply}}</span></div>
+                        <div class="button__label">Apply<span class="prompt-font-sm">{{gfx_help__apply}}</span></div>
                     </button>
                 </div>
             </div>

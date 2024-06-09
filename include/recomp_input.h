@@ -40,7 +40,9 @@ namespace recomp {
         DEFINE_INPUT(X_AXIS_POS, 0, "Right") \
 
     #define DEFINE_RECOMP_UI_INPUTS() \
-        DEFINE_INPUT(TOGGLE_MENU, 0, "Toggle Menu")
+        DEFINE_INPUT(TOGGLE_MENU, 0, "Toggle Menu") \
+        DEFINE_INPUT(ACCEPT_MENU, 0, "Accept (Menu)") \
+        DEFINE_INPUT(APPLY_MENU, 0, "Apply (Menu)")
 
     #define DEFINE_ALL_INPUTS() \
         DEFINE_N64_BUTTON_INPUTS() \
@@ -88,6 +90,7 @@ namespace recomp {
     void cancel_scanning_input();
     void config_menu_set_cont_or_kb(bool cont_interacted);
     InputField get_scanned_input();
+    int get_scanned_input_index();
     
     struct DefaultN64Mappings {
         std::vector<InputField> a;
@@ -113,6 +116,8 @@ namespace recomp {
         std::vector<InputField> analog_down;
 
         std::vector<InputField> toggle_menu;
+        std::vector<InputField> accept_menu;
+        std::vector<InputField> apply_menu;
     };
 
     constexpr const std::vector<InputField>& get_default_mapping_for_input(const DefaultN64Mappings& defaults, const GameInput input) {
@@ -136,6 +141,8 @@ namespace recomp {
             case GameInput::Y_AXIS_POS: return defaults.analog_up;
             case GameInput::Y_AXIS_NEG: return defaults.analog_down;
             case GameInput::TOGGLE_MENU: return defaults.toggle_menu;
+            case GameInput::ACCEPT_MENU: return defaults.accept_menu;
+            case GameInput::APPLY_MENU: return defaults.apply_menu;
             default: return std::vector<InputField>();
         }
     }

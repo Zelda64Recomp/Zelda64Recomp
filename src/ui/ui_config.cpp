@@ -163,6 +163,10 @@ static bool cont_active = true;
 
 static recomp::InputDevice cur_device = recomp::InputDevice::Controller;
 
+int recomp::get_scanned_input_index() {
+	return scanned_input_index;
+}
+
 void recomp::finish_scanning_input(recomp::InputField scanned_field) {
     recomp::set_input_binding(static_cast<recomp::GameInput>(scanned_input_index), scanned_binding_index, cur_device, scanned_field);
 	scanned_input_index = -1;
@@ -170,6 +174,9 @@ void recomp::finish_scanning_input(recomp::InputField scanned_field) {
 	controls_model_handle.DirtyVariable("inputs");
 	controls_model_handle.DirtyVariable("active_binding_input");
 	controls_model_handle.DirtyVariable("active_binding_slot");
+	nav_help_model_handle.DirtyVariable("nav_help__accept");
+	nav_help_model_handle.DirtyVariable("nav_help__exit");
+	graphics_model_handle.DirtyVariable("gfx_help__apply");
 }
 
 void recomp::cancel_scanning_input() {
@@ -179,6 +186,9 @@ void recomp::cancel_scanning_input() {
 	controls_model_handle.DirtyVariable("inputs");
 	controls_model_handle.DirtyVariable("active_binding_input");
 	controls_model_handle.DirtyVariable("active_binding_slot");
+	nav_help_model_handle.DirtyVariable("nav_help__accept");
+	nav_help_model_handle.DirtyVariable("nav_help__exit");
+	graphics_model_handle.DirtyVariable("gfx_help__apply");
 }
 
 void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
@@ -687,9 +697,17 @@ public:
 		
 		constructor.BindFunc("gfx_help__apply", [](Rml::Variant& out) {
 			if (cont_active) {
-				out = PF_GAMEPAD_X " " PF_GAMEPAD_START;
+				out = \
+					(recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 0, recomp::InputDevice::Controller).to_string() != "" ?
+						" " + recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 0, recomp::InputDevice::Controller).to_string() :
+						""
+					) + \
+					(recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 1, recomp::InputDevice::Controller).to_string() != "" ?
+						" " + recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 1, recomp::InputDevice::Controller).to_string() :
+						""
+					);
 			} else {
-				out = PF_KEYBOARD_F;
+				out = " " PF_KEYBOARD_F;
 			}
 		});
 
@@ -735,6 +753,9 @@ public:
                     zelda64::reset_kb_input_bindings();
 				}
 				model_handle.DirtyAllVariables();
+				nav_help_model_handle.DirtyVariable("nav_help__accept");
+				nav_help_model_handle.DirtyVariable("nav_help__exit");
+				graphics_model_handle.DirtyVariable("gfx_help__apply");
 			});
 
 		constructor.BindEventCallback("clear_input_bindings",
@@ -744,6 +765,16 @@ public:
                     recomp::set_input_binding(input, binding_index, cur_device, recomp::InputField{});
 				}
 				model_handle.DirtyVariable("inputs");
+				graphics_model_handle.DirtyVariable("gfx_help__apply");
+			});
+
+		constructor.BindEventCallback("reset_single_input_binding_to_default",
+			[](Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
+                recomp::GameInput input = static_cast<recomp::GameInput>(inputs.at(0).Get<size_t>());
+				zelda64::reset_single_input_binding(cur_device, input);
+				model_handle.DirtyVariable("inputs");
+				nav_help_model_handle.DirtyVariable("nav_help__accept");
+				nav_help_model_handle.DirtyVariable("nav_help__exit");
 			});
 
 		constructor.BindEventCallback("set_input_row_focus",
@@ -868,7 +899,9 @@ public:
 
 		constructor.BindFunc("nav_help__accept", [](Rml::Variant& out) {
 			if (cont_active) {
-				out = PF_GAMEPAD_A;
+				out = \
+					recomp::get_input_binding(recomp::GameInput::ACCEPT_MENU, 0, recomp::InputDevice::Controller).to_string() + \
+					recomp::get_input_binding(recomp::GameInput::ACCEPT_MENU, 1, recomp::InputDevice::Controller).to_string();
 			} else {
 				out = PF_KEYBOARD_ENTER;
 			}
@@ -876,7 +909,9 @@ public:
 
 		constructor.BindFunc("nav_help__exit", [](Rml::Variant& out) {
 			if (cont_active) {
-				out = PF_XBOX_VIEW;
+				out = \
+					recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller).to_string() + \
+					recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller).to_string();
 			} else {
 				out = PF_KEYBOARD_ESCAPE;
 			}
