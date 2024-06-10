@@ -36,10 +36,6 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.11
         with:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
-      - name: Install Linux Dependencies
-        run: |
-          apt-get update
-          apt-get install -y libcanberra-gtk-module libcanberra-gtk3-module libgbm-dev
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
@@ -87,12 +83,6 @@ jobs:
       - name: Build AppImage
         run: |-
           ./.github/linux/appimage.sh 
-      - name: Adjust AppImage
-        run: |
-          ./Zelda64Recompiled-x86_64.AppImage --appimage-extract
-          rm -rf squashfs-root/usr/lib/libgmodule*
-          appimagetool-x86_64.AppImage -v squashfs-root
-          rm -rf squashfs-root/
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v3
         with:

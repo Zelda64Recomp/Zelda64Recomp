@@ -14,7 +14,6 @@ fi
 
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$LINUX_DEPLOY_ARCH.AppImage"
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy-plugin-gtk/raw/master/linuxdeploy-plugin-gtk.sh"
-curl -sSfLO "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$LINUX_DEPLOY_ARCH.AppImage"
 
 chmod a+x linuxdeploy*
  
@@ -36,4 +35,10 @@ echo 'else' >> AppDir/AppRun
 echo '    cd "$this_dir"/usr/bin/' >> AppDir/AppRun
 echo '    ./Zelda64Recompiled' >> AppDir/AppRun
 echo 'fi' >> AppDir/AppRun
+
+# Remove conflicting libraries
+rm -rf AppDir/usr/lib/libgmodule*
+rm -rf AppDir/usr/lib/gio/modules/*.so
+rm -rf AppDir/usr/lib/libwayland*
+
 ./deploy/usr/bin/linuxdeploy-plugin-appimage --appdir=AppDir
