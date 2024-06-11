@@ -408,6 +408,7 @@ int main(int argc, char** argv) {
         .poll_input = recomp::poll_inputs,
         .get_input = recomp::get_n64_input,
         .set_rumble = recomp::set_rumble,
+        .get_connected_device_info = recomp::get_connected_device_info,
     };
 
     ultramodern::events::callbacks_t thread_callbacks{

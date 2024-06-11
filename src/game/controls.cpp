@@ -79,6 +79,10 @@ bool recomp::get_n64_input(int controller_num, uint16_t* buttons_out, float* x_o
     uint16_t cur_buttons = 0;
     float cur_x = 0.0f;
     float cur_y = 0.0f;
+    
+    if (controller_num != 0) {
+        return false;
+    }
 
     if (!recomp::game_input_disabled()) {
         for (size_t i = 0; i < n64_button_values.size(); i++) {
