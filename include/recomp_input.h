@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 
+#include "ultramodern/input.hpp"
+
 #include "json/json.hpp"
 
 namespace recomp {
@@ -154,6 +156,8 @@ namespace recomp {
     void set_rumble(int controller_num, bool);
     void update_rumble();
     void handle_events();
+
+    ultramodern::input::connected_device_info_t get_connected_device_info(int controller_num);
     
     // Rumble strength ranges from 0 to 100.
     int get_rumble_strength();
