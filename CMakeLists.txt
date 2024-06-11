@@ -31,12 +31,31 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/lib/N64Recomp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime)
 
 target_include_directories(rt64 PRIVATE ${CMAKE_BINARY_DIR}/rt64/src)
 
+# N64Recomp - Generate the necessary C files
+configure_file(${CMAKE_SOURCE_DIR}/funcs.txt ${CMAKE_BINARY_DIR}/funcs.txt COPYONLY)
+
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/funcs.txt
+    COMMAND N64Recomp us.rev1.toml
+    COMMAND RSPRecomp aspMain.us.rev1.toml
+    COMMAND RSPRecomp njpgdspMain.us.rev1.toml
+    DEPENDS N64Recomp RSPRecomp
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating C source files"
+)
+
+add_custom_target(generate_c_sources
+    DEPENDS ${CMAKE_BINARY_DIR}/funcs.txt
+)
+
 # RecompiledFuncs - Library containing the primary recompiler output
 add_library(RecompiledFuncs STATIC)
+add_dependencies(RecompiledFuncs generate_c_sources)
 
 target_compile_options(RecompiledFuncs PRIVATE
     # -Wno-unused-but-set-variable
@@ -51,7 +70,23 @@ target_include_directories(RecompiledFuncs PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/librecomp/include
 )
 
-file(GLOB FUNC_C_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.c)
+file(STRINGS ${CMAKE_BINARY_DIR}/funcs.txt FUNC_C_SOURCES)
+list(TRANSFORM FUNC_C_SOURCES PREPEND "${CMAKE_SOURCE_DIR}/RecompiledFuncs/")
+
+add_custom_command(
+    OUTPUT ${FUNC_C_SOURCES}
+    COMMAND ${CMAKE_COMMAND} -E echo "Generating source files from funcs.txt"
+    DEPENDS ${CMAKE_BINARY_DIR}/funcs.txt
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Processing funcs.txt to generate source files"
+)
+
+add_custom_target(process_generated_sources
+    DEPENDS ${FUNC_C_SOURCES}
+)
+
+add_dependencies(RecompiledFuncs process_generated_sources)
+
 file(GLOB FUNC_CXX_SOURCES ${CMAKE_SOURCE_DIR}/RecompiledFuncs/*.cpp)
 
 target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
@@ -98,9 +133,9 @@ add_custom_command(OUTPUT
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h
                    # TODO: Look into why modifying patches requires two builds to take
-                   COMMAND ./N64Recomp patches.toml
+                   COMMAND N64Recomp patches.toml
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                   DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+                   DEPENDS N64Recomp ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Main executable
