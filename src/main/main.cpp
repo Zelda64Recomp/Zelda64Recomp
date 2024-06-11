@@ -198,8 +198,12 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
     // swap buffer to correct for the address XOR caused by endianness handling.
     convert_and_swap_channels(audio_data, sample_count, swap_buffer);
 
-    // TODO handle cases where a chunk is smaller than the duplicated frame count.
-    assert(sample_count > duplicated_input_frames * input_channels);
+    // Handle cases where a chunk is smaller than the duplicated frame count.
+    if (sample_count <= duplicated_input_frames * input_channels) {
+        // Pad the chunk with silence.
+        memset(swap_buffer.data() + sample_count, 0, (duplicated_input_frames * input_channels - sample_count) * sizeof(float));
+        sample_count = duplicated_input_frames * input_channels;
+    }
 
     // Copy the last converted samples into the duplicated sample buffer to reuse in resampling the next queued chunk.
     copy_last_samples(swap_buffer, sample_count, duplicated_sample_buffer);
