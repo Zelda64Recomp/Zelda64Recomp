@@ -446,7 +446,7 @@ void recomp::poll_inputs() {
     #endif
 }
 
-void recomp::set_rumble(bool on) {
+void recomp::set_rumble(int controller_num, bool on) {
     InputState.rumble_active = on;
 }
 

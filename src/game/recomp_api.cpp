@@ -5,6 +5,7 @@
 #include "zelda_config.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
+#include "zelda_render.h"
 #include "zelda_sound.h"
 #include "librecomp/helpers.hpp"
 #include "../patches/input.h"
@@ -12,7 +13,6 @@
 #include "../patches/sound.h"
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
-#include "ultramodern/rt64_layer.hpp"
 
 extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
     recomp::poll_inputs();
@@ -59,17 +59,17 @@ extern "C" void recomp_get_target_framerate(uint8_t* rdram, recomp_context* ctx)
 }
 
 extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
-    ultramodern::GraphicsConfig graphics_config = ultramodern::get_graphics_config();
+    ultramodern::renderer::GraphicsConfig graphics_config = ultramodern::renderer::get_graphics_config();
     float original = _arg<0, float>(rdram, ctx);
     int width, height;
     recompui::get_window_size(width, height);
 
     switch (graphics_config.ar_option) {
-        case RT64::UserConfiguration::AspectRatio::Original:
+        case ultramodern::renderer::AspectRatio::Original:
         default:
             _return(ctx, original);
             return;
-        case RT64::UserConfiguration::AspectRatio::Expand:
+        case ultramodern::renderer::AspectRatio::Expand:
             _return(ctx, std::max(static_cast<float>(width) / height, original));
             return;
     }
@@ -104,7 +104,7 @@ extern "C" void recomp_load_overlays(uint8_t * rdram, recomp_context * ctx) {
 }
 
 extern "C" void recomp_high_precision_fb_enabled(uint8_t * rdram, recomp_context * ctx) {
-    _return(ctx, static_cast<s32>(ultramodern::RT64HighPrecisionFBEnabled()));
+    _return(ctx, static_cast<s32>(zelda64::renderer::RT64HighPrecisionFBEnabled()));
 }
 
 extern "C" void recomp_get_resolution_scale(uint8_t* rdram, recomp_context* ctx) {

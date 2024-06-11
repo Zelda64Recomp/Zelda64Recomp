@@ -150,8 +150,8 @@ namespace recomp {
     InputField& get_input_binding(GameInput input, size_t binding_index, InputDevice device);
     void set_input_binding(GameInput input, size_t binding_index, InputDevice device, InputField value);
 
-    void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
-    void set_rumble(bool);
+    bool get_n64_input(int controller_num, uint16_t* buttons_out, float* x_out, float* y_out);
+    void set_rumble(int controller_num, bool);
     void update_rumble();
     void handle_events();
     

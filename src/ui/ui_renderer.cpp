@@ -19,7 +19,6 @@
 
 #include "concurrentqueue.h"
 
-#include "ultramodern/rt64_layer.hpp"
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
 
