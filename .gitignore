@@ -57,6 +57,7 @@ node_modules/
 
 # Recompiler Linux binary
 N64Recomp
+RSPRecomp
 .DS_Store
 
 # Controller mappings file
