@@ -1457,7 +1457,7 @@ void deinit_hook() {
     ui_context.reset();
 }
 
-void set_rt64_hooks() {
+void recompui::set_render_hooks() {
     RT64::SetRenderHooks(init_hook, draw_hook, deinit_hook);
 }
 

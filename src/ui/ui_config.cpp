@@ -973,7 +973,7 @@ public:
 
 	void make_bindings(Rml::Context* context) override {
 		// initially set cont state for ui help
-        recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
+		recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
 		make_nav_help_bindings(context);
 		make_general_bindings(context);
 		make_controls_bindings(context);
