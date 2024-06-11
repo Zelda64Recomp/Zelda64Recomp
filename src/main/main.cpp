@@ -192,36 +192,70 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
     }
     
     // Copy the duplicated frames from last chunk into this chunk
-    for (size_t i = 0; i < duplicated_input_frames * input_channels; i++) {
-        swap_buffer[i] = duplicated_sample_buffer[i];
-    }
+    copy_duplicated_frames(swap_buffer, duplicated_sample_buffer);
 
     // Convert the audio from 16-bit values to floats and swap the audio channels into the
-    // swap buffer to correct for the address xor caused by endianness handling.
-    float cur_main_volume = zelda64::get_main_volume() / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
-    for (size_t i = 0; i < sample_count; i += input_channels) {
-        swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f) * cur_main_volume;
-        swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f) * cur_main_volume;
-    }
-    
+    // swap buffer to correct for the address XOR caused by endianness handling.
+    convert_and_swap_channels(audio_data, sample_count, swap_buffer);
+
     // TODO handle cases where a chunk is smaller than the duplicated frame count.
     assert(sample_count > duplicated_input_frames * input_channels);
 
     // Copy the last converted samples into the duplicated sample buffer to reuse in resampling the next queued chunk.
+    copy_last_samples(swap_buffer, sample_count, duplicated_sample_buffer);
+    
+    // Set up the SDL audio converter
+    prepare_audio_converter(swap_buffer, sample_count);
+
+    // Convert the audio to the output format.
+    convert_audio();
+
+    // Queue the converted audio to the device.
+    queue_audio_data(swap_buffer);
+}
+
+void copy_duplicated_frames(std::vector<float>& swap_buffer, const std::array<float, duplicated_input_frames * input_channels>& duplicated_sample_buffer) {
+    for (size_t i = 0; i < duplicated_input_frames * input_channels; i++) {
+        swap_buffer[i] = duplicated_sample_buffer[i];
+    }
+}
+
+void convert_and_swap_channels(int16_t* audio_data, size_t sample_count, std::vector<float>& swap_buffer) {
+    float cur_main_volume = zelda64::get_main_volume() / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
+    for (size_t i = 0; i < sample_count; i += input_channels) {
+        if (input_channels == 2) { // Stereo
+            swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f) * cur_main_volume;
+            swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f) * cur_main_volume;
+        } else if (input_channels == 4) { // Quadraphonic
+            swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 3] * (0.5f / 32768.0f) * cur_main_volume; // Rear left
+            swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 2] * (0.5f / 32768.0f) * cur_main_volume; // Rear right
+            swap_buffer[i + 2 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f) * cur_main_volume; // Front left
+            swap_buffer[i + 3 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f) * cur_main_volume; // Front right
+        }
+    }
+}
+
+void copy_last_samples(std::vector<float>& swap_buffer, size_t sample_count, std::array<float, duplicated_input_frames * input_channels>& duplicated_sample_buffer) {
     for (size_t i = 0; i < duplicated_input_frames * input_channels; i++) {
         duplicated_sample_buffer[i] = swap_buffer[i + sample_count];
     }
-    
+}
+
+void prepare_audio_converter(std::vector<float>& swap_buffer, size_t sample_count) {
     audio_convert.buf = reinterpret_cast<Uint8*>(swap_buffer.data());
     audio_convert.len = (sample_count + duplicated_input_frames * input_channels) * sizeof(swap_buffer[0]);
+}
 
+void convert_audio() {
     int ret = SDL_ConvertAudio(&audio_convert);
 
     if (ret < 0) {
         printf("Error using SDL audio converter: %s\n", SDL_GetError());
         throw std::runtime_error("Error using SDL audio converter");
     }
+}
 
+void queue_audio_data(std::vector<float>& swap_buffer) {
     uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
     uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
     float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
@@ -233,8 +267,15 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         uint32_t skip_ratio = 1 << skip_factor;
         num_bytes_to_queue /= skip_ratio;
         for (size_t i = 0; i < num_bytes_to_queue / (output_channels * sizeof(swap_buffer[0])); i++) {
-            samples_to_queue[2 * i + 0] = samples_to_queue[2 * skip_ratio * i + 0];
-            samples_to_queue[2 * i + 1] = samples_to_queue[2 * skip_ratio * i + 1];
+            if (input_channels == 2) {
+                samples_to_queue[2 * i + 0] = samples_to_queue[2 * skip_ratio * i + 0];
+                samples_to_queue[2 * i + 1] = samples_to_queue[2 * skip_ratio * i + 1];
+            } else if (input_channels == 4) {
+                samples_to_queue[4 * i + 0] = samples_to_queue[4 * skip_ratio * i + 0]; // Rear left
+                samples_to_queue[4 * i + 1] = samples_to_queue[4 * skip_ratio * i + 1]; // Rear right
+                samples_to_queue[4 * i + 2] = samples_to_queue[4 * skip_ratio * i + 2]; // Front left
+                samples_to_queue[4 * i + 3] = samples_to_queue[4 * skip_ratio * i + 3]; // Front right
+            }
         }
     }
 
