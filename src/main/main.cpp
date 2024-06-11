@@ -41,9 +41,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
 
-extern "C" void init();
-/*extern "C"*/ void start(ultramodern::renderer::WindowHandle window_handle, const ultramodern::audio_callbacks_t* audio_callbacks, const ultramodern::input::callbacks_t* input_callbacks);
-
 template<typename... Ts>
 void exit_error(const char* str, Ts ...args) {
     // TODO pop up an error
