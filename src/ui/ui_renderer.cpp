@@ -16,6 +16,7 @@
 #include "librecomp/game.hpp"
 #include "zelda_config.h"
 #include "ui_rml_hacks.hpp"
+#include "zelda_support.h"
 
 #include "concurrentqueue.h"
 
@@ -1144,8 +1145,6 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::Debugger::Initialise(ui_context->rml.context);
 
     {
-        const Rml::String directory = "assets/";
-
         struct FontFace {
             const char* filename;
             bool fallback_face;
@@ -1162,7 +1161,13 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         };
 
         for (const FontFace& face : font_faces) {
+            #if defined(__APPLE__)
+            const Rml::String directory = "/assets/";
+            Rml::LoadFontFace(zelda64::get_bundle_resource_directory() + directory + face.filename, face.fallback_face);
+            #else
+            const Rml::String directory = "assets/";
             Rml::LoadFontFace(directory + face.filename, face.fallback_face);
+            #endif
         }
     }
 
