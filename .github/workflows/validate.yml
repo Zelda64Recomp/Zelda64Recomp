@@ -63,6 +63,10 @@ jobs:
           ./N64Recomp us.rev1.toml
           ./RSPRecomp aspMain.us.rev1.toml
           ./RSPRecomp njpgdspMain.us.rev1.toml
+      - name: Hotpatch DXC into RT64's contrib
+        run: |
+          cp -v /usr/local/lib/libdxcompiler.so ./lib/rt64/src/contrib/dxc/lib/x64/libdxcompiler.so
+          cp -v /usr/local/bin/dxc ./lib/rt64/src/contrib/dxc/bin/x64/dxc
       - name: Build ZeldaRecomp
         run: |-
           # enable ccache
