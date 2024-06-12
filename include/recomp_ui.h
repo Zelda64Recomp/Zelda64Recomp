@@ -119,7 +119,9 @@ namespace recompui {
 	void set_cont_active(bool active);
 	void activate_mouse();
 
-    void message_box(const char* msg);
+	void message_box(const char* msg);
+
+	void set_render_hooks();
 }
 
 #endif

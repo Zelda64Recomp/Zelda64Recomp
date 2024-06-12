@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 
+#include "ultramodern/input.hpp"
+
 #include "json/json.hpp"
 
 namespace recomp {
@@ -150,10 +152,12 @@ namespace recomp {
     InputField& get_input_binding(GameInput input, size_t binding_index, InputDevice device);
     void set_input_binding(GameInput input, size_t binding_index, InputDevice device, InputField value);
 
-    void get_n64_input(uint16_t* buttons_out, float* x_out, float* y_out);
-    void set_rumble(bool);
+    bool get_n64_input(int controller_num, uint16_t* buttons_out, float* x_out, float* y_out);
+    void set_rumble(int controller_num, bool);
     void update_rumble();
     void handle_events();
+
+    ultramodern::input::connected_device_info_t get_connected_device_info(int controller_num);
     
     // Rumble strength ranges from 0 to 100.
     int get_rumble_strength();

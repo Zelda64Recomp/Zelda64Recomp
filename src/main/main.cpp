@@ -24,6 +24,7 @@
 #include "recomp_input.h"
 #include "zelda_config.h"
 #include "zelda_sound.h"
+#include "zelda_render.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 
@@ -39,9 +40,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
-
-extern "C" void init();
-/*extern "C"*/ void start(ultramodern::WindowHandle window_handle, const ultramodern::audio_callbacks_t* audio_callbacks, const ultramodern::input_callbacks_t* input_callbacks);
 
 template<typename... Ts>
 void exit_error(const char* str, Ts ...args) {
@@ -121,11 +119,11 @@ bool SetImageAsIcon(const char* filename, SDL_Window* window)
 
 SDL_Window* window;
 
-ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
+ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, SDL_WINDOW_RESIZABLE );
 #if defined(__linux__)
     SetImageAsIcon("icons/512.png",window);
-    if (ultramodern::get_graphics_config().wm_option == ultramodern::WindowMode::Fullscreen) { // TODO: Remove once RT64 gets native fullscreen support on Linux
+    if (ultramodern::renderer::get_graphics_config().wm_option == ultramodern::renderer::WindowMode::Fullscreen) { // TODO: Remove once RT64 gets native fullscreen support on Linux
         SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
     } else {
         SDL_SetWindowFullscreen(window,0);
@@ -141,7 +139,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
     SDL_GetWindowWMInfo(window, &wmInfo);
 
 #if defined(_WIN32)
-    return ultramodern::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
+    return ultramodern::renderer::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__ANDROID__)
     static_assert(false && "Unimplemented");
 #elif defined(__linux__)
@@ -149,7 +147,7 @@ ultramodern::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t
         exit_error("Unsupported SDL2 video driver \"%s\". Only X11 is supported on Linux.\n", SDL_GetCurrentVideoDriver());
     }
 
-    return ultramodern::WindowHandle{ wmInfo.info.x11.display, wmInfo.info.x11.window };
+    return ultramodern::renderer::WindowHandle{ wmInfo.info.x11.display, wmInfo.info.x11.window };
 #else
     static_assert(false && "Unimplemented");
 #endif
@@ -390,6 +388,10 @@ int main(int argc, char** argv) {
         .get_rsp_microcode = get_rsp_microcode,
     };
 
+    ultramodern::renderer::callbacks_t renderer_callbacks{
+        .create_render_context = zelda64::renderer::create_render_context,
+    };
+
     ultramodern::gfx_callbacks_t gfx_callbacks{
         .create_gfx = create_gfx,
         .create_window = create_window,
@@ -402,10 +404,11 @@ int main(int argc, char** argv) {
         .set_frequency = set_frequency,
     };
 
-    ultramodern::input_callbacks_t input_callbacks{
+    ultramodern::input::callbacks_t input_callbacks{
         .poll_input = recomp::poll_inputs,
         .get_input = recomp::get_n64_input,
         .set_rumble = recomp::set_rumble,
+        .get_connected_device_info = recomp::get_connected_device_info,
     };
 
     ultramodern::events::callbacks_t thread_callbacks{
@@ -417,7 +420,7 @@ int main(int argc, char** argv) {
         .message_box = recompui::message_box,
     };
 
-    recomp::start({}, rsp_callbacks, audio_callbacks, input_callbacks, gfx_callbacks, thread_callbacks, error_handling_callbacks);
+    recomp::start({}, rsp_callbacks, renderer_callbacks, audio_callbacks, input_callbacks, gfx_callbacks, thread_callbacks, error_handling_callbacks);
 
     NFD_Quit();
 
