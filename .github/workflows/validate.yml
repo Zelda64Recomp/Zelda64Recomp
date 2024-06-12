@@ -10,6 +10,10 @@ on:
         type: string
         required: false
         default: '2a2df89349ff25a3afb3a09617deb3a166efe2f3'
+      DXC_CHECKSUM:
+        type: string
+        required: false
+        default: '4e6f4e52989aca69739880b40b9f988357f15d10ca03284377b81f1502463ff5'
     secrets:
       ZRE_REPO_WITH_PAT:
         required: true
@@ -65,6 +69,9 @@ jobs:
           ./RSPRecomp njpgdspMain.us.rev1.toml
       - name: Hotpatch DXC into RT64's contrib
         run: |
+          # check if dxc was updated before we replace it, to detect changes
+          echo ${{ inputs.DXC_CHECKSUM }} ./lib/rt64/src/contrib/dxc/bin/x64/dxc | sha256sum --status -c -
+
           cp -v /usr/local/lib/libdxcompiler.so ./lib/rt64/src/contrib/dxc/lib/x64/libdxcompiler.so
           cp -v /usr/local/bin/dxc ./lib/rt64/src/contrib/dxc/bin/x64/dxc
       - name: Build ZeldaRecomp
