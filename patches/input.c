@@ -1,8 +1,6 @@
 #include "patches.h"
 #include "input.h"
 #include "z64snap.h"
-// Decomp rename, TODO update decomp and remove this
-#define AudioVoice_GetWord func_801A5100
 #include "z64voice.h"
 #include "audiothread_cmd.h"
 
@@ -543,7 +541,7 @@ void Player_Action_86(Player *this, PlayState *play) {
 extern s16 sPictoState;
 extern s16 sPictoPhotoBeingTaken;
 extern void* gWorkBuffer;
-u16 func_801A5100(void);
+u16 AudioVoice_GetWord(void);
 
 // @recomp Patched to update status of extra buttons via set_extra_item_slot_status.
 void Interface_UpdateButtonsPart1(PlayState* play) {
@@ -2600,7 +2598,7 @@ extern s32 Player_ActionChange_11(Player* this, PlayState* play);
 extern void func_8083A98C(Actor* thisx, PlayState* play2);
 extern void func_80836A98(Player* this, PlayerAnimationHeader* anim, PlayState* play);
 extern void func_80830B38(Player* this);
-extern void Player_AnimationPlayLoop(PlayState* play, Player* this, PlayerAnimationHeader* anim);
+extern void Player_Anim_PlayLoop(PlayState* play, Player* this, PlayerAnimationHeader* anim);
 extern s32 Player_UpdateUpperBody(Player* this, PlayState* play);
 extern void func_8082F164(Player* this, u16 button);
 extern s32 func_808401F4(PlayState* play, Player* this);
@@ -2639,7 +2637,7 @@ void Player_Action_18(Player* this, PlayState* play) {
 
     if (PlayerAnimation_Update(play, &this->skelAnime)) {
         if (!Player_IsGoronOrDeku(this)) {
-            Player_AnimationPlayLoop(play, this, D_8085BE84_reloc[PLAYER_ANIMGROUP_defense_wait][this->modelAnimType]);
+            Player_Anim_PlayLoop(play, this, D_8085BE84_reloc[PLAYER_ANIMGROUP_defense_wait][this->modelAnimType]);
         }
 
         this->av2.actionVar2 = 1;
