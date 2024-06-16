@@ -373,6 +373,11 @@ int main(int argc, char** argv) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     reset_audio(48000);
 
+    // Source controller mappings file
+    if (SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt") < 0) {
+        fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
+    }
+
     // Register supported games and patches
     for (const auto& game : supported_games) {
         recomp::register_game(game);

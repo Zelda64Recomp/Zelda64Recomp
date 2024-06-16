@@ -10,6 +10,10 @@ on:
         type: string
         required: false
         default: '2a2df89349ff25a3afb3a09617deb3a166efe2f3'
+      DXC_CHECKSUM:
+        type: string
+        required: false
+        default: '4e6f4e52989aca69739880b40b9f988357f15d10ca03284377b81f1502463ff5'
     secrets:
       ZRE_REPO_WITH_PAT:
         required: true
@@ -18,13 +22,90 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
-    runs-on: ${{ matrix.arch == 'x64' && matrix.os || format('blaze/{0}', matrix.os) }}
+    runs-on: ${{ matrix.os }}
+    container:
+      image: dcvz/n64recomp:0.0.1-ubuntu-18.04
     strategy:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
-        arch: [ x64, arm64 ]
-    name: ${{ matrix.os }} (${{ matrix.arch }}, ${{ matrix.type }})
+    name: ubuntu-18.04 (x64, ${{ matrix.type }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.11
+        with:
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
+      - name: Prepare Build
+        run: |-
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
+          unzip zre/files.zip > /dev/null 2>&1
+      - name: Build N64Recomp & RSPRecomp
+        run: |
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
+          cd N64RecompSource
+          git checkout ${{ inputs.N64RECOMP_COMMIT }}
+          git submodule update --init --recursive
+          
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          # Build N64Recomp & RSPRecomp
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config Release --target N64Recomp -j $(nproc)
+          cmake --build cmake-build --config Release --target RSPRecomp -j $(nproc)
+          
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp ..
+          cp cmake-build/RSPRecomp ..
+      - name: Run N64Recomp & RSPRecomp
+        run: |
+          ./N64Recomp us.rev1.toml
+          ./RSPRecomp aspMain.us.rev1.toml
+          ./RSPRecomp njpgdspMain.us.rev1.toml
+      - name: Hotpatch DXC into RT64's contrib
+        run: |
+          # check if dxc was updated before we replace it, to detect changes
+          echo ${{ inputs.DXC_CHECKSUM }} ./lib/rt64/src/contrib/dxc/bin/x64/dxc | sha256sum --status -c -
+
+          cp -v /usr/local/lib/libdxcompiler.so ./lib/rt64/src/contrib/dxc/lib/x64/libdxcompiler.so
+          cp -v /usr/local/bin/dxc ./lib/rt64/src/contrib/dxc/bin/x64/dxc
+      - name: Build ZeldaRecomp
+        run: |-
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_C_COMPILER=clang-17 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build -DPATCHES_C_COMPILER=clang-17  -DPATCHES_LD=ld.lld-17 -DPATCHES_OBJCOPY=llvm-objcopy-17
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $(nproc)
+      - name: Prepare Archive
+        run: |
+          mv cmake-build/Zelda64Recompiled Zelda64Recompiled
+          rm -rf assets/scss
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ gamecontrollerdb.txt
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v3
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-X64-${{ matrix.type }}
+          path: Zelda64Recompiled.tar.gz
+      - name: Build AppImage
+        run: |-
+          ./.github/linux/appimage.sh 
+      - name: Zelda64Recomp AppImage
+        uses: actions/upload-artifact@v3
+        with:
+          name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
+          path: Zelda64Recompiled-*.AppImage
+  build-linux-arm64:
+    runs-on: ${{ format('blaze/{0}', matrix.os) }}
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+        os: [ ubuntu-22.04 ]
+    name: ${{ matrix.os }} (arm64, ${{ matrix.type }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +115,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-${{ matrix.arch }}
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64-${{ inputs.N64RECOMP_COMMIT }}
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -52,7 +133,7 @@ jobs:
           ./configure
           make -j 10
           sudo make install
-          sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+          sudo cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
           echo ::endgroup::
       - name: Prepare Build
         run: |-
@@ -93,18 +174,18 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
-          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ gamecontrollerdb.txt
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-${{ runner.os }}-ARM64-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
       - name: Prepare AppImage
         run: ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-AppImage-${{ runner.arch }}-${{ matrix.type }}
+          name: Zelda64Recompiled-AppImage-ARM64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-windows:
     runs-on: windows-latest
@@ -186,3 +267,4 @@ jobs:
             dxil.dll
             SDL2.dll
             assets/
+            gamecontrollerdb.txt

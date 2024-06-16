@@ -80,8 +80,20 @@ target_sources(PatchesLib PRIVATE
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
+if(NOT DEFINED PATCHES_C_COMPILER)
+    set(PATCHES_C_COMPILER clang)
+endif()
+
+if(NOT DEFINED PATCHES_LD)
+    set(PATCHES_LD ld.lld)
+endif()
+
+if(NOT DEFINED PATCHES_OBJCOPY)
+    set(PATCHES_OBJCOPY llvm-objcopy)
+endif()
+
 add_custom_target(PatchesBin
-    COMMAND make
+    COMMAND ${CMAKE_COMMAND} -E env CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} OBJCOPY=${PATCHES_OBJCOPY} make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
     BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
@@ -103,8 +115,19 @@ add_custom_command(OUTPUT
                    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
+# Download controller db file for controller support via SDL2
+set(GAMECONTROLLERDB_COMMIT "b1e4090b3d4266e55feb0793efa35792e05faf66")
+set(GAMECONTROLLERDB_URL "https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/${GAMECONTROLLERDB_COMMIT}/gamecontrollerdb.txt")
+
+file(DOWNLOAD ${GAMECONTROLLERDB_URL} ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt
+     TLS_VERIFY ON)
+
+add_custom_target(DownloadGameControllerDB
+    DEPENDS ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt)
+
 # Main executable
 add_executable(Zelda64Recompiled)
+add_dependencies(Zelda64Recompiled DownloadGameControllerDB)
 
 # Generate mm_shader_cache.c from the MM shader cache if it exists
 if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
@@ -184,7 +207,7 @@ if (WIN32)
     if (DEFINED ENV{SDL2_VERSION})
         set(SDL2_VERSION $ENV{SDL2_VERSION})
     else()
-        set(SDL2_VERSION "2.28.5")
+        set(SDL2_VERSION "2.30.3")
     endif()
 
     # Fetch SDL2 on windows
@@ -288,15 +311,12 @@ if (${WIN32})
     set (DXC "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
-        if (APPLE)
-            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
-        else()
-            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
-        endif()
+    if (APPLE)
+        # Apple's binary is universal, so it'll work on both x86_64 and arm64
+        set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-macos")
     else()
-        if (APPLE)
-            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-macos")
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
         else()
             set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-linux")
         endif()
@@ -304,7 +324,7 @@ else()
 endif()
 
 build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
-build_pixel_shader (Zelda64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
+build_pixel_shader(Zelda64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
 
 target_sources(Zelda64Recompiled PRIVATE ${SOURCES})
 
