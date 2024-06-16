@@ -446,8 +446,25 @@ void recomp::poll_inputs() {
     #endif
 }
 
-void recomp::set_rumble(bool on) {
-    InputState.rumble_active = on;
+void recomp::set_rumble(int controller_num, bool on) {
+    if (controller_num == 0) {
+        InputState.rumble_active = on;
+    }
+}
+
+ultramodern::input::connected_device_info_t recomp::get_connected_device_info(int controller_num) {
+    switch (controller_num) {
+        case 0:
+            return ultramodern::input::connected_device_info_t {
+                .connected_device = ultramodern::input::Device::Controller,
+                .connected_pak = ultramodern::input::Pak::RumblePak,
+            };
+    }
+
+    return ultramodern::input::connected_device_info_t {
+        .connected_device = ultramodern::input::Device::None,
+        .connected_pak = ultramodern::input::Pak::None,
+    };
 }
 
 static float smoothstep(float from, float to, float amount) {

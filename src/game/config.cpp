@@ -1,6 +1,7 @@
 #include "zelda_config.h"
 #include "recomp_input.h"
 #include "zelda_sound.h"
+#include "zelda_render.h"
 #include "ultramodern/config.hpp"
 #include "librecomp/files.hpp"
 #include <filesystem>
@@ -20,21 +21,21 @@ constexpr std::u8string_view controls_filename = u8"controls.json";
 constexpr std::u8string_view sound_filename = u8"sound.json";
 constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
 
-constexpr auto res_default            = ultramodern::Resolution::Auto;
-constexpr auto hr_default             = ultramodern::HUDRatioMode::Clamp16x9;
-constexpr auto api_default            = ultramodern::GraphicsApi::Auto;
-constexpr auto ar_default             = RT64::UserConfiguration::AspectRatio::Expand;
-constexpr auto msaa_default           = RT64::UserConfiguration::Antialiasing::MSAA2X;
-constexpr auto rr_default             = RT64::UserConfiguration::RefreshRate::Display;
-constexpr auto hpfb_default           = ultramodern::HighPrecisionFramebuffer::Auto;
+constexpr auto res_default            = ultramodern::renderer::Resolution::Auto;
+constexpr auto hr_default             = ultramodern::renderer::HUDRatioMode::Clamp16x9;
+constexpr auto api_default            = ultramodern::renderer::GraphicsApi::Auto;
+constexpr auto ar_default             = ultramodern::renderer::AspectRatio::Expand;
+constexpr auto msaa_default           = ultramodern::renderer::Antialiasing::MSAA2X;
+constexpr auto rr_default             = ultramodern::renderer::RefreshRate::Display;
+constexpr auto hpfb_default           = ultramodern::renderer::HighPrecisionFramebuffer::Auto;
 constexpr int ds_default              = 1;
 constexpr int rr_manual_default       = 60;
 constexpr bool developer_mode_default = false;
 
 static bool is_steam_deck = false;
 
-ultramodern::WindowMode wm_default() {
-    return is_steam_deck ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
+ultramodern::renderer::WindowMode wm_default() {
+    return is_steam_deck ? ultramodern::renderer::WindowMode::Fullscreen : ultramodern::renderer::WindowMode::Windowed;
 }
 
 #ifdef __gnu_linux__
@@ -86,7 +87,7 @@ void call_if_key_exists(void (*func)(T), const json& j, const std::string& key) 
 }
 
 namespace ultramodern {
-    void to_json(json& j, const GraphicsConfig& config) {
+    void to_json(json& j, const renderer::GraphicsConfig& config) {
         j = json{
             {"res_option",      config.res_option},
             {"wm_option",       config.wm_option},
@@ -102,7 +103,7 @@ namespace ultramodern {
         };
     }
 
-    void from_json(const json& j, GraphicsConfig& config) {
+    void from_json(const json& j, renderer::GraphicsConfig& config) {
         config.res_option       = from_or_default(j, "res_option",      res_default);
         config.wm_option        = from_or_default(j, "wm_option",       wm_default());
         config.hr_option        = from_or_default(j, "hr_option",       hr_default);
@@ -302,7 +303,7 @@ void zelda64::reset_kb_input_bindings() {
 }
 
 void reset_graphics_options() {
-    ultramodern::GraphicsConfig new_config{};
+    ultramodern::renderer::GraphicsConfig new_config{};
     new_config.res_option = res_default;
     new_config.wm_option = wm_default();
     new_config.hr_option = hr_default;
@@ -313,12 +314,12 @@ void reset_graphics_options() {
     new_config.hpfb_option = hpfb_default;
     new_config.rr_manual_value = rr_manual_default;
     new_config.developer_mode = developer_mode_default;
-    ultramodern::set_graphics_config(new_config);
+    ultramodern::renderer::set_graphics_config(new_config);
 }
 
 bool save_graphics_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
-    ultramodern::to_json(config_json, ultramodern::get_graphics_config());
+    ultramodern::to_json(config_json, ultramodern::renderer::get_graphics_config());
     return save_json_with_backups(path, config_json);
 }
 
@@ -328,9 +329,9 @@ bool load_graphics_config(const std::filesystem::path& path) {
         return false;
     }
 
-    ultramodern::GraphicsConfig new_config{};
+    ultramodern::renderer::GraphicsConfig new_config{};
     ultramodern::from_json(config_json, new_config);
-    ultramodern::set_graphics_config(new_config);
+    ultramodern::renderer::set_graphics_config(new_config);
     return true;
 }
 

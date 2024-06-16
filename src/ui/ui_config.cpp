@@ -3,13 +3,13 @@
 #include "zelda_sound.h"
 #include "zelda_config.h"
 #include "zelda_debug.h"
+#include "zelda_render.h"
 #include "promptfont.h"
 #include "ultramodern/config.hpp"
 #include "ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
-#include "ultramodern/rt64_layer.hpp"
 
-ultramodern::GraphicsConfig new_options;
+ultramodern::renderer::GraphicsConfig new_options;
 Rml::DataModelHandle nav_help_model_handle;
 Rml::DataModelHandle general_model_handle;
 Rml::DataModelHandle controls_model_handle;
@@ -214,9 +214,9 @@ extern SDL_Window* window;
 #endif
 
 void apply_graphics_config(void) {
-	ultramodern::set_graphics_config(new_options);
+	ultramodern::renderer::set_graphics_config(new_options);
 #if defined(__linux__) // TODO: Remove once RT64 gets native fullscreen support on Linux
-	if (new_options.wm_option == ultramodern::WindowMode::Fullscreen) {
+	if (new_options.wm_option == ultramodern::renderer::WindowMode::Fullscreen) {
 		SDL_SetWindowFullscreen(window,SDL_WINDOW_FULLSCREEN_DESKTOP);
 	} else {
 		SDL_SetWindowFullscreen(window,0);
@@ -225,7 +225,7 @@ void apply_graphics_config(void) {
 }
 
 void close_config_menu() {
-	if (ultramodern::get_graphics_config() != new_options) {
+	if (ultramodern::renderer::get_graphics_config() != new_options) {
 		prompt_context.open_prompt(
 			"Graphics options have changed",
 			"Would you like to apply or discard the changes?",
@@ -237,7 +237,7 @@ void close_config_menu() {
 				close_config_menu_impl();
 			},
 			[]() {
-				new_options = ultramodern::get_graphics_config();
+				new_options = ultramodern::renderer::get_graphics_config();
 				graphics_model_handle.DirtyAllVariables();
 				close_config_menu_impl();
 			},
@@ -612,7 +612,7 @@ public:
 		}
 
 		ultramodern::sleep_milliseconds(50);
-		new_options = ultramodern::get_graphics_config();
+		new_options = ultramodern::renderer::get_graphics_config();
 		bind_config_list_events(constructor);
 
 		constructor.BindFunc("res_option",
@@ -639,7 +639,7 @@ public:
 			});
 		constructor.BindFunc("ds_option",
 			[](Rml::Variant& out) {
-				if (new_options.res_option == ultramodern::Resolution::Auto) {
+				if (new_options.res_option == ultramodern::renderer::Resolution::Auto) {
 					out = 1;
 				} else {
 					out = new_options.ds_option;
@@ -658,23 +658,23 @@ public:
 
 		constructor.BindFunc("options_changed",
 			[](Rml::Variant& out) {
-				out = (ultramodern::get_graphics_config() != new_options);
+				out = (ultramodern::renderer::get_graphics_config() != new_options);
 			});
 		constructor.BindFunc("ds_info",
 			[](Rml::Variant& out) {
 				switch (new_options.res_option) {
 					default:
-					case ultramodern::Resolution::Auto:
+					case ultramodern::renderer::Resolution::Auto:
 						out = "Downsampling is not available at auto resolution";
 						return;
-					case ultramodern::Resolution::Original:
+					case ultramodern::renderer::Resolution::Original:
 						if (new_options.ds_option == 2) {
 							out = "Rendered in 480p and scaled to 240p";
 						} else if (new_options.ds_option == 4) {
 							out = "Rendered in 960p and scaled to 240p";
 						}
 						return;
-					case ultramodern::Resolution::Original2x:
+					case ultramodern::renderer::Resolution::Original2x:
 						if (new_options.ds_option == 2) {
 							out = "Rendered in 960p and scaled to 480p";
 						} else if (new_options.ds_option == 4) {
@@ -973,7 +973,7 @@ public:
 
 	void make_bindings(Rml::Context* context) override {
 		// initially set cont state for ui help
-        recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
+		recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
 		make_nav_help_bindings(context);
 		make_general_bindings(context);
 		make_controls_bindings(context);
@@ -1000,18 +1000,18 @@ void zelda64::set_debug_mode_enabled(bool enabled) {
 }
 
 void recompui::update_supported_options() {
-	msaa2x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
-	msaa4x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
-	msaa8x_supported = ultramodern::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
-	sample_positions_supported = ultramodern::RT64SamplePositionsSupported();
+	msaa2x_supported = zelda64::renderer::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA2X;
+	msaa4x_supported = zelda64::renderer::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA4X;
+	msaa8x_supported = zelda64::renderer::RT64MaxMSAA() >= RT64::UserConfiguration::Antialiasing::MSAA8X;
+	sample_positions_supported = zelda64::renderer::RT64SamplePositionsSupported();
 	
-	new_options = ultramodern::get_graphics_config();
+	new_options = ultramodern::renderer::get_graphics_config();
 
 	graphics_model_handle.DirtyAllVariables();
 }
 
 void recompui::toggle_fullscreen() {
-	new_options.wm_option = (new_options.wm_option == ultramodern::WindowMode::Windowed) ? ultramodern::WindowMode::Fullscreen : ultramodern::WindowMode::Windowed;
+	new_options.wm_option = (new_options.wm_option == ultramodern::renderer::WindowMode::Windowed) ? ultramodern::renderer::WindowMode::Fullscreen : ultramodern::renderer::WindowMode::Windowed;
 	apply_graphics_config();
 	graphics_model_handle.DirtyVariable("wm_option");
 }
