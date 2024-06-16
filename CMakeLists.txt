@@ -206,7 +206,7 @@ if (WIN32)
     if (DEFINED ENV{SDL2_VERSION})
         set(SDL2_VERSION $ENV{SDL2_VERSION})
     else()
-        set(SDL2_VERSION "2.28.5")
+        set(SDL2_VERSION "2.30.3")
     endif()
 
     # Fetch SDL2 on windows
