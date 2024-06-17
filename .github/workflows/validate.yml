@@ -5,7 +5,7 @@ on:
       SDL2_VERSION:
         type: string
         required: false
-        default: '2.28.5'
+        default: '2.30.3'
       N64RECOMP_COMMIT:
         type: string
         required: false
