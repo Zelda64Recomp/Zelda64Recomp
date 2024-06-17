@@ -12,6 +12,8 @@ namespace zelda64 {
     // TODO: Move loading configs to the runtime once we have a way to allow per-project customization.
     void load_config();
     void save_config();
+
+    bool is_steam_deck();
     
     void reset_input_bindings();
     void reset_cont_input_bindings();

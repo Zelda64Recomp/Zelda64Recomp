@@ -493,3 +493,7 @@ void zelda64::save_config() {
     save_controls_config(recomp_dir / controls_filename);
     save_sound_config(recomp_dir / sound_filename);
 }
+
+bool zelda64::is_steam_deck() {
+    return ::is_steam_deck;
+}
