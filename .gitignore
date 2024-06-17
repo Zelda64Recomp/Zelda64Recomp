@@ -55,8 +55,7 @@ rt64.log
 
 node_modules/
 
-# Recompiler Linux binary
-N64Recomp
+# macOS
 .DS_Store
 
 # Controller mappings file
