@@ -94,8 +94,8 @@ void Graph_ExecuteAndDraw(GraphicsContext* gfxCtx, GameState* gameState) {
     GameState_Update(gameState);
 
     OPEN_DISPS(gfxCtx);
-    
-    // @recomp Send the current framerate to RT64, including any extra VI interrupt periods. 
+
+    // @recomp Send the current framerate to RT64, including any extra VI interrupt periods.
     gEXSetRefreshRate(POLY_OPA_DISP++, 60 / (gameState->framerateDivisor + extra_vis));
 
     // @recomp Edit billboard groups to skip interpolation if the camera also skipped.
@@ -485,7 +485,7 @@ void Interface_Draw(PlayState* play) {
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_LEFT, -margin_reduction * 4, -margin_reduction * 4, -margin_reduction * 4, -margin_reduction * 4);
 
         Magic_DrawMeter(play);
-        
+
         // @recomp Draw the D-Pad and its item icons as well as the autosave icon if the game is unpaused.
         if (pauseCtx->state != PAUSE_STATE_MAIN) {
             draw_dpad(play);
@@ -617,7 +617,7 @@ void Interface_Draw(PlayState* play) {
                 Interface_DrawClock(play);
             }
         }
-        
+
         // @recomp Restore normal alignment and reset shift for minigame "Perfect" text
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
         gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, 0, 0);
@@ -635,7 +635,7 @@ void Interface_Draw(PlayState* play) {
 
         Interface_DrawMinigameIcons(play);
         Interface_DrawTimers(play);
-        
+
         // @recomp Restore normal alignment and shift down for minigame countdown or clock
         gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, 0, 0, 0);
         gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, 0, 0);
@@ -936,7 +936,7 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
     textbox_viewport->vp.vscale[1] = (gCfbHeight / 2) << 2;
     textbox_viewport->vp.vscale[2] = G_MAXZ;
     textbox_viewport->vp.vscale[3] = 0;
-    
+
     textbox_viewport->vp.vtrans[0] = (gCfbWidth / 2) << 2;
     textbox_viewport->vp.vtrans[1] = (gCfbHeight / 2) << 2;
     textbox_viewport->vp.vtrans[2] = 0;
@@ -988,6 +988,11 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
         gDPSetTextureFilter(gfx++, G_TF_BILERP);
         gDPSetTexturePersp(gfx++, G_TP_NONE);
         gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
+    }
+
+    // @recomp Draw clock for Double SoT.
+    if (play->msgCtx.ocarinaMode == OCARINA_MODE_PROCESS_DOUBLE_TIME) {
+        dsot_draw_clock(play);
     }
 
     // Draw treble clef
@@ -1137,7 +1142,7 @@ void ShrinkWindow_Draw(GraphicsContext* gfxCtx) {
         gSPMatrix(gfx++, letterbox_matrix_top, G_MTX_MODELVIEW | G_MTX_PUSH | G_MTX_LOAD);
         gSPVertex(gfx++, letterbox_verts, 4, 0);
         gSP2Triangles(gfx++, 0, 1, 3, 0x0, 0, 3, 2, 0x0);
-        
+
         // @recomp Draw the bottom letterbox element.
         gSPMatrix(gfx++, letterbox_matrix_bottom, G_MTX_MODELVIEW | G_MTX_NOPUSH | G_MTX_LOAD);
         gSPVertex(gfx++, letterbox_verts, 4, 0);
@@ -1187,7 +1192,7 @@ void ShrinkWindow_Draw(GraphicsContext* gfxCtx) {
 
 extern u64 gSceneTitleCardGradientTex[];
 
-// @recomp Patch the scene title card (the one with purple background when entering a new scene) 
+// @recomp Patch the scene title card (the one with purple background when entering a new scene)
 // to not glitch out on the right edge, which is hidden by overscan on N64.
 void Message_DrawSceneTitleCard(PlayState* play, Gfx** gfxP) {
     MessageContext* msgCtx = &play->msgCtx;
