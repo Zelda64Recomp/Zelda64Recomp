@@ -55,8 +55,15 @@ rt64.log
 
 node_modules/
 
-# Recompiler Linux binary
+# Recompiler Linux binaries
 N64Recomp
+RSPRecomp
+
+# Developer environment setup directories
+elf_generating_decomp
+recomp_for_zelda
+
+# macOS specific directory information file
 .DS_Store
 
 # Controller mappings file
