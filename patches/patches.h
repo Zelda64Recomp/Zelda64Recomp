@@ -108,6 +108,8 @@ void draw_autosave_icon(PlayState* play);
 
 void recomp_crash(const char* err);
 
+void dsot_determine_enabled(void);
+bool dsot_enabled(void);
 void dsot_init_hour_selection(PlayState* play);
 void dsot_handle_hour_selection(PlayState* play);
 void dsot_cancel_hour_selection(PlayState* play);

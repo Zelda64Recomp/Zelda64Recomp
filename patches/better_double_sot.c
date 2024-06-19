@@ -3,6 +3,16 @@
 void dsot_load_day_number_texture(PlayState* play, s32 day);
 void dsot_actor_fixes(PlayState* play);
 
+bool dsot_on;
+
+void dsot_determine_enabled(void) {
+    dsot_on = recomp_dsot_enabled();
+}
+
+bool dsot_enabled(void) {
+    return dsot_on;
+}
+
 u8 choiceHour;
 
 void dsot_init_hour_selection(PlayState* play) {

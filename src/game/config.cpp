@@ -72,7 +72,7 @@ T from_or_default(const json& j, const std::string& key, T default_value) {
     else {
         ret = default_value;
     }
-    
+
     return ret;
 }
 
@@ -130,7 +130,7 @@ namespace recomp {
 }
 
 std::filesystem::path zelda64::get_app_folder_path() {
-   // directly check for portable.txt (windows and native linux binary)    
+   // directly check for portable.txt (windows and native linux binary)
    if (std::filesystem::exists("portable.txt")) {
        return std::filesystem::current_path();
    }
@@ -207,7 +207,7 @@ bool save_json_with_backups(const std::filesystem::path& path, const nlohmann::j
     return recomp::finalize_output_file_with_backup(path);
 }
 
-bool save_general_config(const std::filesystem::path& path) {    
+bool save_general_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     zelda64::to_json(config_json["targeting_mode"], zelda64::get_targeting_mode());
@@ -221,7 +221,8 @@ bool save_general_config(const std::filesystem::path& path) {
     config_json["analog_cam_mode"] = zelda64::get_analog_cam_mode();
     config_json["analog_camera_invert_mode"] = zelda64::get_analog_camera_invert_mode();
     config_json["debug_mode"] = zelda64::get_debug_mode_enabled();
-    
+    config_json["dsot_mode"] = zelda64::get_dsot_mode();
+
     return save_json_with_backups(path, config_json);
 }
 
@@ -237,6 +238,7 @@ void set_general_settings_from_json(const nlohmann::json& config_json) {
     zelda64::set_analog_cam_mode(from_or_default(config_json, "analog_cam_mode", zelda64::AnalogCamMode::Off));
     zelda64::set_analog_camera_invert_mode(from_or_default(config_json, "analog_camera_invert_mode", zelda64::CameraInvertMode::InvertNone));
     zelda64::set_debug_mode_enabled(from_or_default(config_json, "debug_mode", false));
+    zelda64::set_dsot_mode(from_or_default(config_json, "dsot_mode", zelda64::DsotMode::On));
 }
 
 bool load_general_config(const std::filesystem::path& path) {
@@ -423,7 +425,7 @@ bool save_sound_config(const std::filesystem::path& path) {
     config_json["main_volume"] = zelda64::get_main_volume();
     config_json["bgm_volume"] = zelda64::get_bgm_volume();
     config_json["low_health_beeps"] = zelda64::get_low_health_beeps_enabled();
-    
+
     return save_json_with_backups(path, config_json);
 }
 
@@ -485,7 +487,7 @@ void zelda64::save_config() {
     }
 
     std::filesystem::create_directories(recomp_dir);
-    
+
     // TODO error handling for failing to save config files.
 
     save_general_config(recomp_dir / general_filename);

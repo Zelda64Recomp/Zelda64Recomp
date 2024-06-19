@@ -92,7 +92,7 @@
                             />
                         </div>
                     </div>
-                    
+
                     <!-- joystick deadzone -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(4)">
                         <label class="config-option__title">Joystick Deadzone</label>
@@ -171,7 +171,7 @@
                             <label class="config-option__tab-label" for="autosave_disabled">Off</label>
                         </div>
                     </div>
-                    
+
                     <!-- camera inversion -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(7)">
                         <label class="config-option__title">Aiming Camera Mode</label>
@@ -225,7 +225,7 @@
                             <label class="config-option__tab-label" for="camera_inversion_both">Invert Both</label>
                         </div>
                     </div>
-                    
+
                     <!-- analog camera -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(8)">
                         <label class="config-option__title">Analog Camera</label>
@@ -255,7 +255,7 @@
                             <label class="config-option__tab-label" for="analog_cam_disabled">Off</label>
                         </div>
                     </div>
-                    
+
                     <!-- analog camera inversion -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(9)">
                         <label class="config-option__title">Analog Camera Mode</label>
@@ -268,7 +268,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertNone"
                                 id="analog_camera_inversion_none"
-                                style="nav-up: #analog_cam_enabled;"
+                                style="nav-up: #analog_cam_enabled; nav-down: #dsot_enabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_none">None</label>
 
@@ -280,7 +280,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertX"
                                 id="analog_camera_inversion_x"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #dsot_disabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_x">Invert X</label>
 
@@ -292,7 +292,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertY"
                                 id="analog_camera_inversion_y"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #dsot_disabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_y">Invert Y</label>
 
@@ -304,16 +304,45 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertBoth"
                                 id="analog_camera_inversion_both"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #dsot_disabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_both">Invert Both</label>
+                        </div>
+                    </div>
+                    <!-- better double song of time -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(10)">
+                        <label class="config-option__title">Better Double Song of Time</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(10)"
+                                name="dsot_mode"
+                                data-checked="dsot_mode"
+                                value="On"
+                                id="dsot_enabled"
+                                style="nav-up: #analog_camera_inversion_none"
+                            />
+                            <label class="config-option__tab-label" for="dsot_enabled">On</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(10)"
+                                name="dsot_mode"
+                                data-checked="dsot_mode"
+                                value="Off"
+                                id="dsot_disabled"
+                                style="nav-up: #analog_camera_inversion_x"
+                            />
+                            <label class="config-option__tab-label" for="dsot_disabled">Off</label>
                         </div>
                     </div>
                 </div>
                 <!-- Descriptions -->
                 <div class="config__wrapper">
                     <p data-if="cur_config_index == 0">
-                        Controls how targeting enemies and objects works. <b>Switch</b> will start or stop targeting each time the target button is pressed. <b>Hold</b> will start when the target button is pressed and stop when the button is released. 
+                        Controls how targeting enemies and objects works. <b>Switch</b> will start or stop targeting each time the target button is pressed. <b>Hold</b> will start when the target button is pressed and stop when the button is released.
                     </p>
                     <p data-if="cur_config_index == 1">
                         Controls the strength of rumble when using a controller that supports it. <b>Setting this to zero will disable rumble.</b>
@@ -361,6 +390,12 @@
                     </p>
                     <p data-if="cur_config_index == 9">
                         Inverts the camera controls for the analog camera if it's enabled. <b>None</b> is the default.
+                    </p>
+                    <p data-if="cur_config_index == 10">
+                        Enables hour selection for Double Song of Time.
+                        <br/>
+                        <br/>
+                        To select an hour move the left analog stick in horizontal axis.
                     </p>
                 </div>
             </div>

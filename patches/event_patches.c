@@ -338,8 +338,8 @@ void EnTest6_DoubleSoTCutscene(EnTest6* this, PlayState* play) {
         SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_FANFARE, 20);
     }
 
-    // @recomp Advance hour as Double SoT ends.
-    if (this->timer == 15) {
+    // @recomp Replace DSoT functionality if the option for it is enabled.
+    if (dsot_enabled() && this->timer == 15) {
         dsot_advance_hour(play);
     }
 
@@ -586,7 +586,18 @@ void EnTest6_SharedSoTCutscene(EnTest6* this, PlayState* play) {
                 return;
 
             case SOTCS_CUEID_DOUBLE_END:
-                // @recomp Disable scene reset after Double SoT ends.
+                // @recomp Replace DSoT functionality if the option for it is enabled.
+                if (!dsot_enabled() && (CURRENT_TIME > CLOCK_TIME(12, 0))) {
+                    Play_SetRespawnData(&play->state, RESPAWN_MODE_RETURN, ((void)0, gSaveContext.save.entrance),
+                                        player->unk_3CE, PLAYER_PARAMS(0xFF, PLAYER_INITMODE_B), &player->unk_3C0,
+                                        player->unk_3CC);
+                    this->drawType = SOTCS_DRAW_TYPE_NONE;
+                    play->transitionTrigger = TRANS_TRIGGER_START;
+                    play->nextEntrance = gSaveContext.respawn[RESPAWN_MODE_RETURN].entrance;
+                    play->transitionType = TRANS_TYPE_FADE_BLACK;
+                    gSaveContext.respawnFlag = 2;
+                    play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                }
                 return;
         }
     }

@@ -452,23 +452,43 @@ void Message_Update(PlayState* play) {
                     }
                 } else if ((msgCtx->textboxEndType == TEXTBOX_ENDTYPE_10) &&
                            (play->msgCtx.ocarinaMode == OCARINA_MODE_PROCESS_DOUBLE_TIME)) {
-                    // @recomp
-                    dsot_handle_hour_selection(play);
+                    // @recomp Replace DSoT functionality if the option for it is enabled.
+                    if (dsot_enabled()) {
+                        // @recomp
+                        dsot_handle_hour_selection(play);
 
-                    if (Message_ShouldAdvance(play)) {
-                        if (msgCtx->choiceIndex == 0) {
-                            Audio_PlaySfx_MessageDecide();
+                        if (Message_ShouldAdvance(play)) {
+                            if (msgCtx->choiceIndex == 0) {
+                                Audio_PlaySfx_MessageDecide();
 
-                            play->msgCtx.ocarinaMode = OCARINA_MODE_APPLY_DOUBLE_SOT;
-                            gSaveContext.timerStates[TIMER_ID_MOON_CRASH] = TIMER_STATE_OFF;
-                        } else {
-                            Audio_PlaySfx_MessageCancel();
-                            play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_APPLY_DOUBLE_SOT;
+                                gSaveContext.timerStates[TIMER_ID_MOON_CRASH] = TIMER_STATE_OFF;
+                            } else {
+                                Audio_PlaySfx_MessageCancel();
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_END;
 
-                            // @recomp
-                            dsot_cancel_hour_selection(play);
+                                // @recomp
+                                dsot_cancel_hour_selection(play);
+                            }
+                            Message_CloseTextbox(play);
                         }
-                        Message_CloseTextbox(play);
+                    } else {
+                        if (Message_ShouldAdvance(play)) {
+                            if (msgCtx->choiceIndex == 0) {
+                                Audio_PlaySfx_MessageDecide();
+                                if (gSaveContext.save.isNight != 0) {
+                                    gSaveContext.save.time = CLOCK_TIME(6, 0);
+                                } else {
+                                    gSaveContext.save.time = CLOCK_TIME(18, 0);
+                                }
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_APPLY_DOUBLE_SOT;
+                                gSaveContext.timerStates[TIMER_ID_MOON_CRASH] = TIMER_STATE_OFF;
+                            } else {
+                                Audio_PlaySfx_MessageCancel();
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                            }
+                            Message_CloseTextbox(play);
+                        }
                     }
                 } else if ((msgCtx->textboxEndType != TEXTBOX_ENDTYPE_10) ||
                            (pauseCtx->state != PAUSE_STATE_OWL_WARP_CONFIRM)) {
@@ -659,49 +679,66 @@ void Message_Update(PlayState* play) {
                         play->msgCtx.ocarinaMode = OCARINA_MODE_PROCESS_RESTRICTED_SONG;
                     }
                 } else if (sLastPlayedSong == OCARINA_SONG_DOUBLE_TIME) {
-                    // @recomp Patch Song of Double Time.
                     if (interfaceCtx->restrictions.songOfDoubleTime == 0) {
-                        if ((CURRENT_DAY != 3) || (CURRENT_TIME < CLOCK_TIME(5, 0)) || (CURRENT_TIME >= CLOCK_TIME(6, 0))) {
-                            Message_StartTextbox(play, D_801D0464[0], NULL);
+                        // @recomp
+                        dsot_determine_enabled();
 
-                            // @recomp Replace message text.
-                            char *buf = play->msgCtx.font.msgBuf.schar;
-                            buf[25] = ' ';
-                            buf[26] = 1;
-                            buf[27] = 'S';
-                            buf[28] = 'e';
-                            buf[29] = 'l';
-                            buf[30] = 'e';
-                            buf[31] = 'c';
-                            buf[32] = 't';
-                            buf[33] = 'e';
-                            buf[34] = 'd';
-                            buf[35] = ' ';
-                            buf[36] = 'H';
-                            buf[37] = 'o';
-                            buf[38] = 'u';
-                            buf[39] = 'r';
-                            buf[40] = 0;
-                            buf[41] = '?';
-                            buf[42] = 17;
-                            buf[43] = 17;
-                            buf[44] = 2;
-                            buf[45] = -62;
-                            buf[46] = 'Y';
-                            buf[47] = 'e';
-                            buf[48] = 's';
-                            buf[49] = 17;
-                            buf[50] = 'N';
-                            buf[51] = 'o';
-                            buf[52] = -65;
+                        // @recomp Replace DSoT functionality if the option for it is enabled.
+                        if (dsot_enabled()) {
+                            if ((CURRENT_DAY != 3) || (CURRENT_TIME < CLOCK_TIME(5, 0)) || (CURRENT_TIME >= CLOCK_TIME(6, 0))) {
+                                Message_StartTextbox(play, D_801D0464[0], NULL);
 
-                            play->msgCtx.ocarinaMode = OCARINA_MODE_PROCESS_DOUBLE_TIME;
+                                // @recomp Replace message text.
+                                char *buf = play->msgCtx.font.msgBuf.schar;
+                                buf[25] = ' ';
+                                buf[26] = 1;
+                                buf[27] = 'S';
+                                buf[28] = 'e';
+                                buf[29] = 'l';
+                                buf[30] = 'e';
+                                buf[31] = 'c';
+                                buf[32] = 't';
+                                buf[33] = 'e';
+                                buf[34] = 'd';
+                                buf[35] = ' ';
+                                buf[36] = 'H';
+                                buf[37] = 'o';
+                                buf[38] = 'u';
+                                buf[39] = 'r';
+                                buf[40] = 0;
+                                buf[41] = '?';
+                                buf[42] = 17;
+                                buf[43] = 17;
+                                buf[44] = 2;
+                                buf[45] = -62;
+                                buf[46] = 'Y';
+                                buf[47] = 'e';
+                                buf[48] = 's';
+                                buf[49] = 17;
+                                buf[50] = 'N';
+                                buf[51] = 'o';
+                                buf[52] = -65;
 
-                            // @recomp
-                            dsot_init_hour_selection(play);
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_PROCESS_DOUBLE_TIME;
+
+                                // @recomp
+                                dsot_init_hour_selection(play);
+                            } else {
+                                Message_StartTextbox(play, 0x1B94, NULL);
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                            }
                         } else {
-                            Message_StartTextbox(play, 0x1B94, NULL);
-                            play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                            if ((CURRENT_DAY != 3) || (gSaveContext.save.isNight == 0)) {
+                                if (gSaveContext.save.isNight) {
+                                    Message_StartTextbox(play, D_801D0464[CURRENT_DAY - 1], NULL);
+                                } else {
+                                    Message_StartTextbox(play, D_801D045C[CURRENT_DAY - 1], NULL);
+                                }
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_PROCESS_DOUBLE_TIME;
+                            } else {
+                                Message_StartTextbox(play, 0x1B94, NULL);
+                                play->msgCtx.ocarinaMode = OCARINA_MODE_END;
+                            }
                         }
                     } else {
                         sLastPlayedSong = 0xFF;

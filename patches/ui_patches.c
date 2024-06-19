@@ -990,8 +990,8 @@ void Message_DrawTextBox(PlayState* play, Gfx** gfxP) {
         gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
     }
 
-    // @recomp Draw clock for Double SoT.
-    if (play->msgCtx.ocarinaMode == OCARINA_MODE_PROCESS_DOUBLE_TIME) {
+    // @recomp Replace DSoT functionality if the option for it is enabled.
+    if (dsot_enabled() && (play->msgCtx.ocarinaMode == OCARINA_MODE_PROCESS_DOUBLE_TIME)) {
         dsot_draw_clock(play);
     }
 

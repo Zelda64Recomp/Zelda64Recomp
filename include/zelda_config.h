@@ -12,16 +12,16 @@ namespace zelda64 {
     // TODO: Move loading configs to the runtime once we have a way to allow per-project customization.
     void load_config();
     void save_config();
-    
+
     void reset_input_bindings();
     void reset_cont_input_bindings();
     void reset_kb_input_bindings();
 
     std::filesystem::path get_app_folder_path();
-    
+
     bool get_debug_mode_enabled();
     void set_debug_mode_enabled(bool enabled);
-    
+
     enum class AutosaveMode {
         On,
         Off,
@@ -79,6 +79,17 @@ namespace zelda64 {
         {zelda64::AnalogCamMode::Off, "Off"}
     });
 
+    enum class DsotMode {
+        On,
+        Off,
+        OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::DsotMode, {
+        {zelda64::DsotMode::On, "On"},
+        {zelda64::DsotMode::Off, "Off"}
+    });
+
     AutosaveMode get_autosave_mode();
     void set_autosave_mode(AutosaveMode mode);
 
@@ -86,6 +97,9 @@ namespace zelda64 {
     void set_analog_cam_mode(AnalogCamMode mode);
 
     void open_quit_game_prompt();
+
+    DsotMode get_dsot_mode();
+    void set_dsot_mode(DsotMode mode);
 };
 
 #endif
