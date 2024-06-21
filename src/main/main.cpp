@@ -356,6 +356,10 @@ namespace zelda64 {
                     case 254:
                         name += "VIMGR";
                         break;
+
+                    default:
+                        name += std::to_string(t->id);
+                        break;
                 }
                 break;
 
@@ -371,6 +375,10 @@ namespace zelda64 {
 
                     case 127:
                         name += "FAULT";
+                        break;
+
+                    default:
+                        name += std::to_string(t->id);
                         break;
                 }
                 break;
@@ -504,7 +512,17 @@ int main(int argc, char** argv) {
         .get_game_thread_name = zelda64::get_game_thread_name,
     };
 
-    recomp::start({}, rsp_callbacks, renderer_callbacks, audio_callbacks, input_callbacks, gfx_callbacks, thread_callbacks, error_handling_callbacks, threads_callbacks);
+    recomp::start(
+        {},
+        rsp_callbacks,
+        renderer_callbacks,
+        audio_callbacks,
+        input_callbacks,
+        gfx_callbacks,
+        thread_callbacks,
+        error_handling_callbacks,
+        threads_callbacks
+    );
 
     NFD_Quit();
 
