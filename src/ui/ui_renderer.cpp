@@ -1350,6 +1350,13 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 non_mouse_interacted = true;
                 kb_interacted = true;
                 break;
+            case SDL_EventType::SDL_USEREVENT:
+                if (cur_event.user.code == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) {
+                    ui_context->rml.await_stick_return_y = true;
+                } else if (cur_event.user.code == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) {
+                    ui_context->rml.await_stick_return_x = true;
+                }
+                break;
             case SDL_EventType::SDL_CONTROLLERAXISMOTION:
                 SDL_ControllerAxisEvent* axis_event = &cur_event.caxis;
                 if (axis_event->axis != SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY && axis_event->axis != SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX) {
