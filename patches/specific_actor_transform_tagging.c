@@ -12,10 +12,6 @@
 #include "overlays/actors/ovl_En_Twig/z_en_twig.h"
 #include "overlays/actors/ovl_En_Honotrap/z_en_honotrap.h"
 
-// Decomp renames, TODO update decomp and remove these
-#define EnHonotrap_FlameGroup func_8092F878
-#define EnHonotrap_DrawFlameGroup func_80930190
-
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
 extern f32 D_80BB8454;
@@ -650,7 +646,7 @@ extern Gfx gGohtStalactiteMaterialDL[];
 extern Gfx gGohtStalactiteModelDL[];
 
 // @recomp Tag Goht's rocks.
-void func_80B0C398(BossHakugin* this, PlayState* play) {
+void BossHakugin_DrawRockEffects(BossHakugin* this, PlayState* play) {
     GohtRockEffect* effect;
     s32 i;
 
@@ -727,7 +723,7 @@ typedef enum {
     /* 25 */ OSN_ANIM_MAX
 } OsnAnimation;
 
-void EnOsn_HandleCsAction(EnOsn* this, PlayState* play);
+void EnOsn_HandleCutscene(EnOsn* this, PlayState* play);
 void EnOsn_Idle(EnOsn* this, PlayState* play);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
@@ -742,7 +738,7 @@ void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
     Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, OSN_ANIM_IDLE);
     if (!isSwitchFlagSet) {
         // @recomp No need to relocate as this function is replaced, so the patch compilation will pick the new address.
-        this->actionFunc = EnOsn_HandleCsAction;
+        this->actionFunc = EnOsn_HandleCutscene;
     } else {
         // @recomp Manual relocation, TODO remove when automated by the recompiler.
         this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_Idle);
@@ -757,7 +753,7 @@ void EnOsn_LookFromMask(EnOsn* this);
 void EnOsn_FadeOut(EnOsn* this);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
-void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
+void EnOsn_HandleCutscene(EnOsn* this, PlayState* play) {
     u8 pad;
     s32 cueChannel;
 

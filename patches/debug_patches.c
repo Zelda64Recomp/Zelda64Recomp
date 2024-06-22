@@ -36,7 +36,7 @@ void do_warp(PlayState* play, u16 entrance){
     //     req.dramAddr = text_buffer;
     //     req.size = play->msgCtx.font.messageEnd;
     //     recomp_printf("dma from vrom 0x%08X to vram 0x%08x of 0x%04X bytes\n", req.vromAddr, req.dramAddr, req.size);
-    //     DmaMgr_ProcessMsg(&req);
+    //     DmaMgr_ProcessRequest(&req);
 
     //     if (text_buffer[2] != (char)0xFE) {
     //         recomp_printf("Invalid text\n");

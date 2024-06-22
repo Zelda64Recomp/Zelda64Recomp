@@ -5,7 +5,7 @@
 
 extern OSMesgQueue sFlashromMesgQueue;
 s32 SysFlashrom_IsInit(void);
-void Sleep_Msec(u32 ms);
+void msleep(u32 ms);
 
 // @recomp Patched to not wait a hardcoded amount of time for the save to complete.
 void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
