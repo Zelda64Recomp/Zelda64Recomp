@@ -19,7 +19,9 @@ stubs = [
 
 ignored = [
     # Not actually a function
-    "D_80186028"
+    "sNonKanjiIndices",
+    # Was originally named _MakeMotorData
+    "__osMakeMotorData"
 ]
 
 # Single-instruction patches

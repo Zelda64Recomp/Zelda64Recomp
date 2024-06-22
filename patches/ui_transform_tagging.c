@@ -83,7 +83,7 @@ void KaleidoScope_Draw(PlayState* play) {
         KaleidoScope_SetView(pauseCtx, pauseCtx->eye.x, pauseCtx->eye.y, pauseCtx->eye.z);
         Gfx_SetupDL42_Opa(play->state.gfxCtx);
 
-        if (!IS_PAUSE_STATE_OWL_WARP) {
+        if (!IS_PAUSE_STATE_OWL_WARP(pauseCtx)) {
             // Draw Default or Game Over Menus
             // @recomp Record the current pageIndex, then change it to a dummy value for the KaleidoScope_SetVertices.
             u16 saved_page_index = pauseCtx->pageIndex;
@@ -99,7 +99,7 @@ void KaleidoScope_Draw(PlayState* play) {
 
             KaleidoScope_SetView(pauseCtx, 0.0f, 0.0f, 64.0f);
 
-            if (!IS_PAUSE_STATE_GAMEOVER) {
+            if (!IS_PAUSE_STATE_GAMEOVER(pauseCtx)) {
                 KaleidoScope_DrawInfoPanel(play);
             }
 
@@ -622,7 +622,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
 
     OPEN_DISPS(gfxCtx);
 
-    if (!IS_PAUSE_STATE_GAMEOVER) {
+    if (!IS_PAUSE_STATE_GAMEOVER(pauseCtx)) {
         if (pauseCtx->state != PAUSE_STATE_SAVEPROMPT) {
 
             stepR =

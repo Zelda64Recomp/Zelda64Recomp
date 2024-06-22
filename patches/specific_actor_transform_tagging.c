@@ -651,20 +651,20 @@ extern Gfx gGohtStalactiteModelDL[];
 
 // @recomp Tag Goht's rocks.
 void func_80B0C398(BossHakugin* this, PlayState* play) {
-    BossHakuginEffect* effect;
+    GohtRockEffect* effect;
     s32 i;
 
     OPEN_DISPS(play->state.gfxCtx);
 
     gSPDisplayList(POLY_OPA_DISP++, gGohtRockMaterialDL);
-    for (i = 0; i < ARRAY_COUNT(this->unk_9F8); i++) {
-        effect = &this->unk_9F8[i];
-        if ((effect->unk_18 >= 0) && (effect->unk_1A == 0)) {
-            Matrix_SetTranslateRotateYXZ(effect->unk_0.x, effect->unk_0.y, effect->unk_0.z, &effect->unk_1C);
-            Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
+    for (i = 0; i < ARRAY_COUNT(this->rockEffects); i++) {
+        effect = &this->rockEffects[i];
+        if ((effect->timer >= 0) && (effect->type == GOHT_ROCK_EFFECT_TYPE_BOULDER)) {
+            Matrix_SetTranslateRotateYXZ(effect->pos.x, effect->pos.y, effect->pos.z, &effect->rot);
+            Matrix_Scale(effect->scale, effect->scale, effect->scale, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->rockEffects), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtRockModelDL);
@@ -675,14 +675,14 @@ void func_80B0C398(BossHakugin* this, PlayState* play) {
     }
 
     gSPDisplayList(POLY_OPA_DISP++, gGohtStalactiteMaterialDL);
-    for (i = 0; i < ARRAY_COUNT(this->unk_9F8); i++) {
-        effect = &this->unk_9F8[i];
-        if ((effect->unk_18 >= 0) && (effect->unk_1A == 1)) {
-            Matrix_SetTranslateRotateYXZ(effect->unk_0.x, effect->unk_0.y, effect->unk_0.z, &effect->unk_1C);
-            Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
+    for (i = 0; i < ARRAY_COUNT(this->rockEffects); i++) {
+        effect = &this->rockEffects[i];
+        if ((effect->timer >= 0) && (effect->type == GOHT_ROCK_EFFECT_TYPE_STALACTITE)) {
+            Matrix_SetTranslateRotateYXZ(effect->pos.x, effect->pos.y, effect->pos.z, &effect->rot);
+            Matrix_Scale(effect->scale, effect->scale, effect->scale, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->rockEffects), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtStalactiteModelDL);

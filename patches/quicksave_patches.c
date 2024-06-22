@@ -208,7 +208,7 @@ void DmaMgr_ThreadEntry(void* a0) {
     }
 }
 
-extern SchedContext gSchedContext;
+extern Scheduler gScheduler;
 
 void handle_quicksave_actions_main() {
     recomp_handle_quicksave_actions_main(&quicksave_enter_mq, &quicksave_exit_mq);
@@ -226,7 +226,7 @@ void wake_threads_for_quicksave_action() {
     // Wake up the DmaMgr thread
     osSendMesg(&sDmaMgrMsgQueue, (OSMesg)RECOMP_DMAMGR_QUICKSAVE_MESSAGE, OS_MESG_BLOCK);
     // Wake up the Sched thread
-    osSendMesg(&gSchedContext.interruptQ, (OSMesg)RECOMP_QUICKSAVE_ACTION, OS_MESG_BLOCK);
+    osSendMesg(&gScheduler.interruptQ, (OSMesg)RECOMP_QUICKSAVE_ACTION, OS_MESG_BLOCK);
 }
 
 #endif

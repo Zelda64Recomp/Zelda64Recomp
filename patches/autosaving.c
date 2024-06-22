@@ -1,5 +1,6 @@
 #include "patches.h"
 #include "play_patches.h"
+#include "z64cutscene.h"
 #include "z64save.h"
 #include "z64horse.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
@@ -462,7 +463,7 @@ typedef struct {
 } CutsceneManager; // size = 0x18
 
 extern CutsceneManager sCutsceneMgr;
-extern ActorCutscene* sSceneCutsceneList;
+extern CutsceneEntry* sSceneCutsceneList;
 extern s16 sSceneCutsceneCount;
 
 bool skip_entry_cutscene = false;

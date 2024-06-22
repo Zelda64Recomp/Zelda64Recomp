@@ -2077,7 +2077,7 @@ void func_809EC568(Boss04* this, PlayState* play) {
                 Cutscene_StopManual(play, &play->csCtx);
                 Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_END);
                 Play_DisableMotionBlur();
-                SET_EVENTINF(EVENTINF_60);
+                SET_EVENTINF(EVENTINF_INTRO_CS_WATCHED_WART);
             }
             break;
     }

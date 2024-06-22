@@ -22,7 +22,7 @@ void Main_Init(void) {
     // @recomp Load the code segment in the recomp runtime.
     recomp_load_overlays(SEGMENT_ROM_START(code), SEGMENT_START(code), SEGMENT_ROM_END(code) - SEGMENT_ROM_START(code));
 
-    DmaMgr_SendRequestImpl(&dmaReq, SEGMENT_START(code), SEGMENT_ROM_START(code),
+    DmaMgr_RequestAsync(&dmaReq, SEGMENT_START(code), SEGMENT_ROM_START(code),
                            SEGMENT_ROM_END(code) - SEGMENT_ROM_START(code), 0, &mq, NULL);
     Main_InitScreen();
     Main_InitMemory();
@@ -50,7 +50,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, void* ramStart, void
     if (gOverlayLogSeverity >= 3) {}
 
     end = (uintptr_t)allocatedRamAddr + size;
-    DmaMgr_SendRequest0(allocatedRamAddr, vromStart, size);
+    DmaMgr_RequestSync(allocatedRamAddr, vromStart, size);
 
     ovlRelocs = (OverlayRelocationSection*)(end - ((s32*)end)[-1]);
 
