@@ -192,9 +192,23 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             SDL_ControllerAxisEvent* axis_event = &event->caxis;
             float axis_value = axis_event->value * (1/32768.0f);
             if (axis_value > axis_threshold) {
+                SDL_Event set_stick_return_event;
+                set_stick_return_event.type = SDL_USEREVENT;
+                set_stick_return_event.user.code = axis_event->axis;
+                set_stick_return_event.user.data1 = nullptr;
+                set_stick_return_event.user.data2 = nullptr;
+                recompui::queue_event(set_stick_return_event);
+                
                 set_scanned_input({(uint32_t)InputType::ControllerAnalog, axis_event->axis + 1});
             }
             else if (axis_value < -axis_threshold) {
+                SDL_Event set_stick_return_event;
+                set_stick_return_event.type = SDL_USEREVENT;
+                set_stick_return_event.user.code = axis_event->axis;
+                set_stick_return_event.user.data1 = nullptr;
+                set_stick_return_event.user.data2 = nullptr;
+                recompui::queue_event(set_stick_return_event);
+
                 set_scanned_input({(uint32_t)InputType::ControllerAnalog, -axis_event->axis - 1});
             }
         } else {
