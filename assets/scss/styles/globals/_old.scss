@@ -189,10 +189,20 @@ select {
 //     background: rgb(150,150,150)
 // }
 
-input.radio,
-input.checkbox {
+input.radio {
     flex: 0;
     width:0dp;
+    nav-up:auto;
+    nav-right:auto;
+    nav-down:auto;
+    nav-left:auto;
+    tab-index:auto;
+    focus:auto;
+}
+
+input.checkbox {
+    width: space(20);
+    height: space(20);
     nav-up:auto;
     nav-right:auto;
     nav-down:auto;

@@ -1,0 +1,27 @@
+{
+    "consumables": "Consumables",
+    "consumables/infinite_magic": "Infinite Magic",
+    "consumables/infinite_magic:description": "You get sooo much magic lol!!",
+    "consumables/infinite_rupees": "Infinite Rupees",
+    "consumables/infinite_arrows": "Infinite Arrows",
+    "consumables/infinite_bombs": "Infinite Bombs",
+    "consumables/infinite_health": "Infinite Health",
+
+    "gameplay": "Gameplay",
+
+    "gameplay/movement": "Movement",
+    "gameplay/movement/L_for_fast": "Hold L to move fast",
+    "gameplay/movement/L_for_fast/values/off": "Off",
+    "gameplay/movement/L_for_fast/values/x2": "X2",
+    "gameplay/movement/L_for_fast/values/x4": "X4",
+    "gameplay/movement/L_for_fast/values/x6": "X6",
+    "gameplay/movement/L_to_levitate": "Hold L to levitate",
+    "gameplay/movement/always_quickspin": "Always quickspin",
+    "gameplay/movement/always_quickspin:description": "Always <b>quickspin</b> whenever using your <i>sword</i> and in a <i>state</i> where <i>you</i> can <b>quickspin.</b><br /><br />yeah...",
+    "gameplay/movement/link_size": "Link's Size",
+
+    "gameplay/abilities": "Abilities",
+    "gameplay/abilities/fd_anywhere": "Fierce Deity Anywhere",
+    "gameplay/abilities/permanent_razor_sword": "Permanent Razor Sword",
+    "gameplay/abilities/permanent_razor_sword2": "MORE Permanent Razor Sword"
+}

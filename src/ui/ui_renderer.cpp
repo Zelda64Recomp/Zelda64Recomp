@@ -28,6 +28,9 @@
 #include "RmlUi/../../Source/Core/Elements/ElementLabel.h"
 #include "RmlUi_Platform_SDL.h"
 
+#include "ui_elements.h"
+#include "config_options/ConfigRegistry.h"
+
 #include "InterfaceVS.hlsl.spirv.h"
 #include "InterfacePS.hlsl.spirv.h"
 
@@ -1108,6 +1111,13 @@ void recompui::get_window_size(int& width, int& height) {
     SDL_GetWindowSizeInPixels(window, &width, &height);
 }
 
+inline const std::string read_file_to_string(std::filesystem::path path) {
+    std::ifstream stream = std::ifstream{path};
+    std::ostringstream ss;
+    ss << stream.rdbuf();
+    return ss.str(); 
+}
+
 void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 #if defined(__linux__)
     std::locale::global(std::locale::classic());
@@ -1129,6 +1139,28 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::SetSystemInterface(ui_context->rml.system_interface.get());
     Rml::SetRenderInterface(ui_context->rml.render_interface.get()->GetAdaptedInterface());
     Rml::Factory::RegisterEventListenerInstancer(&ui_context->rml.event_listener_instancer);
+
+    recompui::register_custom_elements();
+
+    // TODO: Remove hardcoded config register
+    // std::filesystem::path recomp_dir = zelda64::get_app_folder_path();
+    // std::filesystem::path test_conf_path = zelda64::get_app_folder_path() / "config_example.json";
+    std::filesystem::path test_conf_path = "config_example.cheats.json";
+    std::filesystem::path test_conf_trans_path = "config_example.cheats.en_us.json";
+    if (std::filesystem::exists(test_conf_path)) {
+        const std::string s = read_file_to_string(test_conf_path); 
+        recompui::register_config(read_file_to_string(test_conf_path), "cheats");
+        printf("SUCC CONF\n");
+
+        if (std::filesystem::exists(test_conf_trans_path)) {
+            recompui::register_translation(read_file_to_string("config_example.cheats.en_us.json"), "cheats");
+            printf("SUCC TRANSLATION\n");
+        } else {
+            printf("FAIL TRANSLATION");
+        }
+    } else {
+        printf("FAIL ALL\n");
+    }
 
     Rml::Initialise();
 
