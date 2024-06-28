@@ -40,63 +40,22 @@ extern u64 gFileSelCopyButtonENGTex[];
 extern u64 gFileSelEraseButtonENGTex[];
 extern u64 gFileSelYesButtonENGTex[];
 extern u64 gFileSelQuitButtonENGTex[];
-
-// TODO extern these when the recompiler handles relocations automatically.
-s16 D_80814280[] = {
-    2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 0, 1, 1, 2, 1, 1, 4, 2, 2, 2, 1, 1, 0, 2, 0, 1, 1, 1, 1, 1, 0,
-    1, 1, 1, 2, 2, 2, 2, 2, 3, 2, 2, 4, 3, 2, 4, 1, 2, 2, 1, 1, 2, 2, 3, 2, 2, 0, 2, 2, 2, 0, 3, 1, 0,
-};
-
-s16 sWindowContentColors[] = { 100, 150, 255 };
-
-TexturePtr sFileInfoBoxTextures[] = {
-    gFileSelFileInfoBox0Tex, gFileSelFileInfoBox1Tex,      gFileSelFileInfoBox2Tex,      gFileSelFileInfoBox3Tex,
-    gFileSelFileInfoBox4Tex, gFileSelFileExtraInfoBox0Tex, gFileSelFileExtraInfoBox1Tex,
-};
-
-TexturePtr sTitleLabels[] = {
-    gFileSelPleaseSelectAFileENGTex, gFileSelOpenThisFileENGTex,    gFileSelCopyWhichFileENGTex,
-    gFileSelCopyToWhichFileENGTex,   gFileSelAreYouSureCopyENGTex,  gFileSelFileCopiedENGTex,
-    gFileSelEraseWhichFileENGTex,    gFileSelAreYouSureEraseENGTex, gFileSelFileErasedENGTex,
-};
-
-TexturePtr sWarningLabels[] = {
-    gFileSelNoFileToCopyENGTex, gFileSelNoFileToEraseENGTex, gFileSelNoEmptyFileENGTex,
-    gFileSelFileEmptyENGTex,    gFileSelFileInUseENGTex,
-};
-
-TexturePtr sFileButtonTextures[] = {
-    gFileSelFile1ButtonENGTex,
-    gFileSelFile2ButtonENGTex,
-    gFileSelFile3ButtonENGTex,
-};
-
-TexturePtr sActionButtonTextures[] = {
-    gFileSelCopyButtonENGTex,
-    gFileSelEraseButtonENGTex,
-    gFileSelYesButtonENGTex,
-    gFileSelQuitButtonENGTex,
-};
-
-s16 sFileInfoBoxPartWidths[] = {
-    36, 36, 36, 36, 24, 28, 28,
-};
-
-s16 sWalletFirstDigit[] = {
-    1, // tens (Default Wallet)
-    0, // hundreds (Adult Wallet)
-    0, // hundreds (Giant Wallet)
-};
-
-s16 D_80814620[] = { 8, 8, 8, 0 };
-s16 D_80814628[] = { 12, 12, 12, 0 };
-s16 D_80814630[] = { 12, 12, 12, 0 };
-s16 D_80814638[] = {
-    88, 104, 120, 940, 944, 948,
-};
-s16 D_80814644[] = { 88, 104, 120, 944 };
-s16 D_8081464C[] = { 940, 944 };
-s16 D_80814650[] = { 940, 944, 948 };
+extern s16 D_80814280[];
+extern s16 sWindowContentColors[];
+extern TexturePtr sFileInfoBoxTextures[];
+extern TexturePtr sTitleLabels[];
+extern TexturePtr sWarningLabels[];
+extern TexturePtr sFileButtonTextures[];
+extern TexturePtr sActionButtonTextures[];
+extern s16 sFileInfoBoxPartWidths[];
+extern s16 sWalletFirstDigit[];
+extern s16 D_80814620[];
+extern s16 D_80814628[];
+extern s16 D_80814630[];
+extern s16 D_80814638[];
+extern s16 D_80814644[];
+extern s16 D_8081464C[];
+extern s16 D_80814650[];
 
 void FileSelect_Main(GameState* thisx);
 void FileSelect_InitContext(GameState* thisx);
@@ -118,10 +77,8 @@ void FileSelect_Init(GameState* thisx) {
     ShrinkWindow_Init();
     View_Init(&this->view, this->state.gfxCtx);
 
-    // @recomp manually relocate these symbols as the recompiler doesn't do this automatically for patches yet.
-    GameStateOverlay* ovl = &gGameStateOverlayTable[GAMESTATE_FILE_SELECT];
-    this->state.main = (void*)((u32)FileSelect_Main - (u32)ovl->vramStart + (u32)ovl->loadedRamAddr);
-    this->state.destroy = (void*)((u32)FileSelect_Destroy - (u32)ovl->vramStart + (u32)ovl->loadedRamAddr);
+    this->state.main = FileSelect_Main;
+    this->state.destroy = FileSelect_Destroy;
 
     FileSelect_InitContext(&this->state);
     Font_LoadOrderedFont(&this->font);

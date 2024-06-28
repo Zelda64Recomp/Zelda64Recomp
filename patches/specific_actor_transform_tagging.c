@@ -46,17 +46,14 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
 
     tanron2 = play->actorCtx.actorLists[ACTORCAT_BOSS].first;
 
-    // @recomp Manual relocation, TODO remove this when the recompiler does it automatically.
-    EnTanron2** D_80BB8458_relocated = (EnTanron2**)actor_relocate(thisx, D_80BB8458);
-
     for (i = 0; i < ARRAY_COUNT(D_80BB8458); i++) {
-        D_80BB8458_relocated[i] = NULL;
+        D_80BB8458[i] = NULL;
     }
 
     found = 0;
     while (tanron2 != NULL) {
         if (tanron2->params < 100) {
-            D_80BB8458_relocated[found] = (EnTanron2*)tanron2;
+            D_80BB8458[found] = (EnTanron2*)tanron2;
             found++;
         }
         tanron2 = tanron2->next;
@@ -64,26 +61,26 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
 
     for (j = 0; j < found - 1; j++) {
         for (i = 0; i < found - 1; i++) {
-            if (D_80BB8458_relocated[i + 1] != NULL) {
-                if (D_80BB8458_relocated[i]->actor.projectedPos.z < D_80BB8458_relocated[i + 1]->actor.projectedPos.z) {
-                    SWAP(EnTanron2*, D_80BB8458_relocated[i], D_80BB8458_relocated[i + 1]);
+            if (D_80BB8458[i + 1] != NULL) {
+                if (D_80BB8458[i]->actor.projectedPos.z < D_80BB8458[i + 1]->actor.projectedPos.z) {
+                    SWAP(EnTanron2*, D_80BB8458[i], D_80BB8458[i + 1]);
                 }
             }
         }
     }
 
     for (i = 0; i < ARRAY_COUNT(D_80BB8458); i++) {
-        if (D_80BB8458_relocated[i] != NULL) {
-            Matrix_Translate(D_80BB8458_relocated[i]->actor.world.pos.x, D_80BB8458_relocated[i]->actor.world.pos.y,
-                             D_80BB8458_relocated[i]->actor.world.pos.z, MTXMODE_NEW);
+        if (D_80BB8458[i] != NULL) {
+            Matrix_Translate(D_80BB8458[i]->actor.world.pos.x, D_80BB8458[i]->actor.world.pos.y,
+                             D_80BB8458[i]->actor.world.pos.z, MTXMODE_NEW);
             Matrix_ReplaceRotation(&play->billboardMtxF);
-            Matrix_Scale(D_80BB8458_relocated[i]->actor.scale.x, D_80BB8458_relocated[i]->actor.scale.y, 0.0f, MTXMODE_APPLY);
-            Matrix_RotateZS(D_80BB8458_relocated[i]->unk_14A, MTXMODE_APPLY);
+            Matrix_Scale(D_80BB8458[i]->actor.scale.x, D_80BB8458[i]->actor.scale.y, 0.0f, MTXMODE_APPLY);
+            Matrix_RotateZS(D_80BB8458[i]->unk_14A, MTXMODE_APPLY);
             Matrix_Scale(0.13f, 0.14299999f, 0.13f, MTXMODE_APPLY);
-            Matrix_RotateZS(-D_80BB8458_relocated[i]->unk_14A, MTXMODE_APPLY);
+            Matrix_RotateZS(-D_80BB8458[i]->unk_14A, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(&D_80BB8458_relocated[i]->actor) + 0,
+            gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(&D_80BB8458[i]->actor) + 0,
                 G_EX_PUSH, G_MTX_MODELVIEW,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
                 G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
@@ -100,14 +97,11 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
 
     gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 0, 0, 0, 150);
     gSPDisplayList(POLY_XLU_DISP++, gWartShadowMaterialDL);
-    
-    // @recomp Manual relocation, TODO remove this when the recompiler does it automatically.
-    Boss04** D_80BB8450_relocated = (Boss04**)actor_relocate(thisx, &D_80BB8450);
 
     tanron2 = play->actorCtx.actorLists[ACTORCAT_BOSS].first;
     while (tanron2 != NULL) {
         if ((tanron2->params < 100) && (((EnTanron2*)tanron2)->unk_15B != 0)) {
-            Matrix_Translate(tanron2->world.pos.x, (*D_80BB8450_relocated)->actor.floorHeight, tanron2->world.pos.z, MTXMODE_NEW);
+            Matrix_Translate(tanron2->world.pos.x, D_80BB8450->actor.floorHeight, tanron2->world.pos.z, MTXMODE_NEW);
             Matrix_Scale(0.6f, 0.0f, 0.6f, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
@@ -136,12 +130,9 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
     while (tanron2 != NULL) {
         if ((tanron2->params < 100) && (((EnTanron2*)tanron2)->unk_15B != 0) &&
             (tanron2->world.pos.y <= tanron2->floorHeight)) {
-            Matrix_Translate(tanron2->world.pos.x, (*D_80BB8450_relocated)->actor.floorHeight + 2.0f, tanron2->world.pos.z,
+            Matrix_Translate(tanron2->world.pos.x, D_80BB8450->actor.floorHeight + 2.0f, tanron2->world.pos.z,
                              MTXMODE_NEW);
-                             
-            // @recomp Manual relocation, TODO remove this when the recompiler does it automatically.
-            f32 D_80BB8454_value = *(f32*)actor_relocate(thisx, &D_80BB8454);
-            Matrix_Scale(D_80BB8454_value, 0.0f, D_80BB8454_value, MTXMODE_APPLY);
+            Matrix_Scale(D_80BB8454, 0.0f, D_80BB8454, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
             gEXMatrixGroupSimple(POLY_XLU_DISP++, actor_transform_id(tanron2) + 2,
@@ -732,20 +723,15 @@ void EnOsn_Idle(EnOsn* this, PlayState* play);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
 void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
-    // @recomp Manually relocate the static symbol.
-    AnimationInfo* sAnimationInfo = (AnimationInfo*)actor_relocate(&this->actor, sHappyMaskSalesmanAnimationInfo);
-
     u32 isSwitchFlagSet = Flags_GetSwitch(play, 0);
 
     this->csId = this->actor.csId;
 
-    Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, OSN_ANIM_IDLE);
+    Actor_ChangeAnimationByInfo(&this->skelAnime, sHappyMaskSalesmanAnimationInfo, OSN_ANIM_IDLE);
     if (!isSwitchFlagSet) {
-        // @recomp No need to relocate as this function is replaced, so the patch compilation will pick the new address.
         this->actionFunc = EnOsn_HandleCsAction;
     } else {
-        // @recomp Manual relocation, TODO remove when automated by the recompiler.
-        this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_Idle);
+        this->actionFunc = EnOsn_Idle;
     }
     
     // @recomp Skip interpolation this frame.
@@ -854,11 +840,8 @@ void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
                 default:
                     this->animIndex = OSN_ANIM_IDLE;
                     break;
-            }
-            // @recomp Manually relocate the static symbol.
-            AnimationInfo* sAnimationInfo = (AnimationInfo*)actor_relocate(&this->actor, sHappyMaskSalesmanAnimationInfo);
-            
-            Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, this->animIndex);
+            }            
+            Actor_ChangeAnimationByInfo(&this->skelAnime, sHappyMaskSalesmanAnimationInfo, this->animIndex);
 
             // @recomp Skip interpolation this frame.
             actor_set_interpolation_skipped(&this->actor);
@@ -981,10 +964,8 @@ void func_80A34B28(ObjEntotu* this, PlayState* play) {
 
     this->unk_1B8.x = CLAMP(this->unk_1B8.x, 0.0f, 1.0f);
 
-    // @recomp Manual relocation, TODO remove when automated.
-    Vtx* verts = (Vtx*)actor_relocate(&this->actor, ovl_Obj_Entotu_Vtx_000D10);
     for (i = 0; i < ARRAY_COUNT(ovl_Obj_Entotu_Vtx_000D10); i++) {
-        this->unk_148[i].v.cn[3] = verts[i].v.cn[3] * this->unk_1B8.x;
+        this->unk_148[i].v.cn[3] = ovl_Obj_Entotu_Vtx_000D10[i].v.cn[3] * this->unk_1B8.x;
     }
 
     if (this->unk_1B8.x > 0.0f) {

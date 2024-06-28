@@ -1911,8 +1911,6 @@ void func_809EC568(Boss04* this, PlayState* play) {
     f32 y;
     f32 z;
     s32 pad;
-    // @recomp Manual relocation, TODO remove when automated.
-    u8* D_809EE4D0_relocated = (u8*)actor_relocate(&this->actor, &D_809EE4D0);
     u16 maxProjectedPosToStartFight;
 
     // @recomp Change the maximun projected position to start the fight depending on whether analog camera is enabled or not.
@@ -2059,7 +2057,7 @@ void func_809EC568(Boss04* this, PlayState* play) {
                 this->unk_2C8 = 300;
                 this->unk_2D0 = 0.0f;
                 
-                *D_809EE4D0_relocated = 1;
+                D_809EE4D0 = 1;
                 this->unk_2E2 = 60;
                 this->unk_2E0 = 93;
             }

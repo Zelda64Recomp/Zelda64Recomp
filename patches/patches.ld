@@ -20,6 +20,7 @@ SECTIONS {
     .pad           : { . += 0x1000000;            } >extram AT >rom
     .text          : { *(.text*)                  } >extram AT >rom
     
+    .reloc 0 : { *(.reloc*) }
     .symtab 0 : { *(.symtab) }
     .strtab 0 : { *(.strtab) }
     .shstrtab 0 : { *(.shstrtab) }

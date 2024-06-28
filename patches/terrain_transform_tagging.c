@@ -162,8 +162,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                         gDPPipeSync(POLY_OPA_DISP++);
                         gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 255);
                         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0x96, 255, 255, 255, 255);
-                        // @recomp Manual relocation, TODO remove when automated.
-                        gSPSegment(POLY_OPA_DISP++, 0x0B, actor_relocate(thisx, gWoodfallSceneryDynamicPoisonWaterVtx));
+                        gSPSegment(POLY_OPA_DISP++, 0x0B, gWoodfallSceneryDynamicPoisonWaterVtx);
                         gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
                                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                         // @recomp Tag the matrix to enable vertex interpolation.
@@ -178,8 +177,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                         gDPPipeSync(POLY_XLU_DISP++);
                         gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)this->unk_348);
                         gDPSetPrimColor(POLY_XLU_DISP++, 0, 0x96, 255, 255, 255, (u8)this->unk_348);
-                        // @recomp Manual relocation, TODO remove when automated.
-                        gSPSegment(POLY_XLU_DISP++, 0x0B, actor_relocate(thisx, gWoodfallSceneryDynamicPoisonWaterVtx));
+                        gSPSegment(POLY_XLU_DISP++, 0x0B, gWoodfallSceneryDynamicPoisonWaterVtx);
                         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
                                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                         // @recomp Tag the matrix to enable vertex interpolation.
@@ -235,21 +233,16 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                 CLOSE_DISPS(play->state.gfxCtx);
             }
             
-            // @recomp Manual relocations, TODO remove when automated.
-            s16 D_80AAAE20_val = *(s16*)actor_relocate(thisx, &D_80AAAE20);
-            s16 D_80AAAE22_val = *(s16*)actor_relocate(thisx, &D_80AAAE22);
-            s16 D_80AAAE24_val = *(s16*)actor_relocate(thisx, &D_80AAAE24);
-
-            if (D_80AAAE24_val != 0) {
-                if ((D_80AAAE22_val > -1800) && (D_80AAAE22_val < 3000)) {
-                    temp_f12 = D_80AAAE22_val - 640.0f;
-                    if ((D_80AAAE20_val == 380) && (D_80AAAE22_val > 640)) {
+            if (D_80AAAE24 != 0) {
+                if ((D_80AAAE22 > -1800) && (D_80AAAE22 < 3000)) {
+                    temp_f12 = D_80AAAE22 - 640.0f;
+                    if ((D_80AAAE20 == 380) && (D_80AAAE22 > 640)) {
                         D_80AAAAC0 = 2;
                         D_80AAAAC4 = 0;
                         D_80AAAAC8 = 900;
                         D_80AAAACC = 700;
                         spB7 = true;
-                        if (D_80AAAE22_val < 1350) {
+                        if (D_80AAAE22 < 1350) {
                             f32 temp_f0 = temp_f12 / 2000.0f;
 
                             D_80AAAAB8 = 420.0f - (420.0f * temp_f0);

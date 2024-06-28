@@ -5,5 +5,10 @@
 elf_path = "patches/patches.elf"
 output_func_path = "RecompiledPatches"
 single_file_output = true
-# Allow absolute symbols to be used as jump targets
+# Allow absolute symbols to be used as jump targets.
 use_absolute_symbols = true
+# Emit R_MIPS_32 relocations so they can be populated when loading the patch overlay.
+emit_mips_32_relocs = true
+# Point the recompiler at the symbol files so that it can resolve relocations during recompilation.
+func_reference_syms_file = "us.rev1.syms.toml"
+data_reference_syms_files = [ "us.rev1.datasyms.toml", "us.rev1.datasyms_static.toml" ]

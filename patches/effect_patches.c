@@ -34,12 +34,7 @@ void TransitionWipe3_Draw(void* thisx, Gfx** gfxP) {
         guScale(modelView, scale, scale, 1.0f);
         gSPMatrix(gfx++, modelView, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     }
-    // sTransWipe3DL is an overlay symbol, so its addresses need to be offset to get the actual loaded vram address.
-    // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
-    ptrdiff_t reloc_offset;
-    TransitionOverlay* overlay_entry = &gTransitionOverlayTable[FBDEMO_WIPE3];
-    reloc_offset = (uintptr_t)Lib_PhysicalToVirtual(overlay_entry->loadInfo.addr) - (uintptr_t)overlay_entry->vramStart;
-    gSPDisplayList(gfx++, (Gfx*)((u8*)sTransWipe3DL + reloc_offset));
+    gSPDisplayList(gfx++, sTransWipe3DL);
     gDPPipeSync(gfx++);
     *gfxP = gfx;
 }

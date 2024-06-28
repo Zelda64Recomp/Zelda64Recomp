@@ -2,13 +2,12 @@
 #include "transform_ids.h"
 #include "overlays/actors/ovl_Arms_Hook/z_arms_hook.h"
 
-// TODO replace these with externs when the recompiler can handle relocations in patches automatically.
-Vec3f D_808C1C10 = { 0.0f, 0.0f, 0.0f };
-Vec3f D_808C1C1C = { 0.0f, 0.0f, 900.0f };
-Vec3f D_808C1C28 = { 0.0f, 500.0f, -3000.0f };
-Vec3f D_808C1C34 = { 0.0f, -500.0f, -3000.0f };
-Vec3f D_808C1C40 = { 0.0f, 500.0f, 0.0f };
-Vec3f D_808C1C4C = { 0.0f, -500.0f, 0.0f };
+extern Vec3f D_808C1C10;
+extern Vec3f D_808C1C1C;
+extern Vec3f D_808C1C28;
+extern Vec3f D_808C1C34;
+extern Vec3f D_808C1C40;
+extern Vec3f D_808C1C4C;
 
 extern Gfx object_link_child_DL_01D960[];
 extern Gfx gHookshotChainDL[];
@@ -31,10 +30,7 @@ void ArmsHook_Draw(Actor* thisx, PlayState* play) {
 
         OPEN_DISPS(play->state.gfxCtx);
 
-
-        // @recomp Manually relocate ArmsHook_Shoot because it's an overlay symbol.
-        // TODO remove this when the recompiler handles relocations in patches automatically.
-        if (((ArmsHookActionFunc)actor_relocate(thisx, ArmsHook_Shoot) != this->actionFunc) || (this->timer <= 0)) {
+        if ((ArmsHook_Shoot != this->actionFunc) || (this->timer <= 0)) {
             Matrix_MultVec3f(&D_808C1C10, &this->unk1E0);
             Matrix_MultVec3f(&D_808C1C28, &sp5C);
             Matrix_MultVec3f(&D_808C1C34, &sp50);
