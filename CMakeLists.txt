@@ -157,6 +157,15 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_elements.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigGroup.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigOption.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeCheckbox.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRadioTabs.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRange.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementDescription.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/config_options/ConfigRegistry.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/config_options/ConfigOption.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
