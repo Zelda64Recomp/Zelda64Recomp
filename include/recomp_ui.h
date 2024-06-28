@@ -122,6 +122,8 @@ namespace recompui {
 	void message_box(const char* msg);
 
 	void set_render_hooks();
+
+	Rml::ElementPtr create_custom_element(Rml::Element* parent, std::string tag);
 }
 
 #endif

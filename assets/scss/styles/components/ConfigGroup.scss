@@ -1,0 +1,29 @@
+
+.config-group {
+    position: relative;
+
+    &--scrollable {
+        flex: 1 1 100%;
+        width: auto;
+        height: auto;
+        padding: 0 0 0 space(16);
+        
+        .config-group__wrapper {
+            max-height: 100%;
+            overflow-y: auto;
+        }
+    }
+
+    &__title {
+        @extend %label-md;
+        color: $color-primary;
+
+        &--hidden {
+            display: none;
+        }
+    }
+    
+    &__wrapper {
+        padding: space(16) 0;
+    }
+}

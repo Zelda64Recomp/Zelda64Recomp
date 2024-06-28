@@ -1,0 +1,27 @@
+.config-description {
+    flex: 1 1 100%;
+    width: auto;
+    height: auto;
+    padding: space(16);
+    border-radius: 0dp;
+    border-bottom-right-radius: $border-radius-modal;
+    border-bottom-left-radius: $border-radius-modal;
+    background-color: $color-bg-shadow;
+    text-align: left;
+
+    &__contents {
+        @extend %body;
+        padding: space(16);
+        line-height: space(28);
+        white-space: pre-line;
+
+        b {
+            color: $color-primary;
+        }
+
+        i {
+            color: $color-warning;
+            font-style: normal;
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<template name="config-menu__cheats">
+    <head>
+    </head>
+    <body>
+        <form class="config__form" id="conf-cheats__form">
+            <div class="config__hz-wrapper" id="conf-cheats__hz-wrapper">
+                <recomp-config-group recomp-data="cheats" />
+                <recomp-description />
+            </div>
+        </form>
+    </body>
+</template>

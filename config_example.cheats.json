@@ -1,0 +1,100 @@
+[
+    {
+        "type": "CheckboxGroup",
+        "key": "consumables",
+        "toggle": true,
+        "toggleDefault": false,
+        "options": [
+            {
+                "type": "Checkbox",
+                "key": "infinite_magic",
+                "default": false
+            },
+            {
+                "type": "Checkbox",
+                "key": "infinite_rupees",
+                "default": false
+            },
+            {
+                "type": "Checkbox",
+                "key": "infinite_arrows",
+                "default": false
+            },
+            {
+                "type": "Checkbox",
+                "key": "infinite_bombs",
+                "default": false
+            },
+            {
+                "type": "Checkbox",
+                "key": "infinite_health",
+                "default": false
+            }
+        ]
+    },
+    {
+        "type": "Group",
+        "key": "gameplay",
+        "toggle": true,
+        "toggleDefault": true,
+        "options": [
+            {
+                "type": "Group",
+                "key": "movement",
+                "options": [
+                    {
+                        "type": "RadioTabs",
+                        "key": "L_for_fast",
+                        "default": "x2",
+                        "values": [
+                            "off",
+                            "x2",
+                            "x4",
+                            "x6"
+                        ]
+                    },
+                    {
+                        "type": "Checkbox",
+                        "key": "L_to_levitate",
+                        "default": false
+                    },
+                    {
+                        "type": "Checkbox",
+                        "key": "always_quickspin",
+                        "default": false
+                    },
+                    {
+                        "type": "Range",
+                        "key": "link_size",
+                        "default": 100,
+                        "suffix": "%",
+                        "min": 20,
+                        "max": 400,
+                        "step": 20
+                    }
+                ]
+            },
+            {
+                "type": "Group",
+                "key": "abilities",
+                "options": [
+                    {
+                        "type": "Checkbox",
+                        "key": "fd_anywhere",
+                        "default": true
+                    },
+                    {
+                        "type": "Checkbox",
+                        "key": "permanent_razor_sword",
+                        "default": true
+                    },
+                    {
+                        "type": "Checkbox",
+                        "key": "permanent_razor_sword2",
+                        "default": true
+                    }
+                ]
+            }
+        ]
+    }
+]
