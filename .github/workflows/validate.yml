@@ -9,7 +9,7 @@ on:
       N64RECOMP_COMMIT:
         type: string
         required: false
-        default: 'd30d85bdfb711d05443c5d3e9a52cdd766ba1e49'
+        default: '388c16c13f7ab5f18ea41da9c58f5b6478498f57'
       DXC_CHECKSUM:
         type: string
         required: false

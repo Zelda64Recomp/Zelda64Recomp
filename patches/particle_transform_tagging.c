@@ -381,7 +381,6 @@ void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
 }
 
 static Vec3f D_80A5AFB0 = { 0.0f, 0.0f, 0.0f };
-static Vec3f D_80A5AFBC = { 0.0f, -1.0f, 0.0f };
 
 // The byte after unk_01 in EnWaterEffectStruct is unused, so we'll use it as a respawn flag.
 #define WATER_EFFECT_RESPAWNED(ptr) (&(ptr)->unk_01)[1]

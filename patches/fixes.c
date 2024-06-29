@@ -8,7 +8,7 @@
 #define PAGE_BG_WIDTH (PAGE_BG_COLS * PAGE_BG_QUAD_WIDTH)
 #define PAGE_BG_HEIGHT (PAGE_BG_ROWS * PAGE_BG_QUAD_HEIGHT)
 
-#define RECOMP_PAGE_ROW_HEIGHT 14
+#define RECOMP_PAGE_ROW_HEIGHT 15
 #define RECOMP_PAGE_ROW_COUNT ((PAGE_BG_HEIGHT + RECOMP_PAGE_ROW_HEIGHT - 1) / RECOMP_PAGE_ROW_HEIGHT)
 
 extern s16* sVtxPageQuadsX[VTX_PAGE_MAX];
@@ -55,16 +55,16 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
 
         vtx[4 * row + 0].v.flag = vtx[4 * row + 1].v.flag = vtx[4 * row + 2].v.flag = vtx[4 * row + 3].v.flag = 0;
 
-        #define PIXEL_OFFSET ((1 << 4))
+        #define PIXEL_OFFSET 0
 
         vtx[4 * row + 0].v.tc[0] = PIXEL_OFFSET;
-        vtx[4 * row + 0].v.tc[1] = (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 1].v.tc[0] = PAGE_BG_WIDTH * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 1].v.tc[1] = (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 0].v.tc[1] = PIXEL_OFFSET;
+        vtx[4 * row + 1].v.tc[0] = (PAGE_BG_WIDTH + 2 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 1].v.tc[1] = PIXEL_OFFSET;
         vtx[4 * row + 2].v.tc[0] = PIXEL_OFFSET;
-        vtx[4 * row + 2].v.tc[1] = (cur_y - next_y + 1) * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 3].v.tc[0] = PAGE_BG_WIDTH * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 3].v.tc[1] = (cur_y - next_y + 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 2].v.tc[1] = (cur_y - next_y + 1 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 3].v.tc[0] = (PAGE_BG_WIDTH + 2 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 3].v.tc[1] = (cur_y - next_y + 1 - 1) * (1 << 5) + PIXEL_OFFSET;
 
         vtx[4 * row + 0].v.cn[0] = vtx[4 * row + 1].v.cn[0] = vtx[4 * row + 2].v.cn[0] = vtx[4 * row + 3].v.cn[0] = 0;
         vtx[4 * row + 0].v.cn[1] = vtx[4 * row + 1].v.cn[1] = vtx[4 * row + 2].v.cn[1] = vtx[4 * row + 3].v.cn[1] = 0;
@@ -234,20 +234,21 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures
 
     // Draw the rows.
     for (u32 bg_row = 0; bg_row < RECOMP_PAGE_ROW_COUNT; bg_row++) {
+        u32 cur_row_height = MIN(RECOMP_PAGE_ROW_HEIGHT, PAGE_BG_HEIGHT - bg_row * RECOMP_PAGE_ROW_HEIGHT);
         gDPLoadTextureTile(gfx++, *cur_image,
             G_IM_FMT_IA, G_IM_SIZ_8b, // fmt, siz
             PAGE_BG_WIDTH + 2, PAGE_BG_HEIGHT + 2, // width, height
-            0, (bg_row + 0) * RECOMP_PAGE_ROW_HEIGHT, // uls, ult
-            PAGE_BG_WIDTH + 2, (bg_row + 1) * RECOMP_PAGE_ROW_HEIGHT + 2, // lrs, lrt
+            0, bg_row * RECOMP_PAGE_ROW_HEIGHT, // uls, ult
+            PAGE_BG_WIDTH + 2 - 1, bg_row * RECOMP_PAGE_ROW_HEIGHT + cur_row_height + 1 - 1, // lrs, lrt
             0, // pal
-            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
+            G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP,
             G_TX_NOMASK, G_TX_NOMASK,
             G_TX_NOLOD, G_TX_NOLOD);
         gDPSetTileSize(gfx++, G_TX_RENDERTILE,
                 0 << G_TEXTURE_IMAGE_FRAC,
                 0 << G_TEXTURE_IMAGE_FRAC,
-                (PAGE_BG_WIDTH + 2) <<G_TEXTURE_IMAGE_FRAC,
-                (RECOMP_PAGE_ROW_HEIGHT + 2) << G_TEXTURE_IMAGE_FRAC);
+                (PAGE_BG_WIDTH + 2 - 1) <<G_TEXTURE_IMAGE_FRAC,
+                (cur_row_height + 1 - 1) << G_TEXTURE_IMAGE_FRAC);
         gSPVertex(gfx++, vertices + 4 * bg_row, 4, 0);
         gSP2Triangles(gfx++, 0, 3, 1, 0x0, 3, 0, 2, 0x0);
     }

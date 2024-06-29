@@ -122,14 +122,16 @@ extern s16 D_80AAAE20;
 extern s16 D_80AAAE22;
 extern s16 D_80AAAE24;
 
+extern f32 D_80AAAAB8;
+extern f32 D_80AAAABC;
+extern s16 D_80AAAAC0;
+extern s16 D_80AAAAC4;
+extern s16 D_80AAAAC8;
+extern s16 D_80AAAACC;
+
 // @recomp Patched to enable vertex interpolation for the dynamic water as Woodfall temple rises from below the water.
 void DmChar01_Draw(Actor* thisx, PlayState* play) {
-    static f32 D_80AAAAB8 = 0.0f;
-    static f32 D_80AAAABC = 0.0f;
-    static s16 D_80AAAAC0 = 0;
-    static s16 D_80AAAAC4 = 0;
-    static s16 D_80AAAAC8 = 0;
-    static s16 D_80AAAACC = 0;
+    // @recomp Move function statics to externs so they still get reset on overlay load like normal.
     DmChar01* this = (DmChar01*)thisx;
     f32 temp_f12;
     f32 spBC;

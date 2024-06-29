@@ -199,6 +199,13 @@ void KaleidoScope_DrawCursor(PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
+extern s16 sPauseZRCursorColorTimer; // 8082B9C8 32899 -17976
+extern s16 sPauseZRCursorColorIndex; // 8082B9CC 32899 -17972
+extern s16 sPauseZRCursorRed; // 8082DA50 32899 -9648
+extern s16 sPauseZRCursorGreen; // 8082DA52 32899 -9646
+extern s16 sPauseZRCursorBlue; // 8082DA54 32899 -9644
+extern s16 sPauseZRCursorAlpha; // 8082DA56 32899 -9642
+
 /**
  * infoPanelVtx
  * 
@@ -213,16 +220,11 @@ void KaleidoScope_DrawCursor(PlayState* play) {
 
 // @recomp Patched to tag the matrix for interpolating the vertices of the Z button, R button, and name panel.
 void KaleidoScope_DrawInfoPanel(PlayState* play) {
-    static s16 sPauseZRCursorColorTargets[][4] = {
+    static const s16 sPauseZRCursorColorTargets[][4] = {
         { 180, 210, 255, 220 },
         { 100, 100, 150, 220 },
     };
-    static s16 sPauseZRCursorColorTimer = 20;
-    static s16 sPauseZRCursorColorIndex = 0;
-    static s16 sPauseZRCursorRed;
-    static s16 sPauseZRCursorGreen;
-    static s16 sPauseZRCursorBlue;
-    static s16 sPauseZRCursorAlpha;
+    // @recomp Moved non-const function-local statics to externs so they still get reset on overlay load.
     PauseContext* pauseCtx = &play->pauseCtx;
     s16 stepR;
     s16 stepG;
