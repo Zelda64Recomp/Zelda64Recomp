@@ -10,5 +10,7 @@ use_absolute_symbols = true
 # Emit R_MIPS_32 relocations so they can be populated when loading the patch overlay.
 emit_mips_32_relocs = true
 # Point the recompiler at the symbol files so that it can resolve relocations during recompilation.
-func_reference_syms_file = "us.rev1.syms.toml"
-data_reference_syms_files = [ "us.rev1.datasyms.toml", "us.rev1.datasyms_static.toml" ]
+func_reference_syms_file = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
+data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
+# Tell the recompiler to write the output binary. Doing this instead of using objcopy allows the recompiler to patch MIPS32 relocs.
+output_binary_path = "patches/patches.bin"
