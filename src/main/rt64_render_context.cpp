@@ -268,7 +268,7 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
 
     // Check if the selected device actually supports MSAA sample positions and MSAA for for the formats that will be used
     // and downgrade the configuration accordingly.
-    if (true) {//app->device->getCapabilities().sampleLocations) {
+    if (app->device->getCapabilities().sampleLocations) {
         RT64::RenderSampleCounts color_sample_counts = app->device->getSampleCountsSupported(RT64::RenderFormat::R8G8B8A8_UNORM);
         RT64::RenderSampleCounts depth_sample_counts = app->device->getSampleCountsSupported(RT64::RenderFormat::D32_FLOAT);
         RT64::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
