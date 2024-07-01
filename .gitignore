@@ -12,7 +12,7 @@ RecompiledFuncs/
 RecompiledPatches/
 
 # Linux build output
-build/
+build*/
 *.o
 
 # Windows build output
@@ -59,6 +59,3 @@ node_modules/
 N64Recomp
 RSPRecomp
 .DS_Store
-
-# Controller mappings file
-gamecontrollerdb.txt

@@ -1,0 +1,6 @@
+# Game Controller DB for SDL in 2.0.16 format
+# Used for Zelda64Recomp: https://github.com/Zelda64Recomp/Zelda64Recomp
+
+# Test configs from https://github.com/Zelda64Recomp/Zelda64Recomp/issues/399#issuecomment-2182166615
+030000009b2800006000000000000000,Raphnet GC and N64 Adapter,a:b0,b:b1,dpdown:b11,dpleft:b12,dpright:b13,dpup:b10,lefttrigger:b4,leftx:a0,lefty:a1,rightshoulder:b2,righttrigger:b5,-rightx:b8,+rightx:b9,-righty:b6,+righty:b7,start:b3,platform:Windows,
+03000000242e0000ff0b000000000000,Hyperkin N64 Adapter,a:b1,b:b2,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b7,leftx:a0,lefty:a1,rightshoulder:b5,start:b9,+righty:a2,-righty:-a2,+rightx:a5,-rightx:-a5,platform:Windows,

@@ -457,7 +457,7 @@ int main(int argc, char** argv) {
     reset_audio(48000);
 
     // Source controller mappings file
-    if (SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt") < 0) {
+    if (SDL_GameControllerAddMappingsFromFile("zeldacontrollerdb.txt") < 0) {
         fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
     }
 
