@@ -128,15 +128,15 @@ void FileSelect_Init(GameState* thisx) {
 
     size = SEGMENT_ROM_SIZE(title_static);
     this->staticSegment = THA_AllocTailAlign16(&this->state.tha, size);
-    DmaMgr_SendRequest0(this->staticSegment, SEGMENT_ROM_START(title_static), size);
+    DmaMgr_RequestSync(this->staticSegment, SEGMENT_ROM_START(title_static), size);
 
     size = SEGMENT_ROM_SIZE(parameter_static);
     this->parameterSegment = THA_AllocTailAlign16(&this->state.tha, size);
-    DmaMgr_SendRequest0(this->parameterSegment, SEGMENT_ROM_START(parameter_static), size);
+    DmaMgr_RequestSync(this->parameterSegment, SEGMENT_ROM_START(parameter_static), size);
 
     size = gObjectTable[OBJECT_MAG].vromEnd - gObjectTable[OBJECT_MAG].vromStart;
     this->titleSegment = THA_AllocTailAlign16(&this->state.tha, size);
-    DmaMgr_SendRequest0(this->titleSegment, gObjectTable[OBJECT_MAG].vromStart, size);
+    DmaMgr_RequestSync(this->titleSegment, gObjectTable[OBJECT_MAG].vromStart, size);
 
     Audio_SetSpec(0xA);
     // Setting ioData to 1 and writing it to ioPort 7 will skip the harp intro

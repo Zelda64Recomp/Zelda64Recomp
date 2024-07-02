@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "sys_cfb.h"
 #include "z64view.h"
+#include "z64circle_tex.h"
 #include "transform_ids.h"
 
 extern TransitionOverlay gTransitionOverlayTable[];
@@ -85,7 +86,7 @@ void Play_DrawMotionBlur(PlayState* this) {
         OPEN_DISPS(gfxCtx);
 
         gfxHead = POLY_OPA_DISP;
-        gfx = Graph_GfxPlusOne(gfxHead);
+        gfx = Gfx_Open(gfxHead);
 
         gSPDisplayList(OVERLAY_DISP++, gfx);
 
@@ -122,7 +123,7 @@ void Play_DrawMotionBlur(PlayState* this) {
 
         gSPEndDisplayList(gfx++);
 
-        Graph_BranchDlist(gfxHead, gfx);
+        Gfx_Close(gfxHead, gfx);
 
         POLY_OPA_DISP = gfx;
 
@@ -144,7 +145,7 @@ void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
 
 
 // @recomp Patched to use ortho tris for interpolation and to prevent the telescope and lens effects from getting stretched wide.
-void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt, s32 arg3, s32 masks, s32 maskt,
+void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, void const* texture, s32 fmt, s32 arg3, s32 masks, s32 maskt,
                                         f32 arg6) {
     Gfx* gfx = *gfxp;
     s32 xh = gCfbWidth;

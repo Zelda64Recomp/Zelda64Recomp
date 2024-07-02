@@ -3,11 +3,6 @@
 #include "overlays/actors/ovl_En_Test6/z_en_test6.h"
 #include "overlays/actors/ovl_En_Test7/z_en_test7.h"
 
-// Decomp renames, TODO update decomp and remove these
-#define gSoaringWarpCsWindCapsuleTexAnim gameplay_keep_Matanimheader_0815D0
-#define gSoaringWarpCsWindCapsuleDL gameplay_keep_DL_080FC8
-#define EnTest7_DrawFeathers func_80AF14FC
-
 void EnTest7_DrawFeathers(PlayState* play2, OwlWarpFeather* feathers);
 s32 func_80AF31D0(PlayState* play, SkeletonInfo* skeletonInfo, s32 limbIndex, Gfx** dList, u8* flags, Actor* thisx,
                   Vec3f* scale, Vec3s* rot, Vec3f* pos);

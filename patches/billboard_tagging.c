@@ -30,6 +30,9 @@
 //   Matrix_RotateAxisF in NEW
 //   Matrix_RotateAxisS in NEW
 
+extern MtxF* sCurrentMatrix;
+extern MtxF* sMatrixStack;
+
 #define MATRIX_STACK_SIZE 20
 
 MtxF* play_billboard_matrix;

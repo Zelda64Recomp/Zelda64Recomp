@@ -95,7 +95,7 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
 
             vtx[k + 1].v.ob[0] = vtx[k + 3].v.ob[0] = vtx[k + 0].v.ob[0] + quadsWidth[i];
 
-            if (!IS_PAUSE_STATE_GAMEOVER) {
+            if (!IS_PAUSE_STATE_GAMEOVER(pauseCtx)) {
                 vtx[k + 0].v.ob[1] = vtx[k + 1].v.ob[1] = quadsY[i] + pauseCtx->offsetY;
             } else if (gameOverCtx->state == GAMEOVER_INACTIVE) {
                 vtx[k + 0].v.ob[1] = vtx[k + 1].v.ob[1] = quadsY[i] + pauseCtx->offsetY;

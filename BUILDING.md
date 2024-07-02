@@ -5,7 +5,7 @@
 
 This guide will help you build the project on your local machine. The process will require you to provide two items:
 - A decompressed ROM of the US version of the game.
-- An elf file created from [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation.
+- An elf file created from [this commit](https://github.com/zeldaret/mm/tree/45ae63ccc550ea29f475669a87f7f8ac681a6b29) of the Majora's Mask decompilation.
 
 These steps cover: acquiring these, running the required processes and finally building the project.
 
@@ -41,16 +41,7 @@ choco install make
 ```
 
 ## 3. Creating the ELF file & decompressed ROM
-You will need to build [this commit](https://github.com/zeldaret/mm/tree/23beee0717364de43ca9a82957cc910cf818de90) of the Majora's Mask decompilation. Follow their build instructions to generate the ELF file and decompressed ROM. However, while building you may get the following build error:
-```bash
-RuntimeError: 'jr' instruction does not have an 'jump label' field
-```
-
-To fix this you will have to modify the problematic file `tools/disasm/disasm.py` at line 1115. This issue is due to a bug in this specific commit of the decomp project and will be resolved once Zelda64Recomp is updated to a more recent commit. To fix it, replace the line:
-```diff
-- elif insn.isJump():
-+ elif insn.isJumpWithAddress():
-```
+You will need to build [this commit](https://github.com/zeldaret/mm/tree/45ae63ccc550ea29f475669a87f7f8ac681a6b29) of the Majora's Mask decompilation. For convenience you may also use `lib/mm-decomp` subfolder in this repository. Follow their build instructions to generate the ELF file and decompressed ROM.
 
 Upon successful build it will generate the two required files. Copy them to the root of the Zelda64Recomp repository:
 - `mm.us.rev1.rom_uncompressed.elf`

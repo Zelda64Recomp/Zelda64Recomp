@@ -1,5 +1,6 @@
 #include "patches.h"
 #include "play_patches.h"
+#include "z64cutscene.h"
 #include "z64save.h"
 #include "z64horse.h"
 #include "overlays/gamestates/ovl_file_choose/z_file_select.h"
@@ -443,7 +444,7 @@ void autosave_init() {
 }
 
 extern s32 gFlashSaveSizes[];
-extern u16 D_801C6A58[];
+extern u16 sOwlWarpEntrances[];
 
 #define CHECK_NEWF(newf)                                                                                 \
     ((newf)[0] != 'Z' || (newf)[1] != 'E' || (newf)[2] != 'L' || (newf)[3] != 'D' || (newf)[4] != 'A' || \
@@ -462,7 +463,7 @@ typedef struct {
 } CutsceneManager; // size = 0x18
 
 extern CutsceneManager sCutsceneMgr;
-extern ActorCutscene* sSceneCutsceneList;
+extern CutsceneEntry* sSceneCutsceneList;
 extern s16 sSceneCutsceneCount;
 
 bool skip_entry_cutscene = false;
@@ -623,7 +624,7 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
         func_80147314(sramCtx, fileNum);
     }
     else {
-        gSaveContext.save.entrance = D_801C6A58[(void)0, gSaveContext.save.owlWarpId];
+        gSaveContext.save.entrance = sOwlWarpEntrances[(void)0, gSaveContext.save.owlWarpId];
         if ((gSaveContext.save.entrance == ENTRANCE(SOUTHERN_SWAMP_POISONED, 10)) &&
             CHECK_WEEKEVENTREG(WEEKEVENTREG_CLEARED_WOODFALL_TEMPLE)) {
             gSaveContext.save.entrance = ENTRANCE(SOUTHERN_SWAMP_CLEARED, 10);
@@ -655,7 +656,7 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
     autosave_init();
 }
 
-extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
+extern s32 Actor_TalkOfferAccepted(Actor* actor, GameState* gameState);
 
 // @recomp Reset the autosave timer when the moon crashes.
 void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
@@ -728,7 +729,7 @@ void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
                 Message_CloseTextbox(play);
             }
         }
-    } else if (Actor_ProcessTalkRequest(&this->dyna.actor, &play->state)) {
+    } else if (Actor_TalkOfferAccepted(&this->dyna.actor, &play->state)) {
         this->isTalking = true;
     } else if (!this->actionFunc(this, play)) {
         Actor_OfferTalkNearColChkInfoCylinder(&this->dyna.actor, play);

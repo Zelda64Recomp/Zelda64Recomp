@@ -1900,7 +1900,7 @@ void skip_analog_cam_once() {
 }
 
 extern void func_809ECD00(Boss04* this, PlayState* play);
-extern s32 func_800B7298(struct PlayState* play, Actor* csActor, u8 csAction);
+extern s32 Player_SetCsActionWithHaltedActors(struct PlayState* play, Actor* csActor, u8 csAction);
 extern u8 D_809EE4D0;
 
 // @recomp Patch the Wart boss fight in the Great Bay temple so that the fight starts if you look at it with the right stick analog camera,
@@ -1947,7 +1947,7 @@ void func_809EC568(Boss04* this, PlayState* play) {
                     this->subCamId = Play_CreateSubCamera(play);
                     Play_ChangeCameraStatus(play, CAM_ID_MAIN, CAM_STATUS_WAIT);
                     Play_ChangeCameraStatus(play, this->subCamId, CAM_STATUS_ACTIVE);
-                    func_800B7298(play, &this->actor, PLAYER_CSACTION_WAIT);
+                    Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_WAIT);
                     player->actor.world.pos.x = this->unk_6E8;
                     player->actor.world.pos.z = this->unk_6F0 + 410.0f;
                     player->actor.shape.rot.y = 0x7FFF;
@@ -1997,7 +1997,7 @@ void func_809EC568(Boss04* this, PlayState* play) {
             if (this->unk_704 == 45) {
                 this->unk_708 = 1;
                 this->unk_704 = 0;
-                func_800B7298(play, &this->actor, PLAYER_CSACTION_21);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_21);
                 this->actor.gravity = 0.0f;
                 break;
             }
@@ -2075,9 +2075,9 @@ void func_809EC568(Boss04* this, PlayState* play) {
                 func_80169AFC(play, this->subCamId, 0);
                 this->subCamId = SUB_CAM_ID_DONE;
                 Cutscene_StopManual(play, &play->csCtx);
-                func_800B7298(play, &this->actor, PLAYER_CSACTION_END);
+                Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_END);
                 Play_DisableMotionBlur();
-                SET_EVENTINF(EVENTINF_60);
+                SET_EVENTINF(EVENTINF_INTRO_CS_WATCHED_WART);
             }
             break;
     }

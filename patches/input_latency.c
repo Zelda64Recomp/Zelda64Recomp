@@ -5,10 +5,9 @@
 #include "audiomgr.h"
 #include "z64speed_meter.h"
 #include "z64vimode.h"
-#include "z64viscvg.h"
-#include "z64vismono.h"
-#include "z64viszbuf.h"
+#include "z64vis.h"
 #include "input.h"
+#include "scheduler.h"
 
 void recomp_set_current_frame_poll_id();
 void PadMgr_HandleRetrace(void);
@@ -169,7 +168,7 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
 //         osSyncPrintf("GRAPH SP TIMEOUT\n");
 //         if (retryCount >= 0) {
 //             retryCount--;
-//             Sched_SendGfxCancelMsg(&gSchedContext);
+//             Sched_SendGfxCancelMsg(&gScheduler);
 //             goto retry;
 //         } else {
 //             // graph.c: No more! die!
@@ -185,20 +184,20 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
 
     task->type = M_GFXTASK;
     task->flags = OS_SC_DRAM_DLIST;
-    task->ucodeBoot = SysUcode_GetUCodeBoot();
-    task->ucodeBootSize = SysUcode_GetUCodeBootSize();
+    task->ucode_boot = SysUcode_GetUCodeBoot();
+    task->ucode_boot_size = SysUcode_GetUCodeBootSize();
     task->ucode = SysUcode_GetUCode();
-    task->ucodeData = SysUcode_GetUCodeData();
-    task->ucodeSize = SP_UCODE_SIZE;
-    task->ucodeDataSize = SP_UCODE_DATA_SIZE;
-    task->dramStack = (u64*)gGfxSPTaskStack;
-    task->dramStackSize = sizeof(gGfxSPTaskStack);
-    task->outputBuff = gGfxSPTaskOutputBufferPtr;
-    task->outputBuffSize = gGfxSPTaskOutputBufferEnd;
-    task->dataPtr = (u64*)gGfxMasterDL;
-    task->dataSize = 0;
-    task->yieldDataPtr = (u64*)gGfxSPTaskYieldBuffer;
-    task->yieldDataSize = sizeof(gGfxSPTaskYieldBuffer);
+    task->ucode_data = SysUcode_GetUCodeData();
+    task->ucode_size = SP_UCODE_SIZE;
+    task->ucode_data_size = SP_UCODE_DATA_SIZE;
+    task->dram_stack = (u64*)gGfxSPTaskStack;
+    task->dram_stack_size = sizeof(gGfxSPTaskStack);
+    task->output_buff = gGfxSPTaskOutputBufferPtr;
+    task->output_buff_size = gGfxSPTaskOutputBufferEnd;
+    task->data_ptr = (u64*)gGfxMasterDL;
+    task->data_size = 0;
+    task->yield_data_ptr = (u64*)gGfxSPTaskYieldBuffer;
+    task->yield_data_size = sizeof(gGfxSPTaskYieldBuffer);
 
     scTask->next = NULL;
     scTask->flags = OS_SC_RCP_MASK | OS_SC_SWAPBUFFER | OS_SC_LAST_TASK;
@@ -217,13 +216,13 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     cfb = &sGraphCfbInfos[cfbIdx];
     cfbIdx = (cfbIdx + 1) % ARRAY_COUNT(sGraphCfbInfos);
 
-    cfb->fb1 = gfxCtx->curFrameBuffer;
+    cfb->framebuffer = gfxCtx->curFrameBuffer;
     cfb->swapBuffer = gfxCtx->curFrameBuffer;
 
     if (gfxCtx->updateViMode) {
         gfxCtx->updateViMode = false;
         cfb->viMode = gfxCtx->viMode;
-        cfb->features = gfxCtx->viConfigFeatures;
+        cfb->viFeatures = gfxCtx->viConfigFeatures;
         cfb->xScale = gfxCtx->xScale;
         cfb->yScale = gfxCtx->yScale;
     } else {
@@ -238,9 +237,9 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
         osRecvMesg(&gfxCtx->queue, NULL, OS_MESG_NOBLOCK);
     }
 
-    gfxCtx->schedMsgQ = &gSchedContext.cmdQ;
-    osSendMesg(&gSchedContext.cmdQ, scTask, OS_MESG_BLOCK);
-    Sched_SendEntryMsg(&gSchedContext);
+    gfxCtx->schedMsgQ = &gScheduler.cmdQueue;
+    osSendMesg(&gScheduler.cmdQueue, scTask, OS_MESG_BLOCK);
+    Sched_SendNotifyMsg(&gScheduler);
     
     // @recomp Immediately wait on the task to complete to minimize latency for the next one.
     osRecvMesg(&gfxCtx->queue, &msg, OS_MESG_BLOCK);
@@ -248,7 +247,7 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     // @recomp Wait on the VI framebuffer to change if this task has a framebuffer swap.
     if (scTask->flags & OS_SC_SWAPBUFFER) {
         int viCounter = 0;
-        while (osViGetCurrentFramebuffer() != cfb->fb1) {
+        while (osViGetCurrentFramebuffer() != cfb->framebuffer) {
             osRecvMesg(&vi_queue, NULL, OS_MESG_BLOCK);
             viCounter++;
         }
@@ -267,7 +266,7 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
 
 extern SpeedMeter sGameSpeedMeter;
 extern VisCvg sGameVisCvg;
-extern VisZbuf sGameVisZbuf;
+extern VisZBuf sGameVisZBuf;
 extern VisMono sGameVisMono;
 extern ViMode sGameViMode;
 
@@ -285,7 +284,7 @@ void GameState_Destroy(GameState* gameState) {
     Rumble_Destroy();
     SpeedMeter_Destroy(&sGameSpeedMeter);
     VisCvg_Destroy(&sGameVisCvg);
-    VisZbuf_Destroy(&sGameVisZbuf);
+    VisZBuf_Destroy(&sGameVisZBuf);
     VisMono_Destroy(&sGameVisMono);
     ViMode_Destroy(&sGameViMode);
     THA_Destroy(&gameState->tha);

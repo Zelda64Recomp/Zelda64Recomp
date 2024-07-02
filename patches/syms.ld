@@ -15,6 +15,7 @@ sHappyMaskSalesmanAnimationInfo = 0x80AD22C0;
 D_808890F0 = 0x808890F0;
 D_8088911C = 0x8088911C;
 D_809EE4D0 = 0x809EE4D0;
+sOwlWarpEntrances = 0x801C6A58;
 
 /* Dummy addresses that get recompiled into function calls */
 recomp_puts = 0x8F000000;

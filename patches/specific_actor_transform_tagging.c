@@ -12,10 +12,6 @@
 #include "overlays/actors/ovl_En_Twig/z_en_twig.h"
 #include "overlays/actors/ovl_En_Honotrap/z_en_honotrap.h"
 
-// Decomp renames, TODO update decomp and remove these
-#define EnHonotrap_FlameGroup func_8092F878
-#define EnHonotrap_DrawFlameGroup func_80930190
-
 extern EnTanron2* D_80BB8458[82];
 extern Boss04* D_80BB8450;
 extern f32 D_80BB8454;
@@ -650,21 +646,21 @@ extern Gfx gGohtStalactiteMaterialDL[];
 extern Gfx gGohtStalactiteModelDL[];
 
 // @recomp Tag Goht's rocks.
-void func_80B0C398(BossHakugin* this, PlayState* play) {
-    BossHakuginEffect* effect;
+void BossHakugin_DrawRockEffects(BossHakugin* this, PlayState* play) {
+    GohtRockEffect* effect;
     s32 i;
 
     OPEN_DISPS(play->state.gfxCtx);
 
     gSPDisplayList(POLY_OPA_DISP++, gGohtRockMaterialDL);
-    for (i = 0; i < ARRAY_COUNT(this->unk_9F8); i++) {
-        effect = &this->unk_9F8[i];
-        if ((effect->unk_18 >= 0) && (effect->unk_1A == 0)) {
-            Matrix_SetTranslateRotateYXZ(effect->unk_0.x, effect->unk_0.y, effect->unk_0.z, &effect->unk_1C);
-            Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
+    for (i = 0; i < ARRAY_COUNT(this->rockEffects); i++) {
+        effect = &this->rockEffects[i];
+        if ((effect->timer >= 0) && (effect->type == GOHT_ROCK_EFFECT_TYPE_BOULDER)) {
+            Matrix_SetTranslateRotateYXZ(effect->pos.x, effect->pos.y, effect->pos.z, &effect->rot);
+            Matrix_Scale(effect->scale, effect->scale, effect->scale, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 0 * ARRAY_COUNT(this->rockEffects), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtRockModelDL);
@@ -675,14 +671,14 @@ void func_80B0C398(BossHakugin* this, PlayState* play) {
     }
 
     gSPDisplayList(POLY_OPA_DISP++, gGohtStalactiteMaterialDL);
-    for (i = 0; i < ARRAY_COUNT(this->unk_9F8); i++) {
-        effect = &this->unk_9F8[i];
-        if ((effect->unk_18 >= 0) && (effect->unk_1A == 1)) {
-            Matrix_SetTranslateRotateYXZ(effect->unk_0.x, effect->unk_0.y, effect->unk_0.z, &effect->unk_1C);
-            Matrix_Scale(effect->unk_24, effect->unk_24, effect->unk_24, MTXMODE_APPLY);
+    for (i = 0; i < ARRAY_COUNT(this->rockEffects); i++) {
+        effect = &this->rockEffects[i];
+        if ((effect->timer >= 0) && (effect->type == GOHT_ROCK_EFFECT_TYPE_STALACTITE)) {
+            Matrix_SetTranslateRotateYXZ(effect->pos.x, effect->pos.y, effect->pos.z, &effect->rot);
+            Matrix_Scale(effect->scale, effect->scale, effect->scale, MTXMODE_APPLY);
 
             // @recomp Tag the transform.
-            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->unk_9F8), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+            gEXMatrixGroupDecomposedVerts(POLY_OPA_DISP++, GOHT_ROCKS_TRANSFORM_ID_START + i + 1 * ARRAY_COUNT(this->rockEffects), G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(POLY_OPA_DISP++, gGohtStalactiteModelDL);
@@ -727,7 +723,7 @@ typedef enum {
     /* 25 */ OSN_ANIM_MAX
 } OsnAnimation;
 
-void EnOsn_HandleCsAction(EnOsn* this, PlayState* play);
+void EnOsn_HandleCutscene(EnOsn* this, PlayState* play);
 void EnOsn_Idle(EnOsn* this, PlayState* play);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
@@ -742,7 +738,7 @@ void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
     Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, OSN_ANIM_IDLE);
     if (!isSwitchFlagSet) {
         // @recomp No need to relocate as this function is replaced, so the patch compilation will pick the new address.
-        this->actionFunc = EnOsn_HandleCsAction;
+        this->actionFunc = EnOsn_HandleCutscene;
     } else {
         // @recomp Manual relocation, TODO remove when automated by the recompiler.
         this->actionFunc = (EnOsnActionFunc)actor_relocate(&this->actor, EnOsn_Idle);
@@ -757,7 +753,7 @@ void EnOsn_LookFromMask(EnOsn* this);
 void EnOsn_FadeOut(EnOsn* this);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
-void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
+void EnOsn_HandleCutscene(EnOsn* this, PlayState* play) {
     u8 pad;
     s32 cueChannel;
 

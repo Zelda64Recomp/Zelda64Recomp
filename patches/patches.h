@@ -20,7 +20,6 @@
 #define sinf __sinf_recomp
 #define cosf __cosf_recomp
 #define bzero bzero_recomp
-#define gRandFloat sRandFloat
 #include "global.h"
 #include "rt64_extended_gbi.h"
 

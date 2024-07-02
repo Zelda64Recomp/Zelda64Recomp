@@ -10,7 +10,7 @@ void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId
 
     Gfx_SetupDL40_Opa(gfxCtx);
 
-    gSPSegment(POLY_OPA_DISP++, 0x0B, skyboxCtx->paletteStaticSegment);
+    gSPSegment(POLY_OPA_DISP++, 0x0B, skyboxCtx->palette);
     gSPTexture(POLY_OPA_DISP++, 0x8000, 0x8000, 0, G_TX_RENDERTILE, G_ON);
 
     sSkyboxDrawMatrix = GRAPH_ALLOC(gfxCtx, sizeof(Mtx));
@@ -40,7 +40,7 @@ void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId
     
     gDPSetColorDither(POLY_OPA_DISP++, G_CD_MAGICSQ);
     gDPSetTextureFilter(POLY_OPA_DISP++, G_TF_BILERP);
-    gDPLoadTLUT_pal256(POLY_OPA_DISP++, skyboxCtx->paletteStaticSegment);
+    gDPLoadTLUT_pal256(POLY_OPA_DISP++, skyboxCtx->palette);
     gDPSetTextureLUT(POLY_OPA_DISP++, G_TT_RGBA16);
     gDPSetTextureConvert(POLY_OPA_DISP++, G_TC_FILT);
     gDPSetCombineLERP(POLY_OPA_DISP++, TEXEL1, TEXEL0, PRIMITIVE_ALPHA, TEXEL0, TEXEL1, TEXEL0, PRIMITIVE, TEXEL0,
@@ -65,6 +65,8 @@ void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId
 
     CLOSE_DISPS(gfxCtx);
 }
+
+void MtxConv_F2L(Mtx* mtx, MtxF* mf);
 
 // @recomp Draw stars with billboarding to allow for interpolation instead of rects. 
 void Environment_DrawSkyboxStarBillboard(GraphicsContext* gfxCtx, MtxF* billboard_mtx, Gfx** gfxp, f32 x, f32 y, f32 z, s32 width, s32 height) {

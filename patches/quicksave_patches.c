@@ -140,8 +140,8 @@ void Sched_ThreadEntry(void* arg) {
                 Sched_HandleGfxCancel(sched);
                 continue;
 
-            case ENTRY_MSG:
-                Sched_HandleEntry(sched);
+            case NOTIFY_MSG:
+                Sched_HandleNotify(sched);
                 continue;
 
             case RSP_DONE_MSG:
@@ -164,11 +164,11 @@ void Sched_ThreadEntry(void* arg) {
                 continue;
 
             case OS_SC_PRE_NMI_MSG:
-                Sched_HandleReset(sched);
+                Sched_HandlePreNMI(sched);
                 continue;
 
             case OS_SC_NMI_MSG:
-                Sched_HandleStop(sched);
+                Sched_HandleNMI(sched);
                 continue;
         }
     }
@@ -201,14 +201,14 @@ void DmaMgr_ThreadEntry(void* a0) {
 
         req = (DmaRequest*)msg;
 
-        DmaMgr_ProcessMsg(req);
+        DmaMgr_ProcessRequest(req);
         if (req->notifyQueue) {
             osSendMesg(req->notifyQueue, req->notifyMsg, OS_MESG_NOBLOCK);
         }
     }
 }
 
-extern SchedContext gSchedContext;
+extern Scheduler gScheduler;
 
 void handle_quicksave_actions_main() {
     recomp_handle_quicksave_actions_main(&quicksave_enter_mq, &quicksave_exit_mq);
@@ -226,7 +226,7 @@ void wake_threads_for_quicksave_action() {
     // Wake up the DmaMgr thread
     osSendMesg(&sDmaMgrMsgQueue, (OSMesg)RECOMP_DMAMGR_QUICKSAVE_MESSAGE, OS_MESG_BLOCK);
     // Wake up the Sched thread
-    osSendMesg(&gSchedContext.interruptQ, (OSMesg)RECOMP_QUICKSAVE_ACTION, OS_MESG_BLOCK);
+    osSendMesg(&gScheduler.interruptQ, (OSMesg)RECOMP_QUICKSAVE_ACTION, OS_MESG_BLOCK);
 }
 
 #endif
