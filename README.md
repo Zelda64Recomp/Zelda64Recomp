@@ -102,6 +102,7 @@ To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop 
 * Texture Packs
 * Model Replacements
 * Ray Tracing (via RT64)
+* Multi-language support with support for loading custom translations
 
 ## FAQ
 
