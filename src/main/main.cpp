@@ -325,6 +325,9 @@ RspUcodeFunc* get_rsp_microcode(const OSTask* task) {
 extern "C" void recomp_entrypoint(uint8_t * rdram, recomp_context * ctx);
 gpr get_entrypoint_address();
 
+// TODO DO NOT MERGE THIS BRANCH WITHOUT REENABLING THE SHADER CACHE
+#undef HAS_MM_SHADER_CACHE
+
 // array of supported GameEntry objects
 std::vector<recomp::GameEntry> supported_games = {
     {
