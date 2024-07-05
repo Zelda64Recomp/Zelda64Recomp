@@ -101,7 +101,7 @@ extern Gfx gSunSparkleModelDL[];
 extern u8 D_80B23C40[];
 extern u8 D_80B23C2C[];
 
-// @recomp Modified to take the actor as an argument for relocation and to tag firework transforms.
+// @recomp Modified to tag firework transforms.
 void func_80B22FA8_patched(Actor* thisx, EnHanabiStruct* arg0, PlayState* play2) {
     PlayState* play = play2;
     GraphicsContext* gfxCtx = play->state.gfxCtx;
@@ -118,10 +118,6 @@ void func_80B22FA8_patched(Actor* thisx, EnHanabiStruct* arg0, PlayState* play2)
     gSPDisplayList(POLY_XLU_DISP++, gSunSparkleMaterialDL);
 
     sp53 = 0xFF;
-
-    // @recomp Manually relocate, TODO remove when automated by recompiler.
-    u8* D_80B23C40_relocated = (u8*)actor_relocate(thisx, D_80B23C40);
-    u8* D_80B23C2C_relocated = (u8*)actor_relocate(thisx, D_80B23C2C);
 
     for (i = 0; i < 400; i++, arg0++) {
         if (arg0->unk_00 != 1) {
@@ -145,18 +141,18 @@ void func_80B22FA8_patched(Actor* thisx, EnHanabiStruct* arg0, PlayState* play2)
 
         if (sp53 != arg0->unk_02) {
             gDPPipeSync(POLY_XLU_DISP++);
-            gDPSetEnvColor(POLY_XLU_DISP++, D_80B23C40_relocated[arg0->unk_02], D_80B23C40_relocated[arg0->unk_02 + 1],
-                           D_80B23C40_relocated[arg0->unk_02 + 2], 255);
+            gDPSetEnvColor(POLY_XLU_DISP++, D_80B23C40[arg0->unk_02], D_80B23C40[arg0->unk_02 + 1],
+                           D_80B23C40[arg0->unk_02 + 2], 255);
 
             sp53 = arg0->unk_02;
         }
 
         if (arg0->unk_01 < 6) {
-            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, D_80B23C2C_relocated[arg0->unk_02], D_80B23C2C_relocated[arg0->unk_02 + 1],
-                            D_80B23C2C_relocated[arg0->unk_02 + 2], arg0->unk_01 * 50);
+            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, D_80B23C2C[arg0->unk_02], D_80B23C2C[arg0->unk_02 + 1],
+                            D_80B23C2C[arg0->unk_02 + 2], arg0->unk_01 * 50);
         } else {
-            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, D_80B23C2C_relocated[arg0->unk_02], D_80B23C2C_relocated[arg0->unk_02 + 1],
-                            D_80B23C2C_relocated[arg0->unk_02 + 2], 255);
+            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, D_80B23C2C[arg0->unk_02], D_80B23C2C[arg0->unk_02 + 1],
+                            D_80B23C2C[arg0->unk_02 + 2], 255);
         }
 
         gSPDisplayList(POLY_XLU_DISP++, gSunSparkleModelDL);
@@ -172,7 +168,7 @@ void EnHanabi_Draw(Actor* thisx, PlayState* play) {
     EnHanabi* this = (EnHanabi*)thisx;
 
     Matrix_Push();
-    // @recomp Call a modified version of the function that takes the actor for relocation purposes.
+    // @recomp Call a modified version of the function that takes the actor for tagging purposes.
     func_80B22FA8_patched(thisx, this->unk_148, play);
     Matrix_Pop();
 }
@@ -385,7 +381,6 @@ void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
 }
 
 static Vec3f D_80A5AFB0 = { 0.0f, 0.0f, 0.0f };
-static Vec3f D_80A5AFBC = { 0.0f, -1.0f, 0.0f };
 
 // The byte after unk_01 in EnWaterEffectStruct is unused, so we'll use it as a respawn flag.
 #define WATER_EFFECT_RESPAWNED(ptr) (&(ptr)->unk_01)[1]

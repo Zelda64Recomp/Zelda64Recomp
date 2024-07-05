@@ -178,15 +178,12 @@ void func_808DD3C8(Actor* thisx, PlayState* play2) {
     spB4 = false;
 
     if (this->actor.params == 3) {
-        // @recomp Manual relocation, TODO remove when the recompiler handles this automatically.
-        f32* D_808DE5B0_ptr = actor_relocate(thisx, &D_808DE5B0);
-
         temp_f0 = func_80173B48(&play->state) / 1.4e7f;
         temp_f0 = CLAMP(temp_f0, 0.0f, 1.0f);
-        Math_SmoothStepToF(D_808DE5B0_ptr, temp_f0, 0.2f, 0.1f, 0.001f);
+        Math_SmoothStepToF(&D_808DE5B0, temp_f0, 0.2f, 0.1f, 0.001f);
 
         sp68 = play->envCtx.precipitation[PRECIP_SNOW_CUR];
-        sp68 *= *D_808DE5B0_ptr;
+        sp68 *= D_808DE5B0;
 
         if ((play->envCtx.precipitation[PRECIP_SNOW_CUR] >= 32) && (sp68 < 32)) {
             sp68 = 32;
@@ -469,8 +466,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             // Apply the debris effect material if it has not already been applied.
             if (!isMaterialApplied) {
                 isMaterialApplied++;
-                // @recomp Manual relocation, TODO remove when automated.
-                gSPDisplayList(POLY_OPA_DISP++, actor_relocate(thisx, gClearTagDebrisEffectMaterialDL));
+                gSPDisplayList(POLY_OPA_DISP++, gClearTagDebrisEffectMaterialDL);
             }
 
             // Draw the debris effect.
@@ -481,8 +477,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             // @recomp Tag the matrix.
             gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-            // @recomp Manual relocation, TODO remove when automated.
-            gSPDisplayList(POLY_OPA_DISP++, actor_relocate(thisx, gClearTagDebrisEffectDL));
+            gSPDisplayList(POLY_OPA_DISP++, gClearTagDebrisEffectDL);
             // @recomp Pop the matrix tag.
             gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
@@ -531,8 +526,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
                 gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                 // @recomp Tag the matrix.
                 gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-                // @recomp Manual relocation, TODO remove when automated.
-                gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFlashEffectGroundDL));
+                gSPDisplayList(POLY_XLU_DISP++, gClearTagFlashEffectGroundDL);
                 // @recomp Pop the matrix tag.
                 gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
             }
@@ -546,8 +540,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
         if ((effect->type == CLEAR_TAG_EFFECT_SMOKE) || (effect->type == CLEAR_TAG_EFFECT_ISOLATED_SMOKE)) {
             // Apply the smoke effect material if it has not already been applied.
             if (!isMaterialApplied) {
-                // @recomp Manual relocation, TODO remove when automated.
-                gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFireEffectMaterialDL));
+                gSPDisplayList(POLY_XLU_DISP++, gClearTagFireEffectMaterialDL);
                 isMaterialApplied++;
             }
 
@@ -566,8 +559,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             // @recomp Tag the matrix.
             gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-            // @recomp Manual relocation, TODO remove when automated.
-            gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFireEffectDL));
+            gSPDisplayList(POLY_XLU_DISP++, gClearTagFireEffectDL);
             // @recomp Pop the matrix tag.
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
@@ -580,8 +572,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
         if (effect->type == CLEAR_TAG_EFFECT_FIRE) {
             // Apply the fire effect material if it has not already been applied.
             if (!isMaterialApplied) {
-                // @recomp Manual relocation, TODO remove when automated.
-                gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFireEffectMaterialDL));
+                gSPDisplayList(POLY_XLU_DISP++, gClearTagFireEffectMaterialDL);
                 gDPSetEnvColor(POLY_XLU_DISP++, 255, 215, 255, 128);
                 isMaterialApplied++;
             }
@@ -596,8 +587,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             // @recomp Tag the matrix.
             gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-            // @recomp Manual relocation, TODO remove when automated.
-            gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFireEffectDL));
+            gSPDisplayList(POLY_XLU_DISP++, gClearTagFireEffectDL);
             // @recomp Pop the matrix tag.
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
@@ -623,8 +613,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             // @recomp Tag the matrix.
             gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-            // @recomp Manual relocation, TODO remove when automated.
-            gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagFlashEffectDL));
+            gSPDisplayList(POLY_XLU_DISP++, gClearTagFlashEffectDL);
             // @recomp Pop the matrix tag.
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }
@@ -640,8 +629,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
                 gDPPipeSync(POLY_XLU_DISP++);
                 gDPSetEnvColor(POLY_XLU_DISP++, (u8)effect->envColor.r, (u8)effect->envColor.g, (u8)effect->envColor.b,
                                0);
-                // @recomp Manual relocation, TODO remove when automated.
-                gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagLightRayEffectMaterialDL));
+                gSPDisplayList(POLY_XLU_DISP++, gClearTagLightRayEffectMaterialDL);
                 isMaterialApplied++;
             }
 
@@ -657,8 +645,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             // @recomp Tag the matrix.
             gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_transform_id(thisx) + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
-            // @recomp Manual relocation, TODO remove when automated.
-            gSPDisplayList(POLY_XLU_DISP++, actor_relocate(thisx, gClearTagLightRayEffectDL));
+            gSPDisplayList(POLY_XLU_DISP++, gClearTagLightRayEffectDL);
             // @recomp Pop the matrix tag.
             gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
         }

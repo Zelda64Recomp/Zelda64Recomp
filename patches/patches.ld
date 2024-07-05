@@ -9,17 +9,13 @@ MEMORY {
 SECTIONS {
     .ctors         : { *(.ctors*) *(.init_array*) } >extram AT >rom
     .dtors         : { *(.dtors*)                 } >extram AT >rom
+    .text          : { *(.text*)                  } >extram AT >rom
     .rodata        : { *(.rodata*)                } >extram AT >rom
     .data          : { *(.data*)                  } >extram AT >rom
-    
-    /* The following sections will be removed from the objcopy */
-    /* bss isn't noload to make .text rom addresses valid for the recompiler */
-    .bss           : { *(.bss*)  *(COMMON)        } >extram AT >rom
+    .bss  (NOLOAD) : { *(.bss*)  *(COMMON)        } >extram
     ASSERT(. < RAMBASE + EXTRA_RAM_SIZE, "Maxed out recomp extra ram")
-    /* Padding to push .text to avoid conflicts with original function addresses */
-    .pad           : { . += 0x1000000;            } >extram AT >rom
-    .text          : { *(.text*)                  } >extram AT >rom
     
+    .reloc 0 : { *(.reloc*) }
     .symtab 0 : { *(.symtab) }
     .strtab 0 : { *(.strtab) }
     .shstrtab 0 : { *(.shstrtab) }

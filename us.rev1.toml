@@ -5,7 +5,7 @@ entrypoint = 0x80080000
 # Paths are relative to the location of this config file.
 output_func_path = "RecompiledFuncs"
 relocatable_sections_path = "overlays.us.rev1.txt"
-symbols_file_path = "us.rev1.syms.toml"
+symbols_file_path = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
 rom_file_path = "mm.us.rev1.rom_uncompressed.z64"
 
 [patches]

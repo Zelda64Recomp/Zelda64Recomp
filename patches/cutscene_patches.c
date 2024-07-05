@@ -63,17 +63,13 @@ void func_80884718(EnHorse* this, PlayState* play) {
             }
 
             this->cueId = cue->id;
-            // @recomp Manual relocation, TODO remove when automated.
-            EnHorseCsFunc* D_808890F0_reloc = actor_relocate(&this->actor, D_808890F0);
-            if (D_808890F0_reloc[this->cueId] != NULL) {
-                D_808890F0_reloc[this->cueId](this, play, cue);
+            if (D_808890F0[this->cueId] != NULL) {
+                D_808890F0[this->cueId](this, play, cue);
             }
         }
 
-        // @recomp Manual relocation, TODO remove when automated.
-        EnHorseCsFunc* D_8088911C_reloc = actor_relocate(&this->actor, D_8088911C);
-        if (D_8088911C_reloc[this->cueId] != NULL) {
-            D_8088911C_reloc[this->cueId](this, play, cue);
+        if (D_8088911C[this->cueId] != NULL) {
+            D_8088911C[this->cueId](this, play, cue);
         }
     }
 }

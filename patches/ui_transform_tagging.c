@@ -54,14 +54,6 @@ extern TexturePtr sMapPageBgTextures[];
 extern TexturePtr sQuestPageBgTextures[];
 extern TexturePtr sMaskPageBgTextures[];
 
-s16 kaleido_s16(s16* addr) {
-    return *(s16*)KaleidoManager_GetRamAddr(addr);
-}
-
-f32 kaleido_f32(f32* addr) {
-    return *(f32*)KaleidoManager_GetRamAddr(addr);
-}
-
 // @recomp Patched to set pageIndex to a dummy value when KaleidoScope_SetVertices is called to make it
 // allocate vertices for all pages at all times. This is simpler than patching KaleidoScope_SetVertices directly.
 void KaleidoScope_Draw(PlayState* play) {
@@ -164,9 +156,8 @@ void KaleidoScope_DrawCursor(PlayState* play) {
         gDPSetCombineLERP(POLY_OPA_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
                           PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
 
-        // @recomp manual relocations, TODO remove when recompiler can handle this.
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, kaleido_s16(&sCursorPrimR), kaleido_s16(&sCursorPrimG), kaleido_s16(&sCursorPrimB), 255);
-        gDPSetEnvColor(POLY_OPA_DISP++, kaleido_s16(&sCursorEnvR), kaleido_s16(&sCursorEnvG), kaleido_s16(&sCursorEnvB), 255);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, sCursorPrimR, sCursorPrimG, sCursorPrimB, 255);
+        gDPSetEnvColor(POLY_OPA_DISP++, sCursorEnvR, sCursorEnvG, sCursorEnvB, 255);
 
         Matrix_Translate(pauseCtx->cursorX, pauseCtx->cursorY, -50.0f, MTXMODE_NEW);
         Matrix_Scale(1.0f, 1.0f, 1.0f, MTXMODE_APPLY);
@@ -181,8 +172,7 @@ void KaleidoScope_DrawCursor(PlayState* play) {
 
         for (i = 0; i < 4; i++) {
             Matrix_Push();
-            // @recomp manual relocations, TODO remove when recompiler can handle this.
-            Matrix_Translate(kaleido_f32(&sCursorCirclesX[i]), kaleido_f32(&sCursorCirclesY[i]), -50.0f, MTXMODE_APPLY);
+            Matrix_Translate(sCursorCirclesX[i], sCursorCirclesY[i], -50.0f, MTXMODE_APPLY);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gDPPipeSync(POLY_OPA_DISP++);
@@ -209,6 +199,13 @@ void KaleidoScope_DrawCursor(PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
+extern s16 sPauseZRCursorColorTimer; // 8082B9C8 32899 -17976
+extern s16 sPauseZRCursorColorIndex; // 8082B9CC 32899 -17972
+extern s16 sPauseZRCursorRed; // 8082DA50 32899 -9648
+extern s16 sPauseZRCursorGreen; // 8082DA52 32899 -9646
+extern s16 sPauseZRCursorBlue; // 8082DA54 32899 -9644
+extern s16 sPauseZRCursorAlpha; // 8082DA56 32899 -9642
+
 /**
  * infoPanelVtx
  * 
@@ -223,16 +220,11 @@ void KaleidoScope_DrawCursor(PlayState* play) {
 
 // @recomp Patched to tag the matrix for interpolating the vertices of the Z button, R button, and name panel.
 void KaleidoScope_DrawInfoPanel(PlayState* play) {
-    static s16 sPauseZRCursorColorTargets[][4] = {
+    static const s16 sPauseZRCursorColorTargets[][4] = {
         { 180, 210, 255, 220 },
         { 100, 100, 150, 220 },
     };
-    static s16 sPauseZRCursorColorTimer = 20;
-    static s16 sPauseZRCursorColorIndex = 0;
-    static s16 sPauseZRCursorRed;
-    static s16 sPauseZRCursorGreen;
-    static s16 sPauseZRCursorBlue;
-    static s16 sPauseZRCursorAlpha;
+    // @recomp Moved non-const function-local statics to externs so they still get reset on overlay load.
     PauseContext* pauseCtx = &play->pauseCtx;
     s16 stepR;
     s16 stepG;
@@ -241,11 +233,6 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
     s16 y;
     s16 i;
     s16 j;
-
-    // @recomp Manual relocations, TODO remove when done automatically by the recompiler.
-    s16* sPauseZRCursorColorTimerInits_reloc = KaleidoManager_GetRamAddr(&sPauseZRCursorColorTimerInits);
-    TexturePtr* D_8082B998_reloc = KaleidoManager_GetRamAddr(&D_8082B998);
-    TexturePtr* D_8082B9A8_reloc = KaleidoManager_GetRamAddr(&D_8082B9A8);
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -288,7 +275,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
         sPauseZRCursorGreen = sPauseZRCursorColorTargets[sPauseZRCursorColorIndex][1];
         sPauseZRCursorBlue = sPauseZRCursorColorTargets[sPauseZRCursorColorIndex][2];
         sPauseZRCursorAlpha = sPauseZRCursorColorTargets[sPauseZRCursorColorIndex][3];
-        sPauseZRCursorColorTimer = sPauseZRCursorColorTimerInits_reloc[0];
+        sPauseZRCursorColorTimer = sPauseZRCursorColorTimerInits[0];
         sPauseZRCursorColorIndex ^= 1;
     }
 
@@ -331,42 +318,42 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
     pauseCtx->infoPanelVtx[5].v.ob[0] = pauseCtx->infoPanelVtx[7].v.ob[0] = pauseCtx->infoPanelVtx[4].v.ob[0] + 72;
 
     if ((pauseCtx->cursorSpecialPos == PAUSE_CURSOR_PAGE_LEFT) && (pauseCtx->mainState == PAUSE_MAIN_STATE_IDLE)) {
-        pauseCtx->infoPanelVtx[8].v.ob[0] = pauseCtx->infoPanelVtx[10].v.ob[0] = kaleido_s16(&sPauseCursorLeftX);
+        pauseCtx->infoPanelVtx[8].v.ob[0] = pauseCtx->infoPanelVtx[10].v.ob[0] = sPauseCursorLeftX;
 
         pauseCtx->infoPanelVtx[9].v.ob[0] = pauseCtx->infoPanelVtx[11].v.ob[0] = pauseCtx->infoPanelVtx[8].v.ob[0] + 24;
 
-        pauseCtx->infoPanelVtx[8].v.ob[1] = pauseCtx->infoPanelVtx[9].v.ob[1] = kaleido_s16(&D_8082B920);
+        pauseCtx->infoPanelVtx[8].v.ob[1] = pauseCtx->infoPanelVtx[9].v.ob[1] = D_8082B920;
 
         pauseCtx->infoPanelVtx[10].v.ob[1] = pauseCtx->infoPanelVtx[11].v.ob[1] =
             pauseCtx->infoPanelVtx[8].v.ob[1] - 32;
     } else {
-        pauseCtx->infoPanelVtx[8].v.ob[0] = pauseCtx->infoPanelVtx[10].v.ob[0] = kaleido_s16(&sPauseCursorLeftX) + 3;
+        pauseCtx->infoPanelVtx[8].v.ob[0] = pauseCtx->infoPanelVtx[10].v.ob[0] = sPauseCursorLeftX + 3;
 
         pauseCtx->infoPanelVtx[9].v.ob[0] = pauseCtx->infoPanelVtx[11].v.ob[0] = pauseCtx->infoPanelVtx[8].v.ob[0] + 18;
 
-        pauseCtx->infoPanelVtx[8].v.ob[1] = pauseCtx->infoPanelVtx[9].v.ob[1] = kaleido_s16(&D_8082B920) - 3;
+        pauseCtx->infoPanelVtx[8].v.ob[1] = pauseCtx->infoPanelVtx[9].v.ob[1] = D_8082B920 - 3;
 
         pauseCtx->infoPanelVtx[10].v.ob[1] = pauseCtx->infoPanelVtx[11].v.ob[1] =
             pauseCtx->infoPanelVtx[8].v.ob[1] - 26;
     }
 
     if ((pauseCtx->cursorSpecialPos == PAUSE_CURSOR_PAGE_RIGHT) && (pauseCtx->mainState == PAUSE_MAIN_STATE_IDLE)) {
-        pauseCtx->infoPanelVtx[12].v.ob[0] = pauseCtx->infoPanelVtx[14].v.ob[0] = kaleido_s16(&sPauseCursorRightX);
+        pauseCtx->infoPanelVtx[12].v.ob[0] = pauseCtx->infoPanelVtx[14].v.ob[0] = sPauseCursorRightX;
 
         pauseCtx->infoPanelVtx[13].v.ob[0] = pauseCtx->infoPanelVtx[15].v.ob[0] =
             pauseCtx->infoPanelVtx[12].v.ob[0] + 24;
 
-        pauseCtx->infoPanelVtx[12].v.ob[1] = pauseCtx->infoPanelVtx[13].v.ob[1] = kaleido_s16(&D_8082B920);
+        pauseCtx->infoPanelVtx[12].v.ob[1] = pauseCtx->infoPanelVtx[13].v.ob[1] = D_8082B920;
 
         pauseCtx->infoPanelVtx[14].v.ob[1] = pauseCtx->infoPanelVtx[15].v.ob[1] =
             pauseCtx->infoPanelVtx[12].v.ob[1] - 32;
     } else {
-        pauseCtx->infoPanelVtx[12].v.ob[0] = pauseCtx->infoPanelVtx[14].v.ob[0] = kaleido_s16(&sPauseCursorRightX) + 3;
+        pauseCtx->infoPanelVtx[12].v.ob[0] = pauseCtx->infoPanelVtx[14].v.ob[0] = sPauseCursorRightX + 3;
 
         pauseCtx->infoPanelVtx[13].v.ob[0] = pauseCtx->infoPanelVtx[15].v.ob[0] =
             pauseCtx->infoPanelVtx[12].v.ob[0] + 18;
 
-        pauseCtx->infoPanelVtx[12].v.ob[1] = pauseCtx->infoPanelVtx[13].v.ob[1] = kaleido_s16(&D_8082B920) - 3;
+        pauseCtx->infoPanelVtx[12].v.ob[1] = pauseCtx->infoPanelVtx[13].v.ob[1] = D_8082B920 - 3;
 
         pauseCtx->infoPanelVtx[14].v.ob[1] = pauseCtx->infoPanelVtx[15].v.ob[1] =
             pauseCtx->infoPanelVtx[12].v.ob[1] - 26;
@@ -512,10 +499,10 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
                 if (pauseCtx->cursorSpecialPos == PAUSE_CURSOR_PAGE_LEFT) {
                     POLY_OPA_DISP =
-                        Gfx_DrawTexQuad4b(POLY_OPA_DISP, D_8082B998_reloc[pauseCtx->pageIndex], G_IM_FMT_IA, 128, 16, 0);
+                        Gfx_DrawTexQuad4b(POLY_OPA_DISP, D_8082B998[pauseCtx->pageIndex], G_IM_FMT_IA, 128, 16, 0);
                 } else {
                     POLY_OPA_DISP =
-                        Gfx_DrawTexQuad4b(POLY_OPA_DISP, D_8082B9A8_reloc[pauseCtx->pageIndex], G_IM_FMT_IA, 128, 16, 0);
+                        Gfx_DrawTexQuad4b(POLY_OPA_DISP, D_8082B9A8[pauseCtx->pageIndex], G_IM_FMT_IA, 128, 16, 0);
                 }
             }
         } else if ((!pauseCtx->pageIndex || (pauseCtx->pageIndex == PAUSE_MASK)) &&
@@ -541,7 +528,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
 
             POLY_OPA_DISP = Gfx_DrawTexQuad4b(POLY_OPA_DISP, gPauseToEquipENGTex, G_IM_FMT_IA, 64, 16, 4);
-        } else if ((pauseCtx->pageIndex == PAUSE_MAP) && kaleido_s16(&sInDungeonScene)) {
+        } else if ((pauseCtx->pageIndex == PAUSE_MAP) && sInDungeonScene) {
             // No code in this case
         } else if ((pauseCtx->pageIndex == PAUSE_QUEST) &&
                    (pauseCtx->cursorSlot[PAUSE_QUEST] == QUEST_BOMBERS_NOTEBOOK)) {
@@ -608,87 +595,75 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
     s16 stepG;
     s16 stepB;
 
-    // @recomp Manual relocation, TODO remove when recompiler handles it automatically.
-    TexturePtr* sItemPageBgTextures_reloc = KaleidoManager_GetRamAddr(&sItemPageBgTextures);
-    TexturePtr* sMapPageBgTextures_reloc = KaleidoManager_GetRamAddr(&sMapPageBgTextures);
-    TexturePtr* sQuestPageBgTextures_reloc = KaleidoManager_GetRamAddr(&sQuestPageBgTextures);
-    TexturePtr* sMaskPageBgTextures_reloc = KaleidoManager_GetRamAddr(&sMaskPageBgTextures);
-    s16* sCursorPrimR_reloc = KaleidoManager_GetRamAddr(&sCursorPrimR);
-    s16* sCursorPrimG_reloc = KaleidoManager_GetRamAddr(&sCursorPrimG);
-    s16* sCursorPrimB_reloc = KaleidoManager_GetRamAddr(&sCursorPrimB);
-    s16* sCursorEnvR_reloc = KaleidoManager_GetRamAddr(&sCursorEnvR);
-    s16* sCursorEnvG_reloc = KaleidoManager_GetRamAddr(&sCursorEnvG);
-    s16* sCursorEnvB_reloc = KaleidoManager_GetRamAddr(&sCursorEnvB);
-
     OPEN_DISPS(gfxCtx);
 
     if (!IS_PAUSE_STATE_GAMEOVER) {
         if (pauseCtx->state != PAUSE_STATE_SAVEPROMPT) {
 
             stepR =
-                ABS_ALT(*sCursorPrimR_reloc - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) /
+                ABS_ALT(sCursorPrimR - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) /
                 sCursorColorTimer;
             stepG =
-                ABS_ALT(*sCursorPrimG_reloc - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) /
+                ABS_ALT(sCursorPrimG - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) /
                 sCursorColorTimer;
             stepB =
-                ABS_ALT(*sCursorPrimB_reloc - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) /
+                ABS_ALT(sCursorPrimB - sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) /
                 sCursorColorTimer;
 
-            if (*sCursorPrimR_reloc >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) {
-                *sCursorPrimR_reloc -= stepR;
+            if (sCursorPrimR >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) {
+                sCursorPrimR -= stepR;
             } else {
-                *sCursorPrimR_reloc += stepR;
+                sCursorPrimR += stepR;
             }
 
-            if (*sCursorPrimG_reloc >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) {
-                *sCursorPrimG_reloc -= stepG;
+            if (sCursorPrimG >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) {
+                sCursorPrimG -= stepG;
             } else {
-                *sCursorPrimG_reloc += stepG;
+                sCursorPrimG += stepG;
             }
 
-            if (*sCursorPrimB_reloc >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) {
-                *sCursorPrimB_reloc -= stepB;
+            if (sCursorPrimB >= sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) {
+                sCursorPrimB -= stepB;
             } else {
-                *sCursorPrimB_reloc += stepB;
+                sCursorPrimB += stepB;
             }
 
             stepR =
-                ABS_ALT(*sCursorEnvR_reloc - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) /
+                ABS_ALT(sCursorEnvR - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) /
                 sCursorColorTimer;
             stepG =
-                ABS_ALT(*sCursorEnvG_reloc - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) /
+                ABS_ALT(sCursorEnvG - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) /
                 sCursorColorTimer;
             stepB =
-                ABS_ALT(*sCursorEnvB_reloc - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) /
+                ABS_ALT(sCursorEnvB - sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) /
                 sCursorColorTimer;
 
-            if (*sCursorEnvR_reloc >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) {
-                *sCursorEnvR_reloc -= stepR;
+            if (sCursorEnvR >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0]) {
+                sCursorEnvR -= stepR;
             } else {
-                *sCursorEnvR_reloc += stepR;
+                sCursorEnvR += stepR;
             }
 
-            if (*sCursorEnvG_reloc >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) {
-                *sCursorEnvG_reloc -= stepG;
+            if (sCursorEnvG >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1]) {
+                sCursorEnvG -= stepG;
             } else {
-                *sCursorEnvG_reloc += stepG;
+                sCursorEnvG += stepG;
             }
 
-            if (*sCursorEnvB_reloc >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) {
-                *sCursorEnvB_reloc -= stepB;
+            if (sCursorEnvB >= sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2]) {
+                sCursorEnvB -= stepB;
             } else {
-                *sCursorEnvB_reloc += stepB;
+                sCursorEnvB += stepB;
             }
 
             sCursorColorTimer--;
             if (sCursorColorTimer == 0) {
-                *sCursorPrimR_reloc = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0];
-                *sCursorPrimG_reloc = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1];
-                *sCursorPrimB_reloc = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2];
-                *sCursorEnvR_reloc = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0];
-                *sCursorEnvG_reloc = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1];
-                *sCursorEnvB_reloc = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2];
+                sCursorPrimR = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0];
+                sCursorPrimG = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1];
+                sCursorPrimB = sCursorPrimColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2];
+                sCursorEnvR = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][0];
+                sCursorEnvG = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][1];
+                sCursorEnvB = sCursorEnvColorTarget[pauseCtx->cursorColorSet + sCursorColorTargetIndex][2];
                 sCursorColorTargetIndex ^= 1;
                 sCursorColorTimer = 10;
             }
@@ -704,14 +679,13 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(0.0f, MTXMODE_NEW);
-            // @recomp Manual relocation, TODO remove when automated.
-            Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->itemPageRoll / 100.0f);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->itemPageVtx, sItemPageBgTextures_reloc);
+            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->itemPageVtx, sItemPageBgTextures);
 
             KaleidoScope_DrawItemSelect(play);
         }
@@ -726,16 +700,15 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(-1.57f, MTXMODE_NEW);
-            // @recomp Manual relocation, TODO remove when automated.
-            Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->mapPageRoll / 100.0f);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->mapPageVtx, sMapPageBgTextures_reloc);
+            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->mapPageVtx, sMapPageBgTextures);
 
-            if (kaleido_s16(&sInDungeonScene)) {
+            if (sInDungeonScene) {
                 KaleidoScope_DrawDungeonMap(play);
                 Gfx_SetupDL42_Opa(gfxCtx);
                 gDPSetCombineMode(POLY_OPA_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
@@ -757,14 +730,13 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(-3.14f, MTXMODE_NEW);
-            // @recomp Manual relocation, TODO remove when automated.
-            Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->questPageRoll / 100.0f);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->questPageVtx, sQuestPageBgTextures_reloc);
+            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->questPageVtx, sQuestPageBgTextures);
 
             KaleidoScope_DrawQuestStatus(play);
         }
@@ -781,14 +753,13 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
             Matrix_RotateYF(1.57f, MTXMODE_NEW);
-            // @recomp Manual relocation, TODO remove when automated.
-            Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
             Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
             Matrix_RotateXFApply(-pauseCtx->maskPageRoll / 100.0f);
 
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->maskPageVtx, sMaskPageBgTextures_reloc);
+            POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->maskPageVtx, sMaskPageBgTextures);
 
             KaleidoScope_DrawMaskSelect(play);
         }
@@ -804,15 +775,14 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                     Matrix_RotateYF(0.0f, MTXMODE_NEW);
-                    // @recomp Manual relocation, TODO remove when automated.
-                    Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+                    Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
                     Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                     Matrix_RotateXFApply(-pauseCtx->itemPageRoll / 100.0f);
 
                     gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
                     POLY_OPA_DISP =
-                        KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->itemPageVtx, sItemPageBgTextures_reloc);
+                        KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->itemPageVtx, sItemPageBgTextures);
 
                     KaleidoScope_DrawItemSelect(play);
                 }
@@ -827,16 +797,15 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                 Matrix_RotateYF(-1.57f, MTXMODE_NEW);
-                // @recomp Manual relocation, TODO remove when automated.
-                Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+                Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->mapPageRoll / 100.0f);
 
                 gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-                POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->mapPageVtx, sMapPageBgTextures_reloc);
+                POLY_OPA_DISP = KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->mapPageVtx, sMapPageBgTextures);
 
-                if (kaleido_s16(&sInDungeonScene)) {
+                if (sInDungeonScene) {
                     KaleidoScope_DrawDungeonMap(play);
                     Gfx_SetupDL42_Opa(gfxCtx);
 
@@ -878,15 +847,14 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetTextureFilter(POLY_OPA_DISP++, G_TF_BILERP);
 
                 Matrix_RotateYF(-3.14f, MTXMODE_NEW);
-                // @recomp Manual relocation, TODO remove when automated.
-                Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+                Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->questPageRoll / 100.0f);
 
                 gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
                 POLY_OPA_DISP =
-                    KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->questPageVtx, sQuestPageBgTextures_reloc);
+                    KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->questPageVtx, sQuestPageBgTextures);
 
                 KaleidoScope_DrawQuestStatus(play);
                 break;
@@ -900,15 +868,14 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
                 gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 180, 180, 120, 255);
 
                 Matrix_RotateYF(1.57f, MTXMODE_NEW);
-                // @recomp Manual relocation, TODO remove when automated.
-                Matrix_Translate(0.0f, kaleido_f32(&sPauseMenuVerticalOffset) / 100.0f, -93.0f, MTXMODE_APPLY);
+                Matrix_Translate(0.0f, sPauseMenuVerticalOffset / 100.0f, -93.0f, MTXMODE_APPLY);
                 Matrix_Scale(0.78f, 0.78f, 0.78f, MTXMODE_APPLY);
                 Matrix_RotateXFApply(-pauseCtx->maskPageRoll / 100.0f);
 
                 gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
                 POLY_OPA_DISP =
-                    KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->maskPageVtx, sMaskPageBgTextures_reloc);
+                    KaleidoScope_DrawPageSections(POLY_OPA_DISP, pauseCtx->maskPageVtx, sMaskPageBgTextures);
 
                 KaleidoScope_DrawMaskSelect(play);
                 break;

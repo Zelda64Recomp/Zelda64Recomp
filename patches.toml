@@ -5,5 +5,12 @@
 elf_path = "patches/patches.elf"
 output_func_path = "RecompiledPatches"
 single_file_output = true
-# Allow absolute symbols to be used as jump targets
+# Allow absolute symbols to be used as jump targets.
 use_absolute_symbols = true
+# Point the recompiler at the symbol files so that it can resolve relocations during recompilation.
+func_reference_syms_file = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
+data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
+# Tell the recompiler to write the output binary. Doing this instead of using objcopy allows the recompiler to patch MIPS32 relocs.
+output_binary_path = "patches/patches.bin"
+# Do not emit warnings for unpaired LO16 values, as clang produces many of them.
+unpaired_lo16_warnings = false

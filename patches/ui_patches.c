@@ -540,10 +540,10 @@ void Interface_Draw(PlayState* play) {
             extern s16 sMaskEquipAnimTimer;
             extern s16 sEquipState;
             extern s16 sMaskEquipState;
-            s16 equip_timer =      *(s16*)KaleidoManager_GetRamAddr(&sEquipAnimTimer);
-            s16 mask_equip_timer = *(s16*)KaleidoManager_GetRamAddr(&sMaskEquipAnimTimer);
-            s16 equip_state =      *(s16*)KaleidoManager_GetRamAddr(&sEquipState);
-            s16 mask_equip_state = *(s16*)KaleidoManager_GetRamAddr(&sMaskEquipState);
+            s16 equip_timer =      sEquipAnimTimer;
+            s16 mask_equip_timer = sMaskEquipAnimTimer;
+            s16 equip_state =      sEquipState;
+            s16 mask_equip_state = sMaskEquipState;
 
             s16 timer = MIN(equip_timer, mask_equip_timer);
             s32 max_timer = 10;

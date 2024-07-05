@@ -29,14 +29,10 @@ void EnTest7_Draw(Actor* thisx, PlayState* play) {
         if (mtx == NULL) {
             return;
         }
-        // func_80AF31D0 is an overlay symbol, so its addresses need to be offset to get the actual loaded vram address.
-        // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
-        OverrideKeyframeDrawScaled func_80AF31D0_relocated = (OverrideKeyframeDrawScaled)actor_relocate(thisx, func_80AF31D0);
-        
         // @recomp Push the matrix group for the song of soaring's wings.
         gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SOARING_WINGS_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
         
-        func_8018450C(play, &this->skeletonInfo, mtx, func_80AF31D0_relocated, NULL, &this->actor);
+        func_8018450C(play, &this->skeletonInfo, mtx, func_80AF31D0, NULL, &this->actor);
         
         // @recomp Pop the wings matrix group.
         gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
@@ -180,12 +176,9 @@ void EnTest6_DrawThreeDayResetSoTCutscene(EnTest6* this, PlayState* play) {
 
     POLY_OPA_DISP = this->gfx;
 
-    // @recomp Manual relocation, TODO remove when automated.
-    SoTCsAmmoDrops* sSoTCsAmmoDrops_reloc = (SoTCsAmmoDrops*)actor_relocate(&this->actor, sSoTCsAmmoDrops);
-
     for (i = 0; i < ARRAY_COUNT(sSoTCsAmmoDrops); i++) {
-        if (sSoTCsAmmoDrops_reloc[i].scale > 0.0f) {
-            sSoTCsAmmoDrops_reloc[i].draw(this, play, &sSoTCsAmmoDrops_reloc[i]);
+        if (sSoTCsAmmoDrops[i].scale > 0.0f) {
+            sSoTCsAmmoDrops[i].draw(this, play, &sSoTCsAmmoDrops[i]);
         }
     }
 

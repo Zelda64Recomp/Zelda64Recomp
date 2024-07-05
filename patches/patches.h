@@ -63,17 +63,6 @@
 int recomp_printf(const char* fmt, ...);
 float recomp_powf(float, float);
 
-static inline void* actor_relocate(Actor* actor, void* addr) {
-    if ((uintptr_t)addr >= 0x80800000) {
-        return (void*)((uintptr_t)addr -
-                (intptr_t)((uintptr_t)actor->overlayEntry->vramStart - (uintptr_t)actor->overlayEntry->loadedRamAddr));
-    }
-    else {
-        recomp_printf("Not an overlay address!: 0x%08X 0x%08X 0x%08X\n", (u32)addr, (u32)actor->overlayEntry->vramStart, (u32)actor->overlayEntry->loadedRamAddr);
-        return addr;
-    }
-}
-
 typedef enum {
     /* 0 */ PICTO_BOX_STATE_OFF,         // Not using the pictograph
     /* 1 */ PICTO_BOX_STATE_LENS,        // Looking through the lens of the pictograph

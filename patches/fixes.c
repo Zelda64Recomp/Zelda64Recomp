@@ -8,7 +8,7 @@
 #define PAGE_BG_WIDTH (PAGE_BG_COLS * PAGE_BG_QUAD_WIDTH)
 #define PAGE_BG_HEIGHT (PAGE_BG_ROWS * PAGE_BG_QUAD_HEIGHT)
 
-#define RECOMP_PAGE_ROW_HEIGHT 14
+#define RECOMP_PAGE_ROW_HEIGHT 15
 #define RECOMP_PAGE_ROW_COUNT ((PAGE_BG_HEIGHT + RECOMP_PAGE_ROW_HEIGHT - 1) / RECOMP_PAGE_ROW_HEIGHT)
 
 extern s16* sVtxPageQuadsX[VTX_PAGE_MAX];
@@ -55,16 +55,16 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
 
         vtx[4 * row + 0].v.flag = vtx[4 * row + 1].v.flag = vtx[4 * row + 2].v.flag = vtx[4 * row + 3].v.flag = 0;
 
-        #define PIXEL_OFFSET ((1 << 4))
+        #define PIXEL_OFFSET 0
 
         vtx[4 * row + 0].v.tc[0] = PIXEL_OFFSET;
-        vtx[4 * row + 0].v.tc[1] = (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 1].v.tc[0] = PAGE_BG_WIDTH * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 1].v.tc[1] = (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 0].v.tc[1] = PIXEL_OFFSET;
+        vtx[4 * row + 1].v.tc[0] = (PAGE_BG_WIDTH + 2 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 1].v.tc[1] = PIXEL_OFFSET;
         vtx[4 * row + 2].v.tc[0] = PIXEL_OFFSET;
-        vtx[4 * row + 2].v.tc[1] = (cur_y - next_y + 1) * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 3].v.tc[0] = PAGE_BG_WIDTH * (1 << 5) + PIXEL_OFFSET;
-        vtx[4 * row + 3].v.tc[1] = (cur_y - next_y + 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 2].v.tc[1] = (cur_y - next_y + 1 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 3].v.tc[0] = (PAGE_BG_WIDTH + 2 - 1) * (1 << 5) + PIXEL_OFFSET;
+        vtx[4 * row + 3].v.tc[1] = (cur_y - next_y + 1 - 1) * (1 << 5) + PIXEL_OFFSET;
 
         vtx[4 * row + 0].v.cn[0] = vtx[4 * row + 1].v.cn[0] = vtx[4 * row + 2].v.cn[0] = vtx[4 * row + 3].v.cn[0] = 0;
         vtx[4 * row + 0].v.cn[1] = vtx[4 * row + 1].v.cn[1] = vtx[4 * row + 2].v.cn[1] = vtx[4 * row + 3].v.cn[1] = 0;
@@ -73,21 +73,14 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
 
         cur_y = next_y;
     }
-    
-    // These are overlay symbols, so their addresses need to be offset to get their actual loaded vram address.
-    // TODO remove this once the recompiler is able to handle overlay symbols automatically for patch functions.
-    s16** sVtxPageQuadsXRelocated =      (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsX);
-    s16** sVtxPageQuadsWidthRelocated =  (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsWidth);
-    s16** sVtxPageQuadsYRelocated =      (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsY);
-    s16** sVtxPageQuadsHeightRelocated = (s16**)KaleidoManager_GetRamAddr(sVtxPageQuadsHeight);
-    
+        
     s16 k = 60;
 
     if (numQuads != 0) {
-        quadsX = sVtxPageQuadsXRelocated[vtxPage];
-        quadsWidth = sVtxPageQuadsWidthRelocated[vtxPage];
-        quadsY = sVtxPageQuadsYRelocated[vtxPage];
-        quadsHeight = sVtxPageQuadsHeightRelocated[vtxPage];
+        quadsX = sVtxPageQuadsX[vtxPage];
+        quadsWidth = sVtxPageQuadsWidth[vtxPage];
+        quadsY = sVtxPageQuadsY[vtxPage];
+        quadsHeight = sVtxPageQuadsHeight[vtxPage];
         s16 i;
 
         for (i = 0; i < numQuads; i++, k += 4) {
@@ -185,10 +178,10 @@ void KaleidoUpdateWrapper(PlayState* play) {
 
 void KaleidoDrawWrapper(PlayState* play) {
     // @recomp Update the background image pointers to reflect the overlay's load address.
-    bg_pointers[0] = KaleidoManager_GetRamAddr(sMaskPageBgTextures);
-    bg_pointers[1] = KaleidoManager_GetRamAddr(sItemPageBgTextures);
-    bg_pointers[2] = KaleidoManager_GetRamAddr(sMapPageBgTextures);
-    bg_pointers[3] = KaleidoManager_GetRamAddr(sQuestPageBgTextures);
+    bg_pointers[0] = sMaskPageBgTextures;
+    bg_pointers[1] = sItemPageBgTextures;
+    bg_pointers[2] = sMapPageBgTextures;
+    bg_pointers[3] = sQuestPageBgTextures;
 
     KaleidoScope_Draw(play);
 
@@ -202,10 +195,10 @@ void KaleidoDrawWrapper(PlayState* play) {
         uintptr_t old_segment_0D = gSegments[0x0D];
         gSegments[0x08] = OS_K0_TO_PHYSICAL(play->pauseCtx.iconItemSegment);
         gSegments[0x0D] = OS_K0_TO_PHYSICAL(play->pauseCtx.iconItemLangSegment);
-        assemble_image(KaleidoManager_GetRamAddr(sMaskPageBgTextures), &bg_images[0]);
-        assemble_image(KaleidoManager_GetRamAddr(sItemPageBgTextures), &bg_images[1]);
-        assemble_image(KaleidoManager_GetRamAddr(sMapPageBgTextures), &bg_images[2]);
-        assemble_image(KaleidoManager_GetRamAddr(sQuestPageBgTextures), &bg_images[3]);
+        assemble_image(sMaskPageBgTextures, &bg_images[0]);
+        assemble_image(sItemPageBgTextures, &bg_images[1]);
+        assemble_image(sMapPageBgTextures, &bg_images[2]);
+        assemble_image(sQuestPageBgTextures, &bg_images[3]);
         gSegments[0x08] = old_segment_08;
         gSegments[0x0D] = old_segment_0D;
     }
@@ -241,20 +234,21 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures
 
     // Draw the rows.
     for (u32 bg_row = 0; bg_row < RECOMP_PAGE_ROW_COUNT; bg_row++) {
+        u32 cur_row_height = MIN(RECOMP_PAGE_ROW_HEIGHT, PAGE_BG_HEIGHT - bg_row * RECOMP_PAGE_ROW_HEIGHT);
         gDPLoadTextureTile(gfx++, *cur_image,
             G_IM_FMT_IA, G_IM_SIZ_8b, // fmt, siz
             PAGE_BG_WIDTH + 2, PAGE_BG_HEIGHT + 2, // width, height
-            0, (bg_row + 0) * RECOMP_PAGE_ROW_HEIGHT, // uls, ult
-            PAGE_BG_WIDTH + 2, (bg_row + 1) * RECOMP_PAGE_ROW_HEIGHT + 2, // lrs, lrt
+            0, bg_row * RECOMP_PAGE_ROW_HEIGHT, // uls, ult
+            PAGE_BG_WIDTH + 2 - 1, bg_row * RECOMP_PAGE_ROW_HEIGHT + cur_row_height + 1 - 1, // lrs, lrt
             0, // pal
-            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
+            G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP,
             G_TX_NOMASK, G_TX_NOMASK,
             G_TX_NOLOD, G_TX_NOLOD);
         gDPSetTileSize(gfx++, G_TX_RENDERTILE,
                 0 << G_TEXTURE_IMAGE_FRAC,
                 0 << G_TEXTURE_IMAGE_FRAC,
-                (PAGE_BG_WIDTH + 2) <<G_TEXTURE_IMAGE_FRAC,
-                (RECOMP_PAGE_ROW_HEIGHT + 2) << G_TEXTURE_IMAGE_FRAC);
+                (PAGE_BG_WIDTH + 2 - 1) <<G_TEXTURE_IMAGE_FRAC,
+                (cur_row_height + 1 - 1) << G_TEXTURE_IMAGE_FRAC);
         gSPVertex(gfx++, vertices + 4 * bg_row, 4, 0);
         gSP2Triangles(gfx++, 0, 3, 1, 0x0, 3, 0, 2, 0x0);
     }
@@ -333,18 +327,6 @@ s32 DemoEffect_OverrideLimbDrawTimewarp(PlayState* play, SkelCurve* skelCurve, s
     return true;
 }
 
-void* gamestate_relocate(void* addr, GameStateId id) {
-    GameStateOverlay* ovl = &gGameStateOverlayTable[id];
-    if ((uintptr_t)addr >= 0x80800000) {
-        return (void*)((uintptr_t)addr -
-                (intptr_t)((uintptr_t)ovl->vramStart - (uintptr_t)ovl->loadedRamAddr));
-    }
-    else {
-        recomp_printf("Not an overlay address!: 0x%08X 0x%08X 0x%08X\n", (u32)addr, (u32)ovl->vramStart, (u32)ovl->loadedRamAddr);
-        return addr;
-    }
-}
-
 void DayTelop_Main(GameState* thisx);
 void DayTelop_Destroy(GameState* thisx);
 void DayTelop_Noop(DayTelopState* this);
@@ -358,9 +340,8 @@ void DayTelop_Init(GameState* thisx) {
     Matrix_Init(&this->state);
     ShrinkWindow_Destroy();
     View_Init(&this->view, this->state.gfxCtx);
-    // @recomp Manual relocation, TODO remove when automated.
-    this->state.main = (GameStateFunc)gamestate_relocate(DayTelop_Main, GAMESTATE_DAYTELOP);
-    this->state.destroy = (GameStateFunc)gamestate_relocate(DayTelop_Destroy, GAMESTATE_DAYTELOP);
+    this->state.main = DayTelop_Main;
+    this->state.destroy = DayTelop_Destroy;
     // @recomp Add 120 extra frames (2 seconds with a frame divisor of 1) to account for faster loading.
     this->transitionCountdown = 260;
     this->fadeInState = DAYTELOP_HOURSTEXT_OFF;
