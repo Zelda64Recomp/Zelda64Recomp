@@ -1183,6 +1183,33 @@ std::atomic<recompui::Menu> open_menu = recompui::Menu::Launcher;
 std::atomic<recompui::ConfigSubmenu> open_config_submenu = recompui::ConfigSubmenu::Count;
 
 int cont_button_to_key(SDL_ControllerButtonEvent& button) {
+    // Configurable accept button in menu
+    auto menuAcceptBinding0 = recomp::get_input_binding(recomp::GameInput::ACCEPT_MENU, 0, recomp::InputDevice::Controller);
+    auto menuAcceptBinding1 = recomp::get_input_binding(recomp::GameInput::ACCEPT_MENU, 1, recomp::InputDevice::Controller);
+    // note - magic number: 0 is InputType::None
+    if ((menuAcceptBinding0.input_type != 0 && button.button == menuAcceptBinding0.input_id) ||
+        (menuAcceptBinding1.input_type != 0 && button.button == menuAcceptBinding1.input_id)) {
+        return SDLK_RETURN;
+    }
+
+    // Configurable apply button in menu
+    auto menuApplyBinding0 = recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 0, recomp::InputDevice::Controller);
+    auto menuApplyBinding1 = recomp::get_input_binding(recomp::GameInput::APPLY_MENU, 1, recomp::InputDevice::Controller);
+    // note - magic number: 0 is InputType::None
+    if ((menuApplyBinding0.input_type != 0 && button.button == menuApplyBinding0.input_id) ||
+        (menuApplyBinding1.input_type != 0 && button.button == menuApplyBinding1.input_id)) {
+        return SDLK_f;
+    } 
+
+    // Allows closing the menu
+    auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
+    auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
+    // note - magic number: 0 is InputType::None
+    if ((menuToggleBinding0.input_type != 0 && button.button == menuToggleBinding0.input_id) ||
+        (menuToggleBinding1.input_type != 0 && button.button == menuToggleBinding1.input_id)) {
+        return SDLK_ESCAPE;
+    }
+
     switch (button.button) {
         case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP:
             return SDLK_UP;
@@ -1192,20 +1219,6 @@ int cont_button_to_key(SDL_ControllerButtonEvent& button) {
             return SDLK_LEFT;
         case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
             return SDLK_RIGHT;
-        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A:
-            return SDLK_RETURN;
-        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X:
-        case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START:
-            return SDLK_f;
-    }
-
-    // Allows closing the menu
-    auto menuToggleBinding0 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 0, recomp::InputDevice::Controller);
-    auto menuToggleBinding1 = recomp::get_input_binding(recomp::GameInput::TOGGLE_MENU, 1, recomp::InputDevice::Controller);
-    // note - magic number: 0 is InputType::None
-    if ((menuToggleBinding0.input_type != 0 && button.button == menuToggleBinding0.input_id) ||
-        (menuToggleBinding1.input_type != 0 && button.button == menuToggleBinding1.input_id)) {
-        return SDLK_ESCAPE;
     }
 
     return 0;

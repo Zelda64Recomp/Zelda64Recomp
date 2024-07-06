@@ -181,6 +181,17 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
                 recomp::cancel_scanning_input();
             } else if (scanning_device == recomp::InputDevice::Controller) {
                 SDL_ControllerButtonEvent* button_event = &event->cbutton;
+                auto scanned_input_index = recomp::get_scanned_input_index();
+                if ((scanned_input_index == static_cast<int>(recomp::GameInput::TOGGLE_MENU) ||
+                     scanned_input_index == static_cast<int>(recomp::GameInput::ACCEPT_MENU) ||
+                     scanned_input_index == static_cast<int>(recomp::GameInput::APPLY_MENU)) && (
+                     button_event->button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP ||
+                     button_event->button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
+                     button_event->button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
+                     button_event->button == SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) {
+                    break;
+                }
+
                 set_scanned_input({(uint32_t)InputType::ControllerDigital, button_event->button});
             }
         } else {
@@ -189,6 +200,13 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         break;
     case SDL_EventType::SDL_CONTROLLERAXISMOTION:
         if (scanning_device == recomp::InputDevice::Controller) {
+            auto scanned_input_index = recomp::get_scanned_input_index();
+            if (scanned_input_index == static_cast<int>(recomp::GameInput::TOGGLE_MENU) ||
+                scanned_input_index == static_cast<int>(recomp::GameInput::ACCEPT_MENU) ||
+                scanned_input_index == static_cast<int>(recomp::GameInput::APPLY_MENU)) {
+                break;
+            }
+
             SDL_ControllerAxisEvent* axis_event = &event->caxis;
             float axis_value = axis_event->value * (1/32768.0f);
             if (axis_value > axis_threshold) {
@@ -347,6 +365,12 @@ const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
     .toggle_menu = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_ESCAPE}
     },
+    .accept_menu = {
+        {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_RETURN}
+    },
+    .apply_menu = {
+        {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_F}
+    }
 };
 
 const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
@@ -411,6 +435,13 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
     .toggle_menu = {
         {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_BACK},
     },
+    .accept_menu = {
+        {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_SOUTH},
+    },
+    .apply_menu = {
+        {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_WEST},
+        {.input_type = (uint32_t)InputType::ControllerDigital, .input_id = SDL_CONTROLLER_BUTTON_START}
+    }
 };
 
 void recomp::poll_inputs() {
@@ -692,35 +723,35 @@ bool recomp::all_input_disabled() {
 std::string controller_button_to_string(SDL_GameControllerButton button) {
     switch (button) {
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A:
-        return "\u21A7";
+        return PF_GAMEPAD_A;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B:
-        return "\u21A6";
+        return PF_GAMEPAD_B;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X:
-        return "\u21A4";
+        return PF_GAMEPAD_X;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y:
-        return "\u21A5";
+        return PF_GAMEPAD_Y;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_BACK:
-        return "\u21FA";
-    // case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_GUIDE:
-    //     return "";
+        return PF_XBOX_VIEW;
+    case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_GUIDE:
+        return PF_GAMEPAD_HOME;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_START:
-        return "\u21FB";
+        return PF_XBOX_MENU;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSTICK:
-        return "\u21BA";
+        return PF_ANALOG_L_CLICK;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSTICK:
-        return "\u21BB";
+        return PF_ANALOG_R_CLICK;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-        return "\u2198";
+        return PF_XBOX_LEFT_SHOULDER;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
-        return "\u2199";
+        return PF_XBOX_RIGHT_SHOULDER;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP:
-        return "\u219F";
+        return PF_DPAD_UP;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-        return "\u21A1";
+        return PF_DPAD_DOWN;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-        return "\u219E";
+        return PF_DPAD_LEFT;
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-        return "\u21A0";
+        return PF_DPAD_RIGHT;
     // case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_MISC1:
     //     return "";
     // case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_PADDLE1:
@@ -732,7 +763,7 @@ std::string controller_button_to_string(SDL_GameControllerButton button) {
     // case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_PADDLE4:
     //     return "";
     case SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_TOUCHPAD:
-        return "\u21E7";
+        return PF_SONY_TOUCHPAD;
     default:
         return "Button " + std::to_string(button);
     }
@@ -808,6 +839,8 @@ std::unordered_map<SDL_Scancode, std::string> scancode_codepoints {
     {SDL_SCANCODE_RETURN, PF_KEYBOARD_ENTER},
     {SDL_SCANCODE_CAPSLOCK, PF_KEYBOARD_CAPS},
     {SDL_SCANCODE_NUMLOCKCLEAR, PF_KEYBOARD_NUM_LOCK},
+    {SDL_SCANCODE_LSHIFT, "L" PF_KEYBOARD_SHIFT},
+    {SDL_SCANCODE_RSHIFT, "R" PF_KEYBOARD_SHIFT},
 };
 
 std::string keyboard_input_to_string(SDL_Scancode key) {

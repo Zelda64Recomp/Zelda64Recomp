@@ -41,7 +41,7 @@
                                     data-for="input_bindings, i : inputs.array"
                                     data-event-mouseover="set_input_row_focus(i)"
                                     data-class-control-option--active="get_input_enum_name(i)==cur_input_row"
-                                    data-if="!input_device_is_keyboard || get_input_enum_name(i) != 'TOGGLE_MENU'"
+                                    data-if="!input_device_is_keyboard || (get_input_enum_name(i) != 'TOGGLE_MENU' && get_input_enum_name(i) != 'ACCEPT_MENU' && get_input_enum_name(i) != 'APPLY_MENU')"
                                 >
                                     <label
                                         class="control-option__label"
@@ -67,6 +67,7 @@
                                         </button>
                                     </div>
                                     <button
+                                        data-if="get_input_enum_name(i) != 'TOGGLE_MENU' && get_input_enum_name(i) != 'ACCEPT_MENU'"
                                         data-event-blur="set_input_row_focus(-1)"
                                         data-event-focus="set_input_row_focus(i)"
                                         data-event-click="clear_input_bindings(i)"
@@ -74,6 +75,16 @@
                                         data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
                                     >
                                         <svg src="icons/Trash.svg" />
+                                    </button>
+                                    <button
+                                        data-if="get_input_enum_name(i) == 'TOGGLE_MENU' || get_input_enum_name(i) == 'ACCEPT_MENU'"
+                                        data-event-blur="set_input_row_focus(-1)"
+                                        data-event-focus="set_input_row_focus(i)"
+                                        data-event-click="reset_single_input_binding_to_default(i)"
+                                        class="icon-button icon-button--danger"
+                                        data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
+                                    >
+                                        <svg src="icons/Reset.svg" />
                                     </button>
                                 </div>
                             </div>
