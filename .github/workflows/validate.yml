@@ -24,20 +24,28 @@ jobs:
   build-linux:
     runs-on: ${{ matrix.os }}
     container:
-      image: dcvz/n64recomp:0.0.1-ubuntu-18.04
+      image: dcvz/n64recomp:ubuntu-18.04
+      volumes:
+        # create a volume that we'll use as the new source for the node binary
+        # https://github.com/actions/checkout/issues/1809
+        - /nodeoverride:/nodeoverride:rw,rshared
+        - /nodeoverride:/__e/node20:ro,rshared
     strategy:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
     name: ubuntu-18.04 (x64, ${{ matrix.type }})
     steps:
+      - name: Copy the Node20 binary
+        run: |
+          cp -r /node20217/* /nodeoverride/
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           submodules: recursive
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.11
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
       - name: Prepare Build
