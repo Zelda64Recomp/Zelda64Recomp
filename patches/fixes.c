@@ -357,3 +357,111 @@ void DayTelop_Init(GameState* thisx) {
     DayTelop_LoadGraphics(this);
     Audio_PlaySfx(NA_SE_OC_TELOP_IMPACT);
 }
+
+extern PlayerAnimationHeader* D_8085D17C[PLAYER_FORM_MAX];
+void Player_TalkWithPlayer(PlayState* play, Actor* actor);
+void Player_Action_88(Player* this, PlayState* play);
+void Player_SetAction_PreserveItemAction(PlayState* play, Player* this, PlayerActionFunc actionFunc, s32 arg3);
+void Player_AnimationPlayOnceReverse(PlayState* play, Player* this, PlayerAnimationHeader* anim);
+s32 Player_ActionChange_13(Player* this, PlayState* play);
+s32 func_8085B28C(PlayState* play, Player* this, PlayerCsAction csAction);
+void func_808525C4(PlayState* play, Player* this);
+void func_8085255C(PlayState* play, Player* this);
+void func_80836A5C(Player* this, PlayState* play);
+s32 func_8082DA90(PlayState* play);
+
+// @recomp Patched to fix the issue where ocarina inputs are discarded for the first 3 frames (150ms).
+void Player_Action_63(Player* this, PlayState* play) {
+    if ((this->unk_AA5 != PLAYER_UNKAA5_4) && ((PlayerAnimation_Update(play, &this->skelAnime) &&
+                                                (this->skelAnime.animation == D_8085D17C[this->transformation])) ||
+                                               ((this->skelAnime.mode == 0) && (this->av2.actionVar2 == 0)))) {
+        func_808525C4(play, this);
+        // @recomp Fix the bug where ocarina inputs are discarded for 3 frames by only running this on the first frame of this state. 
+        if (this->av2.actionVar2 == 1) {
+            if (!(this->actor.flags & ACTOR_FLAG_20000000) || (this->unk_A90->id == ACTOR_EN_ZOT)) {
+                Message_DisplayOcarinaStaff(play, OCARINA_ACTION_FREE_PLAY);
+            }
+        }
+    } else if (this->av2.actionVar2 != 0) {
+        if (play->msgCtx.ocarinaMode == OCARINA_MODE_END) {
+            play->interfaceCtx.unk_222 = 0;
+            CutsceneManager_Stop(play->playerCsIds[PLAYER_CS_ID_ITEM_OCARINA]);
+            this->actor.flags &= ~ACTOR_FLAG_20000000;
+
+            if ((this->talkActor != NULL) && (this->talkActor == this->unk_A90) && (this->unk_A94 >= 0.0f)) {
+                Player_TalkWithPlayer(play, this->talkActor);
+            } else if (this->tatlTextId < 0) {
+                this->talkActor = this->tatlActor;
+                this->tatlActor->textId = -this->tatlTextId;
+                Player_TalkWithPlayer(play, this->talkActor);
+            } else if (!Player_ActionChange_13(this, play)) {
+                func_80836A5C(this, play);
+                Player_AnimationPlayOnceReverse(play, this, D_8085D17C[this->transformation]);
+            }
+        } else {
+            s32 var_v1 = (play->msgCtx.ocarinaMode >= OCARINA_MODE_WARP_TO_GREAT_BAY_COAST) &&
+                         (play->msgCtx.ocarinaMode <= OCARINA_MODE_WARP_TO_ENTRANCE);
+            s32 pad[2];
+
+            if (var_v1 || (play->msgCtx.ocarinaMode == OCARINA_MODE_APPLY_SOT) ||
+                (play->msgCtx.ocarinaMode == OCARINA_MODE_APPLY_DOUBLE_SOT) ||
+                (play->msgCtx.ocarinaMode == OCARINA_MODE_APPLY_INV_SOT_FAST) ||
+                (play->msgCtx.ocarinaMode == OCARINA_MODE_APPLY_INV_SOT_SLOW)) {
+                if (play->msgCtx.ocarinaMode == OCARINA_MODE_APPLY_SOT) {
+                    if (!func_8082DA90(play)) {
+                        if (gSaveContext.save.saveInfo.playerData.threeDayResetCount == 1) {
+                            play->nextEntrance = ENTRANCE(CUTSCENE, 1);
+                        } else {
+                            play->nextEntrance = ENTRANCE(CUTSCENE, 0);
+                        }
+
+                        gSaveContext.nextCutsceneIndex = 0xFFF7;
+                        play->transitionTrigger = TRANS_TRIGGER_START;
+                    }
+                } else {
+                    Actor* actor;
+
+                    play->interfaceCtx.unk_222 = 0;
+                    CutsceneManager_Stop(play->playerCsIds[PLAYER_CS_ID_ITEM_OCARINA]);
+                    this->actor.flags &= ~ACTOR_FLAG_20000000;
+
+                    actor = Actor_Spawn(&play->actorCtx, play, var_v1 ? ACTOR_EN_TEST7 : ACTOR_EN_TEST6,
+                                        this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0, 0,
+                                        0, play->msgCtx.ocarinaMode);
+                    if (actor != NULL) {
+                        this->stateFlags1 &= ~PLAYER_STATE1_20000000;
+                        this->csAction = PLAYER_CSACTION_NONE;
+                        func_8085B28C(play, NULL, PLAYER_CSACTION_19);
+                        this->stateFlags1 |= PLAYER_STATE1_10000000 | PLAYER_STATE1_20000000;
+                    } else {
+                        func_80836A5C(this, play);
+                        Player_AnimationPlayOnceReverse(play, this, D_8085D17C[this->transformation]);
+                    }
+                }
+            } else if ((play->msgCtx.ocarinaMode == OCARINA_MODE_EVENT) &&
+                       (play->msgCtx.lastPlayedSong == OCARINA_SONG_ELEGY)) {
+                play->interfaceCtx.unk_222 = 0;
+                CutsceneManager_Stop(play->playerCsIds[PLAYER_CS_ID_ITEM_OCARINA]);
+
+                this->actor.flags &= ~ACTOR_FLAG_20000000;
+                Player_SetAction_PreserveItemAction(play, this, Player_Action_88, 0);
+                this->stateFlags1 |= PLAYER_STATE1_10000000 | PLAYER_STATE1_20000000;
+            } else if (this->unk_AA5 == PLAYER_UNKAA5_4) {
+                f32 temp_fa0 = this->skelAnime.jointTable[PLAYER_LIMB_ROOT - 1].x;
+                f32 temp_fa1 = this->skelAnime.jointTable[PLAYER_LIMB_ROOT - 1].z;
+                f32 var_fv1;
+
+                var_fv1 = sqrtf(SQ(temp_fa0) + SQ(temp_fa1));
+                if (var_fv1 != 0.0f) {
+                    var_fv1 = (var_fv1 - 100.0f) / var_fv1;
+                    var_fv1 = CLAMP_MIN(var_fv1, 0.0f);
+                }
+
+                this->skelAnime.jointTable[PLAYER_LIMB_ROOT - 1].x = temp_fa0 * var_fv1;
+                this->skelAnime.jointTable[PLAYER_LIMB_ROOT - 1].z = temp_fa1 * var_fv1;
+            } else {
+                func_8085255C(play, this);
+            }
+        }
+    }
+}
