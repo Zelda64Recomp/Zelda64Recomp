@@ -127,8 +127,6 @@ void ElementOptionTypeColor::set_config_store_rgb() {
 
 
 void ElementOptionTypeColor::init_option(std::string& _config_key) {
-    
-
     config_key = _config_key;
 
     const json& option_json = recomp::config::get_json_from_key(config_key);
@@ -161,10 +159,10 @@ void ElementOptionTypeColor::init_option(std::string& _config_key) {
 
 void ElementOptionTypeColor::ProcessEvent(Rml::Event& event)
 {
-	if (event == Rml::EventId::Change)
-	{
-		if (event.GetPhase() == Rml::EventPhase::Bubble || event.GetPhase() == Rml::EventPhase::Target)
-		{
+    if (event == Rml::EventId::Change)
+    {
+        if (event.GetPhase() == Rml::EventPhase::Bubble || event.GetPhase() == Rml::EventPhase::Target)
+        {
             Rml::Element *target = event.GetTargetElement();
             auto val_variant = target->GetAttribute("value");
             int new_value = val_variant->Get<int>();
@@ -178,8 +176,8 @@ void ElementOptionTypeColor::ProcessEvent(Rml::Event& event)
             }
             set_value_label(hsv_index);
             set_config_store_rgb();
-		}
-	}
+        }
+    }
 }
 
 } // namespace Rml
