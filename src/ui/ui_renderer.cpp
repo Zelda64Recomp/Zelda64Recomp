@@ -29,7 +29,7 @@
 #include "RmlUi_Platform_SDL.h"
 
 #include "ui_elements.h"
-#include "config_options/ConfigRegistry.h"
+#include "librecomp/config.hpp"
 
 #include "InterfaceVS.hlsl.spirv.h"
 #include "InterfacePS.hlsl.spirv.h"
@@ -1149,11 +1149,11 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     std::filesystem::path test_conf_trans_path = "config_example.cheats.en_us.json";
     if (std::filesystem::exists(test_conf_path)) {
         const std::string s = read_file_to_string(test_conf_path); 
-        recompui::register_config(read_file_to_string(test_conf_path), "cheats");
+        recomp::config::register_config(read_file_to_string(test_conf_path), "cheats");
         printf("SUCC CONF\n");
 
         if (std::filesystem::exists(test_conf_trans_path)) {
-            recompui::register_translation(read_file_to_string("config_example.cheats.en_us.json"), "cheats");
+            recomp::config::register_translation(read_file_to_string("config_example.cheats.en_us.json"), "cheats");
             printf("SUCC TRANSLATION\n");
         } else {
             printf("FAIL TRANSLATION");

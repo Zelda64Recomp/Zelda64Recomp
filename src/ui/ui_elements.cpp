@@ -1,5 +1,5 @@
 #include "ui_elements.h"
-#include "librecomp/config_store.hpp"
+#include "librecomp/config.hpp"
 
 struct RecompElementConfig {
     Rml::String tag;
@@ -13,14 +13,15 @@ static RecompElementConfig custom_elements[] = {
     CUSTOM_ELEMENT("recomp-config-group", recompui::ElementConfigGroup),
     CUSTOM_ELEMENT("recomp-config-option", recompui::ElementConfigOption),
     CUSTOM_ELEMENT("recomp-option-type-checkbox", recompui::ElementOptionTypeCheckbox),
+    CUSTOM_ELEMENT("recomp-option-type-color", recompui::ElementOptionTypeColor),
     CUSTOM_ELEMENT("recomp-option-type-radio-tabs", recompui::ElementOptionTypeRadioTabs),
     CUSTOM_ELEMENT("recomp-option-type-range", recompui::ElementOptionTypeRange),
 };
 
 void recompui::register_custom_elements() {
-    recomp::set_config_store_value_and_default("ligma_balls", "hello!", "whats up");
-    recomp::set_config_store_default_value("ligma_balls2", "12345");
-    recomp::set_config_store_value("ligma_balls3", "hello!");
+    recomp::config::set_config_store_value_and_default("ligma_balls", "hello!", "whats up");
+    recomp::config::set_config_store_default_value("ligma_balls2", "12345");
+    recomp::config::set_config_store_value("ligma_balls3", "hello!");
     for (auto& element_config : custom_elements) {
         Rml::Factory::RegisterElementInstancer(element_config.tag, element_config.instancer.get());
     }

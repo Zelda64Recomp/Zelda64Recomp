@@ -1,9 +1,7 @@
 #ifndef RECOMPUI_ELEMENTS_CONFIG_OPTION_H
 #define RECOMPUI_ELEMENTS_CONFIG_OPTION_H
 
-#include "RmlUi/Core/Element.h"
-#include "../config_options/ConfigOption.h"
-#include "RmlUi/Core/EventListener.h"
+#include "common.h"
 
 namespace recompui {
 
@@ -17,12 +15,13 @@ public:
 	ElementConfigOption(const Rml::String& tag);
 	virtual ~ElementConfigOption();
 
-    ConfigOptionType option_type;
+    recomp::config::ConfigOptionType option_type;
     std::string config_key;
     bool in_checkbox_group = false;
     
 protected:
     void OnAttributeChange(const Rml::ElementAttributes& changed_attributes);
+    Rml::Element *GetLabel(void);
     void SetTextLabel(const std::string& s);
     void AddOptionTypeElement();
     Rml::Element *GetOptionTypeWrapper();
