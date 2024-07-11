@@ -1,17 +1,12 @@
 
 #include "ElementConfigOption.h"
-#include "../config_options/ConfigOption.h"
-#include "../config_options/ConfigRegistry.h"
-#include "ElementOptionTypeCheckbox.h"
-#include "ElementOptionTypeRadioTabs.h"
-#include "ElementOptionTypeRange.h"
-#include "librecomp/config_store.hpp"
+
+#include "../ui_elements.h"
 #include <string>
-#include "recomp_ui.h"
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/ElementText.h>
+
 
 using json = nlohmann::json;
+using ConfigOptionType = recomp::config::ConfigOptionType;
 
 namespace recompui {
 
@@ -50,9 +45,14 @@ ElementConfigOption::~ElementConfigOption()
     RemoveEventListener(Rml::EventId::Mouseover, this, true);
 }
 
+Rml::Element *ElementConfigOption::GetLabel() {
+    Rml::ElementText *text_label = (Rml::ElementText *)GetElementById("config-opt-label");
+    return text_label->GetParentNode();
+}
+
 void ElementConfigOption::SetTextLabel(const std::string& s) {
-    Rml::ElementText *label = (Rml::ElementText *)GetElementById("config-opt-label");
-    label->SetText(s);
+    Rml::ElementText *text_label = (Rml::ElementText *)GetElementById("config-opt-label");
+    text_label->SetText(s);
     DirtyLayout();
 }
 
@@ -68,8 +68,8 @@ static void add_option_el(Rml::ElementDocument *doc, Rml::Element *wrapper, cons
 
 void ElementConfigOption::AddOptionTypeElement() {
     ConfigOptionType el_option_type = ConfigOptionType::Label;
-    const json& option_json = get_json_from_key(config_key);
-    from_json(option_json["type"], el_option_type);
+    const json& option_json = recomp::config::get_json_from_key(config_key);
+    recomp::config::from_json(option_json["type"], el_option_type);
 
     Rml::Element *wrapper = GetOptionTypeWrapper();
     Rml::ElementDocument *doc = GetOwnerDocument();
@@ -80,6 +80,10 @@ void ElementConfigOption::AddOptionTypeElement() {
             return;
         case ConfigOptionType::Checkbox: {
             add_option_el<ElementOptionTypeCheckbox>(doc, wrapper, "recomp-option-type-checkbox", config_key);
+            break;
+        }
+        case ConfigOptionType::Color: {
+            add_option_el<ElementOptionTypeColor>(doc, wrapper, "recomp-option-type-color", config_key);
             break;
         }
         case ConfigOptionType::RadioTabs: {
@@ -107,8 +111,11 @@ void ElementConfigOption::OnAttributeChange(const Rml::ElementAttributes& change
             SetClass(config_option_base_class_hz, true);
         }
 
+        Rml::Element *label = GetLabel();
+        label->SetAttribute("for", "input__" + config_key);
+
         try {
-            auto value = recomp::get_config_store_value<std::string>("translations/" + config_key);
+            auto value = recomp::config::get_config_store_value<std::string>("translations/" + config_key);
             SetTextLabel(value);
             printf("found type and translation\n");
             AddOptionTypeElement();

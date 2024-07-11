@@ -1,10 +1,7 @@
 #ifndef RECOMPUI_ELEMENT_OPTION_TYPE_CHECKBOX_H
 #define RECOMPUI_ELEMENT_OPTION_TYPE_CHECKBOX_H
 
-#include "RmlUi/Core/Element.h"
-#include "RmlUi/Core/Elements/ElementFormControlInput.h"
-#include "RmlUi/Core/EventListener.h"
-#include "../config_options/ConfigOption.h"
+#include "common.h"
 
 namespace recompui {
 
@@ -17,7 +14,7 @@ public:
 
     std::string config_key;
 
-	const ConfigOptionType option_type = ConfigOptionType::Checkbox;
+	const recomp::config::ConfigOptionType option_type = recomp::config::ConfigOptionType::Checkbox;
 protected:
     Rml::ElementFormControlInput *get_input();
 

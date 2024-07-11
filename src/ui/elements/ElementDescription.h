@@ -1,8 +1,7 @@
 #ifndef RECOMPUI_ELEMENT_DESCRIPTION_H
 #define RECOMPUI_ELEMENT_DESCRIPTION_H
 
-#include "RmlUi/Core/Element.h"
-#include "../config_options/ConfigOption.h"
+#include "common.h"
 
 namespace recompui {
 

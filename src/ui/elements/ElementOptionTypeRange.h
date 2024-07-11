@@ -1,9 +1,7 @@
 #ifndef RECOMPUI_ELEMENT_OPTION_TYPE_RANGE_H
 #define RECOMPUI_ELEMENT_OPTION_TYPE_RANGE_H
 
-#include "RmlUi/Core/Element.h"
-#include "RmlUi/Core/Elements/ElementFormControlInput.h"
-#include "RmlUi/Core/EventListener.h"
+#include "common.h"
 
 namespace recompui {
 

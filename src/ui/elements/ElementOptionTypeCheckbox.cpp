@@ -1,10 +1,7 @@
-
 #include "ElementOptionTypeCheckbox.h"
-#include "librecomp/config_store.hpp"
-#include "../config_options/ConfigRegistry.h"
+
 #include <string>
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/ElementText.h>
+
 
 using json = nlohmann::json;
 
@@ -51,8 +48,8 @@ void ElementOptionTypeCheckbox::set_checked(bool checked) {
 
 void ElementOptionTypeCheckbox::init_option(std::string& _config_key) {
     config_key = _config_key;
-    const json& option_json = get_json_from_key(config_key);
-    int value = recomp::get_config_store_value<int>(config_key);
+    const json& option_json = recomp::config::get_json_from_key(config_key);
+    int value = recomp::config::get_config_store_value<int>(config_key);
     set_checked(value);
 }
 
@@ -63,8 +60,8 @@ void ElementOptionTypeCheckbox::ProcessEvent(Rml::Event& event)
 	{
 		if (event.GetPhase() == Rml::EventPhase::Capture || event.GetPhase() == Rml::EventPhase::Target)
 		{
-            bool new_value = !recomp::get_config_store_value<int>(config_key);
-            recomp::set_config_store_value(config_key, new_value);
+            bool new_value = !recomp::config::get_config_store_value<int>(config_key);
+            recomp::config::set_config_store_value(config_key, new_value);
             set_checked(new_value);
 		}
 	}

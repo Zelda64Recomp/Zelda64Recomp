@@ -1,9 +1,7 @@
 #ifndef RECOMPUI_ELEMENTS_CONFIG_GROUP_H
 #define RECOMPUI_ELEMENTS_CONFIG_GROUP_H
 
-#include "RmlUi/Core/Element.h"
-#include "json/json.hpp"
-#include "../config_options/ConfigOption.h"
+#include "common.h"
 
 namespace recompui {
 
@@ -17,7 +15,7 @@ public:
 	ElementConfigGroup(const Rml::String& tag);
 	virtual ~ElementConfigGroup();
 
-    ConfigOptionType option_type;
+    recomp::config::ConfigOptionType option_type;
     std::string config_key;
 protected:
     void OnAttributeChange(const Rml::ElementAttributes& changed_attributes);

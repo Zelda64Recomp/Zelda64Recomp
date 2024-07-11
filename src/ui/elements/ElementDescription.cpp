@@ -1,10 +1,6 @@
-
 #include "ElementDescription.h"
-#include "librecomp/config_store.hpp"
-#include "../config_options/ConfigRegistry.h"
+
 #include <string>
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/ElementText.h>
 
 using json = nlohmann::json;
 
@@ -50,7 +46,7 @@ void ElementDescription::OnAttributeChange(const Rml::ElementAttributes& changed
         config_key = config_store_key_attr->second.Get<Rml::String>();
 
         try {
-            auto value = recomp::get_config_store_value<std::string>("translations/" + config_key + ":description");
+            auto value = recomp::config::get_config_store_value<std::string>("translations/" + config_key + ":description");
             update_text(value);
         } catch (const std::runtime_error& e) {
             update_text(default_contents);

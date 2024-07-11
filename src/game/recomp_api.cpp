@@ -2,7 +2,7 @@
 
 #include "librecomp/recomp.h"
 #include "librecomp/overlays.hpp"
-#include "librecomp/config_store.hpp"
+#include "librecomp/config.hpp"
 #include "zelda_config.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
@@ -180,7 +180,7 @@ extern "C" void recomp_get_config_store_int(uint8_t* rdram, recomp_context* ctx)
          i++;
     }
 
-    _return(ctx, recomp::get_config_store_value<int>(
+    _return(ctx, recomp::config::get_config_store_value<int>(
         std::string_view{key_buffer.data(), key_buffer.size()}
     ));
 }
