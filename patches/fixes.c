@@ -35,11 +35,11 @@ s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 num
     s32 cur_y;
     u32 row;
 
-    cur_y = PAGE_BG_HEIGHT / 2;
+    cur_y = (PAGE_BG_HEIGHT + 2) / 2;
 
     // 2 verts per row plus 2 extra verts at the start and the end.
     for (row = 0; row < RECOMP_PAGE_ROW_COUNT + 2; row++) {
-        s32 next_y = MAX(cur_y - RECOMP_PAGE_ROW_HEIGHT, -PAGE_BG_HEIGHT / 2);
+        s32 next_y = MAX(cur_y - RECOMP_PAGE_ROW_HEIGHT, -(PAGE_BG_HEIGHT + 2) / 2);
 
         vtx[4 * row + 0].v.ob[0] = -PAGE_BG_WIDTH / 2;
         vtx[4 * row + 1].v.ob[0] =  PAGE_BG_WIDTH / 2;
@@ -234,7 +234,7 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures
 
     // Draw the rows.
     for (u32 bg_row = 0; bg_row < RECOMP_PAGE_ROW_COUNT; bg_row++) {
-        u32 cur_row_height = MIN(RECOMP_PAGE_ROW_HEIGHT, PAGE_BG_HEIGHT - bg_row * RECOMP_PAGE_ROW_HEIGHT);
+        u32 cur_row_height = MIN(RECOMP_PAGE_ROW_HEIGHT, PAGE_BG_HEIGHT + 1 - bg_row * RECOMP_PAGE_ROW_HEIGHT);
         gDPLoadTextureTile(gfx++, *cur_image,
             G_IM_FMT_IA, G_IM_SIZ_8b, // fmt, siz
             PAGE_BG_WIDTH + 2, PAGE_BG_HEIGHT + 2, // width, height
