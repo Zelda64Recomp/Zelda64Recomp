@@ -187,6 +187,52 @@
     color: $color-primary;
 }
 
+.config-option-color {
+    width: 100%;
+    max-width: space(360);
+    height: auto;
+    margin-top: space(4);
+    margin-left: space(12);
+    padding: 0;
+
+    &__preview-wrapper {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: space(8 * 9);
+    }
+
+    &__preview-block {
+        display: block;
+        width:  space(8 * 11);
+        height: 100%;
+        border-width: $border-width-thickness;
+        border-radius: $border-radius-lg;
+        border-color: $color-border;
+    }
+
+    &__hsv-wrapper {
+        display: flex;
+        flex: 1 1 100%;
+        flex-direction: column;
+        width: auto;
+        height: auto;
+        padding-left: space(8);
+
+        .config-option-range {
+            flex: 1 1 auto;
+
+            label {
+                min-width: space(72);
+            }
+
+            input {
+                flex: 1 1 auto;
+            }
+        }
+    }
+}
+
 .config-option-range {
     display: flex;
     flex-direction: row;
