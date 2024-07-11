@@ -7,6 +7,7 @@
 #include "elements/ElementConfigOption.h"
 #include "elements/ElementConfigGroup.h"
 #include "elements/ElementOptionTypeCheckbox.h"
+#include "elements/ElementOptionTypeColor.h"
 #include "elements/ElementOptionTypeRadioTabs.h"
 #include "elements/ElementOptionTypeRange.h"
 #include "elements/ElementDescription.h"

@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-everything /W4")
@@ -168,14 +169,14 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_elements.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/util/hsv.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigGroup.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigOption.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeCheckbox.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeColor.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRadioTabs.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRange.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementDescription.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/config_options/ConfigRegistry.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/config_options/ConfigOption.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
