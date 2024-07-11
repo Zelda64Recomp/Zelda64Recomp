@@ -1,10 +1,7 @@
 
 #include "ElementOptionTypeRadioTabs.h"
-#include "librecomp/config_store.hpp"
-#include "../config_options/ConfigRegistry.h"
+
 #include <string>
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/ElementText.h>
 
 using json = nlohmann::json;
 
@@ -47,8 +44,8 @@ void ElementOptionTypeRadioTabs::set_cur_option(int opt) {
 
 void ElementOptionTypeRadioTabs::init_option(std::string& _config_key) {
     config_key = _config_key;
-    const json& option_json = get_json_from_key(config_key);
-    int opt = recomp::get_config_store_value<int>(config_key);
+    const json& option_json = recomp::config::get_json_from_key(config_key);
+    int opt = recomp::config::get_config_store_value<int>(config_key);
     const json& opt_array = option_json["values"];
 
     for (int i = 0; i < opt_array.size(); i++) {
@@ -57,7 +54,7 @@ void ElementOptionTypeRadioTabs::init_option(std::string& _config_key) {
         const std::string opt_id = radio_input_id + config_key + "--" + opt_val;
         
         const std::string translation_key = "translations/" + config_key + "/values/" + opt_val;
-        const std::string& opt_text = recomp::get_config_store_value<std::string>(translation_key);
+        const std::string& opt_text = recomp::config::get_config_store_value<std::string>(translation_key);
 
         Rml::Element *radio_el = AppendChild(GetOwnerDocument()->CreateElement("input"));
 
@@ -88,7 +85,7 @@ void ElementOptionTypeRadioTabs::ProcessEvent(Rml::Event& event)
             Rml::Element *target = event.GetTargetElement();
             auto val_variant = target->GetAttribute("value");
             int new_value = val_variant->Get<int>();
-            recomp::set_config_store_value(config_key, new_value);
+            recomp::config::set_config_store_value(config_key, new_value);
             set_cur_option(new_value);
 		}
 	}

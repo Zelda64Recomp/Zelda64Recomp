@@ -7,6 +7,8 @@
 #include "SDL.h"
 #include "RmlUi/Core.h"
 
+#include "../src/ui/util/hsv.h"
+
 namespace Rml {
 	class ElementDocument;
 	class EventListenerInstancer;

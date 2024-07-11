@@ -1,7 +1,6 @@
 
 #include "ElementOptionTypeRange.h"
-#include "librecomp/config_store.hpp"
-#include "../config_options/ConfigRegistry.h"
+
 #include <string>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/ElementText.h>
@@ -58,13 +57,13 @@ void ElementOptionTypeRange::set_value_label(int value) {
 
 void ElementOptionTypeRange::init_option(std::string& _config_key) {
     config_key = _config_key;
-    const json& option_json = get_json_from_key(config_key);
+    const json& option_json = recomp::config::get_json_from_key(config_key);
 
-    const int value = recomp::get_config_store_value<int>(config_key);
-    suffix = get_string_in_json_with_default(option_json, "suffix", "");
-    const int min = get_value_in_json<int>(option_json, "min");
-    const int max = get_value_in_json<int>(option_json, "max");
-    const int step = get_value_in_json_with_default<int>(option_json, "step", 1);
+    const int value = recomp::config::get_config_store_value<int>(config_key);
+    suffix = recomp::config::get_string_in_json_with_default(option_json, "suffix", "");
+    const int min = recomp::config::get_value_in_json<int>(option_json, "min");
+    const int max = recomp::config::get_value_in_json<int>(option_json, "max");
+    const int step = recomp::config::get_value_in_json_with_default<int>(option_json, "step", 1);
 
     Rml::ElementFormControlInput *range = (Rml::ElementFormControlInput *)GetElementById(range_input_id);
     range->SetAttribute("min", min);
@@ -77,7 +76,6 @@ void ElementOptionTypeRange::init_option(std::string& _config_key) {
 
 void ElementOptionTypeRange::ProcessEvent(Rml::Event& event)
 {
-	// Forward clicks to the target.
 	if (event == Rml::EventId::Change)
 	{
 		if (event.GetPhase() == Rml::EventPhase::Bubble || event.GetPhase() == Rml::EventPhase::Target)
@@ -85,7 +83,7 @@ void ElementOptionTypeRange::ProcessEvent(Rml::Event& event)
             Rml::ElementFormControlInput *target = (Rml::ElementFormControlInput *)event.GetTargetElement();
             auto val_s = target->GetValue();
             int new_value = std::stoi(val_s);
-            recomp::set_config_store_value(config_key, new_value);
+            recomp::config::set_config_store_value(config_key, new_value);
             set_value_label(new_value);
 		}
 	}

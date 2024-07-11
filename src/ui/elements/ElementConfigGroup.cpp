@@ -1,17 +1,12 @@
-
 #include "ElementConfigGroup.h"
 #include "ElementConfigOption.h"
-#include "../config_options/ConfigOption.h"
-#include "../config_options/ConfigRegistry.h"
-#include "ElementOptionTypeCheckbox.h"
-#include "librecomp/config_store.hpp"
+
 #include <string>
-#include "recomp_ui.h"
-#include <RmlUi/Core/ElementDocument.h>
-#include <RmlUi/Core/ElementText.h>
 #include <cassert>
 
 using json = nlohmann::json;
+using ConfigOptionType = recomp::config::ConfigOptionType;
+using ConfigOption = recomp::config::ConfigOption;
 
 namespace recompui {
 
@@ -62,7 +57,7 @@ void ElementConfigGroup::AddConfigOptionElement(const json& option_json) {
     ConfigOptionType el_option_type = ConfigOptionType::Label;
     from_json(option_json["type"], el_option_type);
 
-    const std::string key = get_string_in_json(option_json, ConfigOption::schema::key);
+    const std::string key = recomp::config::get_string_in_json(option_json, ConfigOption::schema::key);
 
     Rml::Element *option_container = GetChild(1);
     Rml::Element *child_opt = nullptr;
@@ -87,11 +82,11 @@ void ElementConfigGroup::AddConfigOptionElement(const json& option_json) {
 }
 
 static nlohmann::json get_options(std::string& config_key) {
-    if (config_key_is_base_group(config_key)) {
-        return get_group_json(config_key);
+    if (recomp::config::config_key_is_base_group(config_key)) {
+        return recomp::config::get_group_json(config_key);
     }
 
-    const json& group_json = get_json_from_key(config_key);
+    const json& group_json = recomp::config::get_json_from_key(config_key);
     return group_json["options"];
 }
 
@@ -103,7 +98,7 @@ void ElementConfigGroup::OnAttributeChange(const Rml::ElementAttributes& changed
     auto config_store_key_attr = changed_attributes.find("recomp-data");
     if (config_store_key_attr != changed_attributes.end() && config_store_key_attr->second.GetType() == Rml::Variant::STRING) {
         config_key = config_store_key_attr->second.Get<Rml::String>();
-        bool is_base_group = config_key_is_base_group(config_key);
+        bool is_base_group = recomp::config::config_key_is_base_group(config_key);
     
         option_type = ConfigOptionType::Label;
 
@@ -113,13 +108,13 @@ void ElementConfigGroup::OnAttributeChange(const Rml::ElementAttributes& changed
             ToggleTextLabelVisibility(false);
         } else {
             try {
-                auto value = recomp::get_config_store_value<std::string>("translations/" + config_key);
+                auto value = recomp::config::get_config_store_value<std::string>("translations/" + config_key);
                 SetTextLabel(value);
             } catch (const std::runtime_error& e) {
                 SetTextLabel(e.what());
             }
 
-            const json& group_json = get_json_from_key(config_key);
+            const json& group_json = recomp::config::get_json_from_key(config_key);
 
             from_json(group_json["type"], option_type);
             assert(
