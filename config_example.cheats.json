@@ -43,8 +43,19 @@
                 "key": "movement",
                 "options": [
                     {
-                        "type": "RadioTabs",
+                        "type": "Dropdown",
                         "key": "L_for_fast",
+                        "default": "x2",
+                        "values": [
+                            "off",
+                            "x2",
+                            "x4",
+                            "x6"
+                        ]
+                    },
+                    {
+                        "type": "RadioTabs",
+                        "key": "L_for_fast2",
                         "default": "x2",
                         "values": [
                             "off",
@@ -62,6 +73,11 @@
                         "type": "Checkbox",
                         "key": "always_quickspin",
                         "default": false
+                    },
+                    {
+                        "type": "Color",
+                        "key": "heart_color",
+                        "default": [255, 50, 50]
                     },
                     {
                         "type": "Range",
