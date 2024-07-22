@@ -23,6 +23,7 @@ constexpr std::u8string_view program_id = u8"Zelda64Recompiled";
 
 constexpr auto res_default            = ultramodern::renderer::Resolution::Auto;
 constexpr auto hr_default             = ultramodern::renderer::HUDRatioMode::Clamp16x9;
+constexpr auto special_item_hud_default = ultramodern::renderer::SpecialItemHUD::On;
 constexpr auto api_default            = ultramodern::renderer::GraphicsApi::Auto;
 constexpr auto ar_default             = ultramodern::renderer::AspectRatio::Expand;
 constexpr auto msaa_default           = ultramodern::renderer::Antialiasing::MSAA2X;
@@ -92,6 +93,7 @@ namespace ultramodern {
             {"res_option",      config.res_option},
             {"wm_option",       config.wm_option},
             {"hr_option",       config.hr_option},
+            {"special_item_hud_option",     config.special_item_hud_option},
             {"api_option",      config.api_option},
             {"ds_option",       config.ds_option},
             {"ar_option",       config.ar_option},
@@ -107,6 +109,7 @@ namespace ultramodern {
         config.res_option       = from_or_default(j, "res_option",      res_default);
         config.wm_option        = from_or_default(j, "wm_option",       wm_default());
         config.hr_option        = from_or_default(j, "hr_option",       hr_default);
+        config.special_item_hud_option = from_or_default(j, "special_item_hud_option", special_item_hud_default);
         config.api_option       = from_or_default(j, "api_option",      api_default);
         config.ds_option        = from_or_default(j, "ds_option",       ds_default);
         config.ar_option        = from_or_default(j, "ar_option",       ar_default);
@@ -323,6 +326,7 @@ void reset_graphics_options() {
     new_config.res_option = res_default;
     new_config.wm_option = wm_default();
     new_config.hr_option = hr_default;
+    new_config.special_item_hud_option = special_item_hud_default;
     new_config.ds_option = ds_default;
     new_config.ar_option = ar_default;
     new_config.msaa_option = msaa_default;

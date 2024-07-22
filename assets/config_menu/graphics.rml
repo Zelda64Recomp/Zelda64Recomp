@@ -239,7 +239,7 @@
                                 data-checked="hr_option"
                                 value="Original"
                                 id="hr_original"
-                                style="nav-up: #msaa_none; nav-down: #apply_button"
+                                style="nav-up: #msaa_none; nav-down: #special_item_hud_enabled"
                             />
                             <label class="config-option__tab-label" for="hr_original">Original</label>
                             <input type="radio"
@@ -249,7 +249,7 @@
                                 data-checked="hr_option"
                                 value="Clamp16x9"
                                 id="hr_16_9"
-                                style="nav-up: #msaa_2x; nav-down: #apply_button"
+                                style="nav-up: #msaa_2x; nav-down: #special_item_hud_enabled"
                                 data-style-nav-up="msaa2x_supported ? '#msaa_2x' : '#msaa_none'"
                             />
                             <label class="config-option__tab-label" for="hr_16_9">16:9</label>
@@ -260,12 +260,38 @@
                                 data-checked="hr_option"
                                 value="Full"
                                 id="hr_full"
-                                style="nav-up: #msaa_4x; nav-down: #apply_button"
+                                style="nav-up: #msaa_4x; nav-down: #special_item_hud_disabled"
                                 data-style-nav-up="msaa4x_supported ? '#msaa_4x' : (msaa2x_supported ? '#msaa_2x' : '#msaa_none')"
                             />
                             <label class="config-option__tab-label" for="hr_full">Expand</label>
                         </div>
                     </div>
+
+					<div class="config-option" data-event-mouseover="set_cur_config_index(7)">
+						<label class="config-option__title">Special Item HUD</label>
+						<div class="config-option__list">
+							<input type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="special_item_hud_option"
+                                data-checked="special_item_hud_option"
+                                value="On"
+                                id="special_item_hud_enabled"
+                                style="nav-up: #hr_original; nav-down: #apply_button"
+                            />
+							<label class="config-option__tab-label" for="special_item_hud_enabled">On</label>
+							<input type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(7)"
+                                name="special_item_hud_option"
+                                data-checked="special_item_hud_option"
+                                value="Off"
+                                id="special_item_hud_disabled"
+                                style="nav-up: #hr_16_9; nav-down: #apply_button"
+                            />
+							<label class="config-option__tab-label" for="special_item_hud_disabled">Off</label>
+						</div>
+					</div>
 
                 </div>
                 <div class="config__wrapper">
@@ -302,6 +328,9 @@
                     <p data-if="cur_config_index == 6">
                         Adjusts the placement of HUD elements to fit the selected aspect ratio. <b>Expand</b> will use the aspect ratio of the game's output window.
                     </p>
+					<p data-if="cur_config_index == 7">
+						Enables visibility of the special item HUD. Affects visibility only, functionality can be modified in the <b>Controls</b> setting tab.
+					</p>
                 </div>
             </div>
             <div class="config__footer">
@@ -314,7 +343,7 @@
                         data-attrif-disabled="!options_changed"
                         onclick="apply_options"
                         id="apply_button"
-                        style="nav-up:#hr_original"
+                        style="nav-up:#special_item_hud_enabled"
                     >
                         <div class="button__label">Apply<span class="prompt-font-sm">{{gfx_help__apply}}</span></div>
                     </button>

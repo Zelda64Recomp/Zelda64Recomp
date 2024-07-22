@@ -146,6 +146,16 @@ void set_application_user_config(RT64::Application* application, const ultramode
             break;
     }
 
+    switch (config.special_item_hud_option) {
+        default:
+        case ultramodern::renderer::SpecialItemHUD::On:
+            application->userConfig.specialItemHud = true;
+            break;
+        case ultramodern::renderer::SpecialItemHUD::Off:
+            application->userConfig.specialItemHud = false;
+            break;
+    }
+
     application->userConfig.aspectRatio = to_rt64(config.ar_option);
     application->userConfig.antialiasing = to_rt64(config.msaa_option);
     application->userConfig.refreshRate = to_rt64(config.rr_option);

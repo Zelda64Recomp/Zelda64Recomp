@@ -3,6 +3,7 @@
 #include "buffers.h"
 #include "sys_cfb.h"
 #include "overlays/kaleido_scope/ovl_kaleido_scope/z_kaleido_scope.h"
+#include "misc_funcs.h"
 
 // This moves elements towards the screen edges when increased
 s32 margin_reduction = 8;
@@ -488,8 +489,10 @@ void Interface_Draw(PlayState* play) {
         
         // @recomp Draw the D-Pad and its item icons as well as the autosave icon if the game is unpaused.
         if (pauseCtx->state != PAUSE_STATE_MAIN) {
-            draw_dpad(play);
-            draw_dpad_icons(play);
+            if (recomp_special_item_hud_on()) {
+                draw_dpad(play);
+                draw_dpad_icons(play);
+            }
             draw_autosave_icon(play);
         }
 

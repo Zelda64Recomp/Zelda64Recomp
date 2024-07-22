@@ -95,6 +95,10 @@ extern "C" void recomp_autosave_enabled(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<s32>(zelda64::get_autosave_mode() == zelda64::AutosaveMode::On));
 }
 
+extern "C" void recomp_special_item_hud_on(uint8_t * rdram, recomp_context * ctx) {
+    _return(ctx, static_cast<s32>(zelda64::get_special_item_hud_mode() == zelda64::SpecialItemHudMode::On));
+}
+
 extern "C" void recomp_load_overlays(uint8_t * rdram, recomp_context * ctx) {
     u32 rom = _arg<0, u32>(rdram, ctx);
     PTR(void) ram = _arg<1, PTR(void)>(rdram, ctx);

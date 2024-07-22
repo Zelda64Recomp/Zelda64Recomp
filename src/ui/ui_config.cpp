@@ -288,6 +288,7 @@ struct ControlOptionsContext {
     zelda64::TargetingMode targeting_mode;
 	recomp::BackgroundInputMode background_input_mode;
 	zelda64::AutosaveMode autosave_mode;
+	zelda64::SpecialItemHudMode special_item_hud_mode;
     zelda64::CameraInvertMode camera_invert_mode;
 	zelda64::AnalogCamMode analog_cam_mode;
     zelda64::CameraInvertMode analog_camera_invert_mode;
@@ -375,6 +376,18 @@ void zelda64::set_autosave_mode(zelda64::AutosaveMode mode) {
 	control_options_context.autosave_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("autosave_mode");
+	}
+}
+
+zelda64::SpecialItemHudMode zelda64::get_special_item_hud_mode() {
+	switch (new_options.special_item_hud_option) {
+		default:
+		case ultramodern::renderer::SpecialItemHUD::On:
+			return zelda64::SpecialItemHudMode::On;
+			break;
+		case ultramodern::renderer::SpecialItemHUD::Off:
+			return zelda64::SpecialItemHudMode::Off;
+			break;
 	}
 }
 
@@ -637,6 +650,7 @@ public:
 		bind_option(constructor, "wm_option", &new_options.wm_option);
 		bind_option(constructor, "ar_option", &new_options.ar_option);
 		bind_option(constructor, "hr_option", &new_options.hr_option);
+		bind_option(constructor, "special_item_hud_option", &new_options.special_item_hud_option);
 		bind_option(constructor, "msaa_option", &new_options.msaa_option);
 		bind_option(constructor, "rr_option", &new_options.rr_option);
 		constructor.BindFunc("rr_manual_value",

@@ -35,6 +35,17 @@ namespace zelda64 {
         {zelda64::AutosaveMode::Off, "Off"}
     });
 
+    enum class SpecialItemHudMode {
+        On,
+        Off,
+        OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::SpecialItemHudMode, {
+        {zelda64::SpecialItemHudMode::On, "On"},
+        {zelda64::SpecialItemHudMode::Off, "Off"}
+        });
+
     enum class TargetingMode {
         Switch,
         Hold,
@@ -83,6 +94,8 @@ namespace zelda64 {
 
     AutosaveMode get_autosave_mode();
     void set_autosave_mode(AutosaveMode mode);
+
+    SpecialItemHudMode get_special_item_hud_mode();
 
     AnalogCamMode get_analog_cam_mode();
     void set_analog_cam_mode(AnalogCamMode mode);
