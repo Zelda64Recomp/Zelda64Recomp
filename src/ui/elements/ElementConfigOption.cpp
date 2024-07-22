@@ -86,6 +86,10 @@ void ElementConfigOption::AddOptionTypeElement() {
             add_option_el<ElementOptionTypeColor>(doc, wrapper, "recomp-option-type-color", config_key);
             break;
         }
+        case ConfigOptionType::Dropdown: {
+            add_option_el<ElementOptionTypeDropdown>(doc, wrapper, "recomp-option-type-dropdown", config_key);
+            break;
+        }
         case ConfigOptionType::RadioTabs: {
             add_option_el<ElementOptionTypeRadioTabs>(doc, wrapper, "recomp-option-type-radio-tabs", config_key);
             break;

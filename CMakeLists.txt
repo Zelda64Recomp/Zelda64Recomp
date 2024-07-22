@@ -162,11 +162,13 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/util/hsv.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigGroup.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigOption.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementDescription.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionType.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeCheckbox.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeColor.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeDropdown.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRadioTabs.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRange.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementDescription.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp
