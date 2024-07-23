@@ -135,6 +135,10 @@ extern "C" void recomp_analog_cam_enabled(uint8_t* rdram, recomp_context* ctx) {
     _return<s32>(ctx, zelda64::get_analog_cam_mode() == zelda64::AnalogCamMode::On);
 }
 
+extern "C" void recomp_special_item_hud_enabled(uint8_t * rdram, recomp_context * ctx) {
+    _return<s32>(ctx, zelda64::get_special_item_hud_mode() == zelda64::SpecialItemHudMode::On);
+}
+
 extern "C" void recomp_get_camera_inputs(uint8_t* rdram, recomp_context* ctx) {
     float* x_out = _arg<0, float*>(rdram, ctx);
     float* y_out = _arg<1, float*>(rdram, ctx);
