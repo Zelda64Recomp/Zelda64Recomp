@@ -55,7 +55,9 @@ extern s16 D_80814630[];
 extern s16 D_80814638[];
 extern s16 D_80814644[];
 extern s16 D_8081464C[];
-extern s16 D_80814650[];
+
+// @recomp Added a third position for the rewind button.
+s16 D_80814650_patched[] = { 940, 944, 948 };
 
 void FileSelect_Main(GameState* thisx);
 void FileSelect_InitContext(GameState* thisx);
@@ -739,7 +741,7 @@ void FileSelect_SetWindowContentVtx(GameState *thisx) {
             }
         }
         else {
-            j = D_80814650[this->confirmButtonIndex];
+            j = D_80814650_patched[this->confirmButtonIndex];
         }
 
         this->windowContentVtx[vtxId + 0].v.ob[0] = this->windowContentVtx[vtxId + 2].v.ob[0] = this->windowPosX - 0xA;
