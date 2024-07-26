@@ -28,17 +28,12 @@
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 
-#ifdef HAS_MM_SHADER_CACHE
-#include "mm_shader_cache.h"
-#endif
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "SDL_syswm.h"
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
 
 template<typename... Ts>
@@ -332,9 +327,6 @@ std::vector<recomp::GameEntry> supported_games = {
         .rom_hash = 0xEF18B4A9E2386169ULL,
         .internal_name = "ZELDA MAJORA'S MASK",
         .game_id = u8"mm.n64.us.1.0",
-#ifdef HAS_MM_SHADER_CACHE
-        .cache_data = {mm_shader_cache_bytes, sizeof(mm_shader_cache_bytes)},
-#endif
         .is_enabled = true,
         .entrypoint_address = get_entrypoint_address(),
         .entrypoint = recomp_entrypoint,
