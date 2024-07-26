@@ -10,7 +10,7 @@ extern EffectSsInfo sEffectSsInfo;
 u8 particle_reset_list[MAX_PARTICLES];
 
 // @recomp Patched to track that the particle has been reset.
-void EffectSS_ResetEntry(EffectSs* particle) {
+RECOMP_PATCH void EffectSS_ResetEntry(EffectSs* particle) {
     u32 i;
 
     particle->type = EFFECT_SS_MAX;
@@ -39,7 +39,7 @@ void EffectSS_ResetEntry(EffectSs* particle) {
 }
 
 // @recomp Check numEntries to be sure enough space has been allocated for tracking particle statuses.
-void EffectSS_Init(PlayState* play, s32 numEntries) {
+RECOMP_PATCH void EffectSS_Init(PlayState* play, s32 numEntries) {
     u32 i;
     EffectSs* effectsSs;
     EffectSsOverlay* overlay;
@@ -66,7 +66,7 @@ void EffectSS_Init(PlayState* play, s32 numEntries) {
 }
 
 // @recomp Add transform tags to particles
-void EffectSS_DrawParticle(PlayState* play, s32 index) {
+RECOMP_PATCH void EffectSS_DrawParticle(PlayState* play, s32 index) {
     EffectSs* entry = &sEffectSsInfo.dataTable[index];
 
     OPEN_DISPS(play->state.gfxCtx);
@@ -164,7 +164,7 @@ void func_80B22FA8_patched(Actor* thisx, EnHanabiStruct* arg0, PlayState* play2)
 }
 
 // @recomp Patched to call a custom version of a vanilla function.
-void EnHanabi_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnHanabi_Draw(Actor* thisx, PlayState* play) {
     EnHanabi* this = (EnHanabi*)thisx;
 
     Matrix_Push();
@@ -176,7 +176,7 @@ void EnHanabi_Draw(Actor* thisx, PlayState* play) {
 Vec3f kankyo_prev_pos_base[DEMOKANKYO_EFFECT_COUNT] = {0};
 
 // @recomp Patched to draw the lost woods particles outside the 4:3 region and tag their transforms.
-void DemoKakyo_DrawLostWoodsSparkle(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void DemoKakyo_DrawLostWoodsSparkle(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     DemoKankyo* this = (DemoKankyo*)thisx;
     s16 i;
@@ -286,7 +286,7 @@ extern Gfx gBubbleDL[];
 extern Gfx gLightOrbModelDL[];
 
 // @recomp Patched to draw the lost woods particles outside the 4:3 region and tag their transforms.
-void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void DemoKankyo_DrawMoonAndGiant(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     DemoKankyo* this = (DemoKankyo*)thisx;
     s16 i;
@@ -386,7 +386,7 @@ static Vec3f D_80A5AFB0 = { 0.0f, 0.0f, 0.0f };
 #define WATER_EFFECT_RESPAWNED(ptr) (&(ptr)->unk_01)[1]
 
 // @recomp Mark respawned water effect particles so they can be skipped for the first frame.
-void func_80A599E8(EnWaterEffect* this, Vec3f* arg1, u8 arg2) {
+RECOMP_PATCH void func_80A599E8(EnWaterEffect* this, Vec3f* arg1, u8 arg2) {
     s16 i;
     EnWaterEffectStruct* ptr = &this->unk_144[0];
 
@@ -433,7 +433,7 @@ extern Gfx object_water_effect_DL_0043E8[];
 extern Gfx gameplay_keep_DL_06AB30[];
 
 // @recomp Tag the transforms for falling fire rocks.
-void func_80A5A184(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void func_80A5A184(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     EnWaterEffect* this = (EnWaterEffect*)thisx;
     GraphicsContext* gfxCtx = play->state.gfxCtx;

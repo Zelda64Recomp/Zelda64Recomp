@@ -7,7 +7,7 @@
 void func_80AF118C(PlayState* play, OwlWarpFeather* feathers, EnTest7* this, s32 arg3, s32 arg4); // EnTest7_UpdateFeathers
 void func_80AF2350(EnTest7* this, PlayState* play); // EnTest7_WarpCsWarp
 
-void EnTest7_Update(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnTest7_Update(Actor* thisx, PlayState* play) {
     EnTest7* this = THIS;
 
     this->actionFunc(this, play);

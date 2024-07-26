@@ -15,7 +15,7 @@ s32 func_80AF31D0(PlayState* play, SkeletonInfo* skeletonInfo, s32 limbIndex, Gf
 extern AnimatedMaterial gSoaringWarpCsWindCapsuleTexAnim;
 extern Gfx gSoaringWarpCsWindCapsuleDL[];
 
-void EnTest7_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnTest7_Draw(Actor* thisx, PlayState* play) {
     s32 pad[2];
     EnTest7* this = (EnTest7*)thisx;
     s32 sp40;
@@ -104,7 +104,7 @@ extern SoTCsAmmoDrops sSoTCsAmmoDrops[12];
 /**
  * Draws clocks in a double spiral above and below player
  */
-void EnTest6_DrawThreeDayResetSoTCutscene(EnTest6* this, PlayState* play) {
+RECOMP_PATCH void EnTest6_DrawThreeDayResetSoTCutscene(EnTest6* this, PlayState* play) {
     s16 clock1Yaw;
     s16 clock2Yaw;
     s16 angle;

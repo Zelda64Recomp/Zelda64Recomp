@@ -16,7 +16,7 @@ extern Gfx gHookshotChainDL[];
 
 void ArmsHook_Shoot(ArmsHook* this, PlayState* play);
 
-void ArmsHook_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void ArmsHook_Draw(Actor* thisx, PlayState* play) {
     ArmsHook* this = THIS;
     f32 f0;
     Player* player = GET_PLAYER(play);
@@ -73,7 +73,7 @@ void ArmsHook_Draw(Actor* thisx, PlayState* play) {
 #undef THIS
 
 extern Gfx gHookshotReticleDL[];
-void Player_DrawHookshotReticle(PlayState* play, Player* player, f32 hookshotDistance) {
+RECOMP_PATCH void Player_DrawHookshotReticle(PlayState* play, Player* player, f32 hookshotDistance) {
     static Vec3f D_801C094C = { -500.0f, -100.0f, 0.0f };
     CollisionPoly* poly;
     s32 bgId;
@@ -143,7 +143,7 @@ Gfx bowstring_end_hook_dl[] = {
     gsSPEndDisplayList(),
 };
 
-void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
+RECOMP_PATCH void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gfx* cullDList,
                          OverrideLimbDrawFlex overrideLimbDraw) {
     OPEN_DISPS(play->state.gfxCtx);
 

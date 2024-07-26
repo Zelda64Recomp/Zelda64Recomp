@@ -5,7 +5,7 @@
 
 extern Mtx* sSkyboxDrawMatrix;
 
-void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId, s16 blend, f32 x, f32 y, f32 z) {
+RECOMP_PATCH void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId, s16 blend, f32 x, f32 y, f32 z) {
     OPEN_DISPS(gfxCtx);
 
     Gfx_SetupDL40_Opa(gfxCtx);
@@ -112,7 +112,7 @@ f32 view_aspect_ratio(View* view) {
 }
 
 // @recomp Patched to set up the RSP for drawing stars with ortho rects and tag star transforms.
-void Environment_DrawSkyboxStarsImpl(PlayState* play, Gfx** gfxP) {
+RECOMP_PATCH void Environment_DrawSkyboxStarsImpl(PlayState* play, Gfx** gfxP) {
     static const Vec3s D_801DD880[] = {
         { 0x0384, 0x2328, 0xD508 }, { 0x09C4, 0x2328, 0xDA1C }, { 0x0E74, 0x22D8, 0xDA1C }, { 0x1450, 0x2468, 0xD8F0 },
         { 0x1C84, 0x28A0, 0xCBA8 }, { 0x1F40, 0x2134, 0xD8F0 }, { 0x1F40, 0x28A0, 0xDAE4 }, { 0xE4A8, 0x4A38, 0x4A38 },

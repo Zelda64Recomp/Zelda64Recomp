@@ -8,7 +8,7 @@ extern FaultClient sActorFaultClient;
 Actor* Actor_Delete(ActorContext* actorCtx, Actor* actor, PlayState* play);
 void ZeldaArena_Free(void* ptr);
 
-void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
+RECOMP_PATCH void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
     s32 i;
 
     Fault_RemoveClient(&sActorFaultClient);
@@ -47,7 +47,7 @@ u32 create_actor_transform_id() {
     return ret;
 }
 
-void Actor_Init(Actor* actor, PlayState* play) {
+RECOMP_PATCH void Actor_Init(Actor* actor, PlayState* play) {
     Actor_SetWorldToHome(actor);
     Actor_SetShapeRotToWorld(actor);
     Actor_SetFocus(actor, 0.0f);
@@ -135,7 +135,7 @@ Gfx* pop_post_limb_matrix_group(Gfx* dlist, Actor* actor) {
 /*
  * Draws the limb at `limbIndex` with a level of detail display lists index by `dListIndex`
  */
-void SkelAnime_DrawLimbLod(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH void SkelAnime_DrawLimbLod(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                            OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, Actor* actor, s32 lod) {
     LodLimb* limb;
     Gfx* dList;
@@ -197,7 +197,7 @@ void SkelAnime_DrawLimbLod(PlayState* play, s32 limbIndex, void** skeleton, Vec3
  * Draw all limbs of type `LodLimb` in a given skeleton
  * Near or far display list is specified via `lod`
  */
-void SkelAnime_DrawLod(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDrawOpa overrideLimbDraw,
+RECOMP_PATCH void SkelAnime_DrawLod(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDrawOpa overrideLimbDraw,
                        PostLimbDrawOpa postLimbDraw, Actor* actor, s32 lod) {
     LodLimb* rootLimb;
     s32 pad;
@@ -261,7 +261,7 @@ void SkelAnime_DrawLod(PlayState* play, void** skeleton, Vec3s* jointTable, Over
  * Draw a limb of type `LodLimb` contained within a flexible skeleton
  * Near or far display list is specified via `lod`
  */
-void SkelAnime_DrawFlexLimbLod(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH void SkelAnime_DrawFlexLimbLod(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                                OverrideLimbDrawFlex overrideLimbDraw, PostLimbDrawFlex postLimbDraw, Actor* actor,
                                s32 lod, Mtx** mtx) {
     LodLimb* limb;
@@ -332,7 +332,7 @@ void SkelAnime_DrawFlexLimbLod(PlayState* play, s32 limbIndex, void** skeleton, 
  * Limbs in a flexible skeleton have meshes that can stretch to line up with other limbs.
  * An array of matrices is dynamically allocated so each limb can access any transform to ensure its meshes line up.
  */
-void SkelAnime_DrawFlexLod(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
+RECOMP_PATCH void SkelAnime_DrawFlexLod(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
                            OverrideLimbDrawFlex overrideLimbDraw, PostLimbDrawFlex postLimbDraw, Actor* actor,
                            s32 lod) {
     LodLimb* rootLimb;
@@ -403,7 +403,7 @@ void SkelAnime_DrawFlexLod(PlayState* play, void** skeleton, Vec3s* jointTable, 
 /*
  * Draws the limb of the Skeleton `skeleton` at `limbIndex`
  */
-void SkelAnime_DrawLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH void SkelAnime_DrawLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                            OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, Actor* actor) {
     StandardLimb* limb;
     Gfx* dList;
@@ -463,7 +463,7 @@ void SkelAnime_DrawLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3
 /**
  * Draw all limbs of type `StandardLimb` in a given skeleton to the polyOpa buffer
  */
-void SkelAnime_DrawOpa(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDrawOpa overrideLimbDraw,
+RECOMP_PATCH void SkelAnime_DrawOpa(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDrawOpa overrideLimbDraw,
                        PostLimbDrawOpa postLimbDraw, Actor* actor) {
     StandardLimb* rootLimb;
     s32 pad;
@@ -521,7 +521,7 @@ void SkelAnime_DrawOpa(PlayState* play, void** skeleton, Vec3s* jointTable, Over
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-void SkelAnime_DrawFlexLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH void SkelAnime_DrawFlexLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                                OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, Actor* actor,
                                Mtx** limbMatricies) {
     StandardLimb* limb;
@@ -591,7 +591,7 @@ void SkelAnime_DrawFlexLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, 
  * Limbs in a flexible skeleton have meshes that can stretch to line up with other limbs.
  * An array of matrices is dynamically allocated so each limb can access any transform to ensure its meshes line up.
  */
-void SkelAnime_DrawFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
+RECOMP_PATCH void SkelAnime_DrawFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
                            OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw, Actor* actor) {
     StandardLimb* rootLimb;
     s32 pad;
@@ -661,7 +661,7 @@ void SkelAnime_DrawFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, 
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-void SkelAnime_DrawTransformFlexLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH void SkelAnime_DrawTransformFlexLimbOpa(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                                         OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw,
                                         TransformLimbDrawOpa transformLimbDraw, Actor* actor, Mtx** mtx) {
     StandardLimb* limb;
@@ -744,7 +744,7 @@ void SkelAnime_DrawTransformFlexLimbOpa(PlayState* play, s32 limbIndex, void** s
  * coordinates.
  * Note that the `TransformLimbDraw` does not have a NULL check, so must be provided even if empty.
  */
-void SkelAnime_DrawTransformFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
+RECOMP_PATCH void SkelAnime_DrawTransformFlexOpa(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
                                     OverrideLimbDrawOpa overrideLimbDraw, PostLimbDrawOpa postLimbDraw,
                                     TransformLimbDrawOpa transformLimbDraw, Actor* actor) {
     StandardLimb* rootLimb;
@@ -825,7 +825,7 @@ void SkelAnime_DrawTransformFlexOpa(PlayState* play, void** skeleton, Vec3s* joi
  * Draws the Skeleton `skeleton`'s limb at index `limbIndex`.  Appends all generated graphics commands to
  * `gfx`.  Returns a pointer to the next gfx to be appended to.
  */
-Gfx* SkelAnime_DrawLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH Gfx* SkelAnime_DrawLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                         OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
     StandardLimb* limb;
     Gfx* dList;
@@ -884,7 +884,7 @@ Gfx* SkelAnime_DrawLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* 
  * Draws the Skeleton `skeleton`  Appends all generated graphics to `gfx`, and returns a pointer to the
  * next gfx to be appended to.
  */
-Gfx* SkelAnime_Draw(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDraw overrideLimbDraw,
+RECOMP_PATCH Gfx* SkelAnime_Draw(PlayState* play, void** skeleton, Vec3s* jointTable, OverrideLimbDraw overrideLimbDraw,
                     PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
     StandardLimb* rootLimb;
     s32 pad;
@@ -944,7 +944,7 @@ Gfx* SkelAnime_Draw(PlayState* play, void** skeleton, Vec3s* jointTable, Overrid
 /**
  * Draw a limb of type `StandardLimb` contained within a flexible skeleton to the specified display buffer
  */
-Gfx* SkelAnime_DrawFlexLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
+RECOMP_PATCH Gfx* SkelAnime_DrawFlexLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec3s* jointTable,
                             OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Mtx** mtx,
                             Gfx* gfx) {
     StandardLimb* limb;
@@ -1014,7 +1014,7 @@ Gfx* SkelAnime_DrawFlexLimb(PlayState* play, s32 limbIndex, void** skeleton, Vec
  * Limbs in a flexible skeleton have meshes that can stretch to line up with other limbs.
  * An array of matrices is dynamically allocated so each limb can access any transform to ensure its meshes line up.
  */
-Gfx* SkelAnime_DrawFlex(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
+RECOMP_PATCH Gfx* SkelAnime_DrawFlex(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dListCount,
                         OverrideLimbDraw overrideLimbDraw, PostLimbDraw postLimbDraw, Actor* actor, Gfx* gfx) {
     StandardLimb* rootLimb;
     s32 pad;
@@ -1085,7 +1085,7 @@ Gfx* SkelAnime_DrawFlex(PlayState* play, void** skeleton, Vec3s* jointTable, s32
 
 extern MtxF gSkinLimbMatrices[];
 
-void Skin_DrawImpl(Actor* actor, PlayState* play, Skin* skin, SkinPostDraw postDraw,
+RECOMP_PATCH void Skin_DrawImpl(Actor* actor, PlayState* play, Skin* skin, SkinPostDraw postDraw,
                    SkinOverrideLimbDraw overrideLimbDraw, s32 setTranslation, s32 arg6, s32 drawFlags) {
     s32 i;
     SkinLimb** skeleton;
@@ -1145,7 +1145,7 @@ close_disps:;
     CLOSE_DISPS(gfxCtx);
 }
 
-__attribute__((noinline)) s32 scan_for_matrices(Gfx* start, Gfx* end) {
+s32 scan_for_matrices(Gfx* start, Gfx* end) {
     s32 matrix_count = 0;
     Gfx* cur = start;
     // Count any G_MTX commands between the start and end commands.
@@ -1201,7 +1201,7 @@ void tag_actor_displaylists(Actor* actor, PlayState* play, Gfx* opa_start, Gfx* 
 }
 
 // @recomp Patched to automatically add transform tagging to actor matrices based on what DL commands they write in their draw function
-void Actor_Draw(PlayState* play, Actor* actor) {
+RECOMP_PATCH void Actor_Draw(PlayState* play, Actor* actor) {
     Lights* light;
 
     OPEN_DISPS(play->state.gfxCtx);

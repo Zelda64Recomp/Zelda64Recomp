@@ -176,7 +176,7 @@ void Camera_UpdateInterface(s32 interfaceFlags);
 s32 func_800CB7CC(Camera* camera);
 s32 func_800CB854(Camera* camera);
 
-Vec3s Camera_Update(Camera* camera) {
+RECOMP_PATCH Vec3s Camera_Update(Camera* camera) {
     Vec3f viewAt;
     Vec3f viewEye;
     Vec3f viewUp;
@@ -461,7 +461,7 @@ s32 func_800CBA7C(Camera* camera);
 #define RELOAD_PARAMS(camera) ((camera->animState == 0) || (camera->animState == 10) || (camera->animState == 20))
 
 // @recomp Patched for analog cam.
-s32 Camera_Normal1(Camera* camera) {
+RECOMP_PATCH s32 Camera_Normal1(Camera* camera) {
     Vec3f* eye = &camera->eye;
     Vec3f* at = &camera->at;
     Vec3f* eyeNext = &camera->eyeNext;
@@ -870,7 +870,7 @@ s32 Camera_Normal1(Camera* camera) {
  * Camera for climbing structures
  */
 // @recomp Patched for analog cam.
-s32 Camera_Jump2(Camera* camera) {
+RECOMP_PATCH s32 Camera_Jump2(Camera* camera) {
     Vec3f* eye = &camera->eye;
     Vec3f* at = &camera->at;
     Vec3f* eyeNext = &camera->eyeNext;
@@ -1063,7 +1063,7 @@ s32 Camera_Jump2(Camera* camera) {
  * Used for targeting
  */
 // @recomp Patched for analog cam.
-s32 Camera_Parallel1(Camera* camera) {
+RECOMP_PATCH s32 Camera_Parallel1(Camera* camera) {
     Vec3f* eye = &camera->eye;
     Vec3f* at = &camera->at;
     Vec3f* eyeNext = &camera->eyeNext;
@@ -1421,7 +1421,7 @@ s32 Camera_Parallel1(Camera* camera) {
  * Riding Epona and Zora
  */
 // @recomp Patched for analog cam.
-s32 Camera_Normal3(Camera* camera) {
+RECOMP_PATCH s32 Camera_Normal3(Camera* camera) {
     Normal3ReadOnlyData* roData = &camera->paramData.norm3.roData;
     Normal3ReadWriteData* rwData = &camera->paramData.norm3.rwData;
     f32 sp8C;
@@ -1620,7 +1620,7 @@ s32 Camera_Normal3(Camera* camera) {
  * e.g. Gyorg, Pinnacle Rock, whirlpool, water
  */
 // @recomp Patched for analog cam.
-s32 Camera_Jump3(Camera* camera) {
+RECOMP_PATCH s32 Camera_Jump3(Camera* camera) {
     Vec3f* sp48 = &camera->eye;
     Vec3f* sp44 = &camera->at;
     Vec3f* sp40 = &camera->eyeNext;
@@ -1905,7 +1905,7 @@ extern u8 D_809EE4D0;
 
 // @recomp Patch the Wart boss fight in the Great Bay temple so that the fight starts if you look at it with the right stick analog camera,
 // instead of requiring entering first person mode mode.
-void func_809EC568(Boss04* this, PlayState* play) {
+RECOMP_PATCH void func_809EC568(Boss04* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     f32 x;
     f32 y;

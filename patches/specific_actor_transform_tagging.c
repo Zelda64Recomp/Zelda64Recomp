@@ -30,7 +30,7 @@ extern Gfx gEffWaterRippleDL[];
 u8 special_effect_reset_states[MAX_SPECIAL_EFFECTS];
 
 // @recomp Tag Wart's bubbles
-void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     s32 i;
     s32 j;
@@ -153,7 +153,7 @@ void EnTanron2_Draw(Actor* thisx, PlayState* play2) {
 }
 
 // @recomp Track this effect's reset state.
-void Boss03_SpawnEffectWetSpot(PlayState* play, Vec3f* pos) {
+RECOMP_PATCH void Boss03_SpawnEffectWetSpot(PlayState* play, Vec3f* pos) {
     s16 i;
     GyorgEffect* eff = play->specialEffects;
 
@@ -177,7 +177,7 @@ void Boss03_SpawnEffectWetSpot(PlayState* play, Vec3f* pos) {
 }
 
 // @recomp Track this effect's reset state.
-void Boss03_SpawnEffectDroplet(PlayState* play, Vec3f* pos) {
+RECOMP_PATCH void Boss03_SpawnEffectDroplet(PlayState* play, Vec3f* pos) {
     s16 i;
     GyorgEffect* eff = play->specialEffects;
 
@@ -204,7 +204,7 @@ void Boss03_SpawnEffectDroplet(PlayState* play, Vec3f* pos) {
 }
 
 // @recomp Track this effect's reset state.
-void Boss03_SpawnEffectSplash(PlayState* play, Vec3f* pos, Vec3f* velocity) {
+RECOMP_PATCH void Boss03_SpawnEffectSplash(PlayState* play, Vec3f* pos, Vec3f* velocity) {
     Vec3f accel = { 0.0f, -1.0f, 0.0f };
     f32 temp_f2;
     GyorgEffect* eff = play->specialEffects;
@@ -231,7 +231,7 @@ void Boss03_SpawnEffectSplash(PlayState* play, Vec3f* pos, Vec3f* velocity) {
 }
 
 // @recomp Track this effect's reset state.
-void Boss03_SpawnEffectBubble(PlayState* play, Vec3f* pos) {
+RECOMP_PATCH void Boss03_SpawnEffectBubble(PlayState* play, Vec3f* pos) {
     s16 i;
     GyorgEffect* eff = play->specialEffects;
 
@@ -261,7 +261,7 @@ extern u8 gEffDust1Tex[];
 void Boss03_SetObject(PlayState* play, s16 objectId);
 
 // @recomp Tag Gyorg's effects.
-void Boss03_DrawEffects(PlayState* play) {
+RECOMP_PATCH void Boss03_DrawEffects(PlayState* play) {
     u8 flag = false;
     s16 i;
     GraphicsContext* gfxCtx = play->state.gfxCtx;
@@ -410,7 +410,7 @@ extern Gfx object_water_effect_DL_000420[];
 extern Gfx object_water_effect_DL_000A48[];
 extern Gfx object_water_effect_DL_000CD8[];
 
-void func_80A5A6B8(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void func_80A5A6B8(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     EnWaterEffect* this = (EnWaterEffect*)thisx;
     EnWaterEffectStruct* ptr = &this->unk_144[0];
@@ -547,7 +547,7 @@ void func_80A5A6B8(Actor* thisx, PlayState* play2) {
 }
 
 // @recomp Tag normal water effects.
-void EnWaterEffect_Draw(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void EnWaterEffect_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     GraphicsContext* gfxCtx = play->state.gfxCtx;
     EnWaterEffect* this = (EnWaterEffect*)thisx;
@@ -641,7 +641,7 @@ extern Gfx gGohtStalactiteMaterialDL[];
 extern Gfx gGohtStalactiteModelDL[];
 
 // @recomp Tag Goht's rocks.
-void func_80B0C398(BossHakugin* this, PlayState* play) {
+RECOMP_PATCH void func_80B0C398(BossHakugin* this, PlayState* play) {
     BossHakuginEffect* effect;
     s32 i;
 
@@ -722,7 +722,7 @@ void EnOsn_HandleCsAction(EnOsn* this, PlayState* play);
 void EnOsn_Idle(EnOsn* this, PlayState* play);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
-void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
+RECOMP_PATCH void EnOsn_ChooseAction(EnOsn* this, PlayState* play) {
     u32 isSwitchFlagSet = Flags_GetSwitch(play, 0);
 
     this->csId = this->actor.csId;
@@ -743,7 +743,7 @@ void EnOsn_LookFromMask(EnOsn* this);
 void EnOsn_FadeOut(EnOsn* this);
 
 // @recomp Patched to skip interpolation when the Happy Mask Salesman changes animations.
-void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
+RECOMP_PATCH void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
     u8 pad;
     s32 cueChannel;
 
@@ -880,7 +880,7 @@ void EnOsn_HandleCsAction(EnOsn* this, PlayState* play) {
 }
 
 // @recomp Patched to tag this actor's draws using linear order matching.
-void EnFall2_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnFall2_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
     EnFall2* this = (EnFall2*)thisx;
     Mtx* mtx;
@@ -909,7 +909,7 @@ void EnFall2_Draw(Actor* thisx, PlayState* play) {
 }
 
 // @recomp Skip interpolation on item pickups the frame they're collected.
-void func_800A6A40(EnItem00* this, PlayState* play) {
+RECOMP_PATCH void func_800A6A40(EnItem00* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if (this->getItemId != GI_NONE) {
@@ -952,7 +952,7 @@ extern Vtx ovl_Obj_Entotu_Vtx_000D10[7];
 extern Gfx object_f53_obj_DL_001C00[];
 
 // @recomp Skip rotation interpolation for the Clock Town chimney's smoke when the camera skips interolation.
-void func_80A34B28(ObjEntotu* this, PlayState* play) {
+RECOMP_PATCH void func_80A34B28(ObjEntotu* this, PlayState* play) {
     u8 sp57;
     u8 sp56;
     s32 i;
@@ -1002,7 +1002,7 @@ void func_80A34B28(ObjEntotu* this, PlayState* play) {
 extern Gfx object_f53_obj_DL_000158[];
 
 // @recomp Skip rotation interpolation for the Clock Town chimney when the camera skips interolation.
-void func_80A34A44(ObjEntotu* this, PlayState* play) {
+RECOMP_PATCH void func_80A34A44(ObjEntotu* this, PlayState* play) {
     Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, MTXMODE_NEW);
     this->actor.shape.rot.y = BINANG_ROT180(Camera_GetCamDirYaw(GET_ACTIVE_CAM(play)));
     Matrix_RotateYS(this->actor.shape.rot.y, MTXMODE_APPLY);
@@ -1032,7 +1032,7 @@ void func_80A34A44(ObjEntotu* this, PlayState* play) {
 void Environment_DrawRainImpl(PlayState* play, View* view, GraphicsContext* gfxCtx);
 
 // @recomp Skip interpolation for the splashes that raindrops make.
-void Environment_DrawRain(PlayState* play, View* view, GraphicsContext* gfxCtx) {
+RECOMP_PATCH void Environment_DrawRain(PlayState* play, View* view, GraphicsContext* gfxCtx) {
     if (!(GET_ACTIVE_CAM(play)->stateFlags & CAM_STATE_UNDERWATER) &&
         (play->envCtx.precipitation[PRECIP_SNOW_CUR] == 0)) {
         
@@ -1058,7 +1058,7 @@ void Environment_DrawRain(PlayState* play, View* view, GraphicsContext* gfxCtx) 
 }
 
 // @recomp Skip interpolation on the boulders in the path to Snowhead and the path to Ikana Canyon when they teleport back to their home position.
-void func_8093EE64(EnGoroiwa* this, s32 arg1) {
+RECOMP_PATCH void func_8093EE64(EnGoroiwa* this, s32 arg1) {
     Vec3s* temp_v0 = &this->pathPoints[arg1];
 
     this->actor.world.pos.x = temp_v0->x;
@@ -1075,7 +1075,7 @@ extern Gfx object_twig_DL_001C38[];
 extern Gfx object_twig_DL_0014C8[];
 
 // @recomp Skip interpolation on the rotation for the beaver race rings in order to retain the intended animation look.
-void EnTwig_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnTwig_Draw(Actor* thisx, PlayState* play) {
     EnTwig* this = (EnTwig*)thisx;
 
     switch (this->unk_160) {
@@ -1101,7 +1101,7 @@ extern Gfx gEffFire1DL[];
 #define HONOTRAP_EXTRA_BYTE_1(flameGroup) (&(flameGroup)->flameList[0].isDrawn)[1]
 #define HONOTRAP_EXTRA_BYTE_2(flameGroup) (&(flameGroup)->flameList[1].isDrawn)[1]
 
-void EnHonotrap_FlameGroup(EnHonotrap* this, PlayState* play) {
+RECOMP_PATCH void EnHonotrap_FlameGroup(EnHonotrap* this, PlayState* play) {
     s32 i;
     EnHonotrapFlameGroup* flameGroup = &this->flameGroup;
     f32 var_fs0;
@@ -1203,7 +1203,7 @@ void EnHonotrap_FlameGroup(EnHonotrap* this, PlayState* play) {
 
 
 // @recomp Patched to tag the flames that come out of fire eyes.
-void EnHonotrap_DrawFlameGroup(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnHonotrap_DrawFlameGroup(Actor* thisx, PlayState* play) {
     s32 pad;
     EnHonotrap* this = (EnHonotrap*)thisx;
     EnHonotrapFlameElement* flameElem;

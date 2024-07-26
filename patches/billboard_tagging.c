@@ -61,7 +61,7 @@ void edit_billboard_groups(PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-Mtx* Matrix_NewMtx(GraphicsContext* gfxCtx) {
+RECOMP_PATCH Mtx* Matrix_NewMtx(GraphicsContext* gfxCtx) {
     Mtx* ret = Matrix_ToMtx(GRAPH_ALLOC(gfxCtx, sizeof(Mtx)));
 
     if (*current_billboard_state) {
@@ -77,7 +77,7 @@ Mtx* Matrix_NewMtx(GraphicsContext* gfxCtx) {
     return ret;
 }
 
-void Matrix_Init(GameState* gameState) {
+RECOMP_PATCH void Matrix_Init(GameState* gameState) {
     sMatrixStack = THA_AllocTailAlign16(&gameState->tha, MATRIX_STACK_SIZE * sizeof(MtxF));
     sCurrentMatrix = sMatrixStack;
 
@@ -94,7 +94,7 @@ void matrix_play_update(PlayState* play) {
     play_billboard_matrix = &play->billboardMtxF;
 }
 
-void Matrix_Push(void) {
+RECOMP_PATCH void Matrix_Push(void) {
     MtxF* prev = sCurrentMatrix;
 
     sCurrentMatrix++;
@@ -106,20 +106,20 @@ void Matrix_Push(void) {
     *current_billboard_state = *prev_billboard;
 }
 
-void Matrix_Pop(void) {
+RECOMP_PATCH void Matrix_Pop(void) {
     sCurrentMatrix--;
     // @recomp Pop the matrix stack billboard state.
     current_billboard_state--;
 }
 
-void Matrix_Put(MtxF* src) {
+RECOMP_PATCH void Matrix_Put(MtxF* src) {
     Matrix_MtxFCopy(sCurrentMatrix, src);
 
     // @recomp Update the current billboard state.
     *current_billboard_state = (src == play_billboard_matrix);
 }
 
-void Matrix_ReplaceRotation(MtxF* mf) {
+RECOMP_PATCH void Matrix_ReplaceRotation(MtxF* mf) {
     MtxF* cmf = sCurrentMatrix;
     f32 acc;
     f32 component;
@@ -168,7 +168,7 @@ void Matrix_ReplaceRotation(MtxF* mf) {
     *current_billboard_state = (mf == play_billboard_matrix);
 }
 
-void Matrix_Mult(MtxF* mf, MatrixMode mode) {
+RECOMP_PATCH void Matrix_Mult(MtxF* mf, MatrixMode mode) {
     MtxF* cmf = Matrix_GetCurrent();
 
     if (mode == MTXMODE_APPLY) {
@@ -183,7 +183,7 @@ void Matrix_Mult(MtxF* mf, MatrixMode mode) {
     }
 }
 
-void Matrix_Translate(f32 x, f32 y, f32 z, MatrixMode mode) {
+RECOMP_PATCH void Matrix_Translate(f32 x, f32 y, f32 z, MatrixMode mode) {
     MtxF* cmf = sCurrentMatrix;
     f32 tempX;
     f32 tempY;
@@ -209,7 +209,7 @@ void Matrix_Translate(f32 x, f32 y, f32 z, MatrixMode mode) {
     }
 }
 
-void Matrix_Scale(f32 x, f32 y, f32 z, MatrixMode mode) {
+RECOMP_PATCH void Matrix_Scale(f32 x, f32 y, f32 z, MatrixMode mode) {
     MtxF* cmf = sCurrentMatrix;
 
     if (mode == MTXMODE_APPLY) {
@@ -233,7 +233,7 @@ void Matrix_Scale(f32 x, f32 y, f32 z, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateXS(s16 x, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateXS(s16 x, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -300,7 +300,7 @@ void Matrix_RotateXS(s16 x, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateXF(f32 x, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateXF(f32 x, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -369,7 +369,7 @@ void Matrix_RotateXF(f32 x, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateXFNew(f32 x) {
+RECOMP_PATCH void Matrix_RotateXFNew(f32 x) {
     MtxF* cmf = sCurrentMatrix;
     s32 pad[2];
     f32 sin;
@@ -406,7 +406,7 @@ void Matrix_RotateXFNew(f32 x) {
     // @recomp Clear the current billboard state.
     *current_billboard_state = false;
 }
-void Matrix_RotateYS(s16 y, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateYS(s16 y, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -473,7 +473,7 @@ void Matrix_RotateYS(s16 y, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateYF(f32 y, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateYF(f32 y, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -542,7 +542,7 @@ void Matrix_RotateYF(f32 y, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateZS(s16 z, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateZS(s16 z, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -611,7 +611,7 @@ void Matrix_RotateZS(s16 z, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateZF(f32 z, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateZF(f32 z, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -678,7 +678,7 @@ void Matrix_RotateZF(f32 z, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateZYX(s16 x, s16 y, s16 z, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateZYX(s16 x, s16 y, s16 z, MatrixMode mode) {
     MtxF* cmf = sCurrentMatrix;
     f32 temp1;
     f32 temp2;
@@ -768,7 +768,7 @@ void Matrix_RotateZYX(s16 x, s16 y, s16 z, MatrixMode mode) {
     }
 }
 
-void Matrix_SetTranslateRotateYXZ(f32 x, f32 y, f32 z, Vec3s* rot) {
+RECOMP_PATCH void Matrix_SetTranslateRotateYXZ(f32 x, f32 y, f32 z, Vec3s* rot) {
     MtxF* cmf = sCurrentMatrix;
     f32 sinY = Math_SinS(rot->y);
     f32 cosY = Math_CosS(rot->y);
@@ -829,7 +829,7 @@ void Matrix_SetTranslateRotateYXZ(f32 x, f32 y, f32 z, Vec3s* rot) {
     *current_billboard_state = false;
 }
 
-void Matrix_RotateAxisF(f32 angle, Vec3f* axis, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateAxisF(f32 angle, Vec3f* axis, MatrixMode mode) {
     MtxF* cmf;
     f32 sin;
     f32 cos;
@@ -926,7 +926,7 @@ void Matrix_RotateAxisF(f32 angle, Vec3f* axis, MatrixMode mode) {
     }
 }
 
-void Matrix_RotateAxisS(s16 angle, Vec3f* axis, MatrixMode mode) {
+RECOMP_PATCH void Matrix_RotateAxisS(s16 angle, Vec3f* axis, MatrixMode mode) {
     MtxF* cmf;
     f32 cos;
     f32 sin;

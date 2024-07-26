@@ -9,7 +9,7 @@ extern Gfx sTransWipe3DL[];
 
 #define THIS ((TransitionWipe3*)thisx)
 // @recomp patched to scale the transition based on aspect ratio
-void TransitionWipe3_Draw(void* thisx, Gfx** gfxP) {
+RECOMP_PATCH void TransitionWipe3_Draw(void* thisx, Gfx** gfxP) {
     Gfx* gfx = *gfxP;
     Mtx* modelView = &THIS->modelView[THIS->frame];
     f32 scale = 14.8f;
@@ -53,7 +53,7 @@ extern s32 gFramerateDivisor;
 
 // @recomp Motion blur works fine normally, but when running at a higher framerate the effect is much less pronounced
 // as the previous frames decay quicker due to there being more frames drawn in the same period of time.
-void Play_DrawMotionBlur(PlayState* this) {
+RECOMP_PATCH void Play_DrawMotionBlur(PlayState* this) {
     GraphicsContext* gfxCtx = this->state.gfxCtx;
     s32 alpha;
     Gfx* gfx;
@@ -126,7 +126,7 @@ void Play_DrawMotionBlur(PlayState* this) {
 }
 
 // @recomp Patched to increase the scale based on the aspect ratio.
-void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
+RECOMP_PATCH void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
     // @recomp Calculate the increase in aspect ratio.
     f32 original_aspect_ratio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
     f32 aspect_ratio_scale = recomp_get_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
@@ -139,7 +139,7 @@ void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
 
 
 // @recomp Patched to use ortho tris for interpolation and to prevent the telescope and lens effects from getting stretched wide.
-void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt, s32 arg3, s32 masks, s32 maskt,
+RECOMP_PATCH void TransitionCircle_LoadAndSetTexture(Gfx** gfxp, TexturePtr texture, s32 fmt, s32 arg3, s32 masks, s32 maskt,
                                         f32 arg6) {
     Gfx* gfx = *gfxp;
     s32 xh = gCfbWidth;

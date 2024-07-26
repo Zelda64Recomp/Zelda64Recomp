@@ -17,7 +17,7 @@ bool is_bgm_player(u8 player_index) {
 /**
  * Update different commands and requests for active sequences
  */
-void AudioSeq_UpdateActiveSequences(void) {
+RECOMP_PATCH void AudioSeq_UpdateActiveSequences(void) {
     u32 tempoCmd;
     u16 tempoPrev;
     u16 seqId;
@@ -338,7 +338,7 @@ void AudioSeq_UpdateActiveSequences(void) {
 }
 
 // @recomp Patched to add the ability to turn off low health beeps.
-void LifeMeter_UpdateSizeAndBeep(PlayState* play) {
+RECOMP_PATCH void LifeMeter_UpdateSizeAndBeep(PlayState* play) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
 
     if (interfaceCtx->lifeSizeChangeDirection != 0) {

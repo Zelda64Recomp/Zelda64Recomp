@@ -14,7 +14,7 @@ s32 ShrinkWindow_Letterbox_GetSizeTarget(void);
 void ShrinkWindow_Letterbox_SetSizeTarget(s32 target);
 
 // @recomp Patched function to set a global variable if the player can pause
-void KaleidoSetup_Update(PlayState* play) {
+RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
     Input* input = CONTROLLER1(&play->state);
     MessageContext* msgCtx = &play->msgCtx;
     Player* player = GET_PLAYER(play);
@@ -100,7 +100,7 @@ void do_autosave(PlayState* play) {
 }
 
 // @recomp Do not clear the save if the save was an autosave.
-void func_80147314(SramContext* sramCtx, s32 fileNum) {
+RECOMP_PATCH void func_80147314(SramContext* sramCtx, s32 fileNum) {
     s32 save_type = gSaveContext.save.isOwlSave;
     gSaveContext.save.isOwlSave = false;
 
@@ -156,7 +156,7 @@ void delete_owl_save(SramContext* sramCtx, s32 fileNum) {
 }
 
 // @recomp Patched to delete owl saves when making regular saves.
-void func_8014546C(SramContext* sramCtx) {
+RECOMP_PATCH void func_8014546C(SramContext* sramCtx) {
     s32 i;
 
     if (gSaveContext.save.isOwlSave) {
@@ -199,7 +199,7 @@ extern u16 D_801F6AF0;
 extern u8 D_801F6AF2;
 
 // @recomp Patched to call the new owl save deletion function.
-void Sram_EraseSave(FileSelectState* fileSelect2, SramContext* sramCtx, s32 fileNum) {
+RECOMP_PATCH void Sram_EraseSave(FileSelectState* fileSelect2, SramContext* sramCtx, s32 fileNum) {
     FileSelectState* fileSelect = fileSelect2;
     s32 pad;
 
@@ -468,7 +468,7 @@ extern s16 sSceneCutsceneCount;
 bool skip_entry_cutscene = false;
 
 // @recomp Patched to skip the entrance cutscene if the flag is enabled.
-s16 CutsceneManager_FindEntranceCsId(void) {
+RECOMP_PATCH s16 CutsceneManager_FindEntranceCsId(void) {
     PlayState* play;
     s32 csId;
 
@@ -523,7 +523,7 @@ s32 spawn_entrance_from_autosave_entrance(s16 autosave_entrance) {
 }
 
 // @recomp Patched to change the entrance for autosaves and initialize autosaves.
-void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
+RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
     s32 i;
     s32 pad;
     s32 phi_t1 = 0;
@@ -658,7 +658,7 @@ void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
 extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
 
 // @recomp Reset the autosave timer when the moon crashes.
-void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
+RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     s32 i;
     s32 cutsceneIndex = gSaveContext.save.cutsceneIndex;
 
@@ -710,7 +710,7 @@ void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
 
 
 // @recomp If autosave is enabled, skip the part of the owl statue dialog that talks about the file being deleted on load, since it's not true.
-void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
     ObjWarpstone* this = (ObjWarpstone*)thisx;
     s32 pad;
 

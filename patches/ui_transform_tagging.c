@@ -56,7 +56,7 @@ extern TexturePtr sMaskPageBgTextures[];
 
 // @recomp Patched to set pageIndex to a dummy value when KaleidoScope_SetVertices is called to make it
 // allocate vertices for all pages at all times. This is simpler than patching KaleidoScope_SetVertices directly.
-void KaleidoScope_Draw(PlayState* play) {
+RECOMP_PATCH void KaleidoScope_Draw(PlayState* play) {
     s32 pad;
     PauseContext* pauseCtx = &play->pauseCtx;
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
@@ -137,7 +137,7 @@ void KaleidoScope_Draw(PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-void KaleidoScope_DrawCursor(PlayState* play) {
+RECOMP_PATCH void KaleidoScope_DrawCursor(PlayState* play) {
     PauseContext* pauseCtx = &play->pauseCtx;
     s16 i;
 
@@ -219,7 +219,7 @@ extern s16 sPauseZRCursorAlpha; // 8082DA56 32899 -9642
  */
 
 // @recomp Patched to tag the matrix for interpolating the vertices of the Z button, R button, and name panel.
-void KaleidoScope_DrawInfoPanel(PlayState* play) {
+RECOMP_PATCH void KaleidoScope_DrawInfoPanel(PlayState* play) {
     static const s16 sPauseZRCursorColorTargets[][4] = {
         { 180, 210, 255, 220 },
         { 100, 100, 150, 220 },
@@ -587,7 +587,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 }
 
 // @recomp Patched to draw always all 4 pages and tag their matrices.
-void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
+RECOMP_PATCH void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
     static s16 sCursorColorTimer = 10;
     static s16 sCursorColorTargetIndex = 0;
     PauseContext* pauseCtx = &play->pauseCtx;

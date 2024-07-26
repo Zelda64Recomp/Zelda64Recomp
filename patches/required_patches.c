@@ -8,7 +8,7 @@ void Main_InitScreen(void);
 
 
 // @recomp Patched to load the code segment in the recomp runtime.
-void Main_Init(void) {
+RECOMP_PATCH void Main_Init(void) {
     DmaRequest dmaReq;
     OSMesgQueue mq;
     OSMesg msg[1];
@@ -36,7 +36,7 @@ void Main_Init(void) {
 void Overlay_Relocate(void* allocatedRamAddr, OverlayRelocationSection* ovlRelocs, uintptr_t vramStart);
 
 // @recomp Patched to load the overlay in the recomp runtime.
-size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, void* ramStart, void* ramEnd, void* allocatedRamAddr) {
+RECOMP_PATCH size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, void* ramStart, void* ramEnd, void* allocatedRamAddr) {
     uintptr_t vramStart = (uintptr_t)ramStart;
     uintptr_t vramEnd = (uintptr_t)ramEnd;
     s32 size = vromEnd - vromStart;
