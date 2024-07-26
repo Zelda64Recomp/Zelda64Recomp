@@ -1,7 +1,7 @@
 #include "patches.h"
 
 // Disable frustum culling for actors, but leave distance culling intact
-s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projectedW) {
+RECOMP_PATCH s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projectedW) {
     if ((-actor->uncullZoneScale < projectedPos->z) &&
         (projectedPos->z < (actor->uncullZoneForward + actor->uncullZoneScale))) {
         // f32 phi_f12;
@@ -30,7 +30,7 @@ s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projec
 }
 
 // Disable frustum culling for bush spawning
-// s32 EnWood02_SpawnZoneCheck(EnWood02* this, PlayState* play, Vec3f* arg2) {
+// RECOMP_PATCH s32 EnWood02_SpawnZoneCheck(EnWood02* this, PlayState* play, Vec3f* arg2) {
 //     f32 phi_f12;
 
 //     SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, arg2, &this->actor.projectedPos, &this->actor.projectedW);
@@ -52,7 +52,7 @@ s32 func_800BA2FC(PlayState* play, Actor* actor, Vec3f* projectedPos, f32 projec
 // }
 
 // Disable frustum culling for grass
-s32 func_809A9110(PlayState* play, Vec3f* pos) {
+RECOMP_PATCH s32 func_809A9110(PlayState* play, Vec3f* pos) {
     f32 w;
     Vec3f projectedPos;
 
@@ -73,7 +73,7 @@ s32 func_809A9110(PlayState* play, Vec3f* pos) {
 
 // Replace point light glow effect with RT64 point Z test so it works in widescreen
 
-void Lights_GlowCheck(PlayState* play) {
+RECOMP_PATCH void Lights_GlowCheck(PlayState* play) {
     LightNode* light = play->lightCtx.listHead;
 
     while (light != NULL) {
@@ -107,7 +107,7 @@ extern Gfx gameplay_keep_DL_029CF0[];
 
 Vtx light_test_vert = VTX(0, 0, 0,  0, 0,  0xFF, 0xFF, 0xFF, 0xFF);
 
-void Lights_DrawGlow(PlayState* play) {
+RECOMP_PATCH void Lights_DrawGlow(PlayState* play) {
     Gfx* dl;
     LightPoint* params;
     LightNode* light = play->lightCtx.listHead;

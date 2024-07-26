@@ -1030,7 +1030,7 @@ void set_ocarina_vertex_alphas(Vtx* verts, s32 count, u8 alpha) {
 
 extern Gfx sSongOfTimeFrustumMaterialDL[];
 
-void OceffWipe_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe_Draw(Actor* thisx, PlayState* play) {
     u32 scroll = play->state.frames & 0xFF;
     OceffWipe* this = (OceffWipe*)thisx;
     f32 z;
@@ -1098,7 +1098,7 @@ void OceffWipe_Draw(Actor* thisx, PlayState* play) {
 
 extern Gfx sEponaSongFrustumMaterialDL[];
 
-void OceffWipe2_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe2_Draw(Actor* thisx, PlayState* play) {
     u32 scroll = play->state.frames & 0xFF;
     OceffWipe2* this = (OceffWipe2*)thisx;
     f32 z;
@@ -1152,7 +1152,7 @@ void OceffWipe2_Draw(Actor* thisx, PlayState* play) {
 
 extern Gfx sSariaSongFrustrumMaterialDL[];
 
-void OceffWipe3_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe3_Draw(Actor* thisx, PlayState* play) {
     u32 scroll = play->state.frames & 0xFFF;
     OceffWipe3* this = (OceffWipe3*)thisx;
     f32 z;
@@ -1207,7 +1207,7 @@ extern Gfx sScarecrowSongUnusedMaterialDL[];
 extern Gfx sScarecrowSongMaterialDL[];
 extern Gfx sScarecrowSongModelDL[];
 
-void OceffWipe4_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe4_Draw(Actor* thisx, PlayState* play) {
     u32 scroll = play->state.frames & 0xFFF;
     OceffWipe4* this = (OceffWipe4*)thisx;
     f32 z;
@@ -1273,7 +1273,7 @@ static u8 sEnvColors[] = {
 extern Gfx gOceff5DL[];
 extern AnimatedMaterial gOceff5TexAnim[];
 
-void OceffWipe5_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe5_Draw(Actor* thisx, PlayState* play) {
     OceffWipe5* this = (OceffWipe5*)thisx;
     f32 z;
     s32 pad;
@@ -1342,7 +1342,7 @@ void OceffWipe5_Draw(Actor* thisx, PlayState* play) {
 extern Gfx gOceff6DL[];
 extern AnimatedMaterial ovl_Oceff_Wipe6_Matanimheader_000338[];
 
-void OceffWipe6_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe6_Draw(Actor* thisx, PlayState* play) {
     OceffWipe6* this = (OceffWipe6*)thisx;
     f32 z;
     u8 alpha;
@@ -1394,7 +1394,7 @@ void OceffWipe6_Draw(Actor* thisx, PlayState* play) {
 extern Gfx sSongOfHealingEffectFrustumDL[];
 extern AnimatedMaterial sSongofHealingEffectTexAnim[];
 
-void OceffWipe7_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void OceffWipe7_Draw(Actor* thisx, PlayState* play) {
     OceffWipe7* this = (OceffWipe7*)thisx;
     f32 z;
     u8 alpha;
@@ -1445,7 +1445,7 @@ extern AnimatedMaterial object_stk2_Matanimheader_009F60[];
 
 // @recomp Patch the Skull Kid curse effect as well, which works similarly to the ocarina effects.
 // In this case, the patch also includes effect transform tagging patches.
-void EffStk_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EffStk_Draw(Actor* thisx, PlayState* play) {
     EffStk* this = (EffStk*)thisx;
     s32 pad;
     Camera* activeCam = GET_ACTIVE_CAM(play);

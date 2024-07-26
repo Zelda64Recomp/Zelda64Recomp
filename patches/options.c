@@ -65,11 +65,11 @@ void FileSelect_DrawFileInfo(GameState *thisx, s16 fileIndex);
 void FileSelect_SplitNumber(u16 value, u16 *hundreds, u16 *tens, u16 *ones);
 
 // @recomp The options button is now the quit button, so close recomp instead of opening the options.
-void FileSelect_RotateToOptions(GameState* thisx) {
+RECOMP_PATCH void FileSelect_RotateToOptions(GameState* thisx) {
     recomp_exit();
 }
 
-void FileSelect_Init(GameState* thisx) {
+RECOMP_PATCH void FileSelect_Init(GameState* thisx) {
     s32 pad;
     FileSelectState* this = (FileSelectState*)thisx;
     size_t size;
@@ -109,7 +109,7 @@ void FileSelect_Init(GameState* thisx) {
 }
 
 
-void FileSelect_SetWindowContentVtx(GameState *thisx) {
+RECOMP_PATCH void FileSelect_SetWindowContentVtx(GameState *thisx) {
     FileSelectState *this = (FileSelectState *)thisx;
     u16 vtxId;
     s16 j;
@@ -786,7 +786,7 @@ void FileSelect_SetWindowContentVtx(GameState *thisx) {
  * Draw most window contents including buttons, labels, and icons.
  * Does not include anything from the keyboard and settings windows.
  */
-void FileSelect_DrawWindowContents(GameState *thisx) {
+RECOMP_PATCH void FileSelect_DrawWindowContents(GameState *thisx) {
     FileSelectState *this = (FileSelectState *)thisx;
     s16 fileIndex;
     s16 temp;
@@ -991,7 +991,7 @@ void FileSelect_DrawWindowContents(GameState *thisx) {
     CLOSE_DISPS(this->state.gfxCtx);
 }
 
-void FileSelect_ConfirmFile(GameState *thisx) {
+RECOMP_PATCH void FileSelect_ConfirmFile(GameState *thisx) {
     FileSelectState *this = (FileSelectState *)thisx;
     Input *input = CONTROLLER1(&this->state);
 
@@ -1040,7 +1040,7 @@ void FileSelect_ConfirmFile(GameState *thisx) {
  * Load the save for the appropriate file and start the game.
  * Update function for `SM_LOAD_GAME`
  */
-void FileSelect_LoadGame(GameState* thisx) {
+RECOMP_PATCH void FileSelect_LoadGame(GameState* thisx) {
     FileSelectState* this = (FileSelectState*)thisx;
     u16 i;
 

@@ -7,7 +7,7 @@ static Vec3f sZeroVec = { 0.0f, 0.0f, 0.0f };
 
 extern RoomDrawHandler sRoomDrawHandlers[];
 
-void Room_Draw(PlayState* play, Room* room, u32 flags) {
+RECOMP_PATCH void Room_Draw(PlayState* play, Room* room, u32 flags) {
     if (room->segment != NULL) {
         gSegments[3] = OS_K0_TO_PHYSICAL(room->segment);
         
@@ -51,7 +51,7 @@ extern Gfx gKeikokuDemoTallTreeStraightDL[];
 extern Gfx gKeikokuDemoTallTreeStraightEmptyDL[];
 
 // @recomp Tag the ground in the intro cutscene to not interpolate rotation.
-void DmOpstage_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void DmOpstage_Draw(Actor* thisx, PlayState* play) {
     DmOpstage* this = (DmOpstage*)thisx;
 
     if (DMOPSTAGE_GET_TYPE(&this->dyna.actor) > DMOPSTAGE_TYPE_GROUND) {
@@ -130,7 +130,7 @@ extern s16 D_80AAAAC8;
 extern s16 D_80AAAACC;
 
 // @recomp Patched to enable vertex interpolation for the dynamic water as Woodfall temple rises from below the water.
-void DmChar01_Draw(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void DmChar01_Draw(Actor* thisx, PlayState* play) {
     // @recomp Move function statics to externs so they still get reset on overlay load like normal.
     DmChar01* this = (DmChar01*)thisx;
     f32 temp_f12;

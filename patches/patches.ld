@@ -7,12 +7,14 @@ MEMORY {
 }
 
 SECTIONS {
-    .ctors         : { *(.ctors*) *(.init_array*) } >extram AT >rom
-    .dtors         : { *(.dtors*)                 } >extram AT >rom
-    .text          : { *(.text*)                  } >extram AT >rom
-    .rodata        : { *(.rodata*)                } >extram AT >rom
-    .data          : { *(.data*)                  } >extram AT >rom
-    .bss  (NOLOAD) : { *(.bss*)  *(COMMON)        } >extram
+    .ctors         : { *(.ctors*) *(.init_array*)                } >extram AT >rom
+    .dtors         : { *(.dtors*)                                } >extram AT >rom
+    .text          : { *(.text*)                                 } >extram AT >rom
+    .recomp_patch  : { *(.recomp_patch*) *(.recomp_force_patch*) } >extram AT >rom
+    .recomp_export : { *(.recomp_export*)                        } >extram AT >rom
+    .rodata        : { *(.rodata*)                               } >extram AT >rom
+    .data          : { *(.data*)                                 } >extram AT >rom
+    .bss  (NOLOAD) : { *(.bss*)  *(COMMON)                       } >extram
     ASSERT(. < RAMBASE + EXTRA_RAM_SIZE, "Maxed out recomp extra ram")
     
     .reloc 0 : { *(.reloc*) }

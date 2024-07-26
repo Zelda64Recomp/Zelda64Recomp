@@ -8,7 +8,7 @@ s32 SysFlashrom_IsInit(void);
 void Sleep_Msec(u32 ms);
 
 // @recomp Patched to not wait a hardcoded amount of time for the save to complete.
-void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
+RECOMP_PATCH void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
     if (sramCtx->status == 2) {
         if (SysFlashrom_IsBusy() != 0) {          // if task running
             if (SysFlashrom_AwaitResult() == 0) { // wait for task done
@@ -26,7 +26,7 @@ void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
 }
 
 // @recomp Patched to not wait a hardcoded amount of time for the save to complete.
-void Sram_UpdateWriteToFlashOwlSave(SramContext* sramCtx) {
+RECOMP_PATCH void Sram_UpdateWriteToFlashOwlSave(SramContext* sramCtx) {
     if (sramCtx->status == 7) {
         if (SysFlashrom_IsBusy() != 0) {          // Is task running
             if (SysFlashrom_AwaitResult() == 0) { // Wait for task done

@@ -13,7 +13,7 @@ extern Gfx gEffDustDL[];
     ((&(particle).unk_1C)[1])
 
 // @recomp Patched to record when a particle is moved to skip interpolation.
-void func_808DC454(ObjectKankyo* this, PlayState* play) {
+RECOMP_PATCH void func_808DC454(ObjectKankyo* this, PlayState* play) {
     s16 i;
     s32 pad1;
     f32 phi_f20;
@@ -155,7 +155,7 @@ void func_808DC454(ObjectKankyo* this, PlayState* play) {
     }
 }
 
-void func_808DD3C8(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void func_808DD3C8(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     ObjectKankyo* this = (ObjectKankyo*)thisx;
     Vec3f worldPos;
@@ -331,7 +331,7 @@ static inline void pop_effect_tag(GraphicsContext* gfxCtx) {
 }
 
 // @recomp Patched to tag effects.
-void Effect_DrawAll(GraphicsContext* gfxCtx) {
+RECOMP_PATCH void Effect_DrawAll(GraphicsContext* gfxCtx) {
     s32 i;
 
 
@@ -442,7 +442,7 @@ static TexturePtr sWaterSplashTextures[] = {
  * applies to all effects of that type while drawing the first effect of that type.
  */
 // @recomp Patched to tag matrices.
-void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
+RECOMP_PATCH void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
     u8 isMaterialApplied = false;
     s16 i;
     s16 j;
@@ -694,7 +694,7 @@ void EnClearTag_DrawEffects(Actor* thisx, PlayState* play) {
 }
 
 // @recomp Patched to tag the two custom lens flares (used by the Igos du Ikana curtains).
-void Environment_DrawCustomLensFlare(PlayState* play) {
+RECOMP_PATCH void Environment_DrawCustomLensFlare(PlayState* play) {
     Vec3f pos;
 
     // @recomp Set up the graphics context.
@@ -739,7 +739,7 @@ void Environment_DrawCustomLensFlare(PlayState* play) {
 }
 
 // @recomp Patched to tag the sun lens flare.
-void Environment_DrawSunLensFlare(PlayState* play, EnvironmentContext* envCtx, View* view, GraphicsContext* gfxCtx,
+RECOMP_PATCH void Environment_DrawSunLensFlare(PlayState* play, EnvironmentContext* envCtx, View* view, GraphicsContext* gfxCtx,
                                   Vec3f vec) {
     if ((play->envCtx.precipitation[PRECIP_RAIN_CUR] == 0) &&
         !(GET_ACTIVE_CAM(play)->stateFlags & CAM_STATE_UNDERWATER) && (play->skyboxId == SKYBOX_NORMAL_SKY)) {

@@ -9,7 +9,7 @@ void controls_play_update(PlayState* play) {
 }
 
 // @recomp Patched to add hooks for various added functionality.
-void Play_Main(GameState* thisx) {
+RECOMP_PATCH void Play_Main(GameState* thisx) {
     static Input* prevInput = NULL;
     PlayState* this = (PlayState*)thisx;
 
@@ -54,7 +54,7 @@ void Play_Main(GameState* thisx) {
 }
 
 // @recomp Patched to add load a hook for loading rooms.
-s32 Room_HandleLoadCallbacks(PlayState* play, RoomContext* roomCtx) {
+RECOMP_PATCH s32 Room_HandleLoadCallbacks(PlayState* play, RoomContext* roomCtx) {
     if (roomCtx->status == 1) {
         if (osRecvMesg(&roomCtx->loadQueue, NULL, OS_MESG_NOBLOCK) == 0) {
             roomCtx->status = 0;

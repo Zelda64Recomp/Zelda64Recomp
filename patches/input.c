@@ -11,7 +11,7 @@ s16 func_80832754(Player* this, s32 arg1);
 s32 func_8082EF20(Player* this);
 
 // @recomp Patched to add gyro and mouse aiming.
-s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
+RECOMP_PATCH s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
     s32 pad;
     s16 var_s0;
     // @recomp Get the aiming camera inversion state.
@@ -147,7 +147,7 @@ extern Input* sPlayerControlInput;
  * - B exits, using the RESPAWN_MODE_DOWN entrance
  */
 // @recomp Patched for aiming inversion and supporting the right stick in dual analog.
-void func_8083A98C(Actor* thisx, PlayState* play2) {
+RECOMP_PATCH void func_8083A98C(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     Player* this = (Player*)thisx;
     s32 camMode;
@@ -351,7 +351,7 @@ u8* get_button_item_equip_ptr(u32 form, u32 button) {
 }
 
 // Return currently-pressed button, in order of priority D-Pad, B, CLEFT, CDOWN, CRIGHT.
-EquipSlot func_8082FDC4(void) {
+RECOMP_PATCH EquipSlot func_8082FDC4(void) {
     EquipSlot i;
 
     for (int extra_slot_index = 0; extra_slot_index < ARRAY_COUNT(buttons_to_extra_slot); extra_slot_index++) {
@@ -369,7 +369,7 @@ EquipSlot func_8082FDC4(void) {
     return i;
 }
 
-ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
+RECOMP_PATCH ItemId Player_GetItemOnButton(PlayState* play, Player* player, EquipSlot slot) {
     if (slot >= EQUIP_SLOT_A) {
         return ITEM_NONE;
     }
@@ -444,7 +444,7 @@ bool func_808323C0(Player *this, s16 csId);
 void func_80855218(PlayState *play, Player *this, struct_8085D910 **arg2);
 void func_808550D0(PlayState *play, Player *this, f32 arg2, f32 arg3, s32 arg4);
 
-void Player_Action_86(Player *this, PlayState *play) {
+RECOMP_PATCH void Player_Action_86(Player *this, PlayState *play) {
     struct_8085D910 *sp4C = D_8085D910;
     s32 sp48 = false;
 
@@ -540,7 +540,7 @@ extern void* gWorkBuffer;
 u16 func_801A5100(void);
 
 // @recomp Patched to update status of extra buttons via set_extra_item_slot_status.
-void Interface_UpdateButtonsPart1(PlayState* play) {
+RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     Player* player = GET_PLAYER(play);
     s32 pad;
@@ -807,7 +807,7 @@ void Interface_UpdateButtonsPart1(PlayState* play) {
  * Also used directly when opening the pause menu i.e. skips part 1
  */
 // @recomp Patched in the same way as Interface_UpdateButtonsPart1
-void Interface_UpdateButtonsPart2(PlayState* play) {
+RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
     MessageContext* msgCtx = &play->msgCtx;
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     Player* player = GET_PLAYER(play);
@@ -1300,7 +1300,7 @@ void Interface_UpdateButtonsPart2(PlayState* play) {
  * Sets the button alphas to be dimmed for disabled buttons, or to the requested alpha for non-disabled buttons
  */
 // @recomp Patched to also set extra slot alpha values.
-void Interface_UpdateButtonAlphasByStatus(PlayState* play, s16 risingAlpha) {
+RECOMP_PATCH void Interface_UpdateButtonAlphasByStatus(PlayState* play, s16 risingAlpha) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
 
     if ((gSaveContext.buttonStatus[EQUIP_SLOT_B] == BTN_DISABLED) || (gSaveContext.bButtonStatus == BTN_DISABLED)) {
@@ -1373,7 +1373,7 @@ void Interface_UpdateButtonAlphasByStatus(PlayState* play, s16 risingAlpha) {
  * depending on button status
  */
 // @recomp Patched to also set extra slot alpha values.
-void Interface_UpdateButtonAlphas(PlayState* play, s16 dimmingAlpha, s16 risingAlpha) {
+RECOMP_PATCH void Interface_UpdateButtonAlphas(PlayState* play, s16 dimmingAlpha, s16 risingAlpha) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
 
     if (gSaveContext.hudVisibilityForceButtonAlphasByStatus) {
@@ -1410,7 +1410,7 @@ void Interface_UpdateButtonAlphas(PlayState* play, s16 dimmingAlpha, s16 risingA
 }
 
 // @recomp Patched to also set extra slot alpha values.
-void Interface_UpdateHudAlphas(PlayState* play, s16 dimmingAlpha) {
+RECOMP_PATCH void Interface_UpdateHudAlphas(PlayState* play, s16 dimmingAlpha) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     s16 risingAlpha = 255 - dimmingAlpha;
 
@@ -2336,7 +2336,7 @@ extern s8 sOcarinaInstrumentId;
 extern f32 AudioOcarina_BendPitchTwoSemitones(s8 bendIndex);
 
 // @recomp Patch the function in order to read DPad inputs for the ocarina as well as CButton inputs. 
-void AudioOcarina_PlayControllerInput(u8 isOcarinaSfxSuppressedWhenCancelled) {
+RECOMP_PATCH void AudioOcarina_PlayControllerInput(u8 isOcarinaSfxSuppressedWhenCancelled) {
     u32 ocarinaBtnsHeld;
 
     // Prevents two different ocarina notes from being played on two consecutive frames
@@ -2453,7 +2453,7 @@ extern void AudioOcarina_CheckIfStartedSong(void);
 extern void AudioOcarina_UpdateCurOcarinaSong(void);
 
 // @recomp Patch the L button check (for free ocarina playing) to account for DPad ocarina.
-void AudioOcarina_CheckSongsWithoutMusicStaff(void) {
+RECOMP_PATCH void AudioOcarina_CheckSongsWithoutMusicStaff(void) {
     u32 pitch;
     u8 ocarinaStaffPlayingPosStart;
     u8 songIndex;
@@ -2528,7 +2528,7 @@ extern bool get_analog_cam_active();
 extern void skip_analog_cam_once();
 
 // @recomp Updates yaw while inside of deku flower.
-void func_80855F9C(PlayState* play, Player* this) {
+RECOMP_PATCH void func_80855F9C(PlayState* play, Player* this) {
     f32 speedTarget;
     s16 yawTarget;
 
@@ -2553,7 +2553,7 @@ extern void Player_Action_4(Player* this, PlayState* play);
 extern s32 Player_SetAction(PlayState* play, Player* this, PlayerActionFunc actionFunc, s32 arg3);
 extern LinkAnimationHeader gPlayerAnim_pg_maru_change;
 
-s32 func_80857950(PlayState* play, Player* this) {
+RECOMP_PATCH s32 func_80857950(PlayState* play, Player* this) {
     // @recomp track if newly going from non-spike roll to spike roll (spike rolling when this->unk_B86[1] == 1)
     static bool wasOff = true;
     bool isOff = this->unk_B86[1] == 0;
@@ -2597,7 +2597,7 @@ extern void func_8082DC38(Player* this);
 extern void func_80836A5C(Player* this, PlayState* play);
 
 // @recomp Patch the shielding function to respect the aiming axis inversion setting.
-void Player_Action_18(Player* this, PlayState* play) {
+RECOMP_PATCH void Player_Action_18(Player* this, PlayState* play) {
     func_80832F24(this);
 
     if (this->transformation == PLAYER_FORM_GORON) {

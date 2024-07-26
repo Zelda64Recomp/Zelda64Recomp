@@ -95,7 +95,7 @@ void force_camera_ignore_tracking() {
     camera_ignore_tracking = true;
 }
 
-void KaleidoScope_SetView(PauseContext* pauseCtx, f32 eyeX, f32 eyeY, f32 eyeZ) {
+RECOMP_PATCH void KaleidoScope_SetView(PauseContext* pauseCtx, f32 eyeX, f32 eyeY, f32 eyeZ) {
     Vec3f eye;
     Vec3f at;
     Vec3f up;
@@ -117,7 +117,7 @@ void KaleidoScope_SetView(PauseContext* pauseCtx, f32 eyeX, f32 eyeY, f32 eyeZ) 
 }
 
 
-void FileSelect_SetView(FileSelectState* this, f32 eyeX, f32 eyeY, f32 eyeZ) {
+RECOMP_PATCH void FileSelect_SetView(FileSelectState* this, f32 eyeX, f32 eyeY, f32 eyeZ) {
     Vec3f eye;
     Vec3f lookAt;
     Vec3f up;
@@ -197,7 +197,7 @@ bool should_interpolate_perspective(Vec3f* eye, Vec3f* at) {
 /**
  * Apply view to POLY_OPA_DISP, POLY_XLU_DISP (and OVERLAY_DISP if ortho)
  */
-void View_Apply(View* view, s32 mask) {
+RECOMP_PATCH void View_Apply(View* view, s32 mask) {
     mask = (view->flags & mask) | (mask >> 4);
     
     // @recomp Determine if the camera should be interpolated this frame.
@@ -292,7 +292,7 @@ Vec3f Camera_Vec3sToVec3f(Vec3s* src);
  * Used for many fixed-based camera settings i.e. camera is fixed in rotation, and often position (but not always)
  */
 // @recomp Modified to not force interpolation while panning.
-s32 Camera_Fixed1(Camera* camera) {
+RECOMP_PATCH s32 Camera_Fixed1(Camera* camera) {
     s32 pad[2];
     s32 yawDiff;
     VecGeo eyeOffset;

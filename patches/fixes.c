@@ -25,7 +25,7 @@ s16 sVtxPageGameOverSaveQuadsY[VTX_PAGE_SAVE_QUADS] = {
 };
 
 // @recomp patched to draw as strips with bilerp compensation instead of tiles.
-s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 numQuads) {
+RECOMP_PATCH s16 KaleidoScope_SetPageVertices(PlayState* play, Vtx* vtx, s16 vtxPage, s16 numQuads) {
     PauseContext* pauseCtx = &play->pauseCtx;
     GameOverContext* gameOverCtx = &play->gameOverCtx;
     s16* quadsX;
@@ -204,7 +204,7 @@ void KaleidoDrawWrapper(PlayState* play) {
     }
 }
 
-void KaleidoScopeCall_Init(PlayState* play) {
+RECOMP_PATCH void KaleidoScopeCall_Init(PlayState* play) {
     // @recomp Set the update and draw func pointers to the wrappers instead of the actual functions.
     sKaleidoScopeUpdateFunc = KaleidoUpdateWrapper;
     sKaleidoScopeDrawFunc = KaleidoDrawWrapper;
@@ -212,7 +212,7 @@ void KaleidoScopeCall_Init(PlayState* play) {
 }
 
 // @recomp patched to fix bilerp seams.
-Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures) {
+RECOMP_PATCH Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, TexturePtr* textures) {
     s32 i;
     s32 j;
 
@@ -264,7 +264,7 @@ int extra_vis = 0;
 
 // @recomp Patch the giants cutscene to make certain frames take longer to mimic performance on console.
 // This prevents the music from desyncing from the cutscene as it was designed around the console's frame times.
-void Cutscene_UpdateScripted(PlayState* play, CutsceneContext* csCtx) {
+RECOMP_PATCH void Cutscene_UpdateScripted(PlayState* play, CutsceneContext* csCtx) {
     if ((gSaveContext.cutsceneTrigger != 0) && (play->transitionTrigger == TRANS_TRIGGER_START)) {
         gSaveContext.cutsceneTrigger = 0;
     }
@@ -297,7 +297,7 @@ void Cutscene_UpdateScripted(PlayState* play, CutsceneContext* csCtx) {
 }
 
 // @recomp Fix a texture scroll using an incorrect tile size, which resulted in the scroll jumping during the animation.
-s32 DemoEffect_OverrideLimbDrawTimewarp(PlayState* play, SkelCurve* skelCurve, s32 limbIndex, Actor* thisx) {
+RECOMP_PATCH s32 DemoEffect_OverrideLimbDrawTimewarp(PlayState* play, SkelCurve* skelCurve, s32 limbIndex, Actor* thisx) {
     s32 pad;
     DemoEffect* this = (DemoEffect*)thisx;
     u32 frames = play->gameplayFrames;
@@ -333,7 +333,7 @@ void DayTelop_Noop(DayTelopState* this);
 void DayTelop_LoadGraphics(DayTelopState* this);
 
 // @recomp Increase the length of the "Dawn of the X Day" screen to account for faster loading.
-void DayTelop_Init(GameState* thisx) {
+RECOMP_PATCH void DayTelop_Init(GameState* thisx) {
     DayTelopState* this = (DayTelopState*)thisx;
 
     GameState_SetFramerateDivisor(&this->state, 1);
@@ -371,7 +371,7 @@ void func_80836A5C(Player* this, PlayState* play);
 s32 func_8082DA90(PlayState* play);
 
 // @recomp Patched to fix the issue where ocarina inputs are discarded for the first 3 frames (150ms).
-void Player_Action_63(Player* this, PlayState* play) {
+RECOMP_PATCH void Player_Action_63(Player* this, PlayState* play) {
     if ((this->unk_AA5 != PLAYER_UNKAA5_4) && ((PlayerAnimation_Update(play, &this->skelAnime) &&
                                                 (this->skelAnime.animation == D_8085D17C[this->transformation])) ||
                                                ((this->skelAnime.mode == 0) && (this->av2.actionVar2 == 0)))) {

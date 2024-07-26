@@ -34,7 +34,7 @@ typedef enum {
     /* 2 */ VOICE_INIT_SUCCESS // voice initialized
 } VoiceInitStatus;
 
-void PadMgr_HandleRetrace(void) {
+RECOMP_PATCH void PadMgr_HandleRetrace(void) {
     // Execute rumble callback
     if (sPadMgrInstance->rumbleRetraceCallback != NULL) {
         sPadMgrInstance->rumbleRetraceCallback(sPadMgrInstance->rumbleRetraceArg);
@@ -113,7 +113,7 @@ void poll_inputs(void) {
 }
 
 // @recomp Patched to do the actual input polling.
-void PadMgr_GetInput(Input* inputs, s32 gameRequest) {
+RECOMP_PATCH void PadMgr_GetInput(Input* inputs, s32 gameRequest) {
     // @recomp Do an actual poll if gameRequest is true.
     if (gameRequest) {
         poll_inputs();
@@ -126,7 +126,7 @@ void PadMgr_GetInput(Input* inputs, s32 gameRequest) {
 }
 
 // @recomp Just call PadMgr_GetInput.
-void PadMgr_GetInput2(Input* inputs, s32 gameRequest) {
+RECOMP_PATCH void PadMgr_GetInput2(Input* inputs, s32 gameRequest) {
     PadMgr_GetInput(inputs, gameRequest);
 }
 
@@ -138,7 +138,7 @@ void* osViGetCurrentFramebuffer_recomp();
 OSMesgQueue *rdp_queue_ptr = NULL;
 
 // @recomp Immediately sends the graphics task instead of queueing it in the scheduler.
-void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
+RECOMP_PATCH void Graph_TaskSet00(GraphicsContext* gfxCtx, GameState* gameState) {
     static s32 retryCount = 10;
     static s32 cfbIdx = 0;
     OSTask_t* task = &gfxCtx->task.list.t;
@@ -271,7 +271,7 @@ extern VisZbuf sGameVisZbuf;
 extern VisMono sGameVisMono;
 extern ViMode sGameViMode;
 
-void GameState_Destroy(GameState* gameState) {
+RECOMP_PATCH void GameState_Destroy(GameState* gameState) {
     AudioMgr_StopAllSfxExceptSystem();
     Audio_Update();
 
