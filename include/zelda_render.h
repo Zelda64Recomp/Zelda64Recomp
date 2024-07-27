@@ -26,9 +26,11 @@ namespace zelda64 {
             uint32_t get_display_framerate() const override;
             float get_resolution_scale() const override;
             void load_shader_cache(std::span<const char> cache_binary) override;
+            bool load_texture_packs();
 
         protected:
             std::unique_ptr<RT64::Application> app;
+            bool texture_packs_checked = false;
         };
 
         std::unique_ptr<ultramodern::renderer::RendererContext> create_render_context(uint8_t *rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode);
