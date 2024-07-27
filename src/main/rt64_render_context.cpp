@@ -8,6 +8,7 @@
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
 
+#include "zelda_config.h"
 #include "zelda_render.h"
 #include "recomp_ui.h"
 
@@ -285,7 +286,46 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
 
 zelda64::renderer::RT64Context::~RT64Context() = default;
 
+bool zelda64::renderer::RT64Context::load_texture_packs() {
+    const std::u8string RTZExtension(u8".rtz");
+    std::filesystem::path mods_folder_path = zelda64::get_app_folder_path() / "mods" / "mm";
+    if (!std::filesystem::exists(mods_folder_path)) {
+        return true;
+    }
+
+    std::vector<RT64::ReplacementDirectory> replacement_directories;
+    for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(mods_folder_path)) {
+        if (!entry.is_regular_file()) {
+            continue;
+        }
+
+        std::filesystem::path path = entry.path();
+        std::u8string ext = path.extension().u8string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), [](char8_t c) { return std::tolower(c); });
+        if (ext != RTZExtension) {
+            continue;
+        }
+
+        replacement_directories.emplace_back(path);
+    }
+
+    if (!replacement_directories.empty()) {
+        return app->textureCache->loadReplacementDirectories(replacement_directories);
+    }
+    else {
+        return true;
+    }
+}
+
 void zelda64::renderer::RT64Context::send_dl(const OSTask* task) {
+    if (!texture_packs_checked) {
+        if (!load_texture_packs()) {
+            ultramodern::error_handling::message_box("One or more texture packs could not be loaded successfully. Make sure the files are not corrupt.\n\nNo texture packs will be loaded in the game.");
+        }
+
+        texture_packs_checked = true;
+    }
+
     app->state->rsp->reset();
     app->interpreter->loadUCodeGBI(task->t.ucode & 0x3FFFFFF, task->t.ucode_data & 0x3FFFFFF, true);
     app->processDisplayLists(app->core.RDRAM, task->t.data_ptr & 0x3FFFFFF, 0, true);
