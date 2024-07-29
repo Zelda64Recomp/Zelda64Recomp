@@ -448,7 +448,7 @@ bool preload_executable(PreloadContext& context) {
 
     context.mapping_handle = CreateFileMappingW(context.handle, nullptr, PAGE_READONLY, 0, 0, nullptr);
     if (context.mapping_handle == nullptr) {
-        recompui::message_box("Failed to create file mapping of executable!");
+        fprintf(stderr, "Failed to create file mapping of executable!");
         CloseHandle(context.handle);
         context = {};
         return EXIT_FAILURE;
