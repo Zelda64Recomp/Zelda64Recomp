@@ -15,10 +15,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pr_number=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.event.pull_request.head.repo.full_name }}/commits/${{ github.event.workflow_run.head_sha }}/pulls \
-            --jq '.[0].number')
+          # Get list of PR's associated to the commit that triggered the workflow run
+          prs=$(gh api \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.event.pull_request.head.repo.full_name  }}/commits/${{ github.event.workflow_run.head_sha }}/pulls)
+        
+          # Find the PR against the current repo
+          pr_number=$(echo "$prs" | jq -r '.[] | select(.base.repo.full_name == "${{ github.repository }}") | .number' | head -n1)
           
           if [ -z "$pr_number" ]; then
             echo "No pull request found for this workflow run"
