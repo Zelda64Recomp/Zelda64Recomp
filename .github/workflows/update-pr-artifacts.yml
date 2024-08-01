@@ -1,13 +1,13 @@
 name: update-pr-artifacts
 on:
   workflow_run:
-    workflows: [validate]
+    workflows: [validate-external, validate-internal]
     types:
       - completed
 jobs:
   update-pr-artifacts:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     name: Update PR Artifacts
     steps:
       - name: Get PR Number
