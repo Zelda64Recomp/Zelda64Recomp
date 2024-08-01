@@ -13,12 +13,10 @@ jobs:
       - name: Get PR Number
         id: pr-number
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get list of PR's associated to the commit that triggered the workflow run
-          prs=$(gh api \
-          -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.event.pull_request.head.repo.full_name  }}/commits/${{ github.event.workflow_run.head_sha }}/pulls)
+          prs=$(gh api -H "Accept: application/vnd.github+json" "/repos/${{ github.event.pull_request.head.repo.full_name  }}/commits/${{ github.event.workflow_run.head_sha }}/pulls")
         
           # Find the PR against the current repo
           pr_number=$(echo "$prs" | jq -r '.[] | select(.base.repo.full_name == "${{ github.repository }}") | .number' | head -n1)
