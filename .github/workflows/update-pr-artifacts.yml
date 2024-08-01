@@ -7,32 +7,39 @@ on:
 jobs:
   update-pr-artifacts:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    if: (github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'pull_request_target') && github.event.workflow_run.conclusion == 'success'
     name: Update PR Artifacts
     steps:
       - name: Get PR Number
         id: pr-number
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Get list of PR's associated to the commit that triggered the workflow run
-          prs=$(gh api \
-          -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.event.pull_request.head.repo.full_name  }}/commits/${{ github.event.workflow_run.head_sha }}/pulls)
-        
-          # Find the PR against the current repo
-          pr_number=$(echo "$prs" | jq -r '.[] | select(.base.repo.full_name == "${{ github.repository }}") | .number' | head -n1)
-          
-          if [ -z "$pr_number" ]; then
-            echo "No pull request found for this workflow run"
-            exit 1
-          else
-            echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
-            echo "PR number: $pr_number"
-          fi
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const { owner, repo } = context.repo;
+            
+            const findPRNumber = async () => {
+              const pulls = await github.rest.pulls.list({ owner, repo });
+              for await (const { data } of github.paginate.iterator(pulls)) {
+                for (const pull of data) {
+                  if (pull.head.sha === '${{ github.event.workflow_run.head_sha }}' && pull.user.id === ${{ github.event.sender.id }}) {
+                    return pull.number;
+                  }
+                }
+              }
+
+              return null;
+            };
+
+            const prNumber = await findPRNumber();
+            if (!prNumber) {
+              core.error(`No matching pull request found`);
+            } else {
+              return prNumber;
+            }
       - name: Create Artifacts Content
         id: artifacts-content
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
           result-encoding: string
           script: |
@@ -53,5 +60,5 @@ jobs:
         with:
             section-name: 'artifacts'
             repo-token: '${{ secrets.GITHUB_TOKEN }}'
-            pr-number: ${{ steps.pr-number.outputs.pr_number }}
+            pr-number: ${{ steps.pr-number.outputs.result }}
             section-value: '${{ steps.artifacts-content.outputs.result }}'
