@@ -24,7 +24,7 @@ jobs:
                 for (const pull of data) {
                   console.log(pull.head);
                   console.log(pull.user);
-                  if (pull.head.sha === '${{ github.event.workflow_run.head_sha }}' && pull.user.id === '${{ github.event.sender.id }}') {
+                  if (pull.head.sha === '${{ github.event.workflow_run.head_sha }}' && pull.user.id === ${{ github.event.sender.id }}) {
                     return pull.number;
                   }
                 }
