@@ -1,0 +1,57 @@
+name: update-pr-artifacts
+on:
+  workflow_run:
+    workflows: [validate]
+    types:
+      - completed
+jobs:
+  update-pr-artifacts:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    name: Update PR Artifacts
+    steps:
+      - name: Get PR Number
+        id: pr-number
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get list of PR's associated to the commit that triggered the workflow run
+          prs=$(gh api \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.event.pull_request.head.repo.full_name  }}/commits/${{ github.event.workflow_run.head_sha }}/pulls)
+        
+          # Find the PR against the current repo
+          pr_number=$(echo "$prs" | jq -r '.[] | select(.base.repo.full_name == "${{ github.repository }}") | .number' | head -n1)
+          
+          if [ -z "$pr_number" ]; then
+            echo "No pull request found for this workflow run"
+            exit 1
+          else
+            echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
+            echo "PR number: $pr_number"
+          fi
+      - name: Create Artifacts Content
+        id: artifacts-content
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            
+            const nightlyLinks = artifacts.data.artifacts.reduce((acc, item) => {
+              acc += `- [${item.name}.zip](https://nightly.link/${context.repo.owner}/${context.repo.repo}/actions/artifacts/${item.id}.zip)\n`;
+              return acc;
+            }, '### Build Artifacts\n');
+      
+            return nightlyLinks;
+      - name: Update PR Description
+        uses: garrettjoecox/pr-section@3.1.0
+        with:
+            section-name: 'artifacts'
+            repo-token: '${{ secrets.GITHUB_TOKEN }}'
+            pr-number: ${{ steps.pr-number.outputs.pr_number }}
+            section-value: '${{ steps.artifacts-content.outputs.result }}'
