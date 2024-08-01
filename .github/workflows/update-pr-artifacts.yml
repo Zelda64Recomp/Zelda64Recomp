@@ -17,7 +17,7 @@ jobs:
         run: |
           pr_number=$(gh api \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}/pulls \
+            /repos/${{ github.event.pull_request.head.repo.full_name }}/commits/${{ github.event.workflow_run.head_sha }}/pulls \
             --jq '.[0].number')
           
           if [ -z "$pr_number" ]; then
