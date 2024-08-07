@@ -266,6 +266,9 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
     // Set the application's fullscreen state.
     app->setFullScreen(cur_config.wm_option == ultramodern::renderer::WindowMode::Fullscreen);
 
+    // Default to ubershaders being visible to visualize the shader compilation time.
+    app->workloadQueue->ubershadersVisible = true;
+
     // Check if the selected device actually supports MSAA sample positions and MSAA for for the formats that will be used
     // and downgrade the configuration accordingly.
     if (app->device->getCapabilities().sampleLocations) {
