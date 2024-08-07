@@ -13,7 +13,7 @@ public:
 	ElementOptionType(const Rml::String& tag, const std::string& base_class);
 	virtual ~ElementOptionType();
 
-    std::string config_key;
+	std::string config_key;
 };
 
 } // namespace recompui
