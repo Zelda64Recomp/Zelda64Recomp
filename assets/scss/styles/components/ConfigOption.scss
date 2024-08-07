@@ -319,7 +319,7 @@
     tab-index: none;
 }
 
-.config-option-dropdown {
+.config-option-dropdown, .config-option-textfield {
     display: flex;
     position: relative;
     flex: 1 1 100%;
@@ -327,28 +327,47 @@
     align-items: center;
     justify-content: flex-start;
     width: auto;
-    max-width: space(500);
     height: auto;
-    padding: space(8) space(12);
+    padding: space(8) space(24) space(8) space(12);
 
     &__select {
+        display: block;
+        height: space(48);
+        padding: space(14);
+        cursor: pointer;
+    }
+
+    &__wrapper {
+        // Cursed guess & check so that this appears to be the same height as the select
+        $extra-space: 2;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        height: auto;
+        padding: space(0 + $extra-space) 0 space(10 + $extra-space);
+        cursor: text;
+
+        input {
+            width: 100%;
+            height: auto;
+            vertical-align: middle;
+        }
+    }
+
+    &__select, &__wrapper {
         @extend %body;
         @extend %nav-all;
         @include trans-colors-border;
         @include border($color-white-a50);
-        display: block;
         position: relative;
         box-sizing: border-box;
         flex: 1 1 100%;
 
-        align-items: center;
-        justify-content: flex-start;
         width: auto;
-        height: space(48);
-        padding: space(14);
         border-radius: $border-radius-md;
         background-color: $color-white-a5;
-        cursor: pointer;
 
         &:hover, &:focus {
             @include border($color-white-a80);

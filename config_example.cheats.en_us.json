@@ -25,7 +25,8 @@
     "gameplay/movement/always_quickspin:description": "Always <b>quickspin</b> whenever using your <i>sword</i> and in a <i>state</i> where <i>you</i> can <b>quickspin.</b><br /><br />yeah...",
     "gameplay/movement/heart_color": "Hearts color",
     "gameplay/movement/link_size": "Link's Size",
-
+    "gameplay/movement/link_name": "Link's Name",
+    "gameplay/movement/link_name:description": "Change Link's name to something silly!",
     "gameplay/abilities": "Abilities",
     "gameplay/abilities/fd_anywhere": "Fierce Deity Anywhere",
     "gameplay/abilities/permanent_razor_sword": "Permanent Razor Sword",
