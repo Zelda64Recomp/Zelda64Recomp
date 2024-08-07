@@ -11,6 +11,7 @@
 #include "elements/ElementOptionTypeDropdown.h"
 #include "elements/ElementOptionTypeRadioTabs.h"
 #include "elements/ElementOptionTypeRange.h"
+#include "elements/ElementOptionTypeTextField.h"
 #include "elements/ElementDescription.h"
 
 namespace recompui {

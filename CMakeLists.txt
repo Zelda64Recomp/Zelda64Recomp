@@ -169,6 +169,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeDropdown.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRadioTabs.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRange.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeTextField.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
     ${CMAKE_SOURCE_DIR}/rsp/njpgdspMain.cpp

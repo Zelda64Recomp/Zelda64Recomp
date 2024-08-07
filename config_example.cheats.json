@@ -28,7 +28,8 @@
             {
                 "type": "Checkbox",
                 "key": "infinite_health",
-                "default": false
+                "default": false,
+                "onChange": "on_update_health"
             }
         ]
     },
@@ -87,6 +88,12 @@
                         "min": 20,
                         "max": 400,
                         "step": 20
+                    },
+                    {
+                        "type": "TextField",
+                        "key": "link_name",
+                        "default": "George",
+                        "maxlength": 10
                     }
                 ]
             },
