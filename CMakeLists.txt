@@ -138,16 +138,6 @@ add_custom_target(DownloadGameControllerDB
 add_executable(Zelda64Recompiled)
 add_dependencies(Zelda64Recompiled DownloadGameControllerDB)
 
-# Generate mm_shader_cache.c from the MM shader cache if it exists
-if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
-    set(HAS_MM_SHADER_CACHE TRUE)
-    target_compile_definitions(Zelda64Recompiled PRIVATE HAS_MM_SHADER_CACHE)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-        COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-        DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
-    )
-endif()
-
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp
@@ -173,10 +163,6 @@ set (SOURCES
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
-
-if (HAS_MM_SHADER_CACHE)
-    list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c)
-endif()
 
 target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/include
