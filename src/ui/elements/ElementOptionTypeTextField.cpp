@@ -32,7 +32,7 @@ Rml::ElementFormControlInput *ElementOptionTypeTextField::get_input()
 ElementOptionTypeTextField::~ElementOptionTypeTextField()
 {
     auto input_el = get_input();
-    RemoveEventListener(Rml::EventId::Change, this, false);
+    input_el->RemoveEventListener(Rml::EventId::Change, this, false);
 }
 
 void ElementOptionTypeTextField::init_option(std::string& _config_key) {

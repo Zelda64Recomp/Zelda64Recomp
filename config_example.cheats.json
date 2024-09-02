@@ -29,7 +29,19 @@
                 "type": "Checkbox",
                 "key": "infinite_health",
                 "default": false,
-                "onChange": "on_update_health"
+                "callback": "on_update_health"
+            }
+        ]
+    },
+    {
+        "type": "Group",
+        "key": "consumable_actions",
+        "options": [
+            {
+                "type": "Button",
+                "key": "refill_all",
+                "variant": "primary",
+                "callback": "on_refill_all"
             }
         ]
     },
