@@ -4,6 +4,10 @@
 
 extern Input D_801F6C18;
 
+RECOMP_DECLARE_EVENT(recomp_on_play_main(PlayState* play));
+RECOMP_DECLARE_EVENT(recomp_before_play_update(PlayState* play));
+RECOMP_DECLARE_EVENT(recomp_after_play_update(PlayState* play));
+
 void controls_play_update(PlayState* play) {
     gSaveContext.options.zTargetSetting = recomp_get_targeting_mode();
 }
@@ -12,6 +16,7 @@ void controls_play_update(PlayState* play) {
 RECOMP_PATCH void Play_Main(GameState* thisx) {
     static Input* prevInput = NULL;
     PlayState* this = (PlayState*)thisx;
+    recomp_on_play_main(this);
 
     // @recomp
     debug_play_update(this);
@@ -32,7 +37,9 @@ RECOMP_PATCH void Play_Main(GameState* thisx) {
             this->state.gfxCtx = NULL;
         }
         camera_pre_play_update(this);
+        recomp_before_play_update(this);
         Play_Update(this);
+        recomp_after_play_update(this);
         camera_post_play_update(this);
         analog_cam_post_play_update(this);
         autosave_post_play_update(this);

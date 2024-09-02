@@ -67,10 +67,10 @@ RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
 
 void Sram_SyncWriteToFlash(SramContext* sramCtx, s32 curPage, s32 numPages);
 
-void autosave_reset_timer();
-void autosave_reset_timer_slow();
+void recomp_reset_autosave_timer();
+void recomp_reset_autosave_timer_slow();
 
-void do_autosave(PlayState* play) {
+RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
     // Transfer the scene flags into the cycle flags.
     Play_SaveCycleSceneFlags(&play->state);
     // Transfer the cycle flags into the save buffer. Logic copied from func_8014546C.
@@ -176,7 +176,7 @@ RECOMP_PATCH void func_8014546C(SramContext* sramCtx) {
         // @recomp Delete the owl save.
         delete_owl_save(sramCtx, gSaveContext.fileNum);
         // @recomp Reset the autosave timer.
-        autosave_reset_timer();
+        recomp_reset_autosave_timer();
         for (i = 0; i < ARRAY_COUNT(gSaveContext.cycleSceneFlags); i++) {
             gSaveContext.save.saveInfo.permanentSceneFlags[i].chest = gSaveContext.cycleSceneFlags[i].chest;
             gSaveContext.save.saveInfo.permanentSceneFlags[i].switch0 = gSaveContext.cycleSceneFlags[i].switch0;
@@ -344,11 +344,11 @@ void draw_autosave_icon(PlayState* play) {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-void show_autosave_icon() {
+RECOMP_EXPORT void recomp_show_autosave_icon() {
     autosave_icon_counter = AUTOSAVE_ICON_TOTAL_FRAMES;
 }
 
-u32 recomp_autosave_interval() {
+RECOMP_EXPORT u32 recomp_autosave_interval() {
     return 2 * 60 * 1000;
 }
 
@@ -367,12 +367,12 @@ bool reached_final_three_hours() {
     return false;
 }
 
-void autosave_reset_timer() {
+RECOMP_EXPORT void recomp_reset_autosave_timer() {
     last_autosave_time = osGetTime();
     extra_autosave_delay_milliseconds = 0;
 }
 
-void autosave_reset_timer_slow() {
+RECOMP_EXPORT void recomp_reset_autosave_timer_slow() {
     // Set the most recent autosave time in the future to give extra time before an autosave triggers.
     last_autosave_time = osGetTime();
     extra_autosave_delay_milliseconds = 2 * 60 * 1000;
@@ -425,20 +425,20 @@ void autosave_post_play_update(PlayState* play) {
             frames_since_autosave_ready >= MIN_FRAMES_SINCE_READY &&
             time_now - last_autosave_time > (OS_USEC_TO_CYCLES(1000 * (recomp_autosave_interval() + extra_autosave_delay_milliseconds)))
         ) {
-            do_autosave(play);
-            show_autosave_icon();
-            autosave_reset_timer();
+            recomp_do_autosave(play);
+            recomp_show_autosave_icon();
+            recomp_reset_autosave_timer();
         }
     }
     else {
         // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on. 
-        autosave_reset_timer();
+        recomp_reset_autosave_timer();
     }
     gCanPause = false;
 }
 
 void autosave_init() {
-    autosave_reset_timer_slow();
+    recomp_reset_autosave_timer_slow();
     Lib_MemCpy(&prev_save_ctx, &gSaveContext, offsetof(SaveContext, fileNum));
 }
 
@@ -705,7 +705,7 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     gSaveContext.jinxTimer = 0;
 
     // @recomp Use the slow autosave timer to give the player extra time to respond to the moon crashing to decide if they want to reload their autosave.
-    autosave_reset_timer_slow();
+    recomp_reset_autosave_timer_slow();
 }
 
 
