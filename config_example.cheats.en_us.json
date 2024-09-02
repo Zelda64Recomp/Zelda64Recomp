@@ -7,6 +7,10 @@
     "consumables/infinite_bombs": "Infinite Bombs",
     "consumables/infinite_health": "Infinite Health",
 
+    "consumable_actions": "Consumable Actions",
+    "consumable_actions/refill_all": "primary",
+    "consumable_actions/refill_all:description": "Refills anything that can be refilled, like magic, rupees, arrows, bombs, health, etc.",
+
     "gameplay": "Gameplay",
 
     "gameplay/movement": "Movement",
