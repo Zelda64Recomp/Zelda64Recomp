@@ -27,6 +27,7 @@
 #include "zelda_render.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
+#include "librecomp/mods.hpp"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -327,6 +328,7 @@ std::vector<recomp::GameEntry> supported_games = {
         .rom_hash = 0xEF18B4A9E2386169ULL,
         .internal_name = "ZELDA MAJORA'S MASK",
         .game_id = u8"mm.n64.us.1.0",
+        .mod_game_id = "mm",
         .is_enabled = true,
         .entrypoint_address = get_entrypoint_address(),
         .entrypoint = recomp_entrypoint,
@@ -568,6 +570,8 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
     }
 
+    recomp::register_config_path(zelda64::get_app_folder_path());
+
     // Register supported games and patches
     for (const auto& game : supported_games) {
         recomp::register_game(game);
@@ -575,8 +579,6 @@ int main(int argc, char** argv) {
 
     zelda64::register_overlays();
     zelda64::register_patches();
-
-    recomp::register_config_path(zelda64::get_app_folder_path());
     zelda64::load_config();
 
     recomp::rsp::callbacks_t rsp_callbacks{
@@ -619,7 +621,10 @@ int main(int argc, char** argv) {
         .get_game_thread_name = zelda64::get_game_thread_name,
     };
 
+    recomp::mods::scan_mods();
+
     recomp::start(
+        64 * 1024 * 1024, // 64MB to have plenty of room for loading mods
         {},
         rsp_callbacks,
         renderer_callbacks,

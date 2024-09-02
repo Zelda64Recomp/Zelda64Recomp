@@ -1287,6 +1287,12 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     static recompui::Menu prev_menu = recompui::Menu::None;
     recompui::Menu cur_menu = open_menu.load();
 
+    // Return to the launcher if no menu is open and the game isn't started.
+    if (cur_menu == recompui::Menu::None && !ultramodern::is_game_started()) {
+        cur_menu = recompui::Menu::Launcher;
+        recompui::set_current_menu(cur_menu);
+    }
+
     if (reload_sheets) {
         ui_context->rml.load_documents();
         prev_menu = recompui::Menu::None;

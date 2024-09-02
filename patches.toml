@@ -14,3 +14,5 @@ data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zel
 output_binary_path = "patches/patches.bin"
 # Do not emit warnings for unpaired LO16 values, as clang produces many of them.
 unpaired_lo16_warnings = false
+# Allow exporting functions and events for mods to use. 
+allow_exports = true

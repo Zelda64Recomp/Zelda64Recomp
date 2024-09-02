@@ -6,7 +6,7 @@ void* proutPrintf(void* dst, const char* fmt, size_t size) {
     return (void*)1;
 }
 
-int recomp_printf(const char* fmt, ...) {
+RECOMP_EXPORT int recomp_printf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
