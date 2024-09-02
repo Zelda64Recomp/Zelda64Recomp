@@ -6,6 +6,7 @@
 
 #include "elements/ElementConfigOption.h"
 #include "elements/ElementConfigGroup.h"
+#include "elements/ElementOptionTypeButton.h"
 #include "elements/ElementOptionTypeCheckbox.h"
 #include "elements/ElementOptionTypeColor.h"
 #include "elements/ElementOptionTypeDropdown.h"

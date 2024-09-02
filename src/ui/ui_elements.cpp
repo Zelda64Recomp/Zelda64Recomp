@@ -12,6 +12,7 @@ static RecompElementConfig custom_elements[] = {
     CUSTOM_ELEMENT("recomp-description", recompui::ElementDescription),
     CUSTOM_ELEMENT("recomp-config-group", recompui::ElementConfigGroup),
     CUSTOM_ELEMENT("recomp-config-option", recompui::ElementConfigOption),
+    CUSTOM_ELEMENT("recomp-option-type-button", recompui::ElementOptionTypeButton),
     CUSTOM_ELEMENT("recomp-option-type-checkbox", recompui::ElementOptionTypeCheckbox),
     CUSTOM_ELEMENT("recomp-option-type-color", recompui::ElementOptionTypeColor),
     CUSTOM_ELEMENT("recomp-option-type-dropdown", recompui::ElementOptionTypeDropdown),

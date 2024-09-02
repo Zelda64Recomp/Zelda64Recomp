@@ -78,6 +78,13 @@ void ElementConfigOption::AddOptionTypeElement() {
         default:
             printf("No option type element exists for type '%d'\n", el_option_type);
             return;
+        case ConfigOptionType::Button: {
+            add_option_el<ElementOptionTypeButton>(doc, wrapper, "recomp-option-type-button", config_key);
+            // Button contains label text, so hide the label
+            auto label = GetLabel();
+            label->SetProperty("display", "none");
+            break;
+        }
         case ConfigOptionType::Checkbox: {
             add_option_el<ElementOptionTypeCheckbox>(doc, wrapper, "recomp-option-type-checkbox", config_key);
             break;
