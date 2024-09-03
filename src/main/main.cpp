@@ -631,6 +631,12 @@ int main(int argc, char** argv) {
 
     recomp::mods::scan_mods();
 
+    printf("Found mods:\n");
+    for (const auto& mod : recomp::mods::get_mod_details("mm")) {
+        printf("  %s(%s)\n", mod.mod_id.c_str(), mod.version.to_string().c_str());
+    }
+    printf("\n");
+
     recomp::start(
         64 * 1024 * 1024, // 64MB to have plenty of room for loading mods
         project_version,
