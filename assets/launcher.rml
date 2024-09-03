@@ -58,7 +58,7 @@
 					</div>
 				</div>
 				<div class="bottom-left">
-					<label>{{version_number}}</label>
+					<label>v{{version_number}}</label>
 				</div>
 			</div>
 		</div>
