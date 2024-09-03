@@ -37,6 +37,8 @@
 
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
 
+const std::string version_string = "1.2.0-dev";
+
 template<typename... Ts>
 void exit_error(const char* str, Ts ...args) {
     // TODO pop up an error
@@ -527,6 +529,12 @@ void release_preload(PreloadContext& context) {
 #endif
 
 int main(int argc, char** argv) {
+    recomp::Version project_version{};
+    if (!recomp::Version::from_string(version_string, project_version)) {
+        ultramodern::error_handling::message_box(("Invalid version string: " + version_string).c_str());
+        return EXIT_FAILURE;
+    }
+
     // Map this executable into memory and lock it, which should keep it in physical memory. This ensures
     // that there are no stutters from the OS having to load new pages of the executable whenever a new code page is run.
     PreloadContext preload_context;
@@ -625,6 +633,7 @@ int main(int argc, char** argv) {
 
     recomp::start(
         64 * 1024 * 1024, // 64MB to have plenty of room for loading mods
+        project_version,
         {},
         rsp_callbacks,
         renderer_callbacks,
