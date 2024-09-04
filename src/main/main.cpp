@@ -634,6 +634,22 @@ int main(int argc, char** argv) {
     printf("Found mods:\n");
     for (const auto& mod : recomp::mods::get_mod_details("mm")) {
         printf("  %s(%s)\n", mod.mod_id.c_str(), mod.version.to_string().c_str());
+        if (!mod.authors.empty()) {
+            printf("    Authors: %s", mod.authors[0].c_str());
+            for (size_t author_index = 1; author_index < mod.authors.size(); author_index++) {
+                const std::string& author = mod.authors[author_index];
+                printf(", %s", author.c_str());
+            }
+            printf("\n");
+        }
+        if (!mod.dependencies.empty()) {
+            printf("    Dependencies: %s:%s", mod.dependencies[0].mod_id.c_str(), mod.dependencies[0].version.to_string().c_str());
+            for (size_t dep_index = 1; dep_index < mod.dependencies.size(); dep_index++) {
+                const recomp::mods::Dependency& dep = mod.dependencies[dep_index];
+                printf(", %s:%s", dep.mod_id.c_str(), dep.version.to_string().c_str());
+            }
+            printf("\n");
+        }
     }
     printf("\n");
 
