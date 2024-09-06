@@ -9,7 +9,7 @@ on:
       N64RECOMP_COMMIT:
         type: string
         required: false
-        default: 'f8d439aeee6048b7365d1cb3bcd2578ec27a0288'
+        default: '5b17bf8bb556d2544c6161487232a455eae8f188'
       DXC_CHECKSUM:
         type: string
         required: false
@@ -64,7 +64,7 @@ jobs:
           
           # Build N64Recomp & RSPRecomp
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j $(nproc)
+          cmake --build cmake-build --config Release --target N64RecompCLI -j $(nproc)
           cmake --build cmake-build --config Release --target RSPRecomp -j $(nproc)
           
           # Copy N64Recomp & RSPRecomp to root directory
@@ -160,7 +160,7 @@ jobs:
           
           # Build N64Recomp & RSPRecomp
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j $(nproc)
+          cmake --build cmake-build --config Release --target N64RecompCLI -j $(nproc)
           cmake --build cmake-build --config Release --target RSPRecomp -j $(nproc)
           
           # Copy N64Recomp & RSPRecomp to root directory
@@ -234,7 +234,7 @@ jobs:
           $cpuCores = (Get-CimInstance -ClassName Win32_Processor).NumberOfLogicalProcessors
 
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
-          cmake --build cmake-build --config Release --target N64Recomp -j $cpuCores
+          cmake --build cmake-build --config Release --target N64RecompCLI -j $cpuCores
           cmake --build cmake-build --config Release --target RSPRecomp -j $cpuCores
 
           # Copy N64Recomp & RSPRecomp to root directory

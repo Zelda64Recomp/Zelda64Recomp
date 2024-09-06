@@ -1266,7 +1266,7 @@ extern Gfx ovl_En_Tanron1_DL_001888[];
 extern Gfx ovl_En_Tanron1_DL_001900[];
 
 // @recomp Patched to interpolate the moths that circle torches.
-void func_80BB5AAC(EnTanron1* this, PlayState* play) {
+RECOMP_PATCH void func_80BB5AAC(EnTanron1* this, PlayState* play) {
     EnTanron1Struct* ptrBase = &this->unk_160[0];
     s16 i;
     u8 flag = 0;
