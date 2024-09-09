@@ -650,6 +650,8 @@ int main(int argc, char** argv) {
             }
             printf("\n");
         }
+        // TODO load all mods as a temporary solution to not having a UI yet.
+        recomp::mods::enable_mod(mod.mod_id, true);
     }
     printf("\n");
 
