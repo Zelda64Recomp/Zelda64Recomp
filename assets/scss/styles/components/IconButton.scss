@@ -2,7 +2,7 @@
 
 /*
     <button
-        class="icon-button icon-button--danger"
+        class="icon-button icon-button--error"
     >
         <svg src="icons/Trash.svg" />
     </button>
@@ -82,7 +82,7 @@ $icon-button-size: 56 - ($border-width-thickness-num * 2);
         @include create-icon-button-variation($color-success);
     }
 
-    &--danger {
+    &--error {
         @include create-icon-button-variation($color-error);
     }
 

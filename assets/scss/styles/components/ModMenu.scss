@@ -1,0 +1,87 @@
+.mod-menu {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: space($page-margin);
+    background-color: $color-modal-overlay;
+
+    &__modal-wrapper {
+        display: flex;
+        position: relative;
+        flex: 1 1 100%;
+        flex-direction: column;
+        width: 100%;
+        max-width: space($base-modal-max-width);
+        height: 100%;
+        margin: auto;
+        border-width: $border-width-thickness;
+        border-radius: $border-radius-modal;
+        border-color: $color-border;
+        background: $color-bg-shadow;
+    }
+
+    &__modal-header {
+        display: flex;
+        position: relative;
+        flex: 1 1 auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: auto;
+        padding: space(16);
+        border-bottom-width: $border-width-thickness;
+        border-top-left-radius: $border-radius-modal;
+        border-top-right-radius: $border-radius-modal;
+        border-bottom-color: $color-border;
+        background-color: $color-bg-overlay;
+    }
+
+    &__modal-body {
+        display: flex;
+        position: relative;
+        flex: 1 1 auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: auto;
+    }
+
+    &__list {
+        display: block;
+        position: relative;
+        flex: 1 1 100%;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border-bottom-left-radius: $border-radius-modal;
+        background-color: $color-bg-shadow;
+    }
+
+    &__list-scroll {
+        flex: 1 1 100%;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        overflow-y: auto;
+    }
+
+    &__details {
+        display: block;
+        position: relative;
+        flex: 1 1 100%;
+        height: 100%;
+        border-bottom-right-radius: $border-radius-modal;
+        background-color: $color-bg-overlay;
+    }
+}
