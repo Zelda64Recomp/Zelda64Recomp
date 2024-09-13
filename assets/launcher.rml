@@ -61,6 +61,7 @@
 					<label>v{{version_number}}</label>
 				</div>
 			</div>
+			<recomp-mod-menu />
 		</div>
 	</body>
 </rml>

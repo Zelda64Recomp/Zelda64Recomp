@@ -14,6 +14,7 @@
 #include "elements/ElementOptionTypeRange.h"
 #include "elements/ElementOptionTypeTextField.h"
 #include "elements/ElementDescription.h"
+#include "elements/ElementModMenu.h"
 
 namespace recompui {
     void register_custom_elements();
