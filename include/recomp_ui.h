@@ -8,6 +8,7 @@
 #include "RmlUi/Core.h"
 
 #include "../src/ui/util/hsv.h"
+#include "../src/ui/util/bem.h"
 
 namespace Rml {
 	class ElementDocument;
