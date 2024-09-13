@@ -19,12 +19,10 @@ static RecompElementConfig custom_elements[] = {
     CUSTOM_ELEMENT("recomp-option-type-textfield", recompui::ElementOptionTypeTextField),
     CUSTOM_ELEMENT("recomp-option-type-radio-tabs", recompui::ElementOptionTypeRadioTabs),
     CUSTOM_ELEMENT("recomp-option-type-range", recompui::ElementOptionTypeRange),
+    CUSTOM_ELEMENT("recomp-mod-menu", recompui::ElementModMenu),
 };
 
 void recompui::register_custom_elements() {
-    recomp::config::set_config_store_value_and_default("ligma_balls", "hello!", "whats up");
-    recomp::config::set_config_store_default_value("ligma_balls2", "12345");
-    recomp::config::set_config_store_value("ligma_balls3", "hello!");
     for (auto& element_config : custom_elements) {
         Rml::Factory::RegisterElementInstancer(element_config.tag, element_config.instancer.get());
     }

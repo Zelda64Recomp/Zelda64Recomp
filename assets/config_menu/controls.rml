@@ -71,7 +71,7 @@
                                         data-event-blur="set_input_row_focus(-1)"
                                         data-event-focus="set_input_row_focus(i)"
                                         data-event-click="clear_input_bindings(i)"
-                                        class="icon-button icon-button--danger"
+                                        class="icon-button icon-button--error"
                                         data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
                                     >
                                         <svg src="icons/Trash.svg" />
@@ -81,7 +81,7 @@
                                         data-event-blur="set_input_row_focus(-1)"
                                         data-event-focus="set_input_row_focus(i)"
                                         data-event-click="reset_single_input_binding_to_default(i)"
-                                        class="icon-button icon-button--danger"
+                                        class="icon-button icon-button--error"
                                         data-attr-style="i == 0 ? 'nav-up:#cont_kb_toggle' : 'nav-up:auto'"
                                     >
                                         <svg src="icons/Reset.svg" />
