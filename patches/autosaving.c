@@ -655,27 +655,39 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     autosave_init();
 }
 
+bool moon_crash_resets_save = true;
+
+RECOMP_EXPORT void recomp_set_moon_crash_resets_save(bool new_val)
+{
+    moon_crash_resets_save = new_val;
+}
+
 extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
+
+RECOMP_DECLARE_EVENT(recomp_on_moon_crash(SramContext* sramCtx));
 
 // @recomp Reset the autosave timer when the moon crashes.
 RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     s32 i;
     s32 cutsceneIndex = gSaveContext.save.cutsceneIndex;
 
-    bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
+    if (moon_crash_resets_save)
+    {
+        bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
 
-    if (SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2],
-                             gFlashSaveNumPages[gSaveContext.fileNum * 2]) != 0) {
-        SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
-                             gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
+        if (SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2],
+                                 gFlashSaveNumPages[gSaveContext.fileNum * 2]) != 0) {
+            SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
+                                 gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
+        }
+        Lib_MemCpy(&gSaveContext.save, sramCtx->saveBuf, sizeof(Save));
+        if (CHECK_NEWF(gSaveContext.save.saveInfo.playerData.newf)) {
+            SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
+                                 gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
+            Lib_MemCpy(&gSaveContext, sramCtx->saveBuf, sizeof(Save));
+        }
+        gSaveContext.save.cutsceneIndex = cutsceneIndex;
     }
-    Lib_MemCpy(&gSaveContext.save, sramCtx->saveBuf, sizeof(Save));
-    if (CHECK_NEWF(gSaveContext.save.saveInfo.playerData.newf)) {
-        SysFlashrom_ReadData(sramCtx->saveBuf, gFlashSaveStartPages[gSaveContext.fileNum * 2 + 1],
-                             gFlashSaveNumPages[gSaveContext.fileNum * 2 + 1]);
-        Lib_MemCpy(&gSaveContext, sramCtx->saveBuf, sizeof(Save));
-    }
-    gSaveContext.save.cutsceneIndex = cutsceneIndex;
 
     for (i = 0; i < ARRAY_COUNT(gSaveContext.eventInf); i++) {
         gSaveContext.eventInf[i] = 0;
@@ -706,8 +718,19 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
 
     // @recomp Use the slow autosave timer to give the player extra time to respond to the moon crashing to decide if they want to reload their autosave.
     recomp_reset_autosave_timer_slow();
+
+    recomp_on_moon_crash(sramCtx);
 }
 
+
+bool owls_quit_game = true;
+
+RECOMP_EXPORT void recomp_set_owls_quit_game(bool new_val)
+{
+    owls_quit_game = new_val;
+}
+
+RECOMP_DECLARE_EVENT(recomp_on_owl_save(ObjWarpstone* this, PlayState* play));
 
 // @recomp If autosave is enabled, skip the part of the owl statue dialog that talks about the file being deleted on load, since it's not true.
 RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
@@ -720,7 +743,12 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
         } else if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
             if (play->msgCtx.choiceIndex != 0) {
                 Audio_PlaySfx_MessageDecide();
-                play->msgCtx.msgMode = MSGMODE_OWL_SAVE_0;
+                if (!owls_quit_game) {
+                    Message_CloseTextbox(play);
+                    recomp_on_owl_save(this, play);
+                } else {
+                    play->msgCtx.msgMode = MSGMODE_OWL_SAVE_0;
+                }
                 play->msgCtx.unk120D6 = 0;
                 play->msgCtx.unk120D4 = 0;
                 gSaveContext.save.owlWarpId = OBJ_WARPSTONE_GET_OWL_WARP_ID(&this->dyna.actor);
