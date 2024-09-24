@@ -99,13 +99,20 @@ RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
     gSaveContext.save.isOwlSave = false;
 }
 
+bool owl_saves_delete = true;
+
+RECOMP_EXPORT void recomp_set_owl_saves_delete(bool new_val)
+{
+    owl_saves_delete = new_val;
+}
+
 // @recomp Do not clear the save if the save was an autosave.
 RECOMP_PATCH void func_80147314(SramContext* sramCtx, s32 fileNum) {
     s32 save_type = gSaveContext.save.isOwlSave;
     gSaveContext.save.isOwlSave = false;
 
     // @recomp Prevent owl save/autosave deletion if autosaving is enabled.
-    if (!recomp_autosave_enabled()) {
+    if (!recomp_autosave_enabled() && owl_saves_delete) {
         gSaveContext.save.saveInfo.playerData.newf[0] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[1] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[2] = '\0';
@@ -522,6 +529,9 @@ s32 spawn_entrance_from_autosave_entrance(s16 autosave_entrance) {
     }
 }
 
+RECOMP_DECLARE_EVENT(recomp_on_load_save(FileSelectState* fileSelect, SramContext* sramCtx));
+RECOMP_DECLARE_EVENT(recomp_after_load_save(FileSelectState* fileSelect, SramContext* sramCtx));
+
 // @recomp Patched to change the entrance for autosaves and initialize autosaves.
 RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCtx) {
     s32 i;
@@ -529,6 +539,8 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     s32 phi_t1 = 0;
     s32 pad1;
     s32 fileNum;
+
+    recomp_on_load_save(fileSelect, sramCtx);
 
     if (gSaveContext.flashSaveAvailable) {
         bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
@@ -653,6 +665,8 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
 
     // @recomp Initialize the autosave state tracking.
     autosave_init();
+
+    recomp_after_load_save(fileSelect, sramCtx);
 }
 
 bool moon_crash_resets_save = true;
@@ -665,11 +679,14 @@ RECOMP_EXPORT void recomp_set_moon_crash_resets_save(bool new_val)
 extern s32 Actor_ProcessTalkRequest(Actor* actor, GameState* gameState);
 
 RECOMP_DECLARE_EVENT(recomp_on_moon_crash(SramContext* sramCtx));
+RECOMP_DECLARE_EVENT(recomp_after_moon_crash(SramContext* sramCtx));
 
 // @recomp Reset the autosave timer when the moon crashes.
 RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     s32 i;
     s32 cutsceneIndex = gSaveContext.save.cutsceneIndex;
+
+    recomp_on_moon_crash(sramCtx);
 
     if (moon_crash_resets_save)
     {
@@ -719,7 +736,7 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     // @recomp Use the slow autosave timer to give the player extra time to respond to the moon crashing to decide if they want to reload their autosave.
     recomp_reset_autosave_timer_slow();
 
-    recomp_on_moon_crash(sramCtx);
+    recomp_after_moon_crash(sramCtx);
 }
 
 
@@ -745,13 +762,13 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
                 Audio_PlaySfx_MessageDecide();
                 if (!owls_quit_game) {
                     Message_CloseTextbox(play);
-                    recomp_on_owl_save(this, play);
                 } else {
                     play->msgCtx.msgMode = MSGMODE_OWL_SAVE_0;
                 }
                 play->msgCtx.unk120D6 = 0;
                 play->msgCtx.unk120D4 = 0;
                 gSaveContext.save.owlWarpId = OBJ_WARPSTONE_GET_OWL_WARP_ID(&this->dyna.actor);
+                recomp_on_owl_save(this, play);
             } else {
                 Message_CloseTextbox(play);
             }
