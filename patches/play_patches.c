@@ -4,6 +4,7 @@
 
 extern Input D_801F6C18;
 
+RECOMP_DECLARE_EVENT(recomp_on_init(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_on_play_main(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_before_play_update(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_play_update(PlayState* play));
@@ -12,10 +13,18 @@ void controls_play_update(PlayState* play) {
     gSaveContext.options.zTargetSetting = recomp_get_targeting_mode();
 }
 
+bool inited = false;
+
 // @recomp Patched to add hooks for various added functionality.
 RECOMP_PATCH void Play_Main(GameState* thisx) {
     static Input* prevInput = NULL;
     PlayState* this = (PlayState*)thisx;
+
+    if (!inited) {
+        recomp_on_init(this);
+        inited = true;
+    }
+
     recomp_on_play_main(this);
 
     // @recomp
