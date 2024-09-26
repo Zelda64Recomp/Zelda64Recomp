@@ -7,12 +7,16 @@ void Main_InitMemory(void);
 void Main_InitScreen(void);
 
 
+RECOMP_DECLARE_EVENT(recomp_on_init());
+
 // @recomp Patched to load the code segment in the recomp runtime.
 RECOMP_PATCH void Main_Init(void) {
     DmaRequest dmaReq;
     OSMesgQueue mq;
     OSMesg msg[1];
     size_t prevSize;
+
+    recomp_on_init();
 
     osCreateMesgQueue(&mq, msg, ARRAY_COUNT(msg));
 
