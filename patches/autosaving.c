@@ -747,18 +747,23 @@ RECOMP_EXPORT void recomp_set_owls_quit_game(bool new_val)
     owls_quit_game = new_val;
 }
 
+RECOMP_DECLARE_EVENT(recomp_on_owl_update(ObjWarpstone* this, PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_on_owl_save(ObjWarpstone* this, PlayState* play));
+RECOMP_DECLARE_EVENT(recomp_after_owl_save(ObjWarpstone* this, PlayState* play));
 
 // @recomp If autosave is enabled, skip the part of the owl statue dialog that talks about the file being deleted on load, since it's not true.
 RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
     ObjWarpstone* this = (ObjWarpstone*)thisx;
     s32 pad;
 
+    recomp_on_owl_update(this, play);
+
     if (this->isTalking) {
         if (Actor_TextboxIsClosing(&this->dyna.actor, play)) {
             this->isTalking = false;
         } else if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
             if (play->msgCtx.choiceIndex != 0) {
+                recomp_on_owl_save(this, play);
                 Audio_PlaySfx_MessageDecide();
                 if (!owls_quit_game) {
                     Message_CloseTextbox(play);
@@ -768,7 +773,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
                 play->msgCtx.unk120D6 = 0;
                 play->msgCtx.unk120D4 = 0;
                 gSaveContext.save.owlWarpId = OBJ_WARPSTONE_GET_OWL_WARP_ID(&this->dyna.actor);
-                recomp_on_owl_save(this, play);
+                recomp_after_owl_save(this, play);
             } else {
                 Message_CloseTextbox(play);
             }
