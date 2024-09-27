@@ -16,3 +16,5 @@ output_binary_path = "patches/patches.bin"
 unpaired_lo16_warnings = false
 # Allow exporting functions and events for mods to use. 
 allow_exports = true
+# # Enable strict patch mode, validates that patched symbols exist and that non-patch functions aren't symbols.
+strict_patch_mode = true
