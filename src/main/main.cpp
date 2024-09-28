@@ -528,6 +528,16 @@ void release_preload(PreloadContext& context) {
 
 #endif
 
+void enable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
+    (void)context;
+    zelda64::renderer::enable_texture_pack(mod);
+}
+
+void disable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
+    (void)context;
+    zelda64::renderer::disable_texture_pack(mod);
+}
+
 int main(int argc, char** argv) {
     recomp::Version project_version{};
     if (!recomp::Version::from_string(version_string, project_version)) {
@@ -629,6 +639,18 @@ int main(int argc, char** argv) {
         .get_game_thread_name = zelda64::get_game_thread_name,
     };
 
+    // Register the texture pack content type with rt64.json as its content file.
+    recomp::mods::ModContentType texture_pack_content_type{
+        .content_filename = "rt64.json",
+        .allow_runtime_toggle = true,
+        .on_enabled = enable_texture_pack,
+        .on_disabled = disable_texture_pack,
+    };
+    auto texture_pack_content_type_id = recomp::mods::register_mod_content_type(texture_pack_content_type);
+
+    // Register the .rtz texture pack file format with the previous content type as its only allowed content type.
+    recomp::mods::register_mod_container_type("rtz", std::vector{ texture_pack_content_type_id }, false);
+
     recomp::mods::scan_mods();
 
     printf("Found mods:\n");
@@ -641,6 +663,7 @@ int main(int argc, char** argv) {
                 printf(", %s", author.c_str());
             }
             printf("\n");
+            printf("    Runtime toggleable: %d\n", mod.runtime_toggleable);
         }
         if (!mod.dependencies.empty()) {
             printf("    Dependencies: %s:%s", mod.dependencies[0].mod_id.c_str(), mod.dependencies[0].version.to_string().c_str());
