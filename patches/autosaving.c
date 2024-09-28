@@ -740,11 +740,11 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
 }
 
 
-bool loading_resets_owl_save = true;
+bool loading_deletes_owl_save = true;
 
-RECOMP_EXPORT void recomp_set_loading_resets_owl_save(bool new_val)
+RECOMP_EXPORT void recomp_set_loading_deletes_owl_save(bool new_val)
 {
-    loading_resets_owl_save = new_val;
+    loading_deletes_owl_save = new_val;
 }
 
 RECOMP_DECLARE_EVENT(recomp_on_owl_update(ObjWarpstone* this, PlayState* play));
@@ -766,7 +766,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
                 recomp_on_owl_save(this, play);
                 Audio_PlaySfx_MessageDecide();
                 // @recomp Only use normal owl save if flag is set.
-                if (loading_resets_owl_save) {
+                if (loading_deletes_owl_save) {
                     play->msgCtx.msgMode = MSGMODE_OWL_SAVE_0;
                 } else {
                     Message_CloseTextbox(play);
@@ -786,7 +786,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
     }
 
     // @recomp Skip the text talking about the save being deleted on load, if autosave is enabled.
-    if (recomp_autosave_enabled() || !loading_resets_owl_save) {
+    if (recomp_autosave_enabled() || !loading_deletes_owl_save) {
         if (this->isTalking && play->msgCtx.currentTextId == 0xC01 && play->msgCtx.msgBufPos == 269) {
             play->msgCtx.msgBufPos = 530;
         }
