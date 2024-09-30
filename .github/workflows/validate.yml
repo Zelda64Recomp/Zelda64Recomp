@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
-    runs-on: ${{ format('blaze/{0}-amd64', matrix.os) }}
+    runs-on: ${{ format('blaze/{0}-amd64:lg', matrix.os) }}
     container:
       image: dcvz/n64recomp:ubuntu-18.04
       volumes:
@@ -47,7 +47,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}-x
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}-xy
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
@@ -108,7 +108,7 @@ jobs:
           name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-linux-arm64:
-    runs-on: ${{ format('blaze/{0}', matrix.os) }}
+    runs-on: ${{ format('blaze/{0}:lg', matrix.os) }}
     strategy:
       matrix:
         type: [ Debug, Release ]
@@ -123,7 +123,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64-${{ inputs.N64RECOMP_COMMIT }}-x
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-arm64-${{ inputs.N64RECOMP_COMMIT }}-xy
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -210,7 +210,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}-x
+          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}-xy
       - name: Install Windows Dependencies
         run: |
           choco install ninja
