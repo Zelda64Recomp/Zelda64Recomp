@@ -17,7 +17,7 @@ RECOMP_PATCH void Play_Main(GameState* thisx) {
     static Input* prevInput = NULL;
     PlayState* this = (PlayState*)thisx;
 
-    // @recomp_event Allow mods to execute code every frame.
+    // @recomp_event recomp_on_play_main(PlayState* play): Allow mods to execute code every frame.
     recomp_on_play_main(this);
 
     // @recomp
@@ -40,12 +40,12 @@ RECOMP_PATCH void Play_Main(GameState* thisx) {
         }
         camera_pre_play_update(this);
 
-        // @recomp_event Play_Update is about to be called.
+        // @recomp_event recomp_on_play_update(PlayState* play): Play_Update is about to be called.
         recomp_on_play_update(this);
 
         Play_Update(this);
 
-        // @recomp_event Play_Update was called.
+        // @recomp_event recomp_after_play_update(PlayState* play): Play_Update was called.
         recomp_after_play_update(this);
 
         camera_post_play_update(this);

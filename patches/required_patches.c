@@ -16,7 +16,7 @@ RECOMP_PATCH void Main_Init(void) {
     OSMesg msg[1];
     size_t prevSize;
 
-    // @recomp_event Allow mods to initialize themselves once.
+    // @recomp_event recomp_on_init(): Allow mods to initialize themselves once.
     recomp_on_init();
 
     osCreateMesgQueue(&mq, msg, ARRAY_COUNT(msg));

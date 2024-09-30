@@ -113,7 +113,7 @@ RECOMP_PATCH void func_80147314(SramContext* sramCtx, s32 fileNum) {
     gSaveContext.save.isOwlSave = false;
 
     // @recomp Prevent owl save/autosave deletion if autosaving is enabled, and...
-    // @recomp_use_export_var Prevent owl save deletion if mods disable it.
+    // @recomp_use_export_var loading_deletes_owl_save: Prevent owl save deletion if mods disable it.
     if (!recomp_autosave_enabled() && loading_deletes_owl_save) {
         gSaveContext.save.saveInfo.playerData.newf[0] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[1] = '\0';
@@ -542,7 +542,7 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     s32 pad1;
     s32 fileNum;
 
-    // @recomp_event recomp_on_load_save: A save-file was just chosen.
+    // @recomp_event recomp_on_load_save(FileSelectState* fileSelect, SramContext* sramCtx): A save-file was just chosen.
     recomp_on_load_save(fileSelect, sramCtx);
 
     if (gSaveContext.flashSaveAvailable) {
@@ -669,7 +669,7 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     // @recomp Initialize the autosave state tracking.
     autosave_init();
 
-    // @recomp_event recomp_after_load_save: The save has finished loading.
+    // @recomp_event recomp_after_load_save(FileSelectState* fileSelect, SramContext* sramCtx): The save has finished loading.
     recomp_after_load_save(fileSelect, sramCtx);
 }
 
@@ -691,7 +691,7 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     s32 i;
     s32 cutsceneIndex = gSaveContext.save.cutsceneIndex;
 
-    // @recomp_event recomp_on_moon_crash: A moon crash has just been triggered.
+    // @recomp_event recomp_on_moon_crash(SramContext* sramCtx): A moon crash has just been triggered.
     recomp_on_moon_crash(sramCtx);
 
     if (moon_crash_resets_save)
@@ -742,7 +742,7 @@ RECOMP_PATCH void Sram_ResetSaveFromMoonCrash(SramContext* sramCtx) {
     // @recomp Use the slow autosave timer to give the player extra time to respond to the moon crashing to decide if they want to reload their autosave.
     recomp_reset_autosave_timer_slow();
 
-    // @recomp_event recomp_after_moon_crash: The effects of moon crash have been written.
+    // @recomp_event recomp_after_moon_crash(SramContext* sramCtx): The effects of moon crash have been written.
     recomp_after_moon_crash(sramCtx);
 }
 
@@ -764,7 +764,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
     ObjWarpstone* this = (ObjWarpstone*)thisx;
     s32 pad;
 
-    // @recomp_event recomp_on_owl_update: Allow mods to handle owl update frames.
+    // @recomp_event recomp_on_owl_update(ObjWarpstone* this, PlayState* play): Allow mods to handle owl update frames.
     recomp_on_owl_update(this, play);
 
     if (this->isTalking) {
@@ -772,7 +772,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
             this->isTalking = false;
         } else if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
             if (play->msgCtx.choiceIndex != 0) {
-                // @recomp_event recomp_on_owl_save: The player chose to save from an owl statue.
+                // @recomp_event recomp_on_owl_save(ObjWarpstone* this, PlayState* play): The player chose to save from an owl statue.
                 recomp_on_owl_save(this, play);
 
                 Audio_PlaySfx_MessageDecide();
@@ -788,7 +788,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
                 play->msgCtx.unk120D4 = 0;
                 gSaveContext.save.owlWarpId = OBJ_WARPSTONE_GET_OWL_WARP_ID(&this->dyna.actor);
 
-                // @recomp_event recomp_after_owl_save: Owl save is finished.
+                // @recomp_event recomp_after_owl_save(ObjWarpstone* this, PlayState* play): Owl save is finished.
                 recomp_after_owl_save(this, play);
             } else {
                 Message_CloseTextbox(play);
