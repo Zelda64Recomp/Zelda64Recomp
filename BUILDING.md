@@ -20,7 +20,7 @@ For Linux the instructions for Ubuntu are provided, but you can find the equival
 
 ```bash
 # For Ubuntu, simply run:
-sudo apt-get install cmake ninja-build libsdl2-dev libgtk-3-dev lld llvm clang-15
+sudo apt-get install cmake ninja-build libsdl2-dev libgtk-3-dev lld llvm clang
 ```
 
 ### Windows
@@ -65,7 +65,7 @@ On Windows, you can open the repository folder with Visual Studio, and you'll be
 If you prefer the command line or you're on a Unix platform you can build the project using CMake:
 
 ```bash
-cmake -S . -B build-cmake -DCMAKE_CXX_COMPILER=clang++-15 -DCMAKE_C_COMPILER=clang-15 -DPATCHES_C_COMPILER=clang-15 -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
+cmake -S . -B build-cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -G Ninja -DCMAKE_BUILD_TYPE=Release # or Debug if you want to debug
 cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release # or Debug
 ```
 
