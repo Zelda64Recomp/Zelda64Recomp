@@ -6,7 +6,7 @@
 #include "nfd.h"
 #include <filesystem>
 
-std::string version_number = "v1.1.1";
+std::string version_number = "v1.1.1-texturepacks";
 
 Rml::DataModelHandle model_handle;
 bool mm_rom_valid = false;
