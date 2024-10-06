@@ -290,6 +290,7 @@ struct ControlOptionsContext {
 	zelda64::AutosaveMode autosave_mode;
     zelda64::CameraInvertMode camera_invert_mode;
 	zelda64::AnalogCamMode analog_cam_mode;
+	zelda64::SpecialItemHudMode special_item_hud_mode;
     zelda64::CameraInvertMode analog_camera_invert_mode;
 };
 
@@ -397,6 +398,17 @@ void zelda64::set_analog_cam_mode(zelda64::AnalogCamMode mode) {
 	control_options_context.analog_cam_mode = mode;
 	if (general_model_handle) {
 		general_model_handle.DirtyVariable("analog_cam_mode");
+	}
+}
+
+zelda64::SpecialItemHudMode zelda64::get_special_item_hud_mode() {
+	return control_options_context.special_item_hud_mode;
+}
+
+void zelda64::set_special_item_hud_mode(zelda64::SpecialItemHudMode mode) {
+	control_options_context.special_item_hud_mode = mode;
+	if (general_model_handle) {
+		general_model_handle.DirtyVariable("special_item_hud_mode");
 	}
 }
 
@@ -937,6 +949,7 @@ public:
 		bind_option(constructor, "autosave_mode", &control_options_context.autosave_mode);
 		bind_option(constructor, "camera_invert_mode", &control_options_context.camera_invert_mode);
 		bind_option(constructor, "analog_cam_mode", &control_options_context.analog_cam_mode);
+		bind_option(constructor, "special_item_hud_mode", &control_options_context.special_item_hud_mode);
 		bind_option(constructor, "analog_camera_invert_mode", &control_options_context.analog_camera_invert_mode);
 
 		general_model_handle = constructor.GetModelHandle();

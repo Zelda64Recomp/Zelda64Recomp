@@ -5,7 +5,7 @@
         <form class="config__form" id="conf-general__form">
             <div class="config__hz-wrapper" id="conf-general__hz-wrapper">
                 <!-- Options -->
-                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)" id="conf-general__wrapper">
+                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)" id="conf-general__wrapper" style="overflow:auto;max-height:100%">
                     <!-- targeting mode -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(0)" id="conf-general__Targeting-Mode">
                         <label class="config-option__title">Targeting Mode</label>
@@ -92,7 +92,7 @@
                             />
                         </div>
                     </div>
-                    
+
                     <!-- joystick deadzone -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(4)">
                         <label class="config-option__title">Joystick Deadzone</label>
@@ -171,7 +171,7 @@
                             <label class="config-option__tab-label" for="autosave_disabled">Off</label>
                         </div>
                     </div>
-                    
+
                     <!-- camera inversion -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(7)">
                         <label class="config-option__title">Aiming Camera Mode</label>
@@ -225,7 +225,7 @@
                             <label class="config-option__tab-label" for="camera_inversion_both">Invert Both</label>
                         </div>
                     </div>
-                    
+
                     <!-- analog camera -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(8)">
                         <label class="config-option__title">Analog Camera</label>
@@ -255,7 +255,7 @@
                             <label class="config-option__tab-label" for="analog_cam_disabled">Off</label>
                         </div>
                     </div>
-                    
+
                     <!-- analog camera inversion -->
                     <div class="config-option" data-event-mouseover="set_cur_config_index(9)">
                         <label class="config-option__title">Analog Camera Mode</label>
@@ -268,7 +268,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertNone"
                                 id="analog_camera_inversion_none"
-                                style="nav-up: #analog_cam_enabled;"
+                                style="nav-up: #analog_cam_enabled; nav-down: #special_item_hud_enabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_none">None</label>
 
@@ -280,7 +280,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertX"
                                 id="analog_camera_inversion_x"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #special_item_hud_enabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_x">Invert X</label>
 
@@ -292,7 +292,7 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertY"
                                 id="analog_camera_inversion_y"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #special_item_hud_disabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_y">Invert Y</label>
 
@@ -304,16 +304,46 @@
                                 data-checked="analog_camera_invert_mode"
                                 value="InvertBoth"
                                 id="analog_camera_inversion_both"
-                                style="nav-up: #analog_cam_disabled;"
+                                style="nav-up: #analog_cam_disabled; nav-down: #special_item_hud_disabled"
                             />
                             <label class="config-option__tab-label" for="analog_camera_inversion_both">Invert Both</label>
+                        </div>
+                    </div>
+
+                    <!-- special item hud -->
+                    <div class="config-option" data-event-mouseover="set_cur_config_index(10)">
+                        <label class="config-option__title">Special Item HUD</label>
+                        <div class="config-option__list">
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(10)"
+                                name="special_item_hud_mode"
+                                data-checked="special_item_hud_mode"
+                                value="On"
+                                id="special_item_hud_enabled"
+                                style="nav-up: #analog_camera_inversion_none;"
+                            />
+                            <label class="config-option__tab-label" for="special_item_hud_enabled">On</label>
+
+                            <input
+                                type="radio"
+                                data-event-blur="set_cur_config_index(-1)"
+                                data-event-focus="set_cur_config_index(10)"
+                                name="special_item_hud_mode"
+                                data-checked="special_item_hud_mode"
+                                value="Off"
+                                id="special_item_hud_disabled"
+                                style="nav-up: #analog_camera_inversion_x;"
+                            />
+                            <label class="config-option__tab-label" for="special_item_hud_disabled">Off</label>
                         </div>
                     </div>
                 </div>
                 <!-- Descriptions -->
                 <div class="config__wrapper">
                     <p data-if="cur_config_index == 0">
-                        Controls how targeting enemies and objects works. <b>Switch</b> will start or stop targeting each time the target button is pressed. <b>Hold</b> will start when the target button is pressed and stop when the button is released. 
+                        Controls how targeting enemies and objects works. <b>Switch</b> will start or stop targeting each time the target button is pressed. <b>Hold</b> will start when the target button is pressed and stop when the button is released.
                     </p>
                     <p data-if="cur_config_index == 1">
                         Controls the strength of rumble when using a controller that supports it. <b>Setting this to zero will disable rumble.</b>
@@ -361,6 +391,9 @@
                     </p>
                     <p data-if="cur_config_index == 9">
                         Inverts the camera controls for the analog camera if it's enabled. <b>None</b> is the default.
+                    </p>
+                    <p data-if="cur_config_index == 10">
+                        Enables visibility of the special item HUD. Affects visibility only, functionality can be modified in the <b>Controls</b> setting tab. <b>On</b> is the default.
                     </p>
                 </div>
             </div>

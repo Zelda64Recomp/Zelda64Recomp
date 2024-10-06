@@ -488,8 +488,10 @@ RECOMP_PATCH void Interface_Draw(PlayState* play) {
         
         // @recomp Draw the D-Pad and its item icons as well as the autosave icon if the game is unpaused.
         if (pauseCtx->state != PAUSE_STATE_MAIN) {
-            draw_dpad(play);
-            draw_dpad_icons(play);
+            if (recomp_special_item_hud_enabled()) {
+                draw_dpad(play);
+                draw_dpad_icons(play);
+            }
             draw_autosave_icon(play);
         }
 

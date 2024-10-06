@@ -27,6 +27,7 @@
 #define gRandFloat sRandFloat
 #include "global.h"
 #include "rt64_extended_gbi.h"
+#include "patch_helpers.h"
 
 #ifndef gEXFillRectangle
 #define gEXFillRectangle(cmd, lorigin, rorigin, ulx, uly, lrx, lry) \
@@ -100,5 +101,7 @@ void room_load_hook(PlayState* play, Room* room);
 void draw_autosave_icon(PlayState* play);
 
 void recomp_crash(const char* err);
+
+DECLARE_FUNC(s32, recomp_special_item_hud_enabled);
 
 #endif
