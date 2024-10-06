@@ -20,7 +20,7 @@ For Linux the instructions for Ubuntu are provided, but you can find the equival
 
 ```bash
 # For Ubuntu, simply run:
-sudo apt-get install cmake ninja libsdl2-dev libgtk-3-dev lld llvm clang-15
+sudo apt-get install cmake ninja-build libsdl2-dev libgtk-3-dev lld llvm clang
 ```
 
 ### Windows
