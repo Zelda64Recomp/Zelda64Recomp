@@ -1,0 +1,14 @@
+version: '2.9.3'
+prefix: '/opt/local'
+variants:
+  select:
+    - aqua
+    - metal
+  deselect: x11
+ports:
+  - name: clang-18
+  - name: llvm-18
+  - name: libsdl2
+    select: universal
+  - name: freetype
+    select: universal

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
-project(Zelda64Recompiled)
+
+if (APPLE) # has to be set before the first project() or enable_language()
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
+endif()
+
+project(Zelda64Recompiled LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,6 +18,30 @@ endif()
 # Opt out of constexpr mutex constructor on windows to prevent vcredist issues
 if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR")
+endif()
+
+if (APPLE)
+    enable_language(OBJC OBJCXX)
+
+    # Check if VULKAN_SDK environment variable is set
+    if(NOT DEFINED ENV{VULKAN_SDK})
+        message(FATAL_ERROR "VULKAN_SDK environment variable is not set.")
+    else()
+        set(VULKAN_SDK $ENV{VULKAN_SDK})
+    endif()
+
+    # Define paths to Vulkan loader and MoltenVK libraries
+    set(VULKAN_LOADER_PATH "${VULKAN_SDK}/lib/libvulkan.dylib")
+    set(MOLTENVK_PATH "${VULKAN_SDK}/lib/libMoltenVK.dylib")
+
+    # Ensure the Vulkan loader and MoltenVK libraries exist
+    if(NOT EXISTS "${VULKAN_LOADER_PATH}")
+        message(FATAL_ERROR "Vulkan loader not found at ${VULKAN_LOADER_PATH}")
+    endif()
+
+    if(NOT EXISTS "${MOLTENVK_PATH}")
+        message(FATAL_ERROR "MoltenVK not found at ${MOLTENVK_PATH}")
+    endif()
 endif()
 
 # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
@@ -135,11 +164,12 @@ add_custom_target(DownloadGameControllerDB
     DEPENDS ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt)
 
 # Main executable
-add_executable(Zelda64Recompiled)
+add_executable(Zelda64Recompiled MACOSX_BUNDLE)
 add_dependencies(Zelda64Recompiled DownloadGameControllerDB)
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
+    ${CMAKE_SOURCE_DIR}/src/main/support.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_patches.cpp
     ${CMAKE_SOURCE_DIR}/src/main/rt64_render_context.cpp
@@ -163,6 +193,10 @@ set (SOURCES
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 )
+
+if (APPLE)
+    list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/src/main/support_apple.mm)
+endif()
 
 target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -241,6 +275,114 @@ if (WIN32)
     )
 
     target_sources(Zelda64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
+endif()
+
+if (APPLE)
+    find_package(SDL2 REQUIRED)
+    target_include_directories(Zelda64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
+
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
+
+    target_link_libraries(Zelda64Recompiled PRIVATE ${CMAKE_DL_LIBS} Threads::Threads)
+
+    # Set bundle properties
+    set_target_properties(Zelda64Recompiled PROPERTIES
+            MACOSX_BUNDLE TRUE
+            MACOSX_BUNDLE_BUNDLE_NAME "Zelda64Recompiled"
+            MACOSX_BUNDLE_GUI_IDENTIFIER "com.github.zelda64recompiled"
+            MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
+            MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+            MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
+            MACOSX_BUNDLE_INFO_PLIST ${CMAKE_BINARY_DIR}/Info.plist
+    )
+
+    set(ICON_SOURCE ${CMAKE_SOURCE_DIR}/icons/512.png)
+    set(ICONSET_DIR ${CMAKE_BINARY_DIR}/AppIcon.iconset)
+    set(ICNS_FILE ${CMAKE_BINARY_DIR}/resources/AppIcon.icns)
+
+    # Create iconset directory and add PNG file
+    add_custom_command(
+            OUTPUT ${ICONSET_DIR}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${ICONSET_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy ${ICON_SOURCE} ${ICONSET_DIR}/icon_512x512.png
+            COMMAND ${CMAKE_COMMAND} -E copy ${ICON_SOURCE} ${ICONSET_DIR}/icon_512x512@2x.png
+            COMMAND touch ${ICONSET_DIR}
+            COMMENT "Creating iconset directory and copying PNG file"
+    )
+
+    # Convert iconset to icns
+    add_custom_command(
+            OUTPUT ${ICNS_FILE}
+            DEPENDS ${ICONSET_DIR}
+            COMMAND iconutil -c icns ${ICONSET_DIR} -o ${ICNS_FILE}
+            COMMENT "Converting iconset to icns"
+    )
+
+    # Custom target to ensure icns creation
+    add_custom_target(create_icns ALL DEPENDS ${ICNS_FILE})
+
+    # Set source file properties for the resulting icns file
+    set_source_files_properties(${ICNS_FILE} PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources"
+    )
+
+    # Add the icns file to the executable target
+    target_sources(Zelda64Recompiled PRIVATE ${ICNS_FILE})
+
+    # Ensure Zelda64Recompiled depends on create_icns
+    add_dependencies(Zelda64Recompiled create_icns)
+
+    # Configure Info.plist
+    configure_file(${CMAKE_SOURCE_DIR}/.github/macos/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
+
+    # Install the app bundle
+    install(TARGETS Zelda64Recompiled BUNDLE DESTINATION .)
+
+    # Copy required frameworks to bundle
+    target_link_libraries(Zelda64Recompiled PRIVATE ${MOLTENVK_PATH} ${VULKAN_LOADER_PATH})
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/.github/macos/fixup_bundle.cmake
+    )
+
+    # Copy assets folder to the MacOS folder of the app bundle
+    set(TEMP_ASSETS_DIR "${CMAKE_BINARY_DIR}/temp_assets")
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${TEMP_ASSETS_DIR}
+            COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEMP_ASSETS_DIR}/scss
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEMP_ASSETS_DIR} $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/assets
+            COMMAND ${CMAKE_COMMAND} -E remove_directory ${TEMP_ASSETS_DIR}
+    )
+
+    # Copy ICD files to macOS Resources folder
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/vulkan/icd.d
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/.github/macOS/MoltenVK_icd.json $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/vulkan/icd.d/
+    )
+
+    # Copy controller db file to macOS Resources folder
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/
+    )
+
+    # Use install_name_tool to set the RPATH after the build
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/MacOS/Zelda64Recompiled
+    )
+
+    # Apply JIT compilation workaround
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Applying JIT compilation workaround"
+        COMMAND /bin/bash -c "printf '\\x07' | dd of=$<TARGET_FILE:Zelda64Recompiled> bs=1 seek=160 count=1 conv=notrunc"
+        VERBATIM
+    )
+
+    # Code sign the app bundle with ad-hoc identity
+    add_custom_command(TARGET Zelda64Recompiled POST_BUILD
+            COMMAND codesign --deep --force --sign - $<TARGET_BUNDLE_DIR:Zelda64Recompiled>
+            COMMENT "Code signing the app bundle with ad-hoc identity"
+    )
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
