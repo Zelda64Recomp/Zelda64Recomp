@@ -199,7 +199,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        type: [ Debug, Release ]
+        type: [ Debug, RelWithDebInfo ]
     name: windows (${{ matrix.type }})
     steps:
       - name: Checkout
