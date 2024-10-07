@@ -124,19 +124,8 @@ add_custom_command(OUTPUT
                    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.elf
 )
 
-# Download controller db file for controller support via SDL2
-set(GAMECONTROLLERDB_COMMIT "b1e4090b3d4266e55feb0793efa35792e05faf66")
-set(GAMECONTROLLERDB_URL "https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/${GAMECONTROLLERDB_COMMIT}/gamecontrollerdb.txt")
-
-file(DOWNLOAD ${GAMECONTROLLERDB_URL} ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt
-     TLS_VERIFY ON)
-
-add_custom_target(DownloadGameControllerDB
-    DEPENDS ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt)
-
 # Main executable
 add_executable(Zelda64Recompiled)
-add_dependencies(Zelda64Recompiled DownloadGameControllerDB)
 
 # Generate mm_shader_cache.c from the MM shader cache if it exists
 if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)

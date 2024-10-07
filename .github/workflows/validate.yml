@@ -93,7 +93,7 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
-          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ gamecontrollerdb.txt
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ recompcontrollerdb.txt
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v3
         with:
@@ -182,7 +182,7 @@ jobs:
         run: |
           mv cmake-build/Zelda64Recompiled Zelda64Recompiled
           rm -rf assets/scss
-          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ gamecontrollerdb.txt
+          tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ recompcontrollerdb.txt
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
         with:
@@ -275,4 +275,4 @@ jobs:
             dxil.dll
             SDL2.dll
             assets/
-            gamecontrollerdb.txt
+            recompcontrollerdb.txt
