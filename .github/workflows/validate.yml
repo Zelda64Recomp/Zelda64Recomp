@@ -280,6 +280,6 @@ jobs:
       - name: Archive Debug Files
         uses: actions/upload-artifact@v4
         with:
-          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}-PDB
+          name: Zelda64Recompiled-PDB-${{ matrix.type }}
           path: |
             Zelda64Recompiled.pdb
