@@ -196,6 +196,11 @@ else()
     )
 endif()
 
+if (MSVC)
+    # Disable identical code folding, since this breaks mod function patching as multiple functions can get merged into one.
+    target_link_options(Zelda64Recompiled PRIVATE /OPT:NOICF)
+endif()
+
 if (WIN32)
     include(FetchContent)
 
