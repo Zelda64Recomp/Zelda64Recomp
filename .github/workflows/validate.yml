@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ format('blaze/compute/{0}-amd64', matrix.os) }}
     container:
       image: dcvz/n64recomp:ubuntu-18.04
       volumes:
@@ -108,7 +108,7 @@ jobs:
           name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-linux-arm64:
-    runs-on: ${{ format('blaze/{0}', matrix.os) }}
+    runs-on: ${{ format('blaze/compute/{0}', matrix.os) }}
     strategy:
       matrix:
         type: [ Debug, Release ]
