@@ -275,6 +275,11 @@ jobs:
             dxcompiler.dll
             dxil.dll
             SDL2.dll
-            Zelda64Recompiled.pdb
             assets/
             gamecontrollerdb.txt
+      - name: Archive Debug Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}-PDB
+          path: |
+            Zelda64Recompiled.pdb
