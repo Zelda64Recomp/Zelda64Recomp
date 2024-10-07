@@ -15,7 +15,7 @@ Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com
 
 <br style="display: none;"/>
 
-_Special thanks to [Blaze](https://runblaze.dev) for their support of this project. They provide high-performance Linux (ARM64 & AMD64) and Apple Silicon macOS runners for GitHub Actions, enhancing our development workflow._
+_Special thanks to [Blaze](https://runblaze.dev) for their support of this project. They provide high-performance Linux (AMD64 & ARM64) and Apple Silicon macOS runners for GitHub Actions, greatly reducing our automated build times._
 
 </div>
 
