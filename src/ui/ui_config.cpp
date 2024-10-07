@@ -2,6 +2,7 @@
 #include "recomp_input.h"
 #include "zelda_sound.h"
 #include "zelda_config.h"
+#include "zelda_support.h"
 #include "zelda_debug.h"
 #include "zelda_render.h"
 #include "promptfont.h"
@@ -519,6 +520,11 @@ public:
 
 	}
 	Rml::ElementDocument* load_document(Rml::Context* context) override {
+#if defined(__APPLE__)
+        const Rml::String asset = "/assets/config_menu.rml";
+        return context->LoadDocument(zelda64::get_bundle_resource_directory() + asset);
+#endif
+
         return context->LoadDocument("assets/config_menu.rml");
 	}
 	void register_events(recompui::UiEventListenerInstancer& listener) override {
@@ -725,7 +731,7 @@ public:
 			throw std::runtime_error("Failed to make RmlUi data model for the controls config menu");
 		}
 
-		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = recomp::get_num_inputs(); } );
+		constructor.BindFunc("input_count", [](Rml::Variant& out) { out = static_cast<uint64_t>(recomp::get_num_inputs()); } );
 		constructor.BindFunc("input_device_is_keyboard", [](Rml::Variant& out) { out = cur_device == recomp::InputDevice::Keyboard; } );
 
 		constructor.RegisterTransformFunc("get_input_name", [](const Rml::VariantList& inputs) {

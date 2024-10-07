@@ -13,6 +13,8 @@
 #elif defined(__linux__)
 #include <unistd.h>
 #include <pwd.h>
+#elif defined(__APPLE__)
+#include "common/rt64_apple.h"
 #endif
 
 constexpr std::u8string_view general_filename = u8"general.json";
@@ -145,8 +147,8 @@ std::filesystem::path zelda64::get_app_folder_path() {
    }
 
    CoTaskMemFree(known_path);
-#elif defined(__linux__)
-   // check for APP_FOLDER_PATH env var used by AppImage
+#elif defined(__linux__) || defined(__APPLE__)
+   // check for APP_FOLDER_PATH env var
    if (getenv("APP_FOLDER_PATH") != nullptr) {
        return std::filesystem::path{getenv("APP_FOLDER_PATH")};
    }
@@ -154,7 +156,11 @@ std::filesystem::path zelda64::get_app_folder_path() {
    const char *homedir;
 
    if ((homedir = getenv("HOME")) == nullptr) {
+    #if defined(__linux__)
        homedir = getpwuid(getuid())->pw_dir;
+    #elif defined(__APPLE__)
+        homedir = GetHomeDirectory();
+    #endif
    }
 
    if (homedir != nullptr) {

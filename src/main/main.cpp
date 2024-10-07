@@ -25,6 +25,7 @@
 #include "zelda_config.h"
 #include "zelda_sound.h"
 #include "zelda_render.h"
+#include "zelda_support.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 #include "librecomp/mods.hpp"
@@ -44,7 +45,7 @@ void exit_error(const char* str, Ts ...args) {
     // TODO pop up an error
     ((void)fprintf(stderr, str, args), ...);
     assert(false);
-    std::quick_exit(EXIT_FAILURE);
+    ULTRAMODERN_QUICK_EXIT();
 }
 
 ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
@@ -118,7 +119,12 @@ bool SetImageAsIcon(const char* filename, SDL_Window* window)
 SDL_Window* window;
 
 ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
-    window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, SDL_WINDOW_RESIZABLE );
+    uint32_t window_flags = SDL_WINDOW_RESIZABLE;
+#ifdef __APPLE__
+    window_flags |= SDL_WINDOW_METAL;
+#endif
+
+    window = SDL_CreateWindow("Zelda 64: Recompiled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 960, window_flags );
 #if defined(__linux__)
     SetImageAsIcon("icons/512.png",window);
     if (ultramodern::renderer::get_graphics_config().wm_option == ultramodern::renderer::WindowMode::Fullscreen) { // TODO: Remove once RT64 gets native fullscreen support on Linux
@@ -146,6 +152,9 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
     }
 
     return ultramodern::renderer::WindowHandle{ wmInfo.info.x11.display, wmInfo.info.x11.window };
+#elif defined(__APPLE__)
+    SDL_MetalView view = SDL_Metal_CreateView(window);
+    return ultramodern::renderer::WindowHandle{ wmInfo.info.cocoa.window,  SDL_Metal_GetLayer(view) };
 #else
     static_assert(false && "Unimplemented");
 #endif
@@ -584,8 +593,13 @@ int main(int argc, char** argv) {
     SDL_InitSubSystem(SDL_INIT_AUDIO);
     reset_audio(48000);
 
-    // Source controller mappings file
-    if (SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt") < 0) {
+#if defined(__APPLE__)
+    const char* resource_directory = zelda64::get_bundle_resource_directory();
+    std::string mapping_file_path = std::string(resource_directory) + "gamecontrollerdb.txt";
+#else
+    std::string mapping_file_path = "gamecontrollerdb.txt";
+#endif
+    if (SDL_GameControllerAddMappingsFromFile(mapping_file_path.c_str()) < 0) {
         fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
     }
 

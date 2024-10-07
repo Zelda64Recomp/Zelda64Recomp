@@ -1,5 +1,6 @@
 #include "recomp_ui.h"
 #include "zelda_config.h"
+#include "zelda_support.h"
 #include "librecomp/game.hpp"
 #include "ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
@@ -15,41 +16,43 @@ extern std::vector<recomp::GameEntry> supported_games;
 
 void select_rom() {
 	nfdnchar_t* native_path = nullptr;
-	nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
+    zelda64::dispatch_on_main_thread([&native_path] {
+        nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
 
-	if (result == NFD_OKAY) {
-		std::filesystem::path path{native_path};
+        if (result == NFD_OKAY) {
+            std::filesystem::path path{native_path};
 
-		NFD_FreePathN(native_path);
-		native_path = nullptr;
+            NFD_FreePathN(native_path);
+            native_path = nullptr;
 
-		recomp::RomValidationError rom_error = recomp::select_rom(path, supported_games[0].game_id);
-        switch (rom_error) {
-            case recomp::RomValidationError::Good:
-                mm_rom_valid = true;
-                model_handle.DirtyVariable("mm_rom_valid");
-                break;
-            case recomp::RomValidationError::FailedToOpen:
-                recompui::message_box("Failed to open ROM file.");
-                break;
-            case recomp::RomValidationError::NotARom:
-                recompui::message_box("This is not a valid ROM file.");
-                break;
-            case recomp::RomValidationError::IncorrectRom:
-                recompui::message_box("This ROM is not the correct game.");
-                break;
-            case recomp::RomValidationError::NotYet:
-                recompui::message_box("This game isn't supported yet.");
-                break;
-            case recomp::RomValidationError::IncorrectVersion:
-                recompui::message_box(
-                        "This ROM is the correct game, but the wrong version.\nThis project requires the NTSC-U N64 version of the game.");
-                break;
-            case recomp::RomValidationError::OtherError:
-                recompui::message_box("An unknown error has occurred.");
-                break;
+            recomp::RomValidationError rom_error = recomp::select_rom(path, supported_games[0].game_id);
+            switch (rom_error) {
+                case recomp::RomValidationError::Good:
+                    mm_rom_valid = true;
+                    model_handle.DirtyVariable("mm_rom_valid");
+                    break;
+                case recomp::RomValidationError::FailedToOpen:
+                    recompui::message_box("Failed to open ROM file.");
+                    break;
+                case recomp::RomValidationError::NotARom:
+                    recompui::message_box("This is not a valid ROM file.");
+                    break;
+                case recomp::RomValidationError::IncorrectRom:
+                    recompui::message_box("This ROM is not the correct game.");
+                    break;
+                case recomp::RomValidationError::NotYet:
+                    recompui::message_box("This game isn't supported yet.");
+                    break;
+                case recomp::RomValidationError::IncorrectVersion:
+                    recompui::message_box(
+                            "This ROM is the correct game, but the wrong version.\nThis project requires the NTSC-U N64 version of the game.");
+                    break;
+                case recomp::RomValidationError::OtherError:
+                    recompui::message_box("An unknown error has occurred.");
+                    break;
+            }
         }
-    }
+    });
 }
 
 class LauncherMenu : public recompui::MenuController {
@@ -61,6 +64,11 @@ public:
 
 	}
 	Rml::ElementDocument* load_document(Rml::Context* context) override {
+#if defined(__APPLE__)
+        const Rml::String asset = "/assets/launcher.rml";
+        return context->LoadDocument(zelda64::get_bundle_resource_directory() + asset);
+#endif
+
         return context->LoadDocument("assets/launcher.rml");
 	}
 	void register_events(recompui::UiEventListenerInstancer& listener) override {

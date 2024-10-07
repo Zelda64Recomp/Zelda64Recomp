@@ -14,6 +14,14 @@ on:
         type: string
         required: false
         default: '4e6f4e52989aca69739880b40b9f988357f15d10ca03284377b81f1502463ff5'
+      VULKAN_SDK_VERSION:
+        type: string
+        required: false
+        default: '1.3.296.0'
+      MOLTENVK_COMMIT:
+        type: string
+        required: false
+        default: ''
     secrets:
       ZRE_REPO_WITH_PAT:
         required: true
@@ -95,7 +103,7 @@ jobs:
           rm -rf assets/scss
           tar -czf Zelda64Recompiled.tar.gz Zelda64Recompiled assets/ gamecontrollerdb.txt
       - name: Archive Zelda64Recomp
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Zelda64Recompiled-${{ runner.os }}-X64-${{ matrix.type }}
           path: Zelda64Recompiled.tar.gz
@@ -103,7 +111,7 @@ jobs:
         run: |-
           ./.github/linux/appimage.sh 
       - name: Zelda64Recomp AppImage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
@@ -283,3 +291,119 @@ jobs:
           name: Zelda64Recompiled-PDB-${{ matrix.type }}
           path: |
             Zelda64Recompiled.pdb
+  build-macos:
+    runs-on: blaze/macos-14
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+    name: macos (x64, arm64, ${{ matrix.type }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-z64re-ccache-${{ matrix.type }}
+      - name: Homebrew Setup
+        run: |
+          brew install ninja
+          brew uninstall --ignore-dependencies libpng freetype
+      - name: MacPorts Setup
+        uses: melusina-org/setup-macports@v1
+        id: 'macports'
+        with:
+          parameters: '.github/macos/macports.yaml'
+      - name: Prepare Build
+        run: |-
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
+          ./zre/process.sh
+          cp ./zre/mm_shader_cache.bin ./shadercache/
+      - name: Build N64Recomp & RSPRecomp
+        run: |
+          git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
+          cd N64RecompSource
+          git checkout ${{ inputs.N64RECOMP_COMMIT }}
+          git submodule update --init --recursive
+          
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          # Build N64Recomp & RSPRecomp
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build
+          cmake --build cmake-build --config Release --target N64Recomp -j $(sysctl -n hw.ncpu)
+          cmake --build cmake-build --config Release --target RSPRecomp -j $(sysctl -n hw.ncpu)
+          
+          # Copy N64Recomp & RSPRecomp to root directory
+          cp cmake-build/N64Recomp ..
+          cp cmake-build/RSPRecomp ..
+      - name: Run N64Recomp & RSPRecomp
+        run: |
+          ./N64Recomp us.rev1.toml
+          ./RSPRecomp aspMain.us.rev1.toml
+          ./RSPRecomp njpgdspMain.us.rev1.toml
+      - name: Cache Vulkan SDK
+        id: cache-vulkan-sdk
+        uses: actions/cache@v3
+        with:
+          path: /Users/runner/VulkanSDK/${{ inputs.VULKAN_SDK_VERSION }}
+          key: ${{ runner.os }}-${{ matrix.type }}-vulkan-sdk-${{ inputs.VULKAN_SDK_VERSION }}
+      - name: Install Vulkan SDK
+        if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
+        run: |
+          wget https://sdk.lunarg.com/sdk/download/${{ inputs.VULKAN_SDK_VERSION }}/mac/vulkansdk-macos-${{ inputs.VULKAN_SDK_VERSION }}.zip
+          unzip vulkansdk-macos-${{ inputs.VULKAN_SDK_VERSION }}.zip
+          sudo InstallVulkan.app/Contents/MacOS/InstallVulkan --root ~/VulkanSDK/${{ inputs.VULKAN_SDK_VERSION }} --accept-licenses --default-answer --confirm-command install
+      - name: Checkout MoltenVK
+        if: inputs.MOLTENVK_COMMIT != ''
+        run: |
+          git clone https://github.com/KhronosGroup/MoltenVK.git
+          cd MoltenVK
+          git checkout ${{ inputs.MOLTENVK_COMMIT }}
+      - name: Cache MoltenVK Dependencies
+        if: inputs.MOLTENVK_COMMIT != ''
+        id: cache-mvk-dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            MoltenVK/External/build
+            !MoltenVK/External/build/Intermediates
+          key: ${{ runner.os }}-${{ matrix.type }}-${{ hashFiles('MoltenVK/fetchDependencies','MoltenVK/ExternalRevisions/**','MoltenVK/ExternalDependencies.xcodeproj/**','MoltenVK/Scripts/**') }}
+      - name: Fetch MVK Dependencies (Use Built Cache)
+        if: inputs.MOLTENVK_COMMIT != '' && steps.cache-mvk-dependencies.outputs.cache-hit == 'true'
+        run: |
+          cd MoltenVK
+          ./fetchDependencies -v --none
+      - name: Fetch MVK Dependencies
+        if: inputs.MOLTENVK_COMMIT != '' && steps.cache-mvk-dependencies.outputs.cache-hit != 'true'
+        run: |
+          cd MoltenVK
+          ./fetchDependencies -v --macos
+      - name: Build MoltenVK
+        if: inputs.MOLTENVK_COMMIT != ''
+        run: |
+          cd MoltenVK
+          make macos
+          sudo cp Package/Latest/MoltenVK/dylib/macOS/libMoltenVK.dylib ~/VulkanSDK/${{ inputs.VULKAN_SDK_VERSION }}/macOS/lib/libMoltenVK.dylib
+      - name: Build ZeldaRecomp
+        run: |-
+          # enable ccache
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.type }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S . -B cmake-build \
+          -DPATCHES_LD=/opt/local/bin/ld.lld-mp-18 -DPATCHES_OBJCOPY=/opt/local/bin/llvm-objcopy-mp-18 -DCMAKE_AR=/opt/local/bin/llvm-ar-mp-18 -DPATCHES_C_COMPILER=/opt/local/bin/clang-mp-18 \
+          -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          cmake --build cmake-build --config ${{ matrix.type }} --target Zelda64Recompiled -j $(sysctl -n hw.ncpu)
+        env:
+          VULKAN_SDK: /Users/runner/VulkanSDK/${{ inputs.VULKAN_SDK_VERSION }}/macOS
+      - name: Prepare Archive
+        run: |
+          mv cmake-build/Zelda64Recompiled.app Zelda64Recompiled.app
+          zip -r -y Zelda64Recompiled.zip Zelda64Recompiled.app
+      - name: Archive Zelda64Recomp
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-${{ runner.os }}-${{ matrix.type }}
+          path: Zelda64Recompiled.zip

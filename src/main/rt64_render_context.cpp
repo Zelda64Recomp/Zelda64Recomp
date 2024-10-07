@@ -207,7 +207,7 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
     appCore.window.window = window_handle.window;
 #elif defined(__APPLE__)
     appCore.window.window = window_handle.window;
-    appCore.window.view = window_handle.view;
+    appCore.window.layer = window_handle.view;
 #endif
 
     appCore.checkInterrupts = dummy_check_interrupts;
