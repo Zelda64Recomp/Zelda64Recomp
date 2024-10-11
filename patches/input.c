@@ -711,7 +711,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                 }
 
                 // @recomp_use_export_var no_bow_epona_fix: Don't enable the B button or restore hud visibility from Epona without a sword.
-                if ((player->stateFlags1 & PLAYER_STATE1_800000) == 0 || (!no_bow_epona_fix && BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED)) {
+                if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED && (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0)) {
                     BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
                     restoreHudVisibility = true;
                 }
