@@ -633,9 +633,8 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                                 Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                             }
 
-                            // @recomp_use_export_var no_bow_epona_fix: If B item is a sword, don't disable the UI.
-                            if (!no_bow_epona_fix || (BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) < ITEM_SWORD_KOKIRI ||
-                                BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) > ITEM_SWORD_GILDED)) {
+                            // @recomp_use_export_var no_bow_epona_fix: If riding Epona, don't disable the UI.
+                            if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
                                 BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                                 BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                                 BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
@@ -716,8 +715,8 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     restoreHudVisibility = true;
                 }
 
-                // @recomp_use_export_var no_bow_epona_fix: If B item is a sword, don't disable the UI.
-                if (!no_bow_epona_fix) {
+                // @recomp_use_export_var no_bow_epona_fix: If riding Epona, don't disable the UI.
+                if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
                     BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
