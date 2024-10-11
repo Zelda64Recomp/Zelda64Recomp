@@ -614,6 +614,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                             if (no_bow_epona_fix) {
                                 if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_BOW) {
                                     BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                                    BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
                                 }
                             } else {
                                 BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
@@ -633,8 +634,9 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                                 Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                             }
 
-                            // @recomp_use_export_var no_bow_epona_fix: If riding Epona, don't disable the UI.
-                            if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
+                            // @recomp_use_export_var no_bow_epona_fix: If the B button does not contain a sword, don't disable the UI.
+                            if (!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) < ITEM_SWORD_KOKIRI ||
+                                BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) > ITEM_SWORD_GILDED) {
                                 BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                                 BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                                 BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
@@ -642,6 +644,10 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                                 Interface_SetHudVisibility(HUD_VISIBILITY_A_HEARTS_MAGIC_MINIMAP_WITH_OVERWRITE);
                             }
                         }
+                    }
+
+                    if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED && BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
                     }
 
                     if (play->transitionMode != TRANS_MODE_OFF) {
@@ -689,6 +695,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     if (no_bow_epona_fix) {
                         if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_BOW) {
                             BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                            BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
                         }
                     } else {
                         BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
@@ -709,14 +716,20 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                 }
 
-                // @recomp_use_export_var no_bow_epona_fix: Don't enable the B button or restore hud visibility from Epona without a sword.
-                if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED && (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0)) {
-                    BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
-                    restoreHudVisibility = true;
+                if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED) {
+                    // @recomp_use_export_var no_bow_epona_fix: Don't enable the B button unless it is being used for the bow.
+                    if (!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                    }
+
+                    // @recomp_use_export_var no_bow_epona_fix: Don't restore hud visibility from Epona without a sword.
+                    if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
+                        restoreHudVisibility = true;
+                    }
                 }
 
-                // @recomp_use_export_var no_bow_epona_fix: If riding Epona, don't disable the UI.
-                if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
+                // @recomp_use_export_var no_bow_epona_fix: If the B button does not contain the bow, don't disable the UI.
+                if (!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
                     BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
