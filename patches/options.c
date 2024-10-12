@@ -1036,6 +1036,9 @@ RECOMP_PATCH void FileSelect_ConfirmFile(GameState *thisx) {
     }
 }
 
+// Non-relocatable reference to the original address of Play_Init.
+void Play_Init_NORELOCATE(GameState*);
+
 /**
  * Load the save for the appropriate file and start the game.
  * Update function for `SM_LOAD_GAME`
@@ -1060,7 +1063,7 @@ RECOMP_PATCH void FileSelect_LoadGame(GameState* thisx) {
     gSaveContext.gameMode = GAMEMODE_NORMAL;
 
     STOP_GAMESTATE(&this->state);
-    SET_NEXT_GAMESTATE(&this->state, Play_Init, sizeof(PlayState));
+    SET_NEXT_GAMESTATE(&this->state, Play_Init_NORELOCATE, sizeof(PlayState));
 
     gSaveContext.respawnFlag = 0;
     gSaveContext.respawn[RESPAWN_MODE_DOWN].entrance = ENTR_LOAD_OPENING;
