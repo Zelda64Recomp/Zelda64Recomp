@@ -150,6 +150,15 @@ extern u8 D_80784600[];
 void DayTelop_Init_NORELOCATE(GameState*);
 void TitleSetup_Init_NORELOCATE(GameState*);
 
+RECOMP_DECLARE_EVENT(recomp_on_play_init(PlayState* this));
+
+bool allow_no_ocarina_tf = false;
+
+// @recomp_export void recomp_set_allow_no_ocarina(bool new_val): Set whether to force Termina Field to load normally even if Link has no ocarina.
+RECOMP_EXPORT void recomp_set_allow_no_ocarina(bool new_val) {
+    allow_no_ocarina_tf = new_val;
+}
+
 RECOMP_PATCH void Play_Init(GameState* thisx) {
     PlayState* this = (PlayState*)thisx;
     GraphicsContext* gfxCtx = this->state.gfxCtx;
@@ -161,6 +170,9 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
     s32 spawn;
     u8 sceneLayer;
     s32 scene;
+
+    // @recomp_event recomp_on_play_init(PlayState* this): A new PlayState is being constructed.
+    recomp_on_play_init(this);
 
     if ((gSaveContext.respawnFlag == -4) || (gSaveContext.respawnFlag == -0x63)) {
         if (CHECK_EVENTINF(EVENTINF_TRIGGER_DAYTELOP)) {
@@ -223,7 +235,8 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
         }
 
         // "First cycle" Termina Field
-        if (INV_CONTENT(ITEM_OCARINA_OF_TIME) != ITEM_OCARINA_OF_TIME) {
+        // @recomp_use_export_var allow_no_ocarina_tf: Skip loading into "First cycle" Termina Field if mods enable it.
+        if (!allow_no_ocarina_tf && INV_CONTENT(ITEM_OCARINA_OF_TIME) != ITEM_OCARINA_OF_TIME) {
             if ((scene == ENTR_SCENE_TERMINA_FIELD) &&
                 (((void)0, gSaveContext.save.entrance) != ENTRANCE(TERMINA_FIELD, 10))) {
                 gSaveContext.nextCutsceneIndex = 0xFFF4;
