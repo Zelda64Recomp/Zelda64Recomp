@@ -172,7 +172,7 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
     u8 sceneLayer;
     s32 scene;
 
-    // @recomp_event recomp_on_play_init(PlayState* this): A new PlayState is being constructed.
+    // @recomp_event recomp_on_play_init(PlayState* this): A new PlayState is being initialized.
     recomp_on_play_init(this);
 
     if ((gSaveContext.respawnFlag == -4) || (gSaveContext.respawnFlag == -0x63)) {
@@ -438,6 +438,6 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
     sBombersNotebookOpen = false;
     BombersNotebook_Init(&sBombersNotebook);
 
-    // @recomp_event recomp_after_play_init(PlayState* this): The new PlayState has finished constructing.
+    // @recomp_event recomp_after_play_init(PlayState* this): The new PlayState has finished initializing.
     recomp_after_play_init(this);
 }
