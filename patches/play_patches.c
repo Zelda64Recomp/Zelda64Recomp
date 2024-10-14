@@ -151,11 +151,12 @@ void DayTelop_Init_NORELOCATE(GameState*);
 void TitleSetup_Init_NORELOCATE(GameState*);
 
 RECOMP_DECLARE_EVENT(recomp_on_play_init(PlayState* this));
+RECOMP_DECLARE_EVENT(recomp_after_play_init(PlayState* this));
 
 bool allow_no_ocarina_tf = false;
 
-// @recomp_export void recomp_set_allow_no_ocarina(bool new_val): Set whether to force Termina Field to load normally even if Link has no ocarina.
-RECOMP_EXPORT void recomp_set_allow_no_ocarina(bool new_val) {
+// @recomp_export void recomp_set_allow_no_ocarina_tf(bool new_val): Set whether to force Termina Field to load normally even if Link has no ocarina.
+RECOMP_EXPORT void recomp_set_allow_no_ocarina_tf(bool new_val) {
     allow_no_ocarina_tf = new_val;
 }
 
@@ -436,4 +437,7 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
     gSaveContext.respawnFlag = 0;
     sBombersNotebookOpen = false;
     BombersNotebook_Init(&sBombersNotebook);
+
+    // @recomp_event recomp_after_play_init(PlayState* this): The new PlayState has finished constructing.
+    recomp_after_play_init(this);
 }
