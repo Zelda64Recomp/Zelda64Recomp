@@ -541,6 +541,13 @@ RECOMP_EXPORT void recomp_set_no_bow_epona_fix(bool new_val) {
     no_bow_epona_fix = new_val;
 }
 
+bool h_and_d_no_sword_fix = false;
+
+// @recomp_export void recomp_set_h_and_d_no_sword_fix(bool new_val): Set whether to enable the fix for playing Honey and Darling without a sword.
+RECOMP_EXPORT void recomp_set_h_and_d_no_sword_fix(bool new_val) {
+    h_and_d_no_sword_fix = new_val;
+}
+
 extern s16 sPictoState;
 extern s16 sPictoPhotoBeingTaken;
 extern void* gWorkBuffer;
@@ -548,6 +555,9 @@ u16 func_801A5100(void);
 
 #define ON_EPONA (player->stateFlags1 & PLAYER_STATE1_800000)
 #define EPONA_FIX_ACTIVE (no_bow_epona_fix && ON_EPONA)
+
+#define AT_H_AND_D (play->sceneId == SCENE_BOWLING)
+#define H_AND_D_FIX_ACTIVE (h_and_d_no_sword_fix && AT_H_AND_D)
 
 // @recomp Patched to update status of extra buttons via set_extra_item_slot_status.
 RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
@@ -689,6 +699,9 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     } else {
                         BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
                     }
+                    if (h_and_d_no_sword_fix) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                    }
                     BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
@@ -707,7 +720,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
 
                 if (play->unk_1887C >= 2) {
                     Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
-                } else if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_NONE) {
+                } else if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_NONE && !H_AND_D_FIX_ACTIVE) {
                     // @recomp_use_export_var no_bow_epona_fix: Part of the no bow Epona fix.
                     if (EPONA_FIX_ACTIVE) {
                         gSaveContext.buttonStatus[EQUIP_SLOT_B] = BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B);
@@ -732,7 +745,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                 }
 
                 // @recomp_use_export_var no_bow_epona_fix: If the B button does not contain the bow, don't disable the UI.
-                if (!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
+                if ((!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) && !H_AND_D_FIX_ACTIVE) {
                     BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
@@ -758,6 +771,9 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
                 } else if (ON_EPONA) {
                     Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
+                } else if (H_AND_D_FIX_ACTIVE) {
+                    Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
+                    Interface_SetHudVisibility(HUD_VISIBILITY_B);
                 }
             }
         } else if (sPictoState != PICTO_BOX_STATE_OFF) {
