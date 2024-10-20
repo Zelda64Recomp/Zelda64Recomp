@@ -534,10 +534,30 @@ RECOMP_PATCH void Player_Action_86(Player *this, PlayState *play) {
     func_808550D0(play, this, this->unk_B10[4], this->unk_B10[5], (this->transformation == PLAYER_FORM_HUMAN) ? 0 : 1);
 }
 
+bool no_bow_epona_fix = false;
+
+// @recomp_export void recomp_set_no_bow_epona_fix(bool new_val): Set whether to enable the fix for getting on Epona without a bow.
+RECOMP_EXPORT void recomp_set_no_bow_epona_fix(bool new_val) {
+    no_bow_epona_fix = new_val;
+}
+
+bool h_and_d_no_sword_fix = false;
+
+// @recomp_export void recomp_set_h_and_d_no_sword_fix(bool new_val): Set whether to enable the fix for playing Honey and Darling without a sword.
+RECOMP_EXPORT void recomp_set_h_and_d_no_sword_fix(bool new_val) {
+    h_and_d_no_sword_fix = new_val;
+}
+
 extern s16 sPictoState;
 extern s16 sPictoPhotoBeingTaken;
 extern void* gWorkBuffer;
 u16 func_801A5100(void);
+
+#define ON_EPONA (player->stateFlags1 & PLAYER_STATE1_800000)
+#define EPONA_FIX_ACTIVE (no_bow_epona_fix && ON_EPONA)
+
+#define AT_H_AND_D (play->sceneId == SCENE_BOWLING)
+#define H_AND_D_FIX_ACTIVE (h_and_d_no_sword_fix && AT_H_AND_D)
 
 // @recomp Patched to update status of extra buttons via set_extra_item_slot_status.
 RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
@@ -548,11 +568,11 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
 
     if (gSaveContext.save.cutsceneIndex < 0xFFF0) {
         gSaveContext.hudVisibilityForceButtonAlphasByStatus = false;
-        if ((player->stateFlags1 & PLAYER_STATE1_800000) || CHECK_WEEKEVENTREG(WEEKEVENTREG_08_01) ||
+        if (ON_EPONA || CHECK_WEEKEVENTREG(WEEKEVENTREG_08_01) ||
             (!CHECK_EVENTINF(EVENTINF_41) && (play->unk_1887C >= 2))) {
             // Riding Epona OR Honey & Darling minigame OR Horseback balloon minigame OR related to swamp boat
             // (non-minigame?)
-            if ((player->stateFlags1 & PLAYER_STATE1_800000) && (player->currentMask == PLAYER_MASK_BLAST) &&
+            if (ON_EPONA && (player->currentMask == PLAYER_MASK_BLAST) &&
                 (gSaveContext.bButtonStatus == BTN_DISABLED)) {
                 // Riding Epona with blast mask?
                 restoreHudVisibility = true;
@@ -603,22 +623,44 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                             BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
                             set_extra_item_slot_status(BTN_DISABLED);
                         } else {
-                            BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                            // @recomp_use_export_var no_bow_epona_fix: Part of the no bow Epona fix.
+                            if (EPONA_FIX_ACTIVE) {
+                                if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_BOW) {
+                                    BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                                    BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                                }
+                            } else {
+                                BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                            }
 
                             if (play->unk_1887C >= 2) {
                                 Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                             } else if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_NONE) {
-                                BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_NONE;
+                                // @recomp_use_export_var no_bow_epona_fix: Part of the no bow Epona fix.
+                                if (EPONA_FIX_ACTIVE) {
+                                    gSaveContext.buttonStatus[EQUIP_SLOT_B] = BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B);
+                                    BUTTON_STATUS(EQUIP_SLOT_B) = BTN_DISABLED;
+                                } else {
+                                    BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_NONE;
+                                }
                             } else {
                                 Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                             }
 
-                            BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
-                            BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
-                            BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
-                            set_extra_item_slot_status(BTN_DISABLED);
-                            Interface_SetHudVisibility(HUD_VISIBILITY_A_HEARTS_MAGIC_MINIMAP_WITH_OVERWRITE);
+                            // @recomp_use_export_var no_bow_epona_fix: If the B button does not contain a sword, don't disable the UI.
+                            if (!EPONA_FIX_ACTIVE || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) < ITEM_SWORD_KOKIRI ||
+                                BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) > ITEM_SWORD_GILDED) {
+                                BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
+                                BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
+                                BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
+                                set_extra_item_slot_status(BTN_DISABLED);
+                                Interface_SetHudVisibility(HUD_VISIBILITY_A_HEARTS_MAGIC_MINIMAP_WITH_OVERWRITE);
+                            }
                         }
+                    }
+
+                    if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED && BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
                     }
 
                     if (play->transitionMode != TRANS_MODE_OFF) {
@@ -640,12 +682,12 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                         BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
                         set_extra_item_slot_status(BTN_DISABLED);
                         Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
-                    } else if (player->stateFlags1 & PLAYER_STATE1_800000) {
+                    } else if (ON_EPONA) {
                         Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
                     }
                 }
             } else {
-                if (player->stateFlags1 & PLAYER_STATE1_800000) {
+                if (ON_EPONA) {
                     Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
                 }
 
@@ -657,32 +699,59 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     } else {
                         BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
                     }
+                    if (h_and_d_no_sword_fix) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                    }
                     BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
                     set_extra_item_slot_status(BTN_DISABLED);
                 } else {
-                    BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                    // @recomp_use_export_var no_bow_epona_fix: Part of the no bow Epona fix.
+                    if (EPONA_FIX_ACTIVE) {
+                        if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_BOW) {
+                            BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                            BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                        }
+                    } else {
+                        BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_BOW;
+                    }
                 }
 
                 if (play->unk_1887C >= 2) {
                     Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
-                } else if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_NONE) {
-                    BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_NONE;
+                } else if (gSaveContext.save.saveInfo.inventory.items[SLOT_BOW] == ITEM_NONE && !H_AND_D_FIX_ACTIVE) {
+                    // @recomp_use_export_var no_bow_epona_fix: Part of the no bow Epona fix.
+                    if (EPONA_FIX_ACTIVE) {
+                        gSaveContext.buttonStatus[EQUIP_SLOT_B] = BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B);
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_DISABLED;
+                    } else {
+                        BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) = ITEM_NONE;
+                    }
                 } else {
                     Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
                 }
 
                 if (BUTTON_STATUS(EQUIP_SLOT_B) == BTN_DISABLED) {
-                    BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
-                    restoreHudVisibility = true;
+                    // @recomp_use_export_var no_bow_epona_fix: Don't enable the B button unless it is being used for the bow.
+                    if (!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) {
+                        BUTTON_STATUS(EQUIP_SLOT_B) = BTN_ENABLED;
+                    }
+
+                    // @recomp_use_export_var no_bow_epona_fix: Don't restore hud visibility from Epona without a sword.
+                    if (!no_bow_epona_fix || (player->stateFlags1 & PLAYER_STATE1_800000) == 0) {
+                        restoreHudVisibility = true;
+                    }
                 }
 
-                BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
-                BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
-                BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
-                set_extra_item_slot_status(BTN_DISABLED);
-                Interface_SetHudVisibility(HUD_VISIBILITY_A_HEARTS_MAGIC_MINIMAP_WITH_OVERWRITE);
+                // @recomp_use_export_var no_bow_epona_fix: If the B button does not contain the bow, don't disable the UI.
+                if ((!no_bow_epona_fix || BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_BOW) && !H_AND_D_FIX_ACTIVE) {
+                    BUTTON_STATUS(EQUIP_SLOT_C_LEFT) = BTN_DISABLED;
+                    BUTTON_STATUS(EQUIP_SLOT_C_DOWN) = BTN_DISABLED;
+                    BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
+                    set_extra_item_slot_status(BTN_DISABLED);
+                    Interface_SetHudVisibility(HUD_VISIBILITY_A_HEARTS_MAGIC_MINIMAP_WITH_OVERWRITE);
+                }
 
                 if (play->transitionMode != TRANS_MODE_OFF) {
                     Interface_SetHudVisibility(HUD_VISIBILITY_NONE);
@@ -700,8 +769,11 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
                     BUTTON_STATUS(EQUIP_SLOT_C_RIGHT) = BTN_DISABLED;
                     set_extra_item_slot_status(BTN_DISABLED);
                     Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
-                } else if (player->stateFlags1 & PLAYER_STATE1_800000) {
+                } else if (ON_EPONA) {
                     Interface_SetHudVisibility(HUD_VISIBILITY_A_B_MINIMAP);
+                } else if (H_AND_D_FIX_ACTIVE) {
+                    Interface_LoadItemIconImpl(play, EQUIP_SLOT_B);
+                    Interface_SetHudVisibility(HUD_VISIBILITY_B);
                 }
             }
         } else if (sPictoState != PICTO_BOX_STATE_OFF) {
@@ -800,6 +872,13 @@ RECOMP_PATCH void Interface_UpdateButtonsPart1(PlayState* play) {
             Interface_SetHudVisibility(HUD_VISIBILITY_ALL);
         }
     }
+}
+
+bool fd_anywhere = false;
+
+// @recomp_export void recomp_set_fd_anywhere(bool new_val): Set whether the Fierce Deity's Mask has scene restrictions.
+RECOMP_EXPORT void recomp_set_fd_anywhere(bool new_val) {
+    fd_anywhere = new_val;
 }
 
 /**
@@ -1181,7 +1260,8 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
                     }
                 } else if (GET_CUR_FORM_BTN_ITEM(i) == ITEM_MASK_FIERCE_DEITY) {
                     // Fierce Deity's Mask is equipped
-                    if ((play->sceneId != SCENE_MITURIN_BS) && (play->sceneId != SCENE_HAKUGIN_BS) &&
+                    // @recomp_use_export_var fd_anywhere: Allow the player to use the Fierce Deity's Mask anywhere if mods enable it.
+                    if (!fd_anywhere && (play->sceneId != SCENE_MITURIN_BS) && (play->sceneId != SCENE_HAKUGIN_BS) &&
                         (play->sceneId != SCENE_SEA_BS) && (play->sceneId != SCENE_INISIE_BS) &&
                         (play->sceneId != SCENE_LAST_BS)) {
                         if (BUTTON_STATUS(i) != BTN_DISABLED) {

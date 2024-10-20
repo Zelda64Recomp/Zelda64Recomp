@@ -9,7 +9,7 @@ on:
       N64RECOMP_COMMIT:
         type: string
         required: false
-        default: '5b17bf8bb556d2544c6161487232a455eae8f188'
+        default: 'd33d38161798167929b114c2b0fd445f9670e10a'
       DXC_CHECKSUM:
         type: string
         required: false
@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ format('blaze/compute/{0}-amd64', matrix.os) }}
     container:
       image: dcvz/n64recomp:ubuntu-18.04
       volumes:
@@ -108,7 +108,7 @@ jobs:
           name: Zelda64Recompiled-AppImage-X64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
   build-linux-arm64:
-    runs-on: ${{ format('blaze/{0}', matrix.os) }}
+    runs-on: ${{ format('blaze/compute/{0}', matrix.os) }}
     strategy:
       matrix:
         type: [ Debug, Release ]
@@ -199,7 +199,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        type: [ Debug, Release ]
+        type: [ Debug, RelWithDebInfo ]
     name: windows (${{ matrix.type }})
     steps:
       - name: Checkout
@@ -264,6 +264,7 @@ jobs:
           Move-Item -Path "cmake-build/dxcompiler.dll" -Destination "dxcompiler.dll"
           Move-Item -Path "cmake-build/dxil.dll" -Destination "dxil.dll"
           Move-Item -Path "cmake-build/SDL2.dll" -Destination "SDL2.dll"
+          Move-Item -Path "cmake-build/Zelda64Recompiled.pdb" -Destination "Zelda64Recompiled.pdb"
           Remove-Item -Path "assets/scss" -Recurse -Force
       - name: Archive Zelda64Recomp
         uses: actions/upload-artifact@v4
@@ -276,3 +277,9 @@ jobs:
             SDL2.dll
             assets/
             gamecontrollerdb.txt
+      - name: Archive Debug Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-PDB-${{ matrix.type }}
+          path: |
+            Zelda64Recompiled.pdb

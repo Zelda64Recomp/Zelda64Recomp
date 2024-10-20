@@ -56,9 +56,10 @@ RECOMP_PATCH void Graph_SetNextGfxPool(GraphicsContext* gfxCtx) {
     gSPEndDisplayList(&gGfxMasterDL->disps[4]);
     gSPBranchList(&gGfxMasterDL->debugDisp[0], bigger_pool->debugBuffer);
 
-    // @recomp Enable RT64 extended GBI mode and set the current framerate
+    // @recomp Enable RT64 extended GBI mode and extended rdram.
     OPEN_DISPS(gfxCtx);
     gEXEnable(POLY_OPA_DISP++);
+    gEXSetRDRAMExtended(POLY_OPA_DISP++, 1);
     CLOSE_DISPS(gfxCtx);
 }
 

@@ -120,7 +120,8 @@ namespace recomp {
         std::vector<InputField> apply_menu;
     };
 
-    constexpr const std::vector<InputField>& get_default_mapping_for_input(const DefaultN64Mappings& defaults, const GameInput input) {
+    inline const std::vector<InputField>& get_default_mapping_for_input(const DefaultN64Mappings& defaults, const GameInput input) {
+        static const std::vector<InputField> empty_input_field{};
         switch (input) {
             case GameInput::A: return defaults.a;
             case GameInput::B: return defaults.b;
@@ -143,7 +144,7 @@ namespace recomp {
             case GameInput::TOGGLE_MENU: return defaults.toggle_menu;
             case GameInput::ACCEPT_MENU: return defaults.accept_menu;
             case GameInput::APPLY_MENU: return defaults.apply_menu;
-            default: return std::vector<InputField>();
+            default: return empty_input_field;
         }
     }
 
