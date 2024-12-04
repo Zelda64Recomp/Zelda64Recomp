@@ -46,7 +46,7 @@ ElementOptionTypeColor::ElementOptionTypeColor(const Rml::String& tag) : Rml::El
 
             Rml::Element *hsv_wrapper = preview_wrapper->AppendChild(doc->CreateElement("div"));
             hsv_wrapper->SetClass(cls_color_hsv_wrapper, true);
-            for (int i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; i++) {
                 const auto &label = hsv_label[i];
 
                 Rml::Element *range_wrapper = hsv_wrapper->AppendChild(doc->CreateElement("div"));
@@ -88,7 +88,7 @@ ElementOptionTypeColor::~ElementOptionTypeColor()
 {
     Rml::ElementList elements;
     GetElementsByTagName(elements, "input");
-    for (int i = 0; i < elements.size(); i++) {
+    for (size_t i = 0; i < elements.size(); i++) {
         Rml::Element *el = elements[i];
         el->RemoveEventListener(Rml::EventId::Click, this, false);
     }
@@ -144,7 +144,7 @@ void ElementOptionTypeColor::init_option(std::string& _config_key) {
 
     set_preview_block_rgb(col);
 
-    for (int i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 3; i++) {
         const auto &label = hsv_label[i];
 
         Rml::ElementFormControlInput *range = (Rml::ElementFormControlInput *)GetElementById(range_input_id + label);

@@ -48,7 +48,7 @@ void ElementOptionTypeDropdown::init_option(std::string& _config_key) {
 
     auto select_el = get_select();
 
-    for (int i = 0; i < opt_array.size(); i++) {
+    for (size_t i = 0; i < opt_array.size(); i++) {
         const auto &j_opt = opt_array[i];
         const std::string opt_val = j_opt.get<std::string>();
         const std::string opt_id = select_option_id + config_key + "--" + opt_val;

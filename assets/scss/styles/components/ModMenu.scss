@@ -76,12 +76,50 @@
         overflow-y: auto;
     }
 
-    &__details {
-        display: block;
+    &__list-entry {
+        @extend %nav-all;
+        display: flex;
         position: relative;
-        flex: 1 1 100%;
-        height: 100%;
-        border-bottom-right-radius: $border-radius-modal;
+        flex-direction: row;
+        width: 100%;
+        height: auto;
+        padding: space(4) space(8) space(4) space(8);
+        border-width: $border-width-thickness;
+        @include create-icon-button-variation($color-text);
+        border-color: rgba($color-text, 0.05);
+
+        &:hover, &:focus {
+            cursor: pointer;
+        }
+        &[is_selected] {
+            border-color: rgb(255,255,255);
+        }
+    }
+
+    &__list-entry-thumbnail {
+        height: 100dp;
+        width: 100dp;
+        min-width: 100dp;
+        min-height: 100dp;
         background-color: $color-bg-overlay;
+    }
+
+    &__list-entry-body {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        width: auto;
+        height: 100dp;
+        margin-left: space(16);
+        overflow: hidden;
+    }
+
+    &__list-entry-name {
+        @extend %label-md;
+    }
+
+    &__list-entry-description {
+        padding-top: space(8);
+        @extend %body;
     }
 }

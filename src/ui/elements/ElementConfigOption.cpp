@@ -132,7 +132,6 @@ void ElementConfigOption::OnAttributeChange(const Rml::ElementAttributes& change
         try {
             auto value = recomp::config::get_config_store_value<std::string>("translations/" + config_key);
             SetTextLabel(value);
-            printf("found type and translation\n");
             AddOptionTypeElement();
         } catch (const std::runtime_error& e) {
             SetTextLabel(e.what());
