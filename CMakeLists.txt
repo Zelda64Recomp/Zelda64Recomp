@@ -172,6 +172,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeRange.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeTextField.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementModMenu.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementModDetailsPanel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/presets.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp

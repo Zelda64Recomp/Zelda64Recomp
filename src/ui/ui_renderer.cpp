@@ -543,12 +543,10 @@ public:
             else {
                 const Rml::byte *src_data = flip_y ? source + row_pitch * (source_dimensions.y - 1) : source;
                 uint32_t src_stride = flip_y ? -row_pitch : row_pitch;
-                size_t offset = 0;
 
-                for (int row = 0; row < source_dimensions.y; row++) { //(offset + increment) <= image_size_bytes) {
+                for (int row = 0; row < source_dimensions.y; row++) {
                     memcpy(dst_data, src_data, row_pitch);
                     src_data += src_stride;
-                    offset += row_pitch;
                     dst_data += row_byte_width;
                 }
             }
@@ -1150,13 +1148,9 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     if (std::filesystem::exists(test_conf_path)) {
         const std::string s = read_file_to_string(test_conf_path); 
         recomp::config::register_config(read_file_to_string(test_conf_path), "cheats");
-        printf("SUCC CONF\n");
 
         if (std::filesystem::exists(test_conf_trans_path)) {
             recomp::config::register_translation(read_file_to_string("config_example.cheats.en_us.json"), "cheats");
-            printf("SUCC TRANSLATION\n");
-        } else {
-            printf("FAIL TRANSLATION");
         }
     } else {
         printf("FAIL ALL\n");

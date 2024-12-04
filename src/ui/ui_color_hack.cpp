@@ -77,7 +77,7 @@ namespace recompui {
 			}
 
 			// Parse each of the colour elements.
-			for (int i = 0; i < 4; i++)
+			for (size_t i = 0; i < 4; i++)
 			{
 				int tens = Rml::Math::HexToDecimal(hex_values[i][0]);
 				int ones = Rml::Math::HexToDecimal(hex_values[i][1]);
@@ -115,7 +115,7 @@ namespace recompui {
 			}
 
 			// Parse the three RGB values.
-			for (int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
 				int component;
 
