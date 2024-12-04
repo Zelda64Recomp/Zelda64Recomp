@@ -19,7 +19,7 @@ ElementOptionTypeRadioTabs::~ElementOptionTypeRadioTabs()
 {
     Rml::ElementList elements;
     GetElementsByTagName(elements, "input");
-    for (int i = 0; i < elements.size(); i++) {
+    for (size_t i = 0; i < elements.size(); i++) {
         Rml::Element *el = elements[i];
         el->RemoveEventListener(Rml::EventId::Click, this, false);
     }
@@ -28,9 +28,9 @@ ElementOptionTypeRadioTabs::~ElementOptionTypeRadioTabs()
 void ElementOptionTypeRadioTabs::set_cur_option(int opt) {
     Rml::ElementList elements;
     GetElementsByTagName(elements, "input");
-    for (int i = 0; i < elements.size(); i++) {
+    for (size_t i = 0; i < elements.size(); i++) {
         Rml::Element *el = elements[i];
-        if (i == opt) {
+        if (static_cast<int>(i) == opt) {
             SetAttribute("checked", true);
             el->SetAttribute("checked", true);
         } else {
@@ -48,7 +48,7 @@ void ElementOptionTypeRadioTabs::init_option(std::string& _config_key) {
     int opt = recomp::config::get_config_store_value<int>(config_key);
     const json& opt_array = option_json["values"];
 
-    for (int i = 0; i < opt_array.size(); i++) {
+    for (size_t i = 0; i < opt_array.size(); i++) {
         const auto &j_opt = opt_array[i];
         const std::string opt_val = j_opt.get<std::string>();
         const std::string opt_id = radio_input_id + config_key + "--" + opt_val;

@@ -123,7 +123,7 @@ void ElementConfigGroup::OnAttributeChange(const Rml::ElementAttributes& changed
 
         const nlohmann::json& options = get_options(config_key);
 
-        for (int i = 0; i < options.size(); i++) {
+        for (size_t i = 0; i < options.size(); i++) {
             const auto &el = options[i];
             AddConfigOptionElement(el);
         }
