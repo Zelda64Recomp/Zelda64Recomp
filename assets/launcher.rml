@@ -51,6 +51,10 @@
 							<div class="menu-list-item__bullet">•</div>
 							<div class="menu-list-item__label">Settings</div>
 						</button>
+						<button onclick="open_mods" class="menu-list-item menu-list-item--right">
+							<div class="menu-list-item__bullet">•</div>
+							<div class="menu-list-item__label">Mods</div>
+						</button>
 						<button onclick="exit_game" class="menu-list-item menu-list-item--right">
 							<div class="menu-list-item__bullet">•</div>
 							<div class="menu-list-item__label">Exit</div>
@@ -61,7 +65,6 @@
 					<label>v{{version_number}}</label>
 				</div>
 			</div>
-			<recomp-mod-menu />
 		</div>
 	</body>
 </rml>

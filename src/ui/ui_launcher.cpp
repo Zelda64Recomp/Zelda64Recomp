@@ -93,6 +93,12 @@ public:
                 recompui::set_config_submenu(recompui::ConfigSubmenu::General);
 			}
 		);
+        recompui::register_event(listener, "open_mods",
+            [](const std::string &param, Rml::Event &event) {
+                recompui::set_current_menu(recompui::Menu::Config);
+                recompui::set_config_submenu(recompui::ConfigSubmenu::Mods);
+            }
+        );
         recompui::register_event(listener, "exit_game",
 			[](const std::string& param, Rml::Event& event) {
 				ultramodern::quit();
