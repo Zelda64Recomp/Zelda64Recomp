@@ -53,6 +53,7 @@ namespace recompui {
 		Controls,
 		Graphics,
 		Audio,
+        Mods,
 		Debug,
 		Count
 	};

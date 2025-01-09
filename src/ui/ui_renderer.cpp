@@ -105,6 +105,14 @@ T from_bytes_le(const char* input) {
 void load_document();
 
 class RmlRenderInterface_RT64 : public Rml::RenderInterfaceCompatibility {
+    struct DynamicBuffer {
+        std::unique_ptr<RT64::RenderBuffer> buffer_{};
+        uint32_t size_ = 0;
+        uint32_t bytes_used_ = 0;
+        uint8_t* mapped_data_ = nullptr;
+        RT64::RenderBufferFlags flags_ = RT64::RenderBufferFlag::NONE;
+    };
+
     static constexpr uint32_t per_frame_descriptor_set = 0;
     static constexpr uint32_t per_draw_descriptor_set = 1;
 
@@ -129,9 +137,9 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterfaceCompatibility {
     Rml::Matrix4f mvp_ = Rml::Matrix4f::Identity();
     std::unordered_map<Rml::TextureHandle, TextureHandle> textures_{};
     Rml::TextureHandle texture_count_ = 1; // Start at 1 to reserve texture 0 as the 1x1 pixel white texture
-    std::unique_ptr<RT64::RenderBuffer> upload_buffer_{};
-    std::unique_ptr<RT64::RenderBuffer> vertex_buffer_{};
-    std::unique_ptr<RT64::RenderBuffer> index_buffer_{};
+    DynamicBuffer upload_buffer_;
+    DynamicBuffer vertex_buffer_;
+    DynamicBuffer index_buffer_;
     std::unique_ptr<RT64::RenderSampler> nearestSampler_{};
     std::unique_ptr<RT64::RenderSampler> linearSampler_{};
     std::unique_ptr<RT64::RenderShader> vertex_shader_{};
@@ -147,11 +155,6 @@ class RmlRenderInterface_RT64 : public Rml::RenderInterfaceCompatibility {
     std::unique_ptr<RT64::RenderDescriptorSet> screen_descriptor_set_{};
     std::unique_ptr<RT64::RenderBuffer> screen_vertex_buffer_{};
     uint64_t screen_vertex_buffer_size_ = 0;
-    uint32_t upload_buffer_size_ = 0;
-    uint32_t upload_buffer_bytes_used_ = 0;
-    uint8_t* upload_buffer_mapped_data_ = nullptr;
-    uint32_t vertex_buffer_size_ = 0;
-    uint32_t index_buffer_size_ = 0;
     uint32_t gTexture_descriptor_index;
     RT64::RenderInputSlot vertex_slot_{ 0, sizeof(Rml::Vertex) };
     RT64::RenderCommandList* list_ = nullptr;
@@ -167,10 +170,13 @@ public:
             multisampling_.sampleCount = desired_sample_count;
         }
 
+        vertex_buffer_.flags_ = RT64::RenderBufferFlag::VERTEX;
+        index_buffer_.flags_ = RT64::RenderBufferFlag::INDEX;
+
         // Create the texture upload buffer, vertex buffer and index buffer
-        resize_upload_buffer(initial_upload_buffer_size, false);
-        resize_vertex_buffer(initial_vertex_buffer_size);
-        resize_index_buffer(initial_index_buffer_size);
+        resize_dynamic_buffer(upload_buffer_, initial_upload_buffer_size, false);
+        resize_dynamic_buffer(vertex_buffer_, initial_vertex_buffer_size, false);
+        resize_dynamic_buffer(index_buffer_, initial_index_buffer_size, false);
 
         // Describe the vertex format
         std::vector<RT64::RenderInputElement> vertex_elements{};
@@ -260,90 +266,78 @@ public:
         }
     }
 
-    void resize_upload_buffer(uint32_t new_size, bool map = true) {
-        // Unmap the upload buffer if it's mapped
-        if (upload_buffer_mapped_data_ != nullptr) {
-            upload_buffer_->unmap();
+    void reset_dynamic_buffer(DynamicBuffer &dynamic_buffer) {
+        assert(dynamic_buffer.mapped_data_ == nullptr);
+        dynamic_buffer.bytes_used_ = 0;
+        dynamic_buffer.mapped_data_ = reinterpret_cast<uint8_t*>(dynamic_buffer.buffer_->map());
+    }
+
+    void end_dynamic_buffer(DynamicBuffer &dynamic_buffer) {
+        assert(dynamic_buffer.mapped_data_ != nullptr);
+        dynamic_buffer.buffer_->unmap();
+        dynamic_buffer.mapped_data_ = nullptr;
+    }
+
+    void resize_dynamic_buffer(DynamicBuffer &dynamic_buffer, uint32_t new_size, bool map = true) {
+        // Unmap the buffer if it's mapped
+        if (dynamic_buffer.mapped_data_ != nullptr) {
+            dynamic_buffer.buffer_->unmap();
         }
         
-        // If there's already an upload buffer, move it into the stale buffers so it persists until the start of next frame.
-        if (upload_buffer_) {
-            stale_buffers_.emplace_back(std::move(upload_buffer_));
+        // If there's already a buffer, move it into the stale buffers so it persists until the start of next frame.
+        if (dynamic_buffer.buffer_ != nullptr) {
+            stale_buffers_.emplace_back(std::move(dynamic_buffer.buffer_));
         }
 
-        // Create the new upload buffer, update the size and map it.
-        upload_buffer_ = render_context_->device->createBuffer(RT64::RenderBufferDesc::UploadBuffer(new_size));
-        upload_buffer_size_ = new_size;
-        upload_buffer_bytes_used_ = 0;
+        // Create the new buffer, update the size and map it.
+        dynamic_buffer.buffer_ = render_context_->device->createBuffer(RT64::RenderBufferDesc::UploadBuffer(new_size, dynamic_buffer.flags_));
+        dynamic_buffer.size_ = new_size;
+        dynamic_buffer.bytes_used_ = 0;
+
         if (map) {
-            upload_buffer_mapped_data_ = reinterpret_cast<uint8_t*>(upload_buffer_->map());
-        }
-        else {
-            upload_buffer_mapped_data_ = nullptr;
+            dynamic_buffer.mapped_data_ = reinterpret_cast<uint8_t*>(dynamic_buffer.buffer_->map());
         }
     }
 
-    uint32_t allocate_upload_data(uint32_t num_bytes) {
-        // Check if there's enough remaining room in the upload buffer to allocate the requested bytes.
-        uint32_t total_bytes = num_bytes + upload_buffer_bytes_used_;
+    uint32_t allocate_dynamic_data(DynamicBuffer &dynamic_buffer, uint32_t num_bytes) {
+        // Check if there's enough remaining room in the buffer to allocate the requested bytes.
+        uint32_t total_bytes = num_bytes + dynamic_buffer.bytes_used_;
 
-        if (total_bytes > upload_buffer_size_) {
-            // There isn't, so mark the current upload buffer as stale and allocate a new one with 50% more space than the required amount.
-            resize_upload_buffer(total_bytes + total_bytes / 2);
+        if (total_bytes > dynamic_buffer.size_) {
+            // There isn't, so mark the current buffer as stale and allocate a new one with 50% more space than the required amount.
+            resize_dynamic_buffer(dynamic_buffer, total_bytes + total_bytes / 2);
         }
 
-        // Record the current end of the upload buffer to return.
-        uint32_t offset = upload_buffer_bytes_used_;
+        // Record the current end of the buffer to return.
+        uint32_t offset = dynamic_buffer.bytes_used_;
 
-        // Bump the upload buffer's end forward by the number of bytes allocated.
-        upload_buffer_bytes_used_ += num_bytes;
+        // Bump the buffer's end forward by the number of bytes allocated.
+        dynamic_buffer.bytes_used_ += num_bytes;
 
         return offset;
     }
 
-    uint32_t allocate_upload_data_aligned(uint32_t num_bytes, uint32_t alignment) {
-        // Check if there's enough remaining room in the upload buffer to allocate the requested bytes.
-        uint32_t total_bytes = num_bytes + upload_buffer_bytes_used_;
+    uint32_t allocate_dynamic_data_aligned(DynamicBuffer &dynamic_buffer, uint32_t num_bytes, uint32_t alignment) {
+        // Check if there's enough remaining room in the buffer to allocate the requested bytes.
+        uint32_t total_bytes = num_bytes + dynamic_buffer.bytes_used_;
 
         // Determine the amount of padding needed to meet the target alignment.
-        uint32_t padding_bytes = ((upload_buffer_bytes_used_ + alignment - 1) / alignment) * alignment - upload_buffer_bytes_used_;
+        uint32_t padding_bytes = ((dynamic_buffer.bytes_used_ + alignment - 1) / alignment) * alignment - dynamic_buffer.bytes_used_;
 
-        // If there isn't enough room to allocate the required bytes plus the padding then resize the upload buffer and allocate from the start of the new one.
-        if (total_bytes + padding_bytes > upload_buffer_size_) {
-            resize_upload_buffer(total_bytes + total_bytes / 2);
+        // If there isn't enough room to allocate the required bytes plus the padding then resize the buffer and allocate from the start of the new one.
+        if (total_bytes + padding_bytes > dynamic_buffer.size_) {
+            resize_dynamic_buffer(dynamic_buffer, total_bytes + total_bytes / 2);
 
-            upload_buffer_bytes_used_ += num_bytes;
+            dynamic_buffer.bytes_used_ += num_bytes;
 
             return 0;
         }
 
         // Otherwise allocate the padding and required bytes and offset the allocated position by the padding size.
-        return allocate_upload_data(padding_bytes + num_bytes) + padding_bytes;
-    }
-
-    void resize_vertex_buffer(uint32_t new_size) {
-        if (vertex_buffer_) {
-            stale_buffers_.emplace_back(std::move(vertex_buffer_));
-        }
-        vertex_buffer_ = render_context_->device->createBuffer(RT64::RenderBufferDesc::VertexBuffer(new_size, RT64::RenderHeapType::DEFAULT));
-        vertex_buffer_size_ = new_size;
-    }
-
-    void resize_index_buffer(uint32_t new_size) {
-        if (index_buffer_) {
-            stale_buffers_.emplace_back(std::move(index_buffer_));
-        }
-        index_buffer_ = render_context_->device->createBuffer(RT64::RenderBufferDesc::IndexBuffer(new_size, RT64::RenderHeapType::DEFAULT));
-        index_buffer_size_ = new_size;
+        return allocate_dynamic_data(dynamic_buffer, padding_bytes + num_bytes) + padding_bytes;
     }
 
     void RenderGeometry(Rml::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rml::TextureHandle texture, const Rml::Vector2f& translation) override {
-        uint32_t vert_size_bytes = num_vertices * sizeof(*vertices);
-        uint32_t index_size_bytes = num_indices * sizeof(*indices);
-        uint32_t total_bytes = vert_size_bytes + index_size_bytes;
-        uint32_t index_bytes_start = vert_size_bytes;
-
-
         if (!textures_.contains(texture)) {
             if (texture == 0) {
                 // Create a 1x1 pixel white texture as the first handle
@@ -355,37 +349,13 @@ public:
             }
         }
 
-        uint32_t upload_buffer_offset = allocate_upload_data(total_bytes);
-
-        if (vert_size_bytes > vertex_buffer_size_) {
-            resize_vertex_buffer(vert_size_bytes + vert_size_bytes / 2);
-        }
-
-        if (index_size_bytes > index_buffer_size_) {
-            resize_index_buffer(index_size_bytes + index_size_bytes / 2);
-        }
-
-        // Copy the vertex and index data into the mapped upload buffer.
-        memcpy(upload_buffer_mapped_data_ + upload_buffer_offset, vertices, vert_size_bytes);
-        memcpy(upload_buffer_mapped_data_ + upload_buffer_offset + vert_size_bytes, indices, index_size_bytes);
-
-        // Prepare the vertex and index buffers for being copied to.
-        RT64::RenderBufferBarrier copy_barriers[] = {
-			RT64::RenderBufferBarrier(vertex_buffer_.get(), RT64::RenderBufferAccess::WRITE),
-			RT64::RenderBufferBarrier(index_buffer_.get(), RT64::RenderBufferAccess::WRITE)
-		};
-        list_->barriers(RT64::RenderBarrierStage::COPY, copy_barriers, uint32_t(std::size(copy_barriers)));
-
-        // Copy from the upload buffer to the vertex and index buffers.
-        list_->copyBufferRegion(vertex_buffer_->at(0), upload_buffer_->at(upload_buffer_offset), vert_size_bytes);
-        list_->copyBufferRegion(index_buffer_->at(0), upload_buffer_->at(upload_buffer_offset + index_bytes_start), index_size_bytes);
-
-        // Prepare the vertex and index buffers for being used for rendering.
-        RT64::RenderBufferBarrier usage_barriers[] = {
-			RT64::RenderBufferBarrier(vertex_buffer_.get(), RT64::RenderBufferAccess::READ),
-			RT64::RenderBufferBarrier(index_buffer_.get(), RT64::RenderBufferAccess::READ)
-		};
-        list_->barriers(RT64::RenderBarrierStage::GRAPHICS, usage_barriers, uint32_t(std::size(usage_barriers)));
+        // Copy the vertex and index data into the mapped buffers.
+        uint32_t vert_size_bytes = num_vertices * sizeof(*vertices);
+        uint32_t index_size_bytes = num_indices * sizeof(*indices);
+        uint32_t vertex_buffer_offset = allocate_dynamic_data(vertex_buffer_, vert_size_bytes);
+        uint32_t index_buffer_offset = allocate_dynamic_data(index_buffer_, index_size_bytes);
+        memcpy(vertex_buffer_.mapped_data_ + vertex_buffer_offset, vertices, vert_size_bytes);
+        memcpy(index_buffer_.mapped_data_ + index_buffer_offset, indices, index_size_bytes);
 
         list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
@@ -399,9 +369,9 @@ public:
             list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
         }
 
-        RT64::RenderIndexBufferView index_view{index_buffer_->at(0), index_size_bytes, RT64::RenderFormat::R32_UINT};
+        RT64::RenderIndexBufferView index_view{index_buffer_.buffer_->at(index_buffer_offset), index_size_bytes, RT64::RenderFormat::R32_UINT};
         list_->setIndexBuffer(&index_view);
-        RT64::RenderVertexBufferView vertex_view{vertex_buffer_->at(0), vert_size_bytes};
+        RT64::RenderVertexBufferView vertex_view{vertex_buffer_.buffer_->at(vertex_buffer_offset), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
         list_->setGraphicsDescriptorSet(textures_.at(texture).set.get(), 1);
 
@@ -522,10 +492,10 @@ public:
             uint32_t uploaded_size_bytes = row_byte_width * source_dimensions.y;
 
             // Allocate room in the upload buffer for the uploaded data.
-            uint32_t upload_buffer_offset = allocate_upload_data_aligned(uploaded_size_bytes, 512);
+            uint32_t upload_buffer_offset = allocate_dynamic_data_aligned(upload_buffer_, uploaded_size_bytes, 512);
 
             // Copy the source data into the upload buffer.
-            uint8_t* dst_data = upload_buffer_mapped_data_ + upload_buffer_offset;
+            uint8_t* dst_data = upload_buffer_.mapped_data_ + upload_buffer_offset;
                 
             if (row_byte_padding == 0) {
                 // Copy row-by-row if the image is flipped.
@@ -557,7 +527,7 @@ public:
             // Copy the upload buffer into the texture.
             list_->copyTextureRegion(
                 RT64::RenderTextureCopyLocation::Subresource(texture.get()),
-                RT64::RenderTextureCopyLocation::PlacedFootprint(upload_buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width, upload_buffer_offset));
+                RT64::RenderTextureCopyLocation::PlacedFootprint(upload_buffer_.buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width, upload_buffer_offset));
             
             // Prepare the texture for being read from a pixel shader.
             list_->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::SHADER_READ));
@@ -621,9 +591,10 @@ public:
         // Clear out any stale buffers from the last command list.
         stale_buffers_.clear();
 
-        // Reset and map the upload buffer.
-        upload_buffer_bytes_used_ = 0;
-        upload_buffer_mapped_data_ = reinterpret_cast<uint8_t*>(upload_buffer_->map());
+        // Reset buffers.
+        reset_dynamic_buffer(upload_buffer_);
+        reset_dynamic_buffer(vertex_buffer_);
+        reset_dynamic_buffer(index_buffer_);
 
         // Set an internal texture as the render target if MSAA is enabled.
         if (multisampling_.sampleCount > 1) {
@@ -661,13 +632,11 @@ public:
             list->drawInstanced(3, 1, 0, 0);
         }
 
-        list_ = nullptr;
+        end_dynamic_buffer(upload_buffer_);
+        end_dynamic_buffer(vertex_buffer_);
+        end_dynamic_buffer(index_buffer_);
 
-        // Unmap the upload buffer if it's mapped.
-        if (upload_buffer_mapped_data_) {
-            upload_buffer_->unmap();
-            upload_buffer_mapped_data_ = nullptr;
-        }
+        list_ = nullptr;
     }
 };
 
