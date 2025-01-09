@@ -1,5 +1,4 @@
 #include "ElementModMenu.h"
-#include "ElementModDetailsPanel.h"
 #include "presets.h"
 #include "librecomp/mods.hpp"
 
@@ -10,9 +9,6 @@
 namespace recompui {
 
 static const std::string cls_base = BLOCK(MOD_MENU_BEM);
-static const std::string cls_modal_wrapper = EL(MOD_MENU_BEM, "modal-wrapper");
-static const std::string cls_modal_header = EL(MOD_MENU_BEM, "modal-header");
-static const std::string cls_modal_body = EL(MOD_MENU_BEM, "modal-body");
 static const std::string cls_list = EL(MOD_MENU_BEM, "list");
 static const std::string cls_list_scroll = EL(MOD_MENU_BEM, "list-scroll");
 static const std::string cls_list_entry = EL(MOD_MENU_BEM, "list-entry");
@@ -31,17 +27,13 @@ void ElementModMenu::ProcessEvent(Rml::Event& event) {
             if (event_element == refresh_button) {
                 RefreshMods();
             }
-            // Close
-            else if (event_element == close_button) {
-
-            }
             break;
         case Rml::EventId::Focus:
             {
                 size_t mod_index;
                 Rml::Variant *val = event_element->GetAttribute("mod_index");
                 if (val->GetInto(mod_index) && mod_index < mod_details.size()) {
-                    details_el->SetModDetails(mod_details[mod_index]);
+                    mod_details_panel->set_mod_details(mod_details[mod_index]);
                 }
                 if (active_list_entry_el != nullptr) {
                     active_list_entry_el->RemoveAttribute("is_selected");
@@ -49,6 +41,8 @@ void ElementModMenu::ProcessEvent(Rml::Event& event) {
                 event_element->SetAttribute("is_selected", true);
                 active_list_entry_el = event_element;
             }
+        default:
+            break;
     }
 }
 
@@ -111,7 +105,7 @@ void ElementModMenu::RefreshMods() {
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
 
-    details_el->SetModDetails(mod_details[0]);
+    mod_details_panel->set_mod_details(mod_details[0]);
 
     CreateModList();
 }
@@ -122,34 +116,23 @@ ElementModMenu::ElementModMenu(const Rml::String& tag) : Rml::Element(tag) {
     Rml::ElementDocument *doc = GetOwnerDocument();
     SetClass(cls_base, true);
 
+    Rml::Element *body_el = add_div_with_class(doc, this, "config__hz-wrapper");
     {
-        Rml::Element *modal_wrapper_el = add_div_with_class(doc, this, cls_modal_wrapper);
+        list_el = add_div_with_class(doc, body_el, cls_list);
         {
-            Rml::Element *header_el = add_div_with_class(doc, modal_wrapper_el, cls_modal_header);
-            {
-                refresh_button = add_button(doc, header_el, "Refresh", ButtonVariant::Primary);
-                refresh_button->AddEventListener(Rml::EventId::Click, this, false);
-                refresh_button->SetId("refresh-button");
-                close_button = add_icon_button(doc, header_el, "icons/X.svg", ButtonVariant::Tertiary);
-                close_button->AddEventListener(Rml::EventId::Click, this, false);
-                close_button->SetId("close-button");
+            list_el_scroll = add_div_with_class(doc, list_el, cls_list_scroll);
+        } // list_el
 
-                refresh_button->SetProperty("nav-right", "#" + close_button->GetId());
-                close_button->SetProperty("nav-left", "#" + refresh_button->GetId());
-            } // header_el
+        recompui::Element body_el_compat(body_el);
+        mod_details_panel = std::make_unique<ModDetailsPanel>(&body_el_compat);
+    } // body_el
 
-            Rml::Element *body_el = add_div_with_class(doc, modal_wrapper_el, cls_modal_body);
-            {
-                list_el = add_div_with_class(doc, body_el, cls_list);
-                {
-                    list_el_scroll = add_div_with_class(doc, list_el, cls_list_scroll);
-                } // list_el
-
-                details_el =
-                    static_cast<ElementModDetailsPanel*>(body_el->AppendChild(doc->CreateElement("recomp-mod-details-panel")));
-            } // body_el
-        } // modal_wrapper_el
-    }
+    Rml::Element *footer_el = add_div_with_class(doc, this, "config__footer");
+    {
+        refresh_button = add_button(doc, footer_el, "Refresh", ButtonVariant::Primary);
+        refresh_button->AddEventListener(Rml::EventId::Click, this, false);
+        refresh_button->SetId("refresh-button");
+    } // footer_el
 
     RefreshMods();
 }
