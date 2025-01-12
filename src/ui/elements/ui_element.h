@@ -103,6 +103,14 @@ enum class FlexDirection {
     Column
 };
 
+enum class AlignItems {
+    FlexStart,
+    FlexEnd,
+    Center,
+    Baseline,
+    Stretch
+};
+
 enum class Overflow {
     Visible,
     Hidden,
@@ -126,6 +134,13 @@ enum class FontStyle {
     Italic
 };
 
+enum class TextAlign {
+    Left,
+    Right,
+    Center,
+    Justify
+};
+
 struct Animation {
     AnimationType type = AnimationType::None;
     float duration = 0.0f;
@@ -146,7 +161,6 @@ private:
     // Rml::EventListener overrides.
     virtual void ProcessEvent(Rml::Event &event) override;
 protected:
-    Element *parent;
     Rml::Element *base;
     bool owner;
 
@@ -167,6 +181,10 @@ public:
     void set_width_auto();
     void set_height(float height, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_height_auto();
+    void set_min_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_min_height(float height, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_max_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_max_height(float height, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_padding(float padding, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_padding_left(float padding, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_padding_top(float padding, Unit unit = Unit::Dp, Animation animation = Animation());
@@ -178,6 +196,10 @@ public:
     void set_margin_right(float margin, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_margin_bottom(float margin, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_border_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_border_left_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_border_top_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_border_right_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
+    void set_border_bottom_width(float width, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_border_radius(float radius, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_border_top_left_radius(float radius, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_border_top_right_radius(float radius, Unit unit = Unit::Dp, Animation animation = Animation());
@@ -185,6 +207,10 @@ public:
     void set_border_bottom_right_radius(float radius, Unit unit = Unit::Dp, Animation animation = Animation());
     void set_background_color(const Color &color, Animation animation = Animation());
     void set_border_color(const Color &color, Animation animation = Animation());
+    void set_border_left_color(const Color &color, Animation animation = Animation());
+    void set_border_top_color(const Color &color, Animation animation = Animation());
+    void set_border_right_color(const Color &color, Animation animation = Animation());
+    void set_border_bottom_color(const Color &color, Animation animation = Animation());
     void set_color(const Color &color, Animation animation = Animation());
     void set_cursor(Cursor cursor);
     void set_opacity(float opacity, Animation animation = Animation());
@@ -197,6 +223,7 @@ public:
     void set_flex(float grow, float shrink, Animation animation = Animation());
     void set_flex(float grow, float shrink, float basis_percentage, Animation animation = Animation());
     void set_flex_direction(FlexDirection flex_direction);
+    void set_align_items(AlignItems align_items);
     void set_overflow(Overflow overflow);
     void set_overflow_x(Overflow overflow);
     void set_overflow_y(Overflow overflow);
@@ -206,6 +233,7 @@ public:
     void set_font_style(FontStyle style);
     void set_font_weight(uint32_t weight, Animation animation = Animation());
     void set_text(const std::string &text);
+    void set_text_align(TextAlign text_align);
 };
 
 } // namespace recompui
