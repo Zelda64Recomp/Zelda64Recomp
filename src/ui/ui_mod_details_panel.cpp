@@ -1,6 +1,5 @@
 #include "ui_mod_details_panel.h"
 
-#include "presets.h"
 #include "librecomp/mods.hpp"
 
 namespace recompui {

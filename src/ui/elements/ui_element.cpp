@@ -17,6 +17,24 @@ static Rml::Unit to_rml(Unit unit) {
     }
 }
 
+static Rml::Style::AlignItems to_rml(AlignItems align_items) {
+    switch (align_items) {
+    case AlignItems::FlexStart:
+        return Rml::Style::AlignItems::FlexStart;
+    case AlignItems::FlexEnd:
+        return Rml::Style::AlignItems::FlexEnd;
+    case AlignItems::Center:
+        return Rml::Style::AlignItems::Center;
+    case AlignItems::Baseline:
+        return Rml::Style::AlignItems::Baseline;
+    case AlignItems::Stretch:
+        return Rml::Style::AlignItems::Stretch;
+    default:
+        assert(false && "Unknown align items.");
+        return Rml::Style::AlignItems::FlexStart;
+    }
+}
+
 static Rml::Style::Overflow to_rml(Overflow overflow) {
     switch (overflow) {
     case Overflow::Visible:
@@ -33,18 +51,32 @@ static Rml::Style::Overflow to_rml(Overflow overflow) {
     }
 }
 
+static Rml::Style::TextAlign to_rml(TextAlign text_align) {
+    switch (text_align) {
+    case TextAlign::Left:
+        return Rml::Style::TextAlign::Left;
+    case TextAlign::Right:
+        return Rml::Style::TextAlign::Right;
+    case TextAlign::Center:
+        return Rml::Style::TextAlign::Center;
+    case TextAlign::Justify:
+        return Rml::Style::TextAlign::Justify;
+    default:
+        assert(false && "Unknown text align.");
+        return Rml::Style::TextAlign::Left;
+    }
+}
+
 Element::Element(Rml::Element *base) {
     assert(base != nullptr);
 
     this->base = base;
-    this->parent = nullptr;
     this->owner = false;
 }
 
 Element::Element(Element *parent, uint32_t events_enabled, Rml::String base_class) {
     assert(parent != nullptr);
 
-    this->parent = parent;
     this->owner = true;
 
     base = parent->base->AppendChild(parent->base->GetOwnerDocument()->CreateElement(base_class));
@@ -169,6 +201,22 @@ void Element::set_height_auto() {
     set_property(Rml::PropertyId::Height, Rml::Property(Rml::Style::FlexBasis::Type::Auto, Rml::Unit::KEYWORD));
 }
 
+void Element::set_min_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::MinWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
+void Element::set_min_height(float height, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::MinHeight, Rml::Property(height, to_rml(unit)), animation);
+}
+
+void Element::set_max_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::MaxWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
+void Element::set_max_height(float height, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::MaxHeight, Rml::Property(height, to_rml(unit)), animation);
+}
+
 void Element::set_padding(float padding, Unit unit, Animation animation) {
     set_property(Rml::PropertyId::PaddingLeft, Rml::Property(padding, to_rml(unit)), animation);
     set_property(Rml::PropertyId::PaddingTop, Rml::Property(padding, to_rml(unit)), animation);
@@ -223,6 +271,22 @@ void Element::set_border_width(float width, Unit unit, Animation animation) {
     set_property(Rml::PropertyId::BorderRightWidth, property, animation);
 }
 
+void Element::set_border_left_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::BorderLeftWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
+void Element::set_border_top_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::BorderTopWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
+void Element::set_border_right_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::BorderRightWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
+void Element::set_border_bottom_width(float width, Unit unit, Animation animation) {
+    set_property(Rml::PropertyId::BorderBottomWidth, Rml::Property(width, to_rml(unit)), animation);
+}
+
 void Element::set_border_radius(float radius, Unit unit, Animation animation) {
     Rml::Property property(radius, to_rml(unit));
     set_property(Rml::PropertyId::BorderTopLeftRadius, property, animation);
@@ -258,6 +322,26 @@ void Element::set_border_color(const Color &color, Animation animation) {
     set_property(Rml::PropertyId::BorderBottomColor, property, animation);
     set_property(Rml::PropertyId::BorderLeftColor, property, animation);
     set_property(Rml::PropertyId::BorderRightColor, property, animation);
+}
+
+void Element::set_border_left_color(const Color &color, Animation animation) {
+    Rml::Property property(Rml::Colourb(color.r, color.g, color.b, color.a), Rml::Unit::COLOUR);
+    set_property(Rml::PropertyId::BorderLeftColor, property, animation);
+}
+
+void Element::set_border_top_color(const Color &color, Animation animation) {
+    Rml::Property property(Rml::Colourb(color.r, color.g, color.b, color.a), Rml::Unit::COLOUR);
+    set_property(Rml::PropertyId::BorderTopColor, property, animation);
+}
+
+void Element::set_border_right_color(const Color &color, Animation animation) {
+    Rml::Property property(Rml::Colourb(color.r, color.g, color.b, color.a), Rml::Unit::COLOUR);
+    set_property(Rml::PropertyId::BorderRightColor, property, animation);
+}
+
+void Element::set_border_bottom_color(const Color &color, Animation animation) {
+    Rml::Property property(Rml::Colourb(color.r, color.g, color.b, color.a), Rml::Unit::COLOUR);
+    set_property(Rml::PropertyId::BorderBottomColor, property, animation);
 }
 
 void Element::set_color(const Color &color, Animation animation) {
@@ -365,6 +449,10 @@ void Element::set_flex_direction(FlexDirection flex_direction) {
     }
 }
 
+void Element::set_align_items(AlignItems align_items) {
+    set_property(Rml::PropertyId::AlignItems, to_rml(align_items));
+}
+
 void Element::set_overflow(Overflow overflow) {
     set_property(Rml::PropertyId::OverflowX, to_rml(overflow));
     set_property(Rml::PropertyId::OverflowY, to_rml(overflow));
@@ -410,6 +498,10 @@ void Element::set_font_weight(uint32_t weight, Animation animation) {
 
 void Element::set_text(const std::string &text) {
     base->SetInnerRML(text);
+}
+
+void Element::set_text_align(TextAlign text_align) {
+    set_property(Rml::PropertyId::TextAlign, to_rml(text_align));
 }
 
 };
