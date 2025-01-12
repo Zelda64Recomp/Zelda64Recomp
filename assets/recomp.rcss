@@ -31,7 +31,7 @@ h3, .tab {
   font-weight: 700;
 }
 
-.label-md, .config-debug-option__label, .mod-menu__list-entry-name, .button, .config-option__title, .config-option--hz .config-option__title, .config-group__title, .control-option__label {
+.label-md, .config-debug-option__label, .button, .config-option__title, .config-option--hz .config-option__title, .config-group__title, .control-option__label {
   font-size: 28dp;
   letter-spacing: 3.08dp;
   line-height: 28dp;
@@ -57,7 +57,7 @@ h3, .tab {
   font-weight: 400;
 }
 
-body, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry-description, .config-description__contents, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config__wrapper p {
+body, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .config-description__contents, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config__wrapper p {
   font-size: 20dp;
   letter-spacing: 0dp;
   line-height: 20dp;
@@ -101,21 +101,21 @@ body, .config-debug__select-wrapper select, .config-debug__select-wrapper input,
 /*
 @include trans-colors-border;
 */
-.nav-vert, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-vert, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   nav-up: auto;
   nav-down: auto;
 }
 
-.nav-horiz, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-horiz, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   nav-right: auto;
   nav-left: auto;
 }
 
-.nav-foc, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-foc, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   focus: auto;
@@ -158,7 +158,7 @@ h3, .tab {
   font-weight: 700;
 }
 
-.label-md, .config-debug-option__label, .mod-menu__list-entry-name, .button, .config-option__title, .config-option--hz .config-option__title, .config-group__title, .control-option__label {
+.label-md, .config-debug-option__label, .button, .config-option__title, .config-option--hz .config-option__title, .config-group__title, .control-option__label {
   font-size: 28dp;
   letter-spacing: 3.08dp;
   line-height: 28dp;
@@ -184,7 +184,7 @@ h3, .tab {
   font-weight: 400;
 }
 
-body, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry-description, .config-description__contents, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config__wrapper p {
+body, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .config-description__contents, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config__wrapper p {
   font-size: 20dp;
   letter-spacing: 0dp;
   line-height: 20dp;
@@ -228,21 +228,21 @@ body, .config-debug__select-wrapper select, .config-debug__select-wrapper input,
 /*
 @include trans-colors-border;
 */
-.nav-vert, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-vert, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   nav-up: auto;
   nav-down: auto;
 }
 
-.nav-horiz, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-horiz, .nav-dir, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   nav-right: auto;
   nav-left: auto;
 }
 
-.nav-foc, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .mod-menu__list-entry, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
+.nav-foc, .nav-all, .config-debug__select-wrapper select selectbox option, .config-debug__select-wrapper select, .config-debug__select-wrapper input, .toggle, .subtitle-title:not(:disabled, [disabled]), .menu-list-item:not(:disabled, [disabled]), .icon-button:not([disabled]), .button:not([disabled]), .button, .config-option-dropdown__select selectbox option, .config-option-dropdown__wrapper selectbox option, .config-option-textfield__select selectbox option, .config-option-textfield__wrapper selectbox option, .config-option-dropdown__select, .config-option-dropdown__wrapper, .config-option-textfield__select, .config-option-textfield__wrapper, .config-option__radio-tabs input.radio,
 .config-option__list input.radio, .config-option__radio-tabs .config-option__checkbox,
 .config-option__list .config-option__checkbox, .tab, .control-option__binding:not([disabled]) {
   focus: auto;
@@ -2278,80 +2278,6 @@ scrollbarhorizontal sliderbar {
   text-align: center;
   nav-up: none;
   nav-down: none;
-}
-
-.mod-menu {
-  display: flex;
-  position: relative;
-  flex: 1 1 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-.mod-menu__list {
-  display: block;
-  position: relative;
-  flex: 1 1 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border-bottom-left-radius: 16dp;
-  background-color: rgba(0, 0, 0, 0.35);
-}
-.mod-menu__list-scroll {
-  flex: 1 1 100%;
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  overflow-y: auto;
-}
-.mod-menu__list-entry {
-  display: flex;
-  position: relative;
-  flex-direction: row;
-  width: 100%;
-  height: auto;
-  padding: 4dp 8dp 4dp 8dp;
-  border-width: 1.1dp;
-  border-color: rgba(242, 242, 242, 0.8);
-  background-color: rgba(242, 242, 242, 0.05);
-  border-color: rgba(242, 242, 242, 0.05);
-}
-.mod-menu__list-entry:focus, .mod-menu__list-entry:hover {
-  border-color: #F2F2F2;
-  background-color: rgba(242, 242, 242, 0.3);
-}
-.mod-menu__list-entry:active {
-  background-color: rgba(242, 242, 242, 0.2);
-}
-.mod-menu__list-entry:hover, .mod-menu__list-entry:focus {
-  cursor: pointer;
-}
-.mod-menu__list-entry[is_selected] {
-  border-color: rgb(255, 255, 255);
-}
-.mod-menu__list-entry-thumbnail {
-  height: 100dp;
-  width: 100dp;
-  min-width: 100dp;
-  min-height: 100dp;
-  background-color: rgba(190, 184, 219, 0.1);
-}
-.mod-menu__list-entry-body {
-  display: flex;
-  position: relative;
-  flex-direction: column;
-  width: auto;
-  height: 100dp;
-  margin-left: 16dp;
-  overflow: hidden;
-}
-.mod-menu__list-entry-description {
-  padding-top: 8dp;
 }
 
 .config-debug {
