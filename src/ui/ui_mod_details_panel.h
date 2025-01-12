@@ -1,13 +1,12 @@
 #ifndef RECOMPUI_ELEMENT_MOD_DETAILS_PANEL_H
 #define RECOMPUI_ELEMENT_MOD_DETAILS_PANEL_H
 
-#include "common.h"
 #include "librecomp/mods.hpp"
-#include "ui_button.h"
-#include "ui_container.h"
-#include "ui_image.h"
-#include "ui_label.h"
-#include "ui_toggle.h"
+#include "elements/ui_button.h"
+#include "elements/ui_container.h"
+#include "elements/ui_image.h"
+#include "elements/ui_label.h"
+#include "elements/ui_toggle.h"
 
 namespace recompui {
 

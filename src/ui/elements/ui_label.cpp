@@ -6,20 +6,27 @@ namespace recompui {
 
     Label::Label(LabelStyle label_style, Element *parent) : Element(parent) {
         switch (label_style) {
+        case LabelStyle::Small:
+            set_font_size(20.0f);
+            set_letter_spacing(0.0f);
+            set_line_height(20.0f);
+            set_font_weight(400);
+            break;
         case LabelStyle::Normal:
             set_font_size(28.0f);
             set_letter_spacing(3.08f);
             set_line_height(28.0f);
+            set_font_weight(700);
             break;
         case LabelStyle::Large:
             set_font_size(36.0f);
             set_letter_spacing(2.52f);
             set_line_height(36.0f);
+            set_font_weight(700);
             break;
         }
         
         set_font_style(FontStyle::Normal);
-        set_font_weight(700);
     }
 
     Label::Label(const std::string &text, LabelStyle label_style, Element *parent) : Label(label_style, parent) {
