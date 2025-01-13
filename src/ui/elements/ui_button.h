@@ -12,10 +12,8 @@ namespace recompui {
     class Button : public Element {
     protected:
         ButtonStyle style = ButtonStyle::Primary;
+        Style hover_style;
         std::list<std::function<void()>> pressed_callbacks;
-        bool hovered = false;
-
-        void update_properties();
 
         // Element overrides.
         virtual void process_event(const Event &e) override;
