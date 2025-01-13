@@ -4,6 +4,8 @@
 
 namespace recompui {
 
+    static const std::string hover_style_name = "hover";
+
     Button::Button(const std::string &text, ButtonStyle style, Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover), "button") {
         this->style = style;
 
@@ -18,32 +20,36 @@ namespace recompui {
         set_font_style(FontStyle::Normal);
         set_font_weight(700);
         set_cursor(Cursor::Pointer);
+        set_color(Color{ 204, 204, 204, 255 });
+        hover_style.set_color(Color{ 242, 242, 242, 255 });
 
-        // transition: color 0.05s linear-in-out, background-color 0.05s linear-in-out;
-
-        update_properties();
-    }
-
-    void Button::update_properties() {
-        uint8_t border_opacity = hovered ? 255 : 204;
-        uint8_t background_opacity = hovered ? 76 : 13;
-        set_color(hovered ? Color{ 242, 242, 242, 255 } : Color{ 204, 204, 204, 255 });
-
+        const uint8_t border_opacity = 204;
+        const uint8_t background_opacity = 13;
+        const uint8_t border_hover_opacity = 255;
+        const uint8_t background_hover_opacity = 76;
         switch (style) {
         case ButtonStyle::Primary: {
             set_border_color({ 185, 125, 242, border_opacity });
             set_background_color({ 185, 125, 242, background_opacity });
+            hover_style.set_border_color({ 185, 125, 242, border_hover_opacity });
+            hover_style.set_background_color({ 185, 125, 242, background_hover_opacity });
             break;
         }
         case ButtonStyle::Secondary: {
             set_border_color({ 23, 214, 232, border_opacity });
             set_background_color({ 23, 214, 232, background_opacity });
+            hover_style.set_border_color({ 23, 214, 232, border_hover_opacity });
+            hover_style.set_background_color({ 23, 214, 232, background_hover_opacity });
             break;
         }
         default:
             assert(false && "Unknown button style.");
             break;
         }
+
+        add_style(hover_style_name, &hover_style);
+    
+        // transition: color 0.05s linear-in-out, background-color 0.05s linear-in-out;
     }
 
     void Button::process_event(const Event &e) {
@@ -54,8 +60,7 @@ namespace recompui {
             }
             break;
         case EventType::Hover:
-            hovered = e.hover.active;
-            update_properties();
+            enable_style(hover_style_name, e.hover.active);
             break;
         default:
             assert(false && "Unknown event type.");

@@ -180,6 +180,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_image.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_label.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_scroll_container.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_style.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_toggle.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp

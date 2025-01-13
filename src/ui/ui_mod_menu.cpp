@@ -81,10 +81,7 @@ void ModMenu::refresh_mods() {
 
 void ModMenu::create_mod_list() {
     // Clear the contents of the list scroll.
-    for (ModEntry *entry : mod_entries) {
-        delete entry;
-    }
-
+    list_scroll_container->clear_children();
     mod_entries.clear();
 
     // Create the child elements for the list scroll.
