@@ -31,22 +31,22 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
     set_cursor(Cursor::Pointer);
 
     {
-        thumbnail_image = std::make_unique<Image>(this);
+        thumbnail_image = new Image(this);
         thumbnail_image->set_width(100.0f);
         thumbnail_image->set_height(100.0f);
         thumbnail_image->set_min_width(100.0f);
         thumbnail_image->set_min_height(100.0f);
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
 
-        body_container = std::make_unique<Container>(FlexDirection::Column, JustifyContent::FlexStart, this);
+        body_container = new Container(FlexDirection::Column, JustifyContent::FlexStart, this);
         body_container->set_width_auto();
         body_container->set_height(100.0f);
         body_container->set_margin_left(16.0f);
         body_container->set_overflow(Overflow::Hidden);
 
         {
-            name_label = std::make_unique<Label>(details.mod_id, LabelStyle::Normal, body_container.get());
-            description_label = std::make_unique<Label>("Short description of mod here.", LabelStyle::Small, body_container.get());
+            name_label = new Label(details.mod_id, LabelStyle::Normal, body_container);
+            description_label = new Label("Short description of mod here.", LabelStyle::Small, body_container);
         } // body_container
     } // this
 }
@@ -81,11 +81,15 @@ void ModMenu::refresh_mods() {
 
 void ModMenu::create_mod_list() {
     // Clear the contents of the list scroll.
+    for (ModEntry *entry : mod_entries) {
+        delete entry;
+    }
+
     mod_entries.clear();
 
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
-        mod_entries.emplace_back(std::make_unique<ModEntry>(list_scroll_container.get(), mod_details[mod_index], mod_index, this));
+        mod_entries.emplace_back(new ModEntry(list_scroll_container, mod_details[mod_index], mod_index, this));
     }
 
     set_active_mod(0);
@@ -103,12 +107,12 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     set_height(100.0f, Unit::Percent);
     
     {
-        body_container = std::make_unique<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
+        body_container = new Container(FlexDirection::Row, JustifyContent::FlexStart, this);
         body_container->set_flex(1.0f, 1.0f, 100.0f);
         body_container->set_width(100.0f, Unit::Percent);
         body_container->set_height(100.0f, Unit::Percent);
         {
-            list_container = std::make_unique<Container>(FlexDirection::Column, JustifyContent::Center, body_container.get());
+            list_container = new Container(FlexDirection::Column, JustifyContent::Center, body_container);
             list_container->set_display(Display::Block);
             list_container->set_flex_basis_percentage(100.0f);
             list_container->set_align_items(AlignItems::Center);
@@ -116,14 +120,14 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             list_container->set_background_color(Color{ 0, 0, 0, 89 });
             list_container->set_border_bottom_left_radius(16.0f);
             {
-                list_scroll_container = std::make_unique<ScrollContainer>(ScrollDirection::Vertical, list_container.get());
+                list_scroll_container = new ScrollContainer(ScrollDirection::Vertical, list_container);
             } // list_container
 
-            mod_details_panel = std::make_unique<ModDetailsPanel>(body_container.get());
+            mod_details_panel = new ModDetailsPanel(body_container);
         } // body_container
         
 
-        footer_container = std::make_unique<recompui::Container>(FlexDirection::Row, JustifyContent::SpaceBetween, this);
+        footer_container = new Container(FlexDirection::Row, JustifyContent::SpaceBetween, this);
         footer_container->set_width(100.0f, recompui::Unit::Percent);
         footer_container->set_align_items(recompui::AlignItems::Center);
         footer_container->set_background_color(Color{ 0, 0, 0, 89 });
@@ -133,7 +137,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
-            refresh_button = std::make_unique<recompui::Button>("Refresh", recompui::ButtonStyle::Primary, footer_container.get());
+            refresh_button = new Button("Refresh", recompui::ButtonStyle::Primary, footer_container);
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
         } // footer_container
     } // this
