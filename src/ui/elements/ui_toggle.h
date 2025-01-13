@@ -6,7 +6,7 @@ namespace recompui {
 
     class Toggle : public Element {
     protected:
-        std::unique_ptr<Element> floater;
+        Element *floater;
         std::list<std::function<void(bool)>> checked_callbacks;
         bool checked = false;
         bool hovered = false;

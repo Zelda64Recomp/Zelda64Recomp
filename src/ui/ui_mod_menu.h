@@ -11,45 +11,45 @@ class ModMenu;
 
 class ModEntry : public Element {
 public:
-    ModEntry(Element *parent, const recomp::mods::ModDetails &details, uint32_t mod_index, ModMenu *mod_menu);
-    virtual ~ModEntry();
+	ModEntry(Element *parent, const recomp::mods::ModDetails &details, uint32_t mod_index, ModMenu *mod_menu);
+	virtual ~ModEntry();
 protected:
-    virtual void process_event(const Event &e);
+	virtual void process_event(const Event &e);
 private:
-    uint32_t mod_index;
-    ModMenu *mod_menu;
-    std::unique_ptr<Image> thumbnail_image;
-    std::unique_ptr<Container> body_container;
-    std::unique_ptr<Label> name_label;
-    std::unique_ptr<Label> description_label;
+	uint32_t mod_index = 0;
+	ModMenu *mod_menu = nullptr;
+	Image *thumbnail_image = nullptr;
+	Container *body_container = nullptr;
+	Label *name_label = nullptr;
+	Label *description_label = nullptr;
 };
 
 class ModMenu : public Element {
 public:
-    ModMenu(Element *parent);
+	ModMenu(Element *parent);
 	virtual ~ModMenu();
-    void set_active_mod(uint32_t mod_index);
+	void set_active_mod(uint32_t mod_index);
 private:
 	void refresh_mods();
 	void create_mod_list();
-    
-    std::unique_ptr<Container> body_container;
-    std::unique_ptr<Container> list_container;
-    std::unique_ptr<ScrollContainer> list_scroll_container;
-	std::unique_ptr<ModDetailsPanel> mod_details_panel;
-    std::unique_ptr<Container> footer_container;
-    std::unique_ptr<Button> refresh_button;
-    std::vector<std::unique_ptr<ModEntry>> mod_entries;
+	
+	Container *body_container = nullptr;
+	Container *list_container = nullptr;
+	ScrollContainer *list_scroll_container = nullptr;
+	ModDetailsPanel *mod_details_panel = nullptr;
+	Container *footer_container = nullptr;
+	Button *refresh_button = nullptr;
+	std::vector<ModEntry *> mod_entries;
 	std::vector<recomp::mods::ModDetails> mod_details{};
 	std::string game_mod_id;
 };
 
 class ElementModMenu : public Rml::Element {
 public:
-    ElementModMenu(const Rml::String& tag);
-    virtual ~ElementModMenu();
+	ElementModMenu(const Rml::String& tag);
+	virtual ~ElementModMenu();
 private:
-    std::unique_ptr<ModMenu> mod_menu;
+	std::unique_ptr<ModMenu> mod_menu;
 };
 
 } // namespace recompui

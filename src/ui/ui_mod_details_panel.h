@@ -12,24 +12,24 @@ namespace recompui {
 
 class ModDetailsPanel : public Element {
 public:
-    ModDetailsPanel(Element *parent);
+	ModDetailsPanel(Element *parent);
 	virtual ~ModDetailsPanel();
-    void set_mod_details(const recomp::mods::ModDetails& details);
+	void set_mod_details(const recomp::mods::ModDetails& details);
 private:
-    recomp::mods::ModDetails cur_details;
-    std::unique_ptr<recompui::Container> thumbnail_container;
-    std::unique_ptr<recompui::Image> thumbnail_image;
-    std::unique_ptr<recompui::Container> header_container;
-    std::unique_ptr<recompui::Container> header_details_container;
-    std::unique_ptr<recompui::Label> title_label;
-    std::unique_ptr<recompui::Label> version_label;
-    std::unique_ptr<recompui::Container> body_container;
-    std::unique_ptr<recompui::Label> description_label;
-    std::unique_ptr<recompui::Label> authors_label;
-    std::unique_ptr<recompui::Container> buttons_container;
-    std::unique_ptr<recompui::Toggle> enable_toggle;
-    std::unique_ptr<recompui::Button> configure_button;
-    std::unique_ptr<recompui::Button> erase_button;
+	recomp::mods::ModDetails cur_details;
+	Container *thumbnail_container = nullptr;
+	Image *thumbnail_image = nullptr;
+	Container *header_container = nullptr;
+	Container *header_details_container = nullptr;
+	Label *title_label = nullptr;
+	Label *version_label = nullptr;
+	Container *body_container = nullptr;
+	Label *description_label = nullptr;
+	Label *authors_label = nullptr;
+	Container *buttons_container = nullptr;
+	Toggle *enable_toggle = nullptr;
+	Button *configure_button = nullptr;
+	Button *erase_button = nullptr;
 };
 
 } // namespace recompui
