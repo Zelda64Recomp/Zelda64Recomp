@@ -12,7 +12,7 @@ namespace recompui {
         set_cursor(Cursor::Pointer);
         set_border_width(2.0f);
 
-        floater = std::make_unique<Element>(this);
+        floater = new Element(this);
         floater->set_position(Position::Relative);
         floater->set_top(2.0f);
         floater->set_width(80.0f);

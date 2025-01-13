@@ -81,13 +81,25 @@ Element::Element(Element *parent, uint32_t events_enabled, Rml::String base_clas
 
     base = parent->base->AppendChild(parent->base->GetOwnerDocument()->CreateElement(base_class));
 
+    if (parent->owner) {
+        parent->add_child(this);
+    }
+
     register_event_listeners(events_enabled);
 }
 
 Element::~Element() {
+    children.clear();
+
     if (owner) {
         base->GetParentNode()->RemoveChild(base);
     }
+}
+
+void Element::add_child(Element *child) {
+    assert(child != nullptr);
+
+    children.emplace_back(child);
 }
 
 void Element::set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation animation) {

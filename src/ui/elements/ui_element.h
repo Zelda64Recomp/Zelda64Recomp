@@ -154,7 +154,9 @@ struct Animation {
 };
 
 class Element : public Rml::EventListener {
+    friend class Element;
 private:
+    void add_child(Element *child);
     void set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation animation = Animation());
     void register_event_listeners(uint32_t events_enabled);
 
@@ -162,6 +164,7 @@ private:
     virtual void ProcessEvent(Rml::Event &event) override;
 protected:
     Rml::Element *base;
+    std::vector<std::unique_ptr<Element>> children;
     bool owner;
 
     virtual void process_event(const Event &e);

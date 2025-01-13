@@ -12,7 +12,6 @@ namespace recompui {
     class Button : public Element {
     protected:
         ButtonStyle style = ButtonStyle::Primary;
-        std::unique_ptr<Element> floater;
         std::list<std::function<void()>> pressed_callbacks;
         bool hovered = false;
 
