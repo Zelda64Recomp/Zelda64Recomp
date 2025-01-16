@@ -11,8 +11,8 @@ class Element : public Style, public Rml::EventListener {
 private:
     std::vector<Style *> styles;
     std::vector<uint32_t> styles_counter;
-    std::unordered_set<std::string> style_active_set;
-    std::unordered_multimap<std::string, uint32_t> style_name_index_map;
+    std::unordered_set<std::string_view> style_active_set;
+    std::unordered_multimap<std::string_view, uint32_t> style_name_index_map;
 
     void add_child(Element *child);
     void register_event_listeners(uint32_t events_enabled);
@@ -44,10 +44,10 @@ public:
     Element(Element *parent, uint32_t events_enabled = 0, Rml::String base_class = "div");
     virtual ~Element();
     void clear_children();
-    void add_style(Style *style, const std::list<std::string> &style_names);
+    void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
     void set_text(const std::string &text);
-    void set_style_enabled(const std::string &style_name, bool enabled);
+    void set_style_enabled(const std::string_view &style_name, bool enabled);
 };
 
 } // namespace recompui

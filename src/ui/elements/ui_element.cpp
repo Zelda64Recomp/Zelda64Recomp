@@ -157,15 +157,15 @@ void Element::clear_children() {
     children.clear();
 }
 
-void Element::add_style(Style *style, const std::list<std::string> &style_names) {
-    for (const std::string &style_name : style_names) {
+void Element::add_style(Style *style, const std::initializer_list<std::string_view> &style_names) {
+    for (const std::string_view &style_name : style_names) {
         style_name_index_map.emplace(style_name, styles.size());
     }
 
     styles.emplace_back(style);
 
     uint32_t initial_style_counter = style_names.size();
-    for (const std::string &style_name : style_names) {
+    for (const std::string_view &style_name : style_names) {
         if (style_active_set.find(style_name) != style_active_set.end()) {
             initial_style_counter--;
         }
@@ -184,7 +184,7 @@ void Element::set_text(const std::string &text) {
     base->SetInnerRML(text);
 }
 
-void Element::set_style_enabled(const std::string &style_name, bool enable) {
+void Element::set_style_enabled(const std::string_view &style_name, bool enable) {
     if (enable && style_active_set.find(style_name) == style_active_set.end()) {
         // Style was disabled and will be enabled.
         style_active_set.emplace(style_name);
