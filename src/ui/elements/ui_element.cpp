@@ -67,6 +67,8 @@ void Element::set_property(Rml::PropertyId property_id, const Rml::Property &pro
 void Element::register_event_listeners(uint32_t events_enabled) {
     assert(base != nullptr);
 
+    this->events_enabled = events_enabled;
+
     if (events_enabled & Events(EventType::Click)) {
         base->AddEventListener(Rml::EventId::Mousedown, this);
     }
@@ -91,9 +93,27 @@ void Element::apply_style(Style *style) {
 void Element::apply_styles() {
     apply_style(this);
 
-    for (size_t i = 0; i < styles_active.size(); i++) {
-        if (styles_active[i]) {
+    for (size_t i = 0; i < styles_counter.size(); i++) {
+        if (styles_counter[i] == 0) {
             apply_style(styles[i]);
+        }
+    }
+}
+
+void Element::propagate_disabled(bool disabled) {
+    disabled_from_parent = disabled;
+
+    bool attribute_state = disabled_from_parent || !enabled;
+    if (disabled_attribute != attribute_state) {
+        disabled_attribute = attribute_state;
+        base->SetAttribute("disabled", attribute_state);
+
+        if (events_enabled & Events(EventType::Enable)) {
+            process_event(Event::enable_event(!attribute_state));
+        }
+
+        for (auto &child : children) {
+            child->propagate_disabled(attribute_state);
         }
     }
 }
@@ -137,25 +157,59 @@ void Element::clear_children() {
     children.clear();
 }
 
-void Element::add_style(const std::string &style_name, Style *style) {
-    assert(style_name_index_map.find(style_name) == style_name_index_map.end());
+void Element::add_style(Style *style, const std::list<std::string> &style_names) {
+    for (const std::string &style_name : style_names) {
+        style_name_index_map.emplace(style_name, styles.size());
+    }
 
-    style_name_index_map[style_name] = styles.size();
     styles.emplace_back(style);
-    styles_active.push_back(false);
+
+    uint32_t initial_style_counter = style_names.size();
+    for (const std::string &style_name : style_names) {
+        if (style_active_set.find(style_name) != style_active_set.end()) {
+            initial_style_counter--;
+        }
+    }
+
+    styles_counter.push_back(initial_style_counter);
 }
 
-void Element::enable_style(const std::string &style_name, bool enable) {
-    auto it = style_name_index_map.find(style_name);
-    assert(it != style_name_index_map.end());
+void Element::set_enabled(bool enabled) {
+    this->enabled = enabled;
 
-    styles_active[it->second] = enable;
-
-    apply_styles();
+    propagate_disabled(disabled_from_parent);
 }
 
 void Element::set_text(const std::string &text) {
     base->SetInnerRML(text);
+}
+
+void Element::set_style_enabled(const std::string &style_name, bool enable) {
+    if (enable && style_active_set.find(style_name) == style_active_set.end()) {
+        // Style was disabled and will be enabled.
+        style_active_set.emplace(style_name);
+
+    }
+    else if (!enable && style_active_set.find(style_name) != style_active_set.end()) {
+        // Style was enabled and will be disabled.
+        style_active_set.erase(style_name);
+    }
+    else {
+        // Do nothing.
+        return;
+    }
+
+    auto range = style_name_index_map.equal_range(style_name);
+    for (auto it = range.first; it != range.second; it++) {
+        if (enable) {
+            styles_counter[it->second]--;
+        }
+        else {
+            styles_counter[it->second]++;
+        }
+    }
+
+    apply_styles();
 }
 
 };

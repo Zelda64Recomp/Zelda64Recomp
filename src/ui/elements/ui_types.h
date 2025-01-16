@@ -21,6 +21,7 @@ namespace recompui {
         Click,
         Focus,
         Hover,
+        Enable,
         Count
     };
 
@@ -54,6 +55,10 @@ namespace recompui {
             struct {
                 bool active;
             } hover;
+
+            struct {
+                bool enable;
+            } enable;
         };
 
         static Event click_event(float x, float y) {
@@ -75,6 +80,13 @@ namespace recompui {
             Event e = {};
             e.type = EventType::Hover;
             e.focus.active = active;
+            return e;
+        }
+
+        static Event enable_event(bool enable) {
+            Event e = {};
+            e.type = EventType::Enable;
+            e.enable.enable = enable;
             return e;
         }
     };

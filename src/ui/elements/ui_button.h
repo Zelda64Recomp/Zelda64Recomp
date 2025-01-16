@@ -13,6 +13,8 @@ namespace recompui {
     protected:
         ButtonStyle style = ButtonStyle::Primary;
         Style hover_style;
+        Style disabled_style;
+        Style hover_disabled_style;
         std::list<std::function<void()>> pressed_callbacks;
 
         // Element overrides.
