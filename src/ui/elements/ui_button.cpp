@@ -4,9 +4,10 @@
 
 namespace recompui {
 
-    static const std::string hover_style_name = "hover";
+    static const std::string hover_state = "hover";
+    static const std::string disabled_state = "disabled";
 
-    Button::Button(const std::string &text, ButtonStyle style, Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover), "button") {
+    Button::Button(const std::string &text, ButtonStyle style, Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
         this->style = style;
 
         set_text(text);
@@ -47,8 +48,15 @@ namespace recompui {
             break;
         }
 
-        add_style(hover_style_name, &hover_style);
-    
+        disabled_style.set_border_color({ 128, 128, 128, border_hover_opacity });
+        disabled_style.set_background_color({ 128, 128, 128, background_hover_opacity });
+        hover_disabled_style.set_border_color({ 196, 196, 196, border_hover_opacity });
+        hover_disabled_style.set_background_color({ 196, 196, 196, background_hover_opacity });
+
+        add_style(&hover_style, { hover_state });
+        add_style(&disabled_style, { disabled_state });
+        add_style(&hover_disabled_style, { hover_state, disabled_state });
+
         // transition: color 0.05s linear-in-out, background-color 0.05s linear-in-out;
     }
 
@@ -60,7 +68,10 @@ namespace recompui {
             }
             break;
         case EventType::Hover:
-            enable_style(hover_style_name, e.hover.active);
+            set_style_enabled(hover_state, e.hover.active);
+            break;
+        case EventType::Enable:
+            set_style_enabled(disabled_state, !e.enable.enable);
             break;
         default:
             assert(false && "Unknown event type.");
