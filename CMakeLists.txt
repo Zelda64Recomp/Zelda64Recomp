@@ -37,7 +37,7 @@ set(BUILD_SHARED_LIBS OFF)
 SET(LUNASVG_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 # set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
-SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
+SET(RMLUI_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 SET(RMLUI_TESTS_ENABLED OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
 
@@ -317,8 +317,8 @@ target_link_libraries(Zelda64Recompiled PRIVATE
     librecomp
     ultramodern
     rt64
-    RmlCore
-    RmlDebugger
+    RmlUi::Core
+    RmlUi::Debugger
     nfd
     lunasvg
 )
