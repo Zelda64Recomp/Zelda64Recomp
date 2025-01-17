@@ -8,11 +8,17 @@ namespace recompui {
     protected:
         Element *floater;
         std::list<std::function<void(bool)>> checked_callbacks;
+        Style checked_style;
+        Style hover_style;
+        Style checked_hover_style;
+        Style disabled_style;
+        Style checked_disabled_style;
+        Style floater_checked_style;
+        Style floater_disabled_style;
+        Style floater_disabled_checked_style;
         bool checked = false;
-        bool hovered = false;
 
         void set_checked_internal(bool checked, bool animate, bool setup);
-        void update_properties();
         float floater_left_target() const;
 
         // Element overrides.

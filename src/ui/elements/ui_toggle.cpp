@@ -4,13 +4,31 @@
 
 namespace recompui {
 
-    Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover), "button") {
+    static const std::string_view checked_state = "checked";
+    static const std::string_view hover_state = "hover";
+    static const std::string_view disabled_state = "disabled";
+
+    Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
         set_width(162.0f);
         set_height(72.0f);
         set_border_radius(36.0f);
         set_opacity(0.9f);
         set_cursor(Cursor::Pointer);
         set_border_width(2.0f);
+        set_border_color(Color{ 177, 76, 34, 255 });
+        set_background_color(Color{ 0, 0, 0, 0 });
+        checked_style.set_border_color(Color{ 34, 177, 76, 255 });
+        hover_style.set_border_color(Color{ 177, 76, 34, 255 });
+        hover_style.set_background_color(Color{ 206, 120, 68, 76 });
+        checked_hover_style.set_border_color(Color{ 34, 177, 76, 255 });
+        checked_hover_style.set_background_color(Color{ 68, 206, 120, 76 });
+        disabled_style.set_border_color(Color{ 177, 76, 34, 128 });
+        checked_disabled_style.set_border_color(Color{ 34, 177, 76, 128 });
+        add_style(&checked_style, checked_state);
+        add_style(&hover_style, hover_state);
+        add_style(&checked_hover_style, { checked_state, hover_state });
+        add_style(&disabled_style, disabled_state);
+        add_style(&checked_disabled_style, { checked_state, disabled_state });
 
         floater = new Element(this);
         floater->set_position(Position::Relative);
@@ -18,35 +36,32 @@ namespace recompui {
         floater->set_width(80.0f);
         floater->set_height(64.0f);
         floater->set_border_radius(32.0f);
+        floater->set_background_color(Color{ 177, 76, 34, 255 });
+        floater_checked_style.set_background_color(Color{ 34, 177, 76, 255 });
+        floater_disabled_style.set_background_color(Color{ 177, 76, 34, 128 });
+        floater_disabled_checked_style.set_background_color(Color{ 34, 177, 76, 128 });
+        floater->add_style(&floater_checked_style, checked_state);
+        floater->add_style(&floater_disabled_style, disabled_state);
+        floater->add_style(&floater_disabled_checked_style, { checked_state, disabled_state });
 
         set_checked_internal(false, false, true);
-        update_properties();
     }
 
     void Toggle::set_checked_internal(bool checked, bool animate, bool setup) {
         if (this->checked != checked || setup) {
             this->checked = checked;
 
-            floater->set_left(floater_left_target(), Unit::Dp, animate ? Animation::tween(0.1f) : Animation());
+            floater->set_left(floater_left_target(), Unit::Dp, animate ? Animation::tween(0.1f) : Animation::set());
 
             if (!setup) {
-                update_properties();
-
                 for (const auto &function : checked_callbacks) {
                     function(checked);
                 }
             }
+
+            set_style_enabled(checked_state, checked);
+            floater->set_style_enabled(checked_state, checked);
         }
-    }
-
-    void Toggle::update_properties() {
-        Color border_color = checked ? Color{ 34, 177, 76, 255 } : Color{ 177, 76, 34, 255 };
-        Color main_color = checked ? Color{ 68, 206, 120, 255 } : Color{ 206, 120, 68, 255 };
-        main_color.a = hovered ? 76 : 0;
-
-        set_border_color(border_color);
-        set_background_color(main_color);
-        floater->set_background_color(border_color);
     }
 
     float Toggle::floater_left_target() const {
@@ -56,11 +71,18 @@ namespace recompui {
     void Toggle::process_event(const Event &e) {
         switch (e.type) {
         case EventType::Click:
-            set_checked_internal(!checked, true, false);
+            if (is_enabled()) {
+                set_checked_internal(!checked, true, false);
+            }
+
             break;
         case EventType::Hover:
-            hovered = e.hover.active;
-            update_properties();
+            set_style_enabled(hover_state, e.hover.active);
+            floater->set_style_enabled(hover_state, e.hover.active);
+            break;
+        case EventType::Enable:
+            set_style_enabled(disabled_state, !e.enable.enable);
+            floater->set_style_enabled(disabled_state, !e.enable.enable);
             break;
         default:
             assert(false && "Unknown event type.");

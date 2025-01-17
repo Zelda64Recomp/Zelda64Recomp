@@ -14,7 +14,7 @@ class ModDetailsPanel : public Element {
 public:
     ModDetailsPanel(Element *parent);
     virtual ~ModDetailsPanel();
-    void set_mod_details(const recomp::mods::ModDetails& details, bool enabled);
+    void set_mod_details(const recomp::mods::ModDetails& details, bool mod_enabled, bool toggle_enabled);
     void set_mod_toggled_callback(std::function<void(bool)> callback);
 private:
     recomp::mods::ModDetails cur_details;
@@ -27,6 +27,7 @@ private:
     Container *body_container = nullptr;
     Label *description_label = nullptr;
     Label *authors_label = nullptr;
+    Element *spacer_element = nullptr;
     Container *buttons_container = nullptr;
     Toggle *enable_toggle = nullptr;
     Button *configure_button = nullptr;

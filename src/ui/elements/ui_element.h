@@ -9,10 +9,18 @@ namespace recompui {
 class Element : public Style, public Rml::EventListener {
     friend class Element;
 private:
+    Rml::Element *base = nullptr;
+    uint32_t events_enabled = 0;
     std::vector<Style *> styles;
     std::vector<uint32_t> styles_counter;
     std::unordered_set<std::string_view> style_active_set;
     std::unordered_multimap<std::string_view, uint32_t> style_name_index_map;
+    std::vector<std::unique_ptr<Element>> children;
+    bool owner = false;
+    bool orphaned = false;
+    bool enabled = true;
+    bool disabled_attribute = false;
+    bool disabled_from_parent = false;
 
     void add_child(Element *child);
     void register_event_listeners(uint32_t events_enabled);
@@ -26,15 +34,6 @@ private:
     // Rml::EventListener overrides.
     virtual void ProcessEvent(Rml::Event &event) override;
 protected:
-    Rml::Element *base = nullptr;
-    std::vector<std::unique_ptr<Element>> children;
-    uint32_t events_enabled = 0;
-    bool owner = false;
-    bool orphaned = false;
-    bool enabled = true;
-    bool disabled_attribute = false;
-    bool disabled_from_parent = false;
-
     virtual void process_event(const Event &e);
 public:
     // Used for backwards compatibility with legacy UI elements.
@@ -47,6 +46,7 @@ public:
     void add_style(Style *style, const std::string_view style_name);
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
+    bool is_enabled() const;
     void set_text(const std::string &text);
     void set_style_enabled(const std::string_view &style_name, bool enabled);
 };

@@ -73,7 +73,9 @@ void ModMenu::set_active_mod(int32_t mod_index) {
     active_mod_index = mod_index;
     if (active_mod_index >= 0) {
         bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
-        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled);
+        bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[mod_index].mod_id);
+        bool toggle_enabled = !auto_enabled && (mod_details[mod_index].runtime_toggleable || !ultramodern::is_game_started());
+        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled, toggle_enabled);
     }
 }
 
@@ -121,7 +123,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         {
             list_container = new Container(FlexDirection::Column, JustifyContent::Center, body_container);
             list_container->set_display(Display::Block);
-            list_container->set_flex_basis_percentage(100.0f);
+            list_container->set_flex_basis(100.0f);
             list_container->set_align_items(AlignItems::Center);
             list_container->set_height(100.0f, Unit::Percent);
             list_container->set_background_color(Color{ 0, 0, 0, 89 });
