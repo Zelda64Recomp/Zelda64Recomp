@@ -39,6 +39,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
     {
         description_label = new Label(LabelStyle::Normal, body_container);
         authors_label = new Label(LabelStyle::Normal, body_container);
+        spacer_element = new Element(body_container);
         buttons_container = new Container(FlexDirection::Row, JustifyContent::SpaceAround, body_container);
         buttons_container->set_padding_left(16.0f);
         {
@@ -53,7 +54,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
-void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, bool enabled) {
+void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, bool mod_enabled, bool toggle_enabled) {
     cur_details = details;
 
     title_label->set_text(cur_details.mod_id);
@@ -68,7 +69,8 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, b
 
     authors_label->set_text(authors_str);
     description_label->set_text("Placeholder description. Some long text to make sure that wrapping is working correctly. Yet more text and so on.");
-    enable_toggle->set_checked(enabled);
+    enable_toggle->set_checked(mod_enabled);
+    enable_toggle->set_enabled(toggle_enabled);
 }
 
 void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callback) {
