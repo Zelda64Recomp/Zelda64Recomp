@@ -14,16 +14,16 @@ bool mm_rom_valid = false;
 extern std::vector<recomp::GameEntry> supported_games;
 
 void select_rom() {
-	nfdnchar_t* native_path = nullptr;
-	nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
+    nfdnchar_t* native_path = nullptr;
+    nfdresult_t result = NFD_OpenDialogN(&native_path, nullptr, 0, nullptr);
 
-	if (result == NFD_OKAY) {
-		std::filesystem::path path{native_path};
+    if (result == NFD_OKAY) {
+        std::filesystem::path path{native_path};
 
-		NFD_FreePathN(native_path);
-		native_path = nullptr;
+        NFD_FreePathN(native_path);
+        native_path = nullptr;
 
-		recomp::RomValidationError rom_error = recomp::select_rom(path, supported_games[0].game_id);
+        recomp::RomValidationError rom_error = recomp::select_rom(path, supported_games[0].game_id);
         switch (rom_error) {
             case recomp::RomValidationError::Good:
                 mm_rom_valid = true;
@@ -55,44 +55,44 @@ void select_rom() {
 class LauncherMenu : public recompui::MenuController {
 public:
     LauncherMenu() {
-		mm_rom_valid = recomp::is_rom_valid(supported_games[0].game_id);
+        mm_rom_valid = recomp::is_rom_valid(supported_games[0].game_id);
     }
-	~LauncherMenu() override {
+    ~LauncherMenu() override {
 
-	}
-	Rml::ElementDocument* load_document(Rml::Context* context) override {
+    }
+    Rml::ElementDocument* load_document(Rml::Context* context) override {
         return context->LoadDocument("assets/launcher.rml");
-	}
-	void register_events(recompui::UiEventListenerInstancer& listener) override {
-		recompui::register_event(listener, "select_rom",
-			[](const std::string& param, Rml::Event& event) {
-				select_rom();
-			}
-		);
-		recompui::register_event(listener, "rom_selected",
-			[](const std::string& param, Rml::Event& event) {
-				mm_rom_valid = true;
-				model_handle.DirtyVariable("mm_rom_valid");
-			}
-		);
-		recompui::register_event(listener, "start_game",
-			[](const std::string& param, Rml::Event& event) {
-				recomp::start_game(supported_games[0].game_id);
-				recompui::set_current_menu(recompui::Menu::None);
-			}
-		);
+    }
+    void register_events(recompui::UiEventListenerInstancer& listener) override {
+        recompui::register_event(listener, "select_rom",
+            [](const std::string& param, Rml::Event& event) {
+                select_rom();
+            }
+        );
+        recompui::register_event(listener, "rom_selected",
+            [](const std::string& param, Rml::Event& event) {
+                mm_rom_valid = true;
+                model_handle.DirtyVariable("mm_rom_valid");
+            }
+        );
+        recompui::register_event(listener, "start_game",
+            [](const std::string& param, Rml::Event& event) {
+                recomp::start_game(supported_games[0].game_id);
+                recompui::set_current_menu(recompui::Menu::None);
+            }
+        );
         recompui::register_event(listener, "open_controls",
-			[](const std::string& param, Rml::Event& event) {
+            [](const std::string& param, Rml::Event& event) {
                 recompui::set_current_menu(recompui::Menu::Config);
-				recompui::set_config_submenu(recompui::ConfigSubmenu::Controls);
-			}
-		);
+                recompui::set_config_submenu(recompui::ConfigSubmenu::Controls);
+            }
+        );
         recompui::register_event(listener, "open_settings",
-			[](const std::string& param, Rml::Event& event) {
+            [](const std::string& param, Rml::Event& event) {
                 recompui::set_current_menu(recompui::Menu::Config);
                 recompui::set_config_submenu(recompui::ConfigSubmenu::General);
-			}
-		);
+            }
+        );
         recompui::register_event(listener, "open_mods",
             [](const std::string &param, Rml::Event &event) {
                 recompui::set_current_menu(recompui::Menu::Config);
@@ -100,21 +100,21 @@ public:
             }
         );
         recompui::register_event(listener, "exit_game",
-			[](const std::string& param, Rml::Event& event) {
-				ultramodern::quit();
-			}
-		);
-	}
-	void make_bindings(Rml::Context* context) override {
-		Rml::DataModelConstructor constructor = context->CreateDataModel("launcher_model");
+            [](const std::string& param, Rml::Event& event) {
+                ultramodern::quit();
+            }
+        );
+    }
+    void make_bindings(Rml::Context* context) override {
+        Rml::DataModelConstructor constructor = context->CreateDataModel("launcher_model");
 
-		constructor.Bind("mm_rom_valid", &mm_rom_valid);
+        constructor.Bind("mm_rom_valid", &mm_rom_valid);
 
-		version_string = recomp::get_project_version().to_string();
-		constructor.Bind("version_number", &version_string);
+        version_string = recomp::get_project_version().to_string();
+        constructor.Bind("version_number", &version_string);
 
-		model_handle = constructor.GetModelHandle();
-	}
+        model_handle = constructor.GetModelHandle();
+    }
 };
 
 std::unique_ptr<recompui::MenuController> recompui::create_launcher_menu() {

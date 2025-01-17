@@ -69,14 +69,24 @@ void ModEntry::process_event(const Event& e) {
     }
 }
 
-void ModMenu::set_active_mod(uint32_t mod_index) {
-    mod_details_panel->set_mod_details(mod_details[mod_index]);
+void ModMenu::set_active_mod(int32_t mod_index) {
+    active_mod_index = mod_index;
+    if (active_mod_index >= 0) {
+        bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
+        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled);
+    }
 }
 
 void ModMenu::refresh_mods() {
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
     create_mod_list();
+}
+
+void ModMenu::mod_toggled(bool enabled) {
+    if (active_mod_index >= 0) {
+        recomp::mods::enable_mod(mod_details[active_mod_index].mod_id, enabled);
+    }
 }
 
 void ModMenu::create_mod_list() {
@@ -121,6 +131,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             } // list_container
 
             mod_details_panel = new ModDetailsPanel(body_container);
+            mod_details_panel->set_mod_toggled_callback(std::bind(&ModMenu::mod_toggled, this, std::placeholders::_1));
         } // body_container
         
 

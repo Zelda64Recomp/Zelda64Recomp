@@ -157,6 +157,10 @@ void Element::clear_children() {
     children.clear();
 }
 
+void Element::add_style(Style *style, const std::string_view style_name) {
+    add_style(style, { style_name });
+}
+
 void Element::add_style(Style *style, const std::initializer_list<std::string_view> &style_names) {
     for (const std::string_view &style_name : style_names) {
         style_name_index_map.emplace(style_name, styles.size());
