@@ -138,6 +138,7 @@ namespace recompui {
 
     enum class AnimationType {
         None,
+        Set,
         Tween
     };
 
@@ -156,6 +157,12 @@ namespace recompui {
     struct Animation {
         AnimationType type = AnimationType::None;
         float duration = 0.0f;
+
+        static Animation set() {
+            Animation a;
+            a.type = AnimationType::Set;
+            return a;
+        }
 
         static Animation tween(float duration) {
             Animation a;

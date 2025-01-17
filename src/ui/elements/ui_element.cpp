@@ -52,11 +52,13 @@ void Element::add_child(Element *child) {
 void Element::set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation animation) {
     assert(base != nullptr);
 
-    if (animation.type == AnimationType::None) {
+    if (animation.type == AnimationType::None || animation.type == AnimationType::Set) {
         base->SetProperty(property_id, property);
 
-        // Only non-animated properties should be stored as part of the style.
-        Style::set_property(property_id, property, animation);
+        if (animation.type == AnimationType::None) {
+            // Only non-animated properties should be stored as part of the style.
+            Style::set_property(property_id, property, animation);
+        }
     }
     else {
         const Rml::String property_name = Rml::StyleSheetSpecification::GetPropertyName(property_id);
@@ -182,6 +184,10 @@ void Element::set_enabled(bool enabled) {
     this->enabled = enabled;
 
     propagate_disabled(disabled_from_parent);
+}
+
+bool Element::is_enabled() const {
+    return enabled && !disabled_from_parent;
 }
 
 void Element::set_text(const std::string &text) {

@@ -63,9 +63,9 @@ namespace recompui {
         void set_flex_grow(float grow, Animation animation = Animation());
         void set_flex_shrink(float shrink, Animation animation = Animation());
         void set_flex_basis_auto();
-        void set_flex_basis_percentage(float basis_percentage, Animation animation = Animation());
+        void set_flex_basis(float basis, Unit unit = Unit::Percent, Animation animation = Animation());
         void set_flex(float grow, float shrink, Animation animation = Animation());
-        void set_flex(float grow, float shrink, float basis_percentage, Animation animation = Animation());
+        void set_flex(float grow, float shrink, float basis, Unit basis_unit = Unit::Percent, Animation animation = Animation());
         void set_flex_direction(FlexDirection flex_direction);
         void set_align_items(AlignItems align_items);
         void set_overflow(Overflow overflow);

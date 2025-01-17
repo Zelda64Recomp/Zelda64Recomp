@@ -343,8 +343,8 @@ namespace recompui {
         set_property(Rml::PropertyId::FlexBasis, Rml::Property(Rml::Style::FlexBasis::Type::Auto, Rml::Unit::KEYWORD), Animation());
     }
 
-    void Style::set_flex_basis_percentage(float basis, Animation animation) {
-        set_property(Rml::PropertyId::FlexBasis, Rml::Property(basis, Rml::Unit::PERCENT), animation);
+    void Style::set_flex_basis(float basis, Unit unit, Animation animation) {
+        set_property(Rml::PropertyId::FlexBasis, Rml::Property(basis, to_rml(unit)), animation);
     }
 
     void Style::set_flex(float grow, float shrink, Animation animation) {
@@ -353,10 +353,10 @@ namespace recompui {
         set_flex_basis_auto();
     }
 
-    void Style::set_flex(float grow, float shrink, float basis_percentage, Animation animation) {
+    void Style::set_flex(float grow, float shrink, float basis, Unit basis_unit, Animation animation) {
         set_flex_grow(grow, animation);
         set_flex_shrink(shrink, animation);
-        set_flex_basis_percentage(basis_percentage, animation);
+        set_flex_basis(basis, basis_unit, animation);
     }
 
     void Style::set_flex_direction(FlexDirection flex_direction) {
