@@ -43,6 +43,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         buttons_container->set_padding_left(16.0f);
         {
             enable_toggle = new Toggle(buttons_container);
+            enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
             configure_button = new Button("Configure", recompui::ButtonStyle::Secondary, buttons_container);
             erase_button = new Button("Erase", recompui::ButtonStyle::Secondary, buttons_container);
         }
@@ -52,7 +53,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
-void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details) {
+void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, bool enabled) {
     cur_details = details;
 
     title_label->set_text(cur_details.mod_id);
@@ -67,6 +68,17 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details) {
 
     authors_label->set_text(authors_str);
     description_label->set_text("Placeholder description. Some long text to make sure that wrapping is working correctly. Yet more text and so on.");
+    enable_toggle->set_checked(enabled);
+}
+
+void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callback) {
+    mod_toggled_callback = callback;
+}
+
+void ModDetailsPanel::enable_toggle_checked(bool checked) {
+    if (mod_toggled_callback != nullptr) {
+        mod_toggled_callback(checked);
+    }
 }
 
 } // namespace recompui

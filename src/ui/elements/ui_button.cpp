@@ -53,8 +53,8 @@ namespace recompui {
         hover_disabled_style.set_border_color({ 196, 196, 196, border_hover_opacity });
         hover_disabled_style.set_background_color({ 196, 196, 196, background_hover_opacity });
 
-        add_style(&hover_style, { hover_state });
-        add_style(&disabled_style, { disabled_state });
+        add_style(&hover_style, hover_state);
+        add_style(&disabled_style, disabled_state);
         add_style(&hover_disabled_style, { hover_state, disabled_state });
 
         // transition: color 0.05s linear-in-out, background-color 0.05s linear-in-out;

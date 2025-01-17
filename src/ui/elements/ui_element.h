@@ -44,6 +44,7 @@ public:
     Element(Element *parent, uint32_t events_enabled = 0, Rml::String base_class = "div");
     virtual ~Element();
     void clear_children();
+    void add_style(Style *style, const std::string_view style_name);
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
     void set_text(const std::string &text);
