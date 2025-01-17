@@ -424,4 +424,17 @@ namespace recompui {
         set_property(Rml::PropertyId::TextAlign, to_rml(text_align), Animation());
     }
 
+    void Style::set_gap(float size, Unit unit, Animation animation) {
+        set_row_gap(size, unit, animation);
+        set_column_gap(size, unit, animation);
+    }
+
+    void Style::set_row_gap(float size, Unit unit, Animation animation) {
+        set_property(Rml::PropertyId::RowGap, Rml::Property(size, to_rml(unit)), animation);
+    }
+
+    void Style::set_column_gap(float size, Unit unit, Animation animation) {
+        set_property(Rml::PropertyId::ColumnGap, Rml::Property(size, to_rml(unit)), animation);
+    }
+
 } // namespace recompui
