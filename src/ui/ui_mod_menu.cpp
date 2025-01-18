@@ -81,6 +81,10 @@ void ModMenu::set_active_mod(int32_t mod_index) {
     }
 }
 
+void ModMenu::set_config_sub_menu(ConfigSubMenu *config_sub_menu) {
+    ext_config_sub_menu = config_sub_menu;
+}
+
 void ModMenu::refresh_mods() {
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
@@ -90,6 +94,24 @@ void ModMenu::refresh_mods() {
 void ModMenu::mod_toggled(bool enabled) {
     if (active_mod_index >= 0) {
         recomp::mods::enable_mod(mod_details[active_mod_index].mod_id, enabled);
+    }
+}
+
+void ModMenu::mod_configure_requested() {
+    if (active_mod_index >= 0) {
+        ext_config_sub_menu->clear_options();
+        ext_config_sub_menu->add_slider_option("Simple Option", "Description for simple option.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Slider Option", "Description for slider option.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option B", "Description for option B.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option C", "Description for option C.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option D", "Description for option D.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option E", "Description for option E.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option F", "Description for option F.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option G", "Description for option G.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option H", "Description for option H.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option J", "Description for option J.", 0.0, 100.0);
+        ext_config_sub_menu->add_slider_option("Option K", "Description for option K.", 0.0, 100.0);
+        ext_config_sub_menu->enter(mod_details[active_mod_index].mod_id);
     }
 }
 
@@ -140,6 +162,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
 
             mod_details_panel = context.create_element<ModDetailsPanel>(body_container);
             mod_details_panel->set_mod_toggled_callback(std::bind(&ModMenu::mod_toggled, this, std::placeholders::_1));
+            mod_details_panel->set_mod_configure_pressed_callback(std::bind(&ModMenu::mod_configure_requested, this));
         } // body_container
         
 
@@ -177,6 +200,10 @@ ElementModMenu::ElementModMenu(const Rml::String &tag) : Rml::Element(tag) {
 
 ElementModMenu::~ElementModMenu() {
 
+}
+
+void ElementModMenu::set_config_sub_menu(ConfigSubMenu *config_sub_menu) {
+    mod_menu->set_config_sub_menu(config_sub_menu);
 }
 
 } // namespace recompui

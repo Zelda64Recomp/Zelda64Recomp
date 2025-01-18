@@ -166,6 +166,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_launcher.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_config_sub_menu.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_elements.cpp
@@ -186,11 +187,14 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementOptionTypeTextField.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/presets.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_button.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_clickable.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_container.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_element.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_image.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_label.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_radio.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_scroll_container.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_slider.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_style.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_toggle.cpp
 

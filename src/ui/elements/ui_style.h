@@ -82,7 +82,7 @@ namespace recompui {
         void set_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_row_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_column_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
-
+        void set_drag(Drag drag);
         virtual bool is_element() { return false; }
         ResourceId get_resource_id() { return resource_id; }
     };

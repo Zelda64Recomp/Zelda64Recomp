@@ -18,7 +18,7 @@ namespace recompui {
         Style floater_disabled_checked_style;
         bool checked = false;
 
-        void set_checked_internal(bool checked, bool animate, bool setup);
+        void set_checked_internal(bool checked, bool animate, bool setup, bool trigger_callbacks);
         float floater_left_target() const;
 
         // Element overrides.
