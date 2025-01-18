@@ -43,14 +43,19 @@ public:
     Element(Element* parent, uint32_t events_enabled = 0, Rml::String base_class = "div");
     virtual ~Element();
     void clear_children();
-    void add_style(Style *style, const std::string_view style_name);
+    void add_style(Style *style, std::string_view style_name);
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
     bool is_enabled() const;
     void set_text(const std::string &text);
-    void set_style_enabled(const std::string_view &style_name, bool enabled);
-
+    void set_style_enabled(std::string_view style_name, bool enabled);
     bool is_element() override { return true; }
+    float get_absolute_left();
+    float get_absolute_top();
+    float get_client_left();
+    float get_client_top();
+    float get_client_width();
+    float get_client_height();
 };
 
 } // namespace recompui

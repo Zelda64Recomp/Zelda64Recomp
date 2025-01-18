@@ -29,6 +29,7 @@
 #include "RmlUi_Platform_SDL.h"
 
 #include "ui_elements.h"
+#include "ui_mod_menu.h"
 #include "librecomp/config.hpp"
 
 #include "InterfaceVS.hlsl.spirv.h"
@@ -753,7 +754,7 @@ Rml::Element* find_autofocus_element(Rml::Element* start) {
 
 struct UIContext {
     struct UIRenderContext render;
-    class {
+    class Context {
         std::unordered_map<recompui::Menu, std::unique_ptr<recompui::MenuController>> menus;
         std::unordered_map<recompui::Menu, Rml::ElementDocument*> documents;
         Rml::ElementDocument* current_document;
@@ -776,6 +777,10 @@ struct UIContext {
         }
 
         void swap_document(recompui::Menu menu) {
+            if (menu != recompui::Menu::Config) {
+                quit_sub_menu();
+            }
+
             if (current_document != nullptr) {
                 Rml::Element* window_el = current_document->GetElementById("window");
                 if (window_el != nullptr) {
@@ -804,21 +809,77 @@ struct UIContext {
             mouse_is_active = false;
             mouse_is_active_changed = false;
             mouse_is_active_initialized = false;
+
+            if (menu == recompui::Menu::Config) {
+                recompui::ElementModMenu *mods_menu = get_mods_menu();
+                recompui::ElementConfigSubMenu *config_sub_menu = get_config_sub_menu();
+                if (mods_menu != nullptr && config_sub_menu != nullptr) {
+                    mods_menu->set_config_sub_menu(config_sub_menu->get_config_sub_menu_element());
+                    config_sub_menu->set_enter_sub_menu_callback(std::bind(&Context::enter_sub_menu, this));
+                    config_sub_menu->set_quit_sub_menu_callback(std::bind(&Context::quit_sub_menu, this));
+                }
+            }
+        }
+
+        Rml::ElementTabSet *get_config_tabset() {
+            if (current_document != nullptr) {
+                Rml::Element *config_tabset_base = current_document->GetElementById("config_tabset");
+                if (config_tabset_base != nullptr) {
+                    return rmlui_dynamic_cast<Rml::ElementTabSet *>(config_tabset_base);
+                }
+            }
+
+            return nullptr;
+        }
+
+        recompui::ElementModMenu *get_mods_menu() {
+            if (current_document != nullptr) {
+                Rml::Element *menu_mods_base = current_document->GetElementById("menu_mods");
+                if (menu_mods_base != nullptr) {
+                    return rmlui_dynamic_cast<recompui::ElementModMenu *>(menu_mods_base);
+                }
+            }
+
+            return nullptr;
+        }
+
+        recompui::ElementConfigSubMenu *get_config_sub_menu() {
+            if (current_document != nullptr) {
+                Rml::Element *config_sub_menu_base = current_document->GetElementById("config_sub_menu");
+                if (config_sub_menu_base != nullptr) {
+                    return rmlui_dynamic_cast<recompui::ElementConfigSubMenu *>(config_sub_menu_base);
+                }
+            }
+
+            return nullptr;
         }
 
         void swap_config_menu(recompui::ConfigSubmenu submenu) {
-            if (current_document != nullptr) {
-                Rml::Element* config_tabset_base = current_document->GetElementById("config_tabset");
-                if (config_tabset_base != nullptr) {
-                    Rml::ElementTabSet* config_tabset = rmlui_dynamic_cast<Rml::ElementTabSet*>(config_tabset_base);
-                    if (config_tabset != nullptr) {
-                        config_tabset->SetActiveTab(static_cast<int>(submenu));
-                        prev_focused = nullptr;
-                        mouse_is_active = false;
-                        mouse_is_active_changed = false;
-                        mouse_is_active_initialized = false;
-                    }
-                }
+            Rml::ElementTabSet* config_tabset = get_config_tabset();
+            if (config_tabset != nullptr) {
+                config_tabset->SetActiveTab(static_cast<int>(submenu));
+                prev_focused = nullptr;
+                mouse_is_active = false;
+                mouse_is_active_changed = false;
+                mouse_is_active_initialized = false;
+            }
+        }
+
+        void enter_sub_menu() {
+            Rml::ElementTabSet *config_tabset = get_config_tabset();
+            recompui::ElementConfigSubMenu *config_sub_menu = get_config_sub_menu();
+            if (config_tabset != nullptr && config_sub_menu != nullptr) {
+                config_tabset->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
+                config_sub_menu->set_display(true);
+            }
+        }
+
+        void quit_sub_menu() {
+            Rml::ElementTabSet *config_tabset = get_config_tabset();
+            recompui::ElementConfigSubMenu *config_sub_menu = get_config_sub_menu();
+            if (config_tabset != nullptr && config_sub_menu != nullptr) {
+                config_tabset->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Flex);
+                config_sub_menu->set_display(false);
             }
         }
 

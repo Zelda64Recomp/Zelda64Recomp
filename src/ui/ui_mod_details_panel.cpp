@@ -59,6 +59,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         enable_toggle = context.create_element<Toggle>(buttons_container);
         enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
         configure_button = context.create_element<Button>("Configure", recompui::ButtonStyle::Secondary, buttons_container);
+        configure_button->add_pressed_callback(std::bind(&ModDetailsPanel::configure_button_pressed, this));
         erase_button = context.create_element<Button>("Erase", recompui::ButtonStyle::Secondary, buttons_container);
     }
 }
@@ -89,9 +90,19 @@ void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callbac
     mod_toggled_callback = callback;
 }
 
+void ModDetailsPanel::set_mod_configure_pressed_callback(std::function<void()> callback) {
+    mod_configure_pressed_callback = callback;
+}
+
 void ModDetailsPanel::enable_toggle_checked(bool checked) {
     if (mod_toggled_callback != nullptr) {
         mod_toggled_callback(checked);
+    }
+}
+
+void ModDetailsPanel::configure_button_pressed() {
+    if (mod_configure_pressed_callback != nullptr) {
+        mod_configure_pressed_callback();
     }
 }
 

@@ -20,14 +20,14 @@
 		}
 		.col {
 			flex: 1;
-    		text-align: center;
+			text-align: center;
 		}
 	</style>
 	<link type="text/template" href="config_menu/general.rml" />
 	<link type="text/template" href="config_menu/controls.rml" />
 	<link type="text/template" href="config_menu/graphics.rml" />
-  <link type="text/template" href="config_menu/sound.rml" />
-  <link type="text/template" href="config_menu/mods.rml" />
+	<link type="text/template" href="config_menu/sound.rml" />
+	<link type="text/template" href="config_menu/mods.rml" />
 	<link type="text/template" href="config_menu/debug.rml" />
 	<link type="text/template" href="config_menu/cheats.rml" />
 	<link type="text/template" href="components/prompt.rml" />
@@ -104,6 +104,7 @@
 							<svg src="icons/X.svg" />
 						</button>
 					</div>
+					<recomp-config-sub-menu id="config_sub_menu" />
 				</div>
 				<div
 					class="centered-page__controls"

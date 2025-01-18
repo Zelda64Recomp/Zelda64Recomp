@@ -46,16 +46,16 @@ namespace recompui {
         floater->add_style(&floater_disabled_style, disabled_state);
         floater->add_style(&floater_disabled_checked_style, { checked_state, disabled_state });
 
-        set_checked_internal(false, false, true);
+        set_checked_internal(false, false, true, false);
     }
 
-    void Toggle::set_checked_internal(bool checked, bool animate, bool setup) {
+    void Toggle::set_checked_internal(bool checked, bool animate, bool setup, bool trigger_callbacks) {
         if (this->checked != checked || setup) {
             this->checked = checked;
 
             floater->set_left(floater_left_target(), Unit::Dp, animate ? Animation::tween(0.1f) : Animation::set());
 
-            if (!setup) {
+            if (trigger_callbacks) {
                 for (const auto &function : checked_callbacks) {
                     function(checked);
                 }
@@ -74,7 +74,7 @@ namespace recompui {
         switch (e.type) {
         case EventType::Click:
             if (is_enabled()) {
-                set_checked_internal(!checked, true, false);
+                set_checked_internal(!checked, true, false, true);
             }
 
             break;
@@ -93,7 +93,7 @@ namespace recompui {
     }
 
     void Toggle::set_checked(bool checked) {
-        set_checked_internal(checked, false, false);
+        set_checked_internal(checked, false, false, false);
     }
 
     bool Toggle::is_checked() const {

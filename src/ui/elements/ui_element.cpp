@@ -16,6 +16,7 @@ Element::Element(Rml::Element *base) {
 Element::Element(Element* parent, uint32_t events_enabled, Rml::String base_class) {
     ContextId context = get_current_context();
     base_owning = context.get_document()->CreateElement(base_class);
+
     if (parent != nullptr) {
         base = parent->base->AppendChild(std::move(base_owning));
         parent->add_child(this);
@@ -82,6 +83,12 @@ void Element::register_event_listeners(uint32_t events_enabled) {
         base->AddEventListener(Rml::EventId::Mouseover, this);
         base->AddEventListener(Rml::EventId::Mouseout, this);
     }
+
+    if (events_enabled & Events(EventType::Drag)) {
+        base->AddEventListener(Rml::EventId::Drag, this);
+        base->AddEventListener(Rml::EventId::Dragstart, this);
+        base->AddEventListener(Rml::EventId::Dragend, this);
+    }
 }
 
 void Element::apply_style(Style *style) {
@@ -135,6 +142,9 @@ void Element::ProcessEvent(Rml::Event &event) {
     case Rml::EventId::Mousedown:
         process_event(Event::click_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f)));
         break;
+    case Rml::EventId::Drag:
+        process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Move));
+        break;
     default:
         break;
     }
@@ -153,6 +163,12 @@ void Element::ProcessEvent(Rml::Event &event) {
             break;
         case Rml::EventId::Blur:
             process_event(Event::focus_event(false));
+            break;
+        case Rml::EventId::Dragstart:
+            process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Start));
+            break;
+        case Rml::EventId::Dragend:
+            process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::End));
             break;
         default:
             break;
@@ -212,10 +228,10 @@ bool Element::is_enabled() const {
 }
 
 void Element::set_text(const std::string &text) {
-    base->SetInnerRML(text);
+    base->SetInnerRML(std::string(text));
 }
 
-void Element::set_style_enabled(const std::string_view &style_name, bool enable) {
+void Element::set_style_enabled(std::string_view style_name, bool enable) {
     if (enable && style_active_set.find(style_name) == style_active_set.end()) {
         // Style was disabled and will be enabled.
         style_active_set.emplace(style_name);
@@ -243,4 +259,28 @@ void Element::set_style_enabled(const std::string_view &style_name, bool enable)
     apply_styles();
 }
 
-};
+float Element::get_absolute_left() {
+    return base->GetAbsoluteLeft();
+}
+
+float Element::get_absolute_top() {
+    return base->GetAbsoluteTop();
+}
+
+float Element::get_client_left() {
+    return base->GetClientLeft();
+}
+
+float Element::get_client_top() {
+    return base->GetClientTop();
+}
+
+float Element::get_client_width() {
+    return base->GetClientWidth();
+}
+
+float Element::get_client_height() {
+    return base->GetClientHeight();
+}
+
+}
