@@ -172,6 +172,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_details_panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_menu.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/util/hsv.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/core/ui_context.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigGroup.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementConfigOption.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ElementDescription.cpp
@@ -218,6 +219,7 @@ target_include_directories(Zelda64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include
+    ${CMAKE_SOURCE_DIR}/lib/slot_map/slot_map
     ${CMAKE_BINARY_DIR}/shaders
     ${CMAKE_CURRENT_BINARY_DIR}
 )
