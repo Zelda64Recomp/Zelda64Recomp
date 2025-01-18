@@ -3,7 +3,7 @@
     </head>
     <body>
         <form class="config__form">
-            <recomp-mod-menu />
+            <recomp-mod-menu id="menu_mods" />
         </form>
     </body>
 </template>

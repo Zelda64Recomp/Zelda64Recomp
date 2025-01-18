@@ -22,7 +22,15 @@ namespace recompui {
         Focus,
         Hover,
         Enable,
+        Drag,
         Count
+    };
+
+    enum class DragPhase {
+        None,
+        Start,
+        Move,
+        End
     };
 
     template <typename Enum, typename = std::enable_if_t<std::is_enum_v<Enum>>>
@@ -44,6 +52,8 @@ namespace recompui {
         EventType type;
 
         union {
+            uint64_t raw;
+
             struct {
                 Mouse mouse;
             } click;
@@ -59,6 +69,11 @@ namespace recompui {
             struct {
                 bool enable;
             } enable;
+
+            struct {
+                Mouse mouse;
+                DragPhase phase;
+            } drag;
         };
 
         static Event click_event(float x, float y) {
@@ -87,6 +102,15 @@ namespace recompui {
             Event e = {};
             e.type = EventType::Enable;
             e.enable.enable = enable;
+            return e;
+        }
+
+        static Event drag_event(float x, float y, DragPhase phase) {
+            Event e = {};
+            e.type = EventType::Drag;
+            e.drag.mouse.x = x;
+            e.drag.mouse.y = y;
+            e.drag.phase = phase;
             return e;
         }
     };
@@ -152,6 +176,14 @@ namespace recompui {
         Right,
         Center,
         Justify
+    };
+
+    enum class Drag {
+        None,
+        Drag,
+        DragDrop,
+        Block,
+        Clone
     };
 
     struct Animation {

@@ -67,6 +67,24 @@ namespace recompui {
         }
     }
 
+    static Rml::Style::Drag to_rml(Drag drag) {
+        switch (drag) {
+        case Drag::None:
+            return Rml::Style::Drag::None;
+        case Drag::Drag:
+            return Rml::Style::Drag::Drag;
+        case Drag::DragDrop:
+            return Rml::Style::Drag::DragDrop;
+        case Drag::Block:
+            return Rml::Style::Drag::Block;
+        case Drag::Clone:
+            return Rml::Style::Drag::Clone;
+        default:
+            assert(false && "Unknown drag.");
+            return Rml::Style::Drag::None;
+        }
+    }
+
     void Style::set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation) {
         property_map[property_id] = property;
     }
@@ -435,6 +453,10 @@ namespace recompui {
 
     void Style::set_column_gap(float size, Unit unit, Animation animation) {
         set_property(Rml::PropertyId::ColumnGap, Rml::Property(size, to_rml(unit)), animation);
+    }
+
+    void Style::set_drag(Drag drag) {
+        set_property(Rml::PropertyId::Drag, to_rml(drag), Animation());
     }
 
 } // namespace recompui

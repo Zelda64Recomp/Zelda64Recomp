@@ -20,6 +20,7 @@ static RecompElementConfig custom_elements[] = {
     CUSTOM_ELEMENT("recomp-option-type-radio-tabs", recompui::ElementOptionTypeRadioTabs),
     CUSTOM_ELEMENT("recomp-option-type-range", recompui::ElementOptionTypeRange),
     CUSTOM_ELEMENT("recomp-mod-menu", recompui::ElementModMenu),
+    CUSTOM_ELEMENT("recomp-config-sub-menu", recompui::ElementConfigSubMenu),
 };
 
 void recompui::register_custom_elements() {
