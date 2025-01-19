@@ -89,6 +89,10 @@ void Element::register_event_listeners(uint32_t events_enabled) {
         base->AddEventListener(Rml::EventId::Dragstart, this);
         base->AddEventListener(Rml::EventId::Dragend, this);
     }
+
+    if (events_enabled & Events(EventType::Text)) {
+        base->AddEventListener(Rml::EventId::Change, this);
+    }
 }
 
 void Element::apply_style(Style *style) {
@@ -170,6 +174,16 @@ void Element::ProcessEvent(Rml::Event &event) {
         case Rml::EventId::Dragend:
             process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::End));
             break;
+        case Rml::EventId::Change: {
+            if (events_enabled & Events(EventType::Text)) {
+                Rml::Variant *value_variant = base->GetAttribute("value");
+                if (value_variant != nullptr) {
+                    process_event(Event::text_event(value_variant->Get<std::string>()));
+                }
+            }
+
+            break;
+        }
         default:
             break;
         }
@@ -178,6 +192,10 @@ void Element::ProcessEvent(Rml::Event &event) {
     if (context != ContextId::null()) {
         context.close();
     }
+}
+
+void Element::set_attribute(const Rml::String &attribute_key, const Rml::String &attribute_value) {
+    base->SetAttribute(attribute_key, attribute_value);
 }
 
 void Element::process_event(const Event &) {

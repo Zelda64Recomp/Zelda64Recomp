@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <variant>
 
 namespace recompui {
 
@@ -23,6 +24,7 @@ namespace recompui {
         Hover,
         Enable,
         Drag,
+        Text,
         Count
     };
 
@@ -43,74 +45,79 @@ namespace recompui {
         return Events(first) | Events(rest...);
     }
 
+    struct EventClick {
+        float x;
+        float y;
+    };
+
+    struct EventFocus {
+        bool active;
+    };
+
+    struct EventHover {
+        bool active;
+    };
+
+    struct EventEnable {
+        bool active;
+    };
+
+    struct EventDrag {
+        float x;
+        float y;
+        DragPhase phase;
+    };
+
+    struct EventText {
+        std::string text;
+    };
+
+    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText>;
+
     struct Event {
-        struct Mouse {
-            float x;
-            float y;
-        };
-
         EventType type;
+        EventVariant variant;
 
-        union {
-            uint64_t raw;
-
-            struct {
-                Mouse mouse;
-            } click;
-
-            struct {
-                bool active;
-            } focus;
-
-            struct {
-                bool active;
-            } hover;
-
-            struct {
-                bool enable;
-            } enable;
-
-            struct {
-                Mouse mouse;
-                DragPhase phase;
-            } drag;
-        };
-
+        // Factory methods for creating specific events
         static Event click_event(float x, float y) {
-            Event e = {};
+            Event e;
             e.type = EventType::Click;
-            e.click.mouse.x = x;
-            e.click.mouse.y = y;
+            e.variant = EventClick{ x, y };
             return e;
         }
 
         static Event focus_event(bool active) {
-            Event e = {};
+            Event e;
             e.type = EventType::Focus;
-            e.focus.active = active;
+            e.variant = EventFocus{ active };
             return e;
         }
 
         static Event hover_event(bool active) {
-            Event e = {};
+            Event e;
             e.type = EventType::Hover;
-            e.focus.active = active;
+            e.variant = EventHover{ active };
             return e;
         }
 
         static Event enable_event(bool enable) {
-            Event e = {};
+            Event e;
             e.type = EventType::Enable;
-            e.enable.enable = enable;
+            e.variant = EventEnable{ enable };
             return e;
         }
 
         static Event drag_event(float x, float y, DragPhase phase) {
-            Event e = {};
+            Event e;
             e.type = EventType::Drag;
-            e.drag.mouse.x = x;
-            e.drag.mouse.y = y;
-            e.drag.phase = phase;
+            e.variant = EventDrag{ x, y, phase };
+            return e;
+        }
+
+        static Event text_event(const std::string &text) {
+            Event e;
+            e.type = EventType::Text;
+            e.variant = EventText{ text };
             return e;
         }
     };

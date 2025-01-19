@@ -100,17 +100,8 @@ void ModMenu::mod_toggled(bool enabled) {
 void ModMenu::mod_configure_requested() {
     if (active_mod_index >= 0) {
         ext_config_sub_menu->clear_options();
-        ext_config_sub_menu->add_slider_option("Simple Option", "Description for simple option.", 0.0, 100.0);
         ext_config_sub_menu->add_slider_option("Slider Option", "Description for slider option.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option B", "Description for option B.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option C", "Description for option C.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option D", "Description for option D.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option E", "Description for option E.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option F", "Description for option F.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option G", "Description for option G.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option H", "Description for option H.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option J", "Description for option J.", 0.0, 100.0);
-        ext_config_sub_menu->add_slider_option("Option K", "Description for option K.", 0.0, 100.0);
+        ext_config_sub_menu->add_text_option("Text Option", "Description for simple option.");
         ext_config_sub_menu->enter(mod_details[active_mod_index].mod_id);
     }
 }
