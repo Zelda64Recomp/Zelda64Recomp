@@ -102,6 +102,7 @@ void ModMenu::mod_configure_requested() {
         ext_config_sub_menu->clear_options();
         ext_config_sub_menu->add_slider_option("Slider Option", "Description for slider option.", 0.0, 100.0);
         ext_config_sub_menu->add_text_option("Text Option", "Description for simple option.");
+        ext_config_sub_menu->add_radio_option("Radio Option", "Description for radio option.", { "First", "Second", "Third" });
         ext_config_sub_menu->enter(mod_details[active_mod_index].mod_id);
     }
 }

@@ -6,6 +6,7 @@
 #include "elements/ui_button.h"
 #include "elements/ui_container.h"
 #include "elements/ui_label.h"
+#include "elements/ui_radio.h"
 #include "elements/ui_scroll_container.h"
 #include "elements/ui_slider.h"
 #include "elements/ui_text_input.h"
@@ -35,11 +36,7 @@ protected:
 
     void slider_value_changed(double v);
 public:
-    ConfigOptionSlider(Element *parent);
-    virtual ~ConfigOptionSlider();
-    void set_value(double v);
-    void set_min_value(double v);
-    void set_max_value(double v);
+    ConfigOptionSlider(double value, double min_value, double max_value, Element *parent);
 };
 
 class ConfigOptionTextInput : public ConfigOptionElement {
@@ -49,7 +46,15 @@ protected:
     void text_changed(const std::string &text);
 public:
     ConfigOptionTextInput(Element *parent);
-    virtual ~ConfigOptionTextInput();
+};
+
+class ConfigOptionRadio : public ConfigOptionElement {
+protected:
+    Radio *radio = nullptr;
+
+    void index_changed(uint32_t index);
+public:
+    ConfigOptionRadio(const std::initializer_list<std::string_view> &options, Element *parent);
 };
 
 class ConfigSubMenu : public Element {
@@ -77,6 +82,7 @@ public:
     void clear_options();
     void add_slider_option(std::string_view name, std::string_view description, double min, double max);
     void add_text_option(std::string_view name, std::string_view description);
+    void add_radio_option(std::string_view name, std::string_view description, const std::initializer_list<std::string_view> &options);
     void set_enter_sub_menu_callback(std::function<void()> callback);
     void set_quit_sub_menu_callback(std::function<void()> callback);
 };

@@ -5,6 +5,10 @@
 
 namespace recompui {
 
+    constexpr std::string_view checked_state = "checked";
+    constexpr std::string_view hover_state = "hover";
+    constexpr std::string_view disabled_state = "disabled";
+
     struct Color {
         uint8_t r = 255;
         uint8_t g = 255;
