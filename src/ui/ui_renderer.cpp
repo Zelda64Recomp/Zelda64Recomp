@@ -775,6 +775,7 @@ struct UIContext {
         bool mouse_is_active_initialized = false;
         bool mouse_is_active = false;
         bool cont_is_active = false;
+        bool submenu_is_active = false;
         bool await_stick_return_x = false;
         bool await_stick_return_y = false;
         int last_active_mouse_position[2] = {0, 0};
@@ -883,6 +884,8 @@ struct UIContext {
                 config_tabset->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
                 config_sub_menu->set_display(true);
             }
+
+            submenu_is_active = true;
         }
 
         void quit_sub_menu() {
@@ -892,6 +895,8 @@ struct UIContext {
                 config_tabset->SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Flex);
                 config_sub_menu->set_display(false);
             }
+
+            submenu_is_active = false;
         }
 
         void load_documents() {
@@ -984,7 +989,7 @@ struct UIContext {
             }
 
             if (cont_is_active || non_mouse_interacted) {
-                if (non_mouse_interacted) {
+                if (non_mouse_interacted && !submenu_is_active) {
                     auto focusedEl = current_document->GetFocusLeafNode();
                     if (focusedEl == nullptr || RecompRml::CanFocusElement(focusedEl) != RecompRml::CanFocus::Yes) {
                         Rml::Element* element = find_autofocus_element(current_document);
