@@ -227,7 +227,7 @@ bool Element::is_enabled() const {
     return enabled && !disabled_from_parent;
 }
 
-void Element::set_text(const std::string &text) {
+void Element::set_text(std::string_view text) {
     base->SetInnerRML(std::string(text));
 }
 

@@ -56,7 +56,7 @@ public:
     virtual ~ElementModMenu();
     void set_config_sub_menu(ConfigSubMenu *config_sub_menu);
 private:
-    std::unique_ptr<ModMenu> mod_menu;
+    ModMenu *mod_menu;
 };
 
 } // namespace recompui

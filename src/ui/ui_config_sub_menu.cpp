@@ -21,7 +21,7 @@ void ConfigOptionElement::process_event(const Event &e) {
 ConfigOptionElement::ConfigOptionElement(Element *parent) : Element(parent, Events(EventType::Hover)) {
     set_min_height(100.0f);
 
-    name_label = new Label(LabelStyle::Normal, this);
+    name_label = get_current_context().create_element<Label>(LabelStyle::Normal, this);
 }
 
 ConfigOptionElement::~ConfigOptionElement() {
@@ -53,7 +53,7 @@ void ConfigOptionSlider::slider_value_changed(double v) {
 }
 
 ConfigOptionSlider::ConfigOptionSlider(Element *parent) : ConfigOptionElement(parent) {
-    slider = new Slider(SliderType::Percent, this);
+    slider = get_current_context().create_element<Slider>(SliderType::Percent, this);
     slider->add_value_changed_callback(std::bind(&ConfigOptionSlider::slider_value_changed, this, std::placeholders::_1));
 }
 
@@ -103,25 +103,26 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
     set_flex_direction(FlexDirection::Column);
     set_height(100.0f, Unit::Percent);
 
-    header_container = new Container(FlexDirection::Row, JustifyContent::FlexStart, this);
+    recompui::ContextId context = get_current_context();
+    header_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
 
     {
-        back_button = new Button("Back", ButtonStyle::Secondary, header_container);
+        back_button = context.create_element<Button>("Back", ButtonStyle::Secondary, header_container);
         back_button->add_pressed_callback(std::bind(&ConfigSubMenu::back_button_pressed, this));
-        title_label = new Label("Title", LabelStyle::Large, header_container);
+        title_label = context.create_element<Label>("Title", LabelStyle::Large, header_container);
     }
 
-    body_container = new Container(FlexDirection::Row, JustifyContent::SpaceEvenly, this);
+    body_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::SpaceEvenly, this);
     {
-        config_container = new Container(FlexDirection::Column, JustifyContent::Center, body_container);
+        config_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::Center, body_container);
         config_container->set_display(Display::Block);
         config_container->set_flex_basis(100.0f);
         config_container->set_align_items(AlignItems::Center);
         {
-            config_scroll_container = new ScrollContainer(ScrollDirection::Vertical, config_container);
+            config_scroll_container = context.create_element<ScrollContainer>(ScrollDirection::Vertical, config_container);
         }
 
-        description_label = new Label("Description", LabelStyle::Small, body_container);
+        description_label = context.create_element<Label>("Description", LabelStyle::Small, body_container);
         description_label->set_min_width(800.0f);
     }
 }
@@ -152,7 +153,7 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view nam
 }
 
 void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max) {
-    ConfigOptionSlider *option_slider = new ConfigOptionSlider(config_scroll_container);
+    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>(config_scroll_container);
     option_slider->set_min_value(min);
     option_slider->set_max_value(max);
     add_option(option_slider, name, description);
@@ -174,7 +175,8 @@ ElementConfigSubMenu::ElementConfigSubMenu(const Rml::String &tag) : Rml::Elemen
     SetProperty("height", "100%");
 
     recompui::Element this_compat(this);
-    config_sub_menu = std::make_unique<ConfigSubMenu>(&this_compat);
+    recompui::ContextId context = get_current_context();
+    config_sub_menu = context.create_element<ConfigSubMenu>(&this_compat);
 }
 
 ElementConfigSubMenu::~ElementConfigSubMenu() {
@@ -194,7 +196,7 @@ void ElementConfigSubMenu::set_quit_sub_menu_callback(std::function<void()> call
 }
 
 ConfigSubMenu *ElementConfigSubMenu::get_config_sub_menu_element() const {
-    return config_sub_menu.get();
+    return config_sub_menu;
 }
 
 }

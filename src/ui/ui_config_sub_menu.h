@@ -78,7 +78,7 @@ public:
     void set_quit_sub_menu_callback(std::function<void()> callback);
     ConfigSubMenu *get_config_sub_menu_element() const;
 private:
-    std::unique_ptr<ConfigSubMenu> config_sub_menu;
+    ConfigSubMenu *config_sub_menu;
 };
 
 }
