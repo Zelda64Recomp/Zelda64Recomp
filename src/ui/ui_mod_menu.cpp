@@ -30,23 +30,25 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
     set_background_color(Color{ 242, 242, 242, 12 });
     set_cursor(Cursor::Pointer);
 
+    ContextId context = get_current_context();
+
     {
-        thumbnail_image = new Image(this);
+        thumbnail_image = context.create_element<Image>(this);
         thumbnail_image->set_width(100.0f);
         thumbnail_image->set_height(100.0f);
         thumbnail_image->set_min_width(100.0f);
         thumbnail_image->set_min_height(100.0f);
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
 
-        body_container = new Container(FlexDirection::Column, JustifyContent::FlexStart, this);
+        body_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::FlexStart, this);
         body_container->set_width_auto();
         body_container->set_height(100.0f);
         body_container->set_margin_left(16.0f);
         body_container->set_overflow(Overflow::Hidden);
 
         {
-            name_label = new Label(details.mod_id, LabelStyle::Normal, body_container);
-            description_label = new Label("Short description of mod here.", LabelStyle::Small, body_container);
+            name_label = context.create_element<Label>(details.mod_id, LabelStyle::Normal, body_container);
+            description_label = context.create_element<Label>("Short description of mod here.", LabelStyle::Small, body_container);
         } // body_container
     } // this
 }
@@ -92,13 +94,15 @@ void ModMenu::mod_toggled(bool enabled) {
 }
 
 void ModMenu::create_mod_list() {
+    ContextId context = get_current_context();
+
     // Clear the contents of the list scroll.
     list_scroll_container->clear_children();
     mod_entries.clear();
 
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
-        mod_entries.emplace_back(new ModEntry(list_scroll_container, mod_details[mod_index], mod_index, this));
+        mod_entries.emplace_back(context.create_element<ModEntry>(list_scroll_container, mod_details[mod_index], mod_index, this));
     }
 
     set_active_mod(0);
@@ -106,6 +110,8 @@ void ModMenu::create_mod_list() {
 
 ModMenu::ModMenu(Element *parent) : Element(parent) {
     game_mod_id = "mm";
+
+    ContextId context = get_current_context();
 
     set_display(Display::Flex);
     set_flex(1.0f, 1.0f, 100.0f);
@@ -116,12 +122,12 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     set_height(100.0f, Unit::Percent);
     
     {
-        body_container = new Container(FlexDirection::Row, JustifyContent::FlexStart, this);
+        body_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
         body_container->set_flex(1.0f, 1.0f, 100.0f);
         body_container->set_width(100.0f, Unit::Percent);
         body_container->set_height(100.0f, Unit::Percent);
         {
-            list_container = new Container(FlexDirection::Column, JustifyContent::Center, body_container);
+            list_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::Center, body_container);
             list_container->set_display(Display::Block);
             list_container->set_flex_basis(100.0f);
             list_container->set_align_items(AlignItems::Center);
@@ -129,15 +135,15 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             list_container->set_background_color(Color{ 0, 0, 0, 89 });
             list_container->set_border_bottom_left_radius(16.0f);
             {
-                list_scroll_container = new ScrollContainer(ScrollDirection::Vertical, list_container);
+                list_scroll_container = context.create_element<ScrollContainer>(ScrollDirection::Vertical, list_container);
             } // list_container
 
-            mod_details_panel = new ModDetailsPanel(body_container);
+            mod_details_panel = context.create_element<ModDetailsPanel>(body_container);
             mod_details_panel->set_mod_toggled_callback(std::bind(&ModMenu::mod_toggled, this, std::placeholders::_1));
         } // body_container
         
 
-        footer_container = new Container(FlexDirection::Row, JustifyContent::SpaceBetween, this);
+        footer_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::SpaceBetween, this);
         footer_container->set_width(100.0f, recompui::Unit::Percent);
         footer_container->set_align_items(recompui::AlignItems::Center);
         footer_container->set_background_color(Color{ 0, 0, 0, 89 });
@@ -147,7 +153,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
-            refresh_button = new Button("Refresh", recompui::ButtonStyle::Primary, footer_container);
+            refresh_button = context.create_element<Button>("Refresh", recompui::ButtonStyle::Primary, footer_container);
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
         } // footer_container
     } // this
@@ -165,7 +171,8 @@ ElementModMenu::ElementModMenu(const Rml::String &tag) : Rml::Element(tag) {
     SetProperty("height", "100%");
 
     recompui::Element this_compat(this);
-    mod_menu = std::make_unique<ModMenu>(&this_compat);
+    recompui::ContextId context = get_current_context();
+    context.create_element<ModMenu>(&this_compat);
 }
 
 ElementModMenu::~ElementModMenu() {

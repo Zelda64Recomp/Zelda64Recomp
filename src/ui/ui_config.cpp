@@ -9,6 +9,8 @@
 #include "ultramodern/ultramodern.hpp"
 #include "RmlUi/Core.h"
 
+#include "core/ui_context.h"
+
 ultramodern::renderer::GraphicsConfig new_options;
 Rml::DataModelHandle nav_help_model_handle;
 Rml::DataModelHandle general_model_handle;
@@ -511,6 +513,8 @@ void recompui::update_rml_display_refresh_rate() {
 DebugContext debug_context;
 
 class ConfigMenu : public recompui::MenuController {
+private:
+	recompui::ContextId config_context;
 public:
     ConfigMenu() {
 
@@ -519,7 +523,11 @@ public:
 
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
-        return context->LoadDocument("assets/config_menu.rml");
+		config_context = recompui::create_context(context, "assets/config_menu.rml");
+        config_context.open();
+        Rml::ElementDocument* ret = config_context.get_document();
+        config_context.close();
+		return ret;
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "apply_options",
