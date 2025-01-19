@@ -47,7 +47,7 @@ public:
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
     bool is_enabled() const;
-    void set_text(const std::string &text);
+    void set_text(std::string_view text);
     void set_style_enabled(std::string_view style_name, bool enabled);
     bool is_element() override { return true; }
     float get_absolute_left();

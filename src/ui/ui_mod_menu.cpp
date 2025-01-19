@@ -195,7 +195,7 @@ ElementModMenu::ElementModMenu(const Rml::String &tag) : Rml::Element(tag) {
 
     recompui::Element this_compat(this);
     recompui::ContextId context = get_current_context();
-    context.create_element<ModMenu>(&this_compat);
+    mod_menu = context.create_element<ModMenu>(&this_compat);
 }
 
 ElementModMenu::~ElementModMenu() {
