@@ -1175,22 +1175,6 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
 
     recompui::register_custom_elements();
 
-    // TODO: Remove hardcoded config register
-    // std::filesystem::path recomp_dir = zelda64::get_app_folder_path();
-    // std::filesystem::path test_conf_path = zelda64::get_app_folder_path() / "config_example.json";
-    std::filesystem::path test_conf_path = "config_example.cheats.json";
-    std::filesystem::path test_conf_trans_path = "config_example.cheats.en_us.json";
-    if (std::filesystem::exists(test_conf_path)) {
-        const std::string s = read_file_to_string(test_conf_path); 
-        recomp::config::register_config(read_file_to_string(test_conf_path), "cheats");
-
-        if (std::filesystem::exists(test_conf_trans_path)) {
-            recomp::config::register_translation(read_file_to_string("config_example.cheats.en_us.json"), "cheats");
-        }
-    } else {
-        printf("FAIL ALL\n");
-    }
-
     Rml::Initialise();
 
     // Apply the hack to replace RmlUi's default color parser with one that conforms to HTML5 alpha parsing for SASS compatibility

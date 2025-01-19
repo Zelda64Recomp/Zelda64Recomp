@@ -4,16 +4,6 @@
 #include "recomp_ui.h"
 #include "RmlUi/Core/Element.h"
 
-#include "elements/ElementConfigOption.h"
-#include "elements/ElementConfigGroup.h"
-#include "elements/ElementOptionTypeButton.h"
-#include "elements/ElementOptionTypeCheckbox.h"
-#include "elements/ElementOptionTypeColor.h"
-#include "elements/ElementOptionTypeDropdown.h"
-#include "elements/ElementOptionTypeRadioTabs.h"
-#include "elements/ElementOptionTypeRange.h"
-#include "elements/ElementOptionTypeTextField.h"
-#include "elements/ElementDescription.h"
 #include "ui_mod_menu.h"
 #include "ui_config_sub_menu.h"
 
