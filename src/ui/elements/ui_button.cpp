@@ -67,11 +67,11 @@ namespace recompui {
                 function();
             }
             break;
-        case EventType::Hover:
-            set_style_enabled(hover_state, e.hover.active);
+        case EventType::Hover: 
+            set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
             break;
         case EventType::Enable:
-            set_style_enabled(disabled_state, !e.enable.enable);
+            set_style_enabled(disabled_state, !std::get<EventEnable>(e.variant).active);
             break;
         default:
             assert(false && "Unknown event type.");

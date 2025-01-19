@@ -13,22 +13,26 @@ namespace recompui {
 
     void Clickable::process_event(const Event &e) {
         switch (e.type) {
-        case EventType::Click:
+        case EventType::Click: {
+            const EventClick &click = std::get<EventClick>(e.variant);
             for (const auto &function : pressed_callbacks) {
-                function(e.click.mouse.x, e.click.mouse.y);
+                function(click.x, click.y);
             }
             break;
+        }
         case EventType::Hover:
-            set_style_enabled(hover_state, e.hover.active);
+            set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
             break;
         case EventType::Enable:
-            set_style_enabled(disabled_state, !e.enable.enable);
+            set_style_enabled(disabled_state, !std::get<EventEnable>(e.variant).active);
             break;
-        case EventType::Drag:
+        case EventType::Drag: {
+            const EventDrag &drag = std::get<EventDrag>(e.variant);
             for (const auto &function : dragged_callbacks) {
-                function(e.drag.mouse.x, e.drag.mouse.y, e.drag.phase);
+                function(drag.x, drag.y, drag.phase);
             }
             break;
+        }
         default:
             break;
         }

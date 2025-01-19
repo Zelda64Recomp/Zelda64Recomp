@@ -34,6 +34,8 @@ private:
     // Rml::EventListener overrides.
     void ProcessEvent(Rml::Event &event) override final;
 protected:
+    // Use of this method in inherited classes is discouraged unless it's necessary.
+    void set_attribute(const Rml::String &attribute_key, const Rml::String &attribute_value);
     virtual void process_event(const Event &e);
 public:
     // Used for backwards compatibility with legacy UI elements.

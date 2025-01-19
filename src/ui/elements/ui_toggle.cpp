@@ -78,14 +78,18 @@ namespace recompui {
             }
 
             break;
-        case EventType::Hover:
-            set_style_enabled(hover_state, e.hover.active);
-            floater->set_style_enabled(hover_state, e.hover.active);
+        case EventType::Hover: {
+            bool hover_active = std::get<EventHover>(e.variant).active;
+            set_style_enabled(hover_state, hover_active);
+            floater->set_style_enabled(hover_state, hover_active);
             break;
-        case EventType::Enable:
-            set_style_enabled(disabled_state, !e.enable.enable);
-            floater->set_style_enabled(disabled_state, !e.enable.enable);
+        }
+        case EventType::Enable: {
+            bool enable_active = std::get<EventEnable>(e.variant).active;
+            set_style_enabled(disabled_state, !enable_active);
+            floater->set_style_enabled(disabled_state, !enable_active);
             break;
+        }
         default:
             assert(false && "Unknown event type.");
             break;
