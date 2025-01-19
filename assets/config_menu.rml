@@ -29,7 +29,6 @@
 	<link type="text/template" href="config_menu/sound.rml" />
 	<link type="text/template" href="config_menu/mods.rml" />
 	<link type="text/template" href="config_menu/debug.rml" />
-	<link type="text/template" href="config_menu/cheats.rml" />
 	<link type="text/template" href="components/prompt.rml" />
 </head>
 <body class="window">
@@ -79,13 +78,6 @@
 						</tab>
 						<panel class="config" data-model="debug_model">
 							<template src="config-menu__debug" />
-						</panel>
-						<tab class="tab" id="tab_cheats">
-							<div>Cheats</div>
-							<div class="tab__indicator"></div>
-						</tab>
-						<panel class="config">
-							<template src="config-menu__cheats" />
 						</panel>
 					</tabset>
 					<div class="config__icon-buttons">

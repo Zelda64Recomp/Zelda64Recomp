@@ -178,20 +178,3 @@ extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_contex
 
     recomp::set_right_analog_suppressed(suppressed);
 }
-
-extern "C" void recomp_get_config_store_int(uint8_t* rdram, recomp_context* ctx) {
-    thread_local std::vector<char> key_buffer{};
-    key_buffer.clear();
-
-    char c;
-    PTR(char) cur_char = _arg<0, PTR(char)>(rdram, ctx);
-    size_t i = 0;
-    while ((c = MEM_B(cur_char, i)) != '\0') {
-         key_buffer.push_back(c);
-         i++;
-    }
-
-    _return(ctx, recomp::config::get_config_store_value<int>(
-        std::string_view{key_buffer.data(), key_buffer.size()}
-    ));
-}
