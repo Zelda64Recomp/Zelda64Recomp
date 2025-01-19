@@ -30,7 +30,9 @@ namespace recompui {
         add_style(&disabled_style, disabled_state);
         add_style(&checked_disabled_style, { checked_state, disabled_state });
 
-        floater = new Element(this);
+        ContextId context = get_current_context();
+
+        floater = context.create_element<Element>(this);
         floater->set_position(Position::Relative);
         floater->set_top(2.0f);
         floater->set_width(80.0f);

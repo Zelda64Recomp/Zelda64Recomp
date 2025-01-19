@@ -2,17 +2,19 @@
 
 #include "RmlUi/Core.h"
 
+#include "../core/ui_resource.h"
 #include "ui_types.h"
 
 namespace recompui {
-
+    class ContextId;
     class Style {
-        friend class Element;
-        friend class Style;
+        friend class Element; // For access to property_map without making it visible to element subclasses.
+        friend class ContextId;
     private:
         std::map<Rml::PropertyId, Rml::Property> property_map;
     protected:
         virtual void set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation);
+        ResourceId resource_id = ResourceId::null();
     public:
         Style();
         virtual ~Style();
@@ -80,6 +82,9 @@ namespace recompui {
         void set_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_row_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_column_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
+
+        virtual bool is_element() { return false; }
+        ResourceId get_resource_id() { return resource_id; }
     };
 
 } // namespace recompui

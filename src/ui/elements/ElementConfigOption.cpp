@@ -76,7 +76,7 @@ void ElementConfigOption::AddOptionTypeElement() {
 
     switch (el_option_type) {
         default:
-            printf("No option type element exists for type '%d'\n", el_option_type);
+            printf("No option type element exists for type '%u'\n", static_cast<uint32_t>(el_option_type));
             return;
         case ConfigOptionType::Button: {
             add_option_el<ElementOptionTypeButton>(doc, wrapper, "recomp-option-type-button", config_key);

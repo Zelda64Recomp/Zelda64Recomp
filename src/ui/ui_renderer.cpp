@@ -1481,6 +1481,8 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 }
 
 void deinit_hook() {
+    recompui::destroy_all_contexts();
+
     std::lock_guard lock {ui_context_mutex};
     Rml::Debugger::Shutdown();
     Rml::Shutdown();
