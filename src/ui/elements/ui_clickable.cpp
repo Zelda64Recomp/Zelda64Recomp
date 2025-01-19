@@ -2,9 +2,6 @@
 
 namespace recompui {
 
-    static const std::string_view hover_state = "hover";
-    static const std::string_view disabled_state = "disabled";
-
     Clickable::Clickable(Element *parent, bool draggable) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable, draggable ? EventType::Drag : EventType::None)) {
         if (draggable) {
             set_drag(Drag::Drag);

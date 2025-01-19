@@ -4,10 +4,6 @@
 
 namespace recompui {
 
-    static const std::string_view checked_state = "checked";
-    static const std::string_view hover_state = "hover";
-    static const std::string_view disabled_state = "disabled";
-
     Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
         set_width(162.0f);
         set_height(72.0f);

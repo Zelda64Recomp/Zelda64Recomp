@@ -4,9 +4,6 @@
 
 namespace recompui {
 
-    static const std::string_view hover_state = "hover";
-    static const std::string_view disabled_state = "disabled";
-
     Button::Button(const std::string &text, ButtonStyle style, Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
         this->style = style;
 
