@@ -19,6 +19,7 @@ void ConfigOptionElement::process_event(const Event &e) {
 }
 
 ConfigOptionElement::ConfigOptionElement(Element *parent) : Element(parent, Events(EventType::Hover)) {
+    set_gap(8.0f);
     set_min_height(100.0f);
 
     name_label = get_current_context().create_element<Label>(LabelStyle::Normal, this);
@@ -52,25 +53,12 @@ void ConfigOptionSlider::slider_value_changed(double v) {
     printf("%s changed to %f.\n", name.c_str(), v);
 }
 
-ConfigOptionSlider::ConfigOptionSlider(Element *parent) : ConfigOptionElement(parent) {
+ConfigOptionSlider::ConfigOptionSlider(double value, double min_value, double max_value, Element *parent) : ConfigOptionElement(parent) {
     slider = get_current_context().create_element<Slider>(SliderType::Percent, this);
+    slider->set_value(value);
+    slider->set_min_value(min_value);
+    slider->set_max_value(max_value);
     slider->add_value_changed_callback(std::bind(&ConfigOptionSlider::slider_value_changed, this, std::placeholders::_1));
-}
-
-ConfigOptionSlider::~ConfigOptionSlider() {
-
-}
-
-void ConfigOptionSlider::set_value(double v) {
-    slider->set_value(v);
-}
-
-void ConfigOptionSlider::set_min_value(double v) {
-    slider->set_min_value(v);
-}
-
-void ConfigOptionSlider::set_max_value(double v) {
-    slider->set_max_value(v);
 }
 
 // ConfigOptionTextInput
@@ -85,8 +73,18 @@ ConfigOptionTextInput::ConfigOptionTextInput(Element *parent) : ConfigOptionElem
     text_input->add_text_changed_callback(std::bind(&ConfigOptionTextInput::text_changed, this, std::placeholders::_1));
 }
 
-ConfigOptionTextInput::~ConfigOptionTextInput() {
+// ConfigOptionRadio
 
+void ConfigOptionRadio::index_changed(uint32_t index) {
+    printf("%s changed to %d.\n", name.c_str(), index);
+}
+
+ConfigOptionRadio::ConfigOptionRadio(const std::initializer_list<std::string_view> &options, Element *parent) : ConfigOptionElement(parent) {
+    radio = get_current_context().create_element<Radio>(this);
+    radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
+    for (std::string_view option : options) {
+        radio->add_option(option);
+    }
 }
 
 // ConfigSubMenu
@@ -169,15 +167,18 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view nam
 }
 
 void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max) {
-    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>(config_scroll_container);
-    option_slider->set_min_value(min);
-    option_slider->set_max_value(max);
+    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>((min + max) / 2.0, min, max, config_scroll_container);
     add_option(option_slider, name, description);
 }
 
 void ConfigSubMenu::add_text_option(std::string_view name, std::string_view description) {
     ConfigOptionTextInput *option_text_input = get_current_context().create_element<ConfigOptionTextInput>(config_scroll_container);
     add_option(option_text_input, name, description);
+}
+
+void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view description, const std::initializer_list<std::string_view> &options) {
+    ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(options, config_scroll_container);
+    add_option(option_radio, name, description);
 }
 
 void ConfigSubMenu::set_enter_sub_menu_callback(std::function<void()> callback) {
