@@ -8,6 +8,7 @@
 #include "elements/ui_label.h"
 #include "elements/ui_scroll_container.h"
 #include "elements/ui_slider.h"
+#include "elements/ui_text_input.h"
 
 namespace recompui {
 
@@ -41,6 +42,16 @@ public:
     void set_max_value(double v);
 };
 
+class ConfigOptionTextInput : public ConfigOptionElement {
+protected:
+    TextInput *text_input = nullptr;
+
+    void text_changed(const std::string &text);
+public:
+    ConfigOptionTextInput(Element *parent);
+    virtual ~ConfigOptionTextInput();
+};
+
 class ConfigSubMenu : public Element {
 private:
     Container *header_container = nullptr;
@@ -65,6 +76,7 @@ public:
     void enter(std::string_view title);
     void clear_options();
     void add_slider_option(std::string_view name, std::string_view description, double min, double max);
+    void add_text_option(std::string_view name, std::string_view description);
     void set_enter_sub_menu_callback(std::function<void()> callback);
     void set_quit_sub_menu_callback(std::function<void()> callback);
 };

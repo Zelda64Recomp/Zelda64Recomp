@@ -10,7 +10,7 @@ namespace recompui {
 void ConfigOptionElement::process_event(const Event &e) {
     switch (e.type) {
     case EventType::Hover:
-        hover_callback(this, e.hover.active);
+        hover_callback(this, std::get<EventHover>(e.variant).active);
         break;
     default:
         assert(false && "Unknown event type.");
@@ -71,6 +71,22 @@ void ConfigOptionSlider::set_min_value(double v) {
 
 void ConfigOptionSlider::set_max_value(double v) {
     slider->set_max_value(v);
+}
+
+// ConfigOptionTextInput
+
+void ConfigOptionTextInput::text_changed(const std::string &text) {
+    // TODO: Hook up to whatever API Recomp exposes to set the value of the persisent configuration in mods.
+    printf("%s changed to %s.\n", name.c_str(), text.c_str());
+}
+
+ConfigOptionTextInput::ConfigOptionTextInput(Element *parent) : ConfigOptionElement(parent) {
+    text_input = get_current_context().create_element<TextInput>(this);
+    text_input->add_text_changed_callback(std::bind(&ConfigOptionTextInput::text_changed, this, std::placeholders::_1));
+}
+
+ConfigOptionTextInput::~ConfigOptionTextInput() {
+
 }
 
 // ConfigSubMenu
@@ -157,6 +173,11 @@ void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view de
     option_slider->set_min_value(min);
     option_slider->set_max_value(max);
     add_option(option_slider, name, description);
+}
+
+void ConfigSubMenu::add_text_option(std::string_view name, std::string_view description) {
+    ConfigOptionTextInput *option_text_input = get_current_context().create_element<ConfigOptionTextInput>(config_scroll_container);
+    add_option(option_text_input, name, description);
 }
 
 void ConfigSubMenu::set_enter_sub_menu_callback(std::function<void()> callback) {
