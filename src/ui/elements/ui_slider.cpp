@@ -67,16 +67,18 @@ namespace recompui {
         set_flex(1.0f, 1.0f, 100.0f, Unit::Percent);
         set_flex_direction(FlexDirection::Row);
 
-        value_label = new Label("0", LabelStyle::Small, this);
+        ContextId context = get_current_context();
+
+        value_label = context.create_element<Label>("0", LabelStyle::Small, this);
         value_label->set_margin_right(20.0f);
         value_label->set_min_width(60.0f);
         value_label->set_max_width(60.0f);
 
-        slider_element = new Element(this);
+        slider_element = context.create_element<Element>(this);
         slider_element->set_width(slider_width_dp);
 
         {
-            bar_element = new Clickable(slider_element, true);
+            bar_element = context.create_element<Clickable>(slider_element, true);
             bar_element->set_width(100.0f, Unit::Percent);
             bar_element->set_height(2.0f);
             bar_element->set_margin_top(8.0f);
@@ -84,7 +86,7 @@ namespace recompui {
             bar_element->add_pressed_callback(std::bind(&Slider::bar_clicked, this, std::placeholders::_1, std::placeholders::_2));
             bar_element->add_dragged_callback(std::bind(&Slider::bar_dragged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             
-            circle_element = new Clickable(slider_element, true);
+            circle_element = context.create_element<Clickable>(slider_element, true);
             circle_element->set_position(Position::Relative);
             circle_element->set_width(16.0f);
             circle_element->set_height(16.0f);
