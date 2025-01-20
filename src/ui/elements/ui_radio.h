@@ -13,7 +13,7 @@ namespace recompui {
     protected:
         virtual void process_event(const Event &e) override;
     public:
-        RadioOption(std::string_view name, uint32_t index, Element *parent);
+        RadioOption(Element *parent, std::string_view name, uint32_t index);
         void set_pressed_callback(std::function<void(uint32_t)> callback);
         void set_selected_state(bool enable);
     };

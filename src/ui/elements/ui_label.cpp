@@ -4,7 +4,7 @@
 
 namespace recompui {
 
-    Label::Label(LabelStyle label_style, Element *parent) : Element(parent) {
+    Label::Label(Element *parent, LabelStyle label_style) : Element(parent) {
         switch (label_style) {
         case LabelStyle::Small:
             set_font_size(20.0f);
@@ -29,7 +29,7 @@ namespace recompui {
         set_font_style(FontStyle::Normal);
     }
 
-    Label::Label(const std::string &text, LabelStyle label_style, Element *parent) : Label(label_style, parent) {
+    Label::Label(Element *parent, const std::string &text, LabelStyle label_style) : Label(parent, label_style) {
         set_text(text);
     }
 

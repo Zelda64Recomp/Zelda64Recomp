@@ -34,7 +34,7 @@ namespace recompui {
         void update_label_text();
 
     public:
-        Slider(SliderType type, Element *parent);
+        Slider(Element *parent, SliderType type);
         virtual ~Slider();
         void set_value(double v);
         double get_value() const;

@@ -4,7 +4,7 @@
 
 namespace recompui {
 
-    Container::Container(FlexDirection direction, JustifyContent justify_content, Element *parent) : Element(parent) {
+    Container::Container(Element *parent, FlexDirection direction, JustifyContent justify_content) : Element(parent) {
         set_display(Display::Flex);
         set_flex(1.0f, 1.0f);
         set_flex_direction(direction);

@@ -4,7 +4,7 @@ namespace recompui {
 
     // RadioOption
 
-    RadioOption::RadioOption(std::string_view name, uint32_t index, Element *parent) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "label") {
+    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "label") {
         this->index = index;
 
         set_text(name);
@@ -68,7 +68,7 @@ namespace recompui {
         set_index_internal(index, false, true);
     }
 
-    Radio::Radio(Element *parent) : Container(FlexDirection::Row, JustifyContent::FlexStart, parent) {
+    Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart) {
         set_gap(12.0f);
     }
 
@@ -77,7 +77,7 @@ namespace recompui {
     }
 
     void Radio::add_option(std::string_view name) {
-        RadioOption *option = get_current_context().create_element<RadioOption>(name, uint32_t(options.size()), this);
+        RadioOption *option = get_current_context().create_element<RadioOption>(this, name, uint32_t(options.size()));
         option->set_pressed_callback(std::bind(&Radio::option_selected, this, std::placeholders::_1));
         options.emplace_back(option);
 

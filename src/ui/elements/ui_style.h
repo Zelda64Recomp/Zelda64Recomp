@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include "RmlUi/Core.h"
 
 #include "../core/ui_resource.h"
@@ -84,6 +86,7 @@ namespace recompui {
         void set_column_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_drag(Drag drag);
         void set_tab_index(TabIndex focus);
+        void set_font_family(std::string_view family);
         virtual bool is_element() { return false; }
         ResourceId get_resource_id() { return resource_id; }
     };

@@ -12,8 +12,8 @@ namespace recompui {
 
     class Label : public Element {
     public:
-        Label(LabelStyle label_style, Element *parent);
-        Label(const std::string &text, LabelStyle label_style, Element *parent);
+        Label(Element *parent, LabelStyle label_style);
+        Label(Element *parent, const std::string &text, LabelStyle label_style);
     };
 
 } // namespace recompui

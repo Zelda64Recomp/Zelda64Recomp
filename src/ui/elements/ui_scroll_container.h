@@ -11,7 +11,7 @@ namespace recompui {
 
     class ScrollContainer : public Element {
     public:
-        ScrollContainer(ScrollDirection direction, Element *parent);
+        ScrollContainer(Element *parent, ScrollDirection direction);
     };
 
 } // namespace recompui

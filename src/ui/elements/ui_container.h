@@ -6,7 +6,7 @@ namespace recompui {
 
     class Container : public Element {
     public:
-        Container(FlexDirection direction, JustifyContent justify_content, Element *parent);
+        Container(Element* parent, FlexDirection direction, JustifyContent justify_content);
     };
 
 } // namespace recompui

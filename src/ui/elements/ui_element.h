@@ -8,6 +8,7 @@
 namespace recompui {
 class Element : public Style, public Rml::EventListener {
     friend ContextId create_context(const std::filesystem::path& path);
+    friend ContextId create_context();
 private:
     Rml::Element *base = nullptr;
     Rml::ElementPtr base_owning = {};

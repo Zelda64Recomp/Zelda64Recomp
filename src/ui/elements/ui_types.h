@@ -171,7 +171,7 @@ namespace recompui {
         Percent
     };
 
-    enum class AnimationType {
+    enum class AnimationType : uint32_t {
         None,
         Set,
         Tween
