@@ -20,7 +20,7 @@ namespace recompui {
         // Element overrides.
         virtual void process_event(const Event &e) override;
     public:
-        Button(const std::string &text, ButtonStyle style, Element *parent);
+        Button(Element *parent, const std::string &text, ButtonStyle style);
         void add_pressed_callback(std::function<void()> callback);
     };
 

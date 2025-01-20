@@ -627,6 +627,7 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_mouse_deltas);
     REGISTER_FUNC(recomp_get_inverted_axes);
     REGISTER_FUNC(recomp_get_analog_inverted_axes);
+    recompui::register_ui_exports();
 
     zelda64::register_overlays();
     zelda64::register_patches();

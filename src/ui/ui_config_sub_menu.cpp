@@ -25,7 +25,7 @@ ConfigOptionElement::ConfigOptionElement(Element *parent) : Element(parent, Even
     set_gap(8.0f);
     set_min_height(100.0f);
 
-    name_label = get_current_context().create_element<Label>(LabelStyle::Normal, this);
+    name_label = get_current_context().create_element<Label>(this, LabelStyle::Normal);
 }
 
 ConfigOptionElement::~ConfigOptionElement() {
@@ -56,8 +56,8 @@ void ConfigOptionSlider::slider_value_changed(double v) {
     printf("%s changed to %f.\n", name.c_str(), v);
 }
 
-ConfigOptionSlider::ConfigOptionSlider(double value, double min_value, double max_value, double step_value, bool percent, Element *parent) : ConfigOptionElement(parent) {
-    slider = get_current_context().create_element<Slider>(percent ? SliderType::Percent : SliderType::Double, this);
+ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent) : ConfigOptionElement(parent) {
+    slider = get_current_context().create_element<Slider>(this, percent ? SliderType::Percent : SliderType::Double);
     slider->set_value(value);
     slider->set_min_value(min_value);
     slider->set_max_value(max_value);
@@ -83,7 +83,7 @@ void ConfigOptionRadio::index_changed(uint32_t index) {
     printf("%s changed to %d.\n", name.c_str(), index);
 }
 
-ConfigOptionRadio::ConfigOptionRadio(const std::vector<std::string> &options, Element *parent) : ConfigOptionElement(parent) {
+ConfigOptionRadio::ConfigOptionRadio(Element *parent, const std::vector<std::string> &options) : ConfigOptionElement(parent) {
     radio = get_current_context().create_element<Radio>(this);
     radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
     for (std::string_view option : options) {
@@ -127,25 +127,25 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
     set_height(100.0f, Unit::Percent);
 
     recompui::ContextId context = get_current_context();
-    header_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
+    header_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
 
     {
-        back_button = context.create_element<Button>("Back", ButtonStyle::Secondary, header_container);
+        back_button = context.create_element<Button>(header_container, "Back", ButtonStyle::Secondary);
         back_button->add_pressed_callback(std::bind(&ConfigSubMenu::back_button_pressed, this));
-        title_label = context.create_element<Label>("Title", LabelStyle::Large, header_container);
+        title_label = context.create_element<Label>(header_container, "Title", LabelStyle::Large);
     }
 
-    body_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::SpaceEvenly, this);
+    body_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceEvenly);
     {
-        config_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::Center, body_container);
+        config_container = context.create_element<Container>(body_container, FlexDirection::Column, JustifyContent::Center);
         config_container->set_display(Display::Block);
         config_container->set_flex_basis(100.0f);
         config_container->set_align_items(AlignItems::Center);
         {
-            config_scroll_container = context.create_element<ScrollContainer>(ScrollDirection::Vertical, config_container);
+            config_scroll_container = context.create_element<ScrollContainer>(config_container, ScrollDirection::Vertical);
         }
 
-        description_label = context.create_element<Label>("Description", LabelStyle::Small, body_container);
+        description_label = context.create_element<Label>(body_container, "Description", LabelStyle::Small);
         description_label->set_min_width(800.0f);
     }
 }
@@ -172,7 +172,7 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view nam
 }
 
 void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent) {
-    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>((min + max) / 2.0, min, max, step, percent, config_scroll_container);
+    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>(config_scroll_container, (min + max) / 2.0, min, max, step, percent);
     add_option(option_slider, name, description);
 }
 
@@ -182,7 +182,7 @@ void ConfigSubMenu::add_text_option(std::string_view name, std::string_view desc
 }
 
 void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options) {
-    ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(options, config_scroll_container);
+    ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(config_scroll_container, options);
     add_option(option_radio, name, description);
 }
 

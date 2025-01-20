@@ -36,7 +36,7 @@ protected:
 
     void slider_value_changed(double v);
 public:
-    ConfigOptionSlider(double value, double min_value, double max_value, double step_value, bool percent, Element *parent);
+    ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent);
 };
 
 class ConfigOptionTextInput : public ConfigOptionElement {
@@ -54,7 +54,7 @@ protected:
 
     void index_changed(uint32_t index);
 public:
-    ConfigOptionRadio(const std::vector<std::string> &options, Element *parent);
+    ConfigOptionRadio(Element *parent, const std::vector<std::string> &options);
 };
 
 class ConfigSubMenu : public Element {

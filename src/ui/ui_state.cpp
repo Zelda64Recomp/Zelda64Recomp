@@ -650,7 +650,6 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 break;
             }
 
-            recompui::hide_all_contexts();
             if (open_config) {
                 recompui::show_context(recompui::get_config_context_id(), "");
             }
@@ -768,5 +767,11 @@ Rml::ElementDocument* recompui::load_document(const std::filesystem::path& path)
     std::lock_guard lock{ui_state_mutex};
 
     return ui_state->context->LoadDocument(path.string());
+}
+
+Rml::ElementDocument* recompui::create_empty_document() {
+    std::lock_guard lock{ui_state_mutex};
+
+    return ui_state->context->CreateDocument();
 }
 

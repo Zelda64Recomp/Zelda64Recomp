@@ -8,6 +8,8 @@ namespace recompui {
     struct ResourceId {
         uint32_t slot_id;
 
+        bool operator==(const ResourceId& rhs) const = default;
+
         const Style* operator*() const;
         Style* operator*();
         

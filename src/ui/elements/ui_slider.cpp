@@ -60,7 +60,7 @@ namespace recompui {
         }
     }
 
-    Slider::Slider(SliderType type, Element *parent) : Element(parent) {
+    Slider::Slider(Element *parent, SliderType type) : Element(parent) {
         this->type = type;
 
         set_display(Display::Flex);
@@ -69,7 +69,7 @@ namespace recompui {
 
         ContextId context = get_current_context();
 
-        value_label = context.create_element<Label>("0", LabelStyle::Small, this);
+        value_label = context.create_element<Label>(this, "0", LabelStyle::Small);
         value_label->set_margin_right(20.0f);
         value_label->set_min_width(60.0f);
         value_label->set_max_width(60.0f);

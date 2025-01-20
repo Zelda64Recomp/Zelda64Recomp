@@ -4,7 +4,7 @@
 
 namespace recompui {
     
-    ScrollContainer::ScrollContainer(ScrollDirection direction, Element *parent) : Element(parent) {
+    ScrollContainer::ScrollContainer(Element *parent, ScrollDirection direction) : Element(parent) {
         set_flex(1.0f, 1.0f, 100.0f);
         set_width(100.0f, Unit::Percent);
         set_height(100.0f, Unit::Percent);

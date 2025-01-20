@@ -40,15 +40,15 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
         thumbnail_image->set_min_height(100.0f);
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
 
-        body_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::FlexStart, this);
+        body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
         body_container->set_width_auto();
         body_container->set_height(100.0f);
         body_container->set_margin_left(16.0f);
         body_container->set_overflow(Overflow::Hidden);
 
         {
-            name_label = context.create_element<Label>(details.mod_id, LabelStyle::Normal, body_container);
-            description_label = context.create_element<Label>("Short description of mod here.", LabelStyle::Small, body_container);
+            name_label = context.create_element<Label>(body_container, details.mod_id, LabelStyle::Normal);
+            description_label = context.create_element<Label>(body_container, "Short description of mod here.", LabelStyle::Small);
         } // body_container
     } // this
 }
@@ -174,12 +174,12 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     set_height(100.0f, Unit::Percent);
     
     {
-        body_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
+        body_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
         body_container->set_flex(1.0f, 1.0f, 100.0f);
         body_container->set_width(100.0f, Unit::Percent);
         body_container->set_height(100.0f, Unit::Percent);
         {
-            list_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::Center, body_container);
+            list_container = context.create_element<Container>(body_container, FlexDirection::Column, JustifyContent::Center);
             list_container->set_display(Display::Block);
             list_container->set_flex_basis(100.0f);
             list_container->set_align_items(AlignItems::Center);
@@ -187,7 +187,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             list_container->set_background_color(Color{ 0, 0, 0, 89 });
             list_container->set_border_bottom_left_radius(16.0f);
             {
-                list_scroll_container = context.create_element<ScrollContainer>(ScrollDirection::Vertical, list_container);
+                list_scroll_container = context.create_element<ScrollContainer>(list_container, ScrollDirection::Vertical);
             } // list_container
 
             mod_details_panel = context.create_element<ModDetailsPanel>(body_container);
@@ -196,7 +196,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         } // body_container
         
 
-        footer_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::SpaceBetween, this);
+        footer_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceBetween);
         footer_container->set_width(100.0f, recompui::Unit::Percent);
         footer_container->set_align_items(recompui::AlignItems::Center);
         footer_container->set_background_color(Color{ 0, 0, 0, 89 });
@@ -206,7 +206,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
-            refresh_button = context.create_element<Button>("Refresh", recompui::ButtonStyle::Primary, footer_container);
+            refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
         } // footer_container
     } // this
