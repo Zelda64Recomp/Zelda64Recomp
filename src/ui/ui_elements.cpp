@@ -1,14 +1,13 @@
 #include "ui_elements.h"
-#include "librecomp/config.hpp"
 
-struct RecompElementConfig {
+struct RecompCustomElement {
     Rml::String tag;
     std::unique_ptr<Rml::ElementInstancer> instancer;
 };
 
 #define CUSTOM_ELEMENT(s, e) { s, std::make_unique< Rml::ElementInstancerGeneric< e > >() }
 
-static RecompElementConfig custom_elements[] = {
+static RecompCustomElement custom_elements[] = {
     CUSTOM_ELEMENT("recomp-mod-menu", recompui::ElementModMenu),
     CUSTOM_ELEMENT("recomp-config-sub-menu", recompui::ElementConfigSubMenu),
 };

@@ -99,9 +99,30 @@ void ModMenu::mod_toggled(bool enabled) {
 void ModMenu::mod_configure_requested() {
     if (active_mod_index >= 0) {
         ext_config_sub_menu->clear_options();
-        ext_config_sub_menu->add_slider_option("Slider Option", "Description for slider option.", 0.0, 100.0);
-        ext_config_sub_menu->add_text_option("Text Option", "Description for simple option.");
-        ext_config_sub_menu->add_radio_option("Radio Option", "Description for radio option.", { "First", "Second", "Third" });
+
+        const recomp::mods::ConfigSchema &config_schema = recomp::mods::get_mod_config_schema(mod_details[active_mod_index].mod_id);
+        for (const recomp::mods::ConfigOption &option : config_schema.options) {
+            switch (option.type) {
+            case recomp::mods::ConfigOptionType::Enum: {
+                const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
+                ext_config_sub_menu->add_radio_option(option.name, option.description, option_enum.options);
+                break;
+            }
+            case recomp::mods::ConfigOptionType::Number: {
+                const recomp::mods::ConfigOptionNumber &option_number = std::get<recomp::mods::ConfigOptionNumber>(option.variant);
+                ext_config_sub_menu->add_slider_option(option.name, option.description, option_number.min, option_number.max, option_number.step, option_number.percent);
+                break;
+            }
+            case recomp::mods::ConfigOptionType::String: {
+                ext_config_sub_menu->add_text_option(option.name, option.description);
+                break;
+            }
+            default:
+                assert(false && "Unknown config option type.");
+                break;
+            }
+        }
+
         ext_config_sub_menu->enter(mod_details[active_mod_index].mod_id);
     }
 }
