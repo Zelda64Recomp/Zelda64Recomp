@@ -36,7 +36,7 @@ protected:
 
     void slider_value_changed(double v);
 public:
-    ConfigOptionSlider(double value, double min_value, double max_value, Element *parent);
+    ConfigOptionSlider(double value, double min_value, double max_value, double step_value, bool percent, Element *parent);
 };
 
 class ConfigOptionTextInput : public ConfigOptionElement {
@@ -54,7 +54,7 @@ protected:
 
     void index_changed(uint32_t index);
 public:
-    ConfigOptionRadio(const std::initializer_list<std::string_view> &options, Element *parent);
+    ConfigOptionRadio(const std::vector<std::string> &options, Element *parent);
 };
 
 class ConfigSubMenu : public Element {
@@ -80,9 +80,9 @@ public:
     virtual ~ConfigSubMenu();
     void enter(std::string_view title);
     void clear_options();
-    void add_slider_option(std::string_view name, std::string_view description, double min, double max);
+    void add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent);
     void add_text_option(std::string_view name, std::string_view description);
-    void add_radio_option(std::string_view name, std::string_view description, const std::initializer_list<std::string_view> &options);
+    void add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options);
     void set_enter_sub_menu_callback(std::function<void()> callback);
     void set_quit_sub_menu_callback(std::function<void()> callback);
 };
