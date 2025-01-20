@@ -1,0 +1,70 @@
+<rml>
+<head>
+    <link type="text/rcss" href="rml.rcss"/>
+    <link type="text/rcss" href="recomp.rcss"/>
+    <title>Inventory</title>
+    <style>
+        body
+        {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Hide the window icon. */
+        div#title_bar div#icon
+        {
+            display: none;
+        }
+        .flex-grid {
+            display: flex;
+        }
+        .col {
+            flex: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="window">
+    <!-- <handle move_target="#document"> -->
+        <div id="window" class="rmlui-window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
+            <div class="centered-page" onclick="close_config_menu_backdrop">
+                <div class="centered-page__modal">
+                    <div class="config__icon-buttons">
+                        <button
+                            class="icon-button"
+                            onclick="open_quit_game_prompt"
+                            id="config__quit-game-button"
+                        >
+                            <svg src="icons/Quit.svg" />
+                        </button>
+                        <button
+                            class="icon-button"
+                            onclick="close_config_menu"
+                            id="config__close-menu-button"
+                        >
+                            <svg src="icons/X.svg" />
+                        </button>
+                    </div>
+                    <recomp-config-sub-menu id="config_sub_menu" />
+                </div>
+                <div
+                    class="centered-page__controls"
+                    data-model="nav_help_model"
+                >
+                    <label>
+                        <span>Navigate</span>
+                        <span class="prompt-font-sm">{{nav_help__navigate}}</span>
+                    </label>
+                    <label>
+                        <span>Accept</span>
+                        <span class="prompt-font-sm">{{nav_help__accept}}</span>
+                    </label>
+                    <label>
+                        <span>Exit</span>
+                        <span class="prompt-font-sm">{{nav_help__exit}}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+</body>
+</rml>

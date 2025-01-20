@@ -66,8 +66,6 @@ private:
     Label *description_label = nullptr;
     Container *config_container = nullptr;
     ScrollContainer *config_scroll_container = nullptr;
-    std::function<void()> enter_sub_menu_callback = nullptr;
-    std::function<void()> quit_sub_menu_callback = nullptr;
     std::vector<ConfigOptionElement *> config_option_elements;
     std::unordered_set<ConfigOptionElement *> hover_option_elements;
 
@@ -83,8 +81,6 @@ public:
     void add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent);
     void add_text_option(std::string_view name, std::string_view description);
     void add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options);
-    void set_enter_sub_menu_callback(std::function<void()> callback);
-    void set_quit_sub_menu_callback(std::function<void()> callback);
 };
 
 class ElementConfigSubMenu : public Rml::Element {
@@ -92,8 +88,6 @@ public:
     ElementConfigSubMenu(const Rml::String &tag);
     virtual ~ElementConfigSubMenu();
     void set_display(bool display);
-    void set_enter_sub_menu_callback(std::function<void()> callback);
-    void set_quit_sub_menu_callback(std::function<void()> callback);
     ConfigSubMenu *get_config_sub_menu_element() const;
 private:
     ConfigSubMenu *config_sub_menu;

@@ -1,4 +1,5 @@
 #include "ui_mod_menu.h"
+#include "recomp_ui.h"
 
 #include "librecomp/mods.hpp"
 
@@ -80,10 +81,6 @@ void ModMenu::set_active_mod(int32_t mod_index) {
     }
 }
 
-void ModMenu::set_config_sub_menu(ConfigSubMenu *config_sub_menu) {
-    ext_config_sub_menu = config_sub_menu;
-}
-
 void ModMenu::refresh_mods() {
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
@@ -96,25 +93,38 @@ void ModMenu::mod_toggled(bool enabled) {
     }
 }
 
+// TODO remove this once this is migrated to the new system.
+ContextId sub_menu_context;
+
+ContextId get_config_sub_menu_context_id() {
+    return sub_menu_context;
+}
+
 void ModMenu::mod_configure_requested() {
     if (active_mod_index >= 0) {
-        ext_config_sub_menu->clear_options();
+        // Record the context that was open when this function was called and close it.
+        ContextId prev_context = recompui::get_current_context();
+        prev_context.close();
+
+        // Open the sub menu context and set up the element.
+        sub_menu_context.open();
+        config_sub_menu->clear_options();
 
         const recomp::mods::ConfigSchema &config_schema = recomp::mods::get_mod_config_schema(mod_details[active_mod_index].mod_id);
         for (const recomp::mods::ConfigOption &option : config_schema.options) {
             switch (option.type) {
             case recomp::mods::ConfigOptionType::Enum: {
                 const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
-                ext_config_sub_menu->add_radio_option(option.name, option.description, option_enum.options);
+                config_sub_menu->add_radio_option(option.name, option.description, option_enum.options);
                 break;
             }
             case recomp::mods::ConfigOptionType::Number: {
                 const recomp::mods::ConfigOptionNumber &option_number = std::get<recomp::mods::ConfigOptionNumber>(option.variant);
-                ext_config_sub_menu->add_slider_option(option.name, option.description, option_number.min, option_number.max, option_number.step, option_number.percent);
+                config_sub_menu->add_slider_option(option.name, option.description, option_number.min, option_number.max, option_number.step, option_number.percent);
                 break;
             }
             case recomp::mods::ConfigOptionType::String: {
-                ext_config_sub_menu->add_text_option(option.name, option.description);
+                config_sub_menu->add_text_option(option.name, option.description);
                 break;
             }
             default:
@@ -123,7 +133,15 @@ void ModMenu::mod_configure_requested() {
             }
         }
 
-        ext_config_sub_menu->enter(mod_details[active_mod_index].mod_id);
+        config_sub_menu->enter(mod_details[active_mod_index].mod_id);
+        sub_menu_context.close();
+
+        // Reopen the context that was open when this function was called.
+        prev_context.open();
+        
+        // Hide the config menu and show the sub menu.
+        recompui::hide_context(recompui::get_config_context_id());
+        recompui::show_context(sub_menu_context, "");
     }
 }
 
@@ -194,6 +212,18 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     } // this
 
     refresh_mods();
+
+    context.close();
+
+    sub_menu_context = recompui::create_context("assets/config_sub_menu.rml");
+    sub_menu_context.open();
+    Rml::ElementDocument* sub_menu_doc = sub_menu_context.get_document();
+    Rml::Element* config_sub_menu_generic = sub_menu_doc->GetElementById("config_sub_menu");
+    ElementConfigSubMenu* config_sub_menu_element = rmlui_dynamic_cast<ElementConfigSubMenu*>(config_sub_menu_generic);
+    config_sub_menu = config_sub_menu_element->get_config_sub_menu_element();
+    sub_menu_context.close();
+
+    context.open();
 }
 
 ModMenu::~ModMenu() {
@@ -212,10 +242,6 @@ ElementModMenu::ElementModMenu(const Rml::String &tag) : Rml::Element(tag) {
 
 ElementModMenu::~ElementModMenu() {
 
-}
-
-void ElementModMenu::set_config_sub_menu(ConfigSubMenu *config_sub_menu) {
-    mod_menu->set_config_sub_menu(config_sub_menu);
 }
 
 } // namespace recompui

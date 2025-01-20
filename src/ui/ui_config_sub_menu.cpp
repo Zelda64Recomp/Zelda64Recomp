@@ -1,6 +1,9 @@
 #include "ui_config_sub_menu.h"
 
 #include <cassert>
+#include <string_view>
+
+#include "recomp_ui.h"
 
 namespace recompui {
 
@@ -91,9 +94,12 @@ ConfigOptionRadio::ConfigOptionRadio(const std::vector<std::string> &options, El
 // ConfigSubMenu
 
 void ConfigSubMenu::back_button_pressed() {
-    if (quit_sub_menu_callback != nullptr) {
-        quit_sub_menu_callback();
-    }
+    // Hide the config sub menu and show the config menu.
+    ContextId config_context = recompui::get_config_context_id();
+    ContextId sub_menu_context = recompui::get_config_sub_menu_context_id();
+
+    recompui::hide_context(sub_menu_context);
+    recompui::show_context(config_context, "");
 }
 
 void ConfigSubMenu::option_hovered(ConfigOptionElement *option, bool active) {
@@ -113,6 +119,8 @@ void ConfigSubMenu::option_hovered(ConfigOptionElement *option, bool active) {
 }
 
 ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
+    using namespace std::string_view_literals;
+
     set_display(Display::Flex);
     set_flex(1, 1, 100.0f, Unit::Percent);
     set_flex_direction(FlexDirection::Column);
@@ -148,10 +156,6 @@ ConfigSubMenu::~ConfigSubMenu() {
 
 void ConfigSubMenu::enter(std::string_view title) {
     title_label->set_text(title);
-
-    if (enter_sub_menu_callback != nullptr) {
-        enter_sub_menu_callback();
-    }
 }
 
 void ConfigSubMenu::clear_options() {
@@ -182,18 +186,10 @@ void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view des
     add_option(option_radio, name, description);
 }
 
-void ConfigSubMenu::set_enter_sub_menu_callback(std::function<void()> callback) {
-    enter_sub_menu_callback = callback;
-}
-
-void ConfigSubMenu::set_quit_sub_menu_callback(std::function<void()> callback) {
-    quit_sub_menu_callback = callback;
-}
-
 // ElementConfigSubMenu
 
 ElementConfigSubMenu::ElementConfigSubMenu(const Rml::String &tag) : Rml::Element(tag) {
-    SetProperty(Rml::PropertyId::Display, Rml::Style::Display::None);
+    SetProperty(Rml::PropertyId::Display, Rml::Style::Display::Flex);
     SetProperty("width", "100%");
     SetProperty("height", "100%");
 
@@ -208,14 +204,6 @@ ElementConfigSubMenu::~ElementConfigSubMenu() {
 
 void ElementConfigSubMenu::set_display(bool display) {
     SetProperty(Rml::PropertyId::Display, display ? Rml::Style::Display::Block : Rml::Style::Display::None);
-}
-
-void ElementConfigSubMenu::set_enter_sub_menu_callback(std::function<void()> callback) {
-    config_sub_menu->set_enter_sub_menu_callback(callback);
-}
-
-void ElementConfigSubMenu::set_quit_sub_menu_callback(std::function<void()> callback) {
-    config_sub_menu->set_quit_sub_menu_callback(callback);
 }
 
 ConfigSubMenu *ElementConfigSubMenu::get_config_sub_menu_element() const {

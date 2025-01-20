@@ -63,7 +63,8 @@ public:
 
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
-		launcher_context = recompui::create_context(context, zelda64::get_asset_path("launcher.rml"));
+        (void)context;
+		launcher_context = recompui::create_context(zelda64::get_asset_path("launcher.rml"));
         Rml::ElementDocument* ret = launcher_context.get_document();
 		return ret;
     }

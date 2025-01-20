@@ -19,6 +19,7 @@ namespace recompui {
         set_font_weight(700);
         set_cursor(Cursor::Pointer);
         set_color(Color{ 204, 204, 204, 255 });
+        set_tab_index(TabIndex::Auto);
         hover_style.set_color(Color{ 242, 242, 242, 255 });
 
         const uint8_t border_opacity = 204;

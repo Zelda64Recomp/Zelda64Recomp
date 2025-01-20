@@ -54,6 +54,7 @@ namespace recompui {
 
     ContextId get_launcher_context_id();
     ContextId get_config_context_id();
+    ContextId get_config_sub_menu_context_id();
     ContextId get_close_prompt_context_id();
 
     enum class ButtonVariant {
@@ -95,6 +96,7 @@ namespace recompui {
     void set_render_hooks();
 
     Rml::ElementPtr create_custom_element(Rml::Element* parent, std::string tag);
+    Rml::ElementDocument* load_document(const std::filesystem::path& path);
 }
 
 #endif

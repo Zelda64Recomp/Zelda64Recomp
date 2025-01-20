@@ -19,6 +19,7 @@
 #include "recomp_input.h"
 #include "librecomp/game.hpp"
 #include "zelda_config.h"
+#include "zelda_support.h"
 #include "ui_rml_hacks.hpp"
 #include "ui_elements.h"
 #include "ui_mod_menu.h"
@@ -124,12 +125,24 @@ void recompui::register_event(UiEventListenerInstancer& listener, const std::str
 
 Rml::Element* find_autofocus_element(Rml::Element* start) {
     Rml::Element* cur_element = start;
+    Rml::Element* first_found = nullptr;
 
     while (cur_element) {
         if (cur_element->HasAttribute("autofocus")) {
             break;
         }
         cur_element = RecompRml::FindNextTabElement(cur_element, true);
+        // Track the first element that was found to know when we've wrapped around.
+        if (!first_found) {
+            first_found = cur_element;
+        }
+        // Stop searching if we found the first element again.
+        else {
+            if (cur_element == first_found) {
+                // Return the first tab element as there was nothing marked with autofocus.
+                return first_found;
+            }
+        }
     }
 
     return cur_element;
@@ -151,7 +164,6 @@ public:
     bool mouse_is_active_initialized = false;
     bool mouse_is_active = false;
     bool cont_is_active = false;
-    bool submenu_is_active = false;
     bool await_stick_return_x = false;
     bool await_stick_return_y = false;
     int last_active_mouse_position[2] = {0, 0};
@@ -218,7 +230,9 @@ public:
                 Rml::LoadFontFace(font.string(), face.fallback_face);
             }
         }
+    }
 
+    void load_documents() {
         launcher_menu_controller->load_document(context);
         config_menu_controller->load_document(context);
     }
@@ -279,7 +293,7 @@ public:
         }
 
         if (cont_is_active || non_mouse_interacted) {
-            if (non_mouse_interacted && !submenu_is_active) {
+            if (non_mouse_interacted) {
                 auto focusedEl = current_document->GetFocusLeafNode();
                 if (focusedEl == nullptr || RecompRml::CanFocusElement(focusedEl) != RecompRml::CanFocus::Yes) {
                     Rml::Element* element = find_autofocus_element(current_document);
@@ -334,6 +348,13 @@ public:
             .document = document,
             .takes_input = takes_input
         });
+
+        // auto& on_show = context.on_show;
+        // if (on_show) {
+        //     context.open();
+        //     on_show();
+        //     context.close();
+        // }
 
         document->PullToFront();
         document->Show();
@@ -403,6 +424,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     std::locale::global(std::locale::classic());
 #endif
     ui_state = std::make_unique<UIState>(window, interface, device);
+    ui_state->load_documents();
 }
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};
@@ -523,7 +545,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool cont_interacted = false;
     bool kb_interacted = false;
 
-    bool config_was_open = recompui::is_context_open(recompui::get_config_context_id());
+    bool config_was_open = recompui::is_context_open(recompui::get_config_context_id()) || recompui::is_context_open(recompui::get_config_sub_menu_context_id());
 
     while (recompui::try_deque_event(cur_event)) {
         bool context_taking_input = recompui::is_context_taking_input();
@@ -740,5 +762,11 @@ bool recompui::is_any_context_open() {
     }
 
     return ui_state->is_any_context_open();
+}
+
+Rml::ElementDocument* recompui::load_document(const std::filesystem::path& path) {
+    std::lock_guard lock{ui_state_mutex};
+
+    return ui_state->context->LoadDocument(path.string());
 }
 

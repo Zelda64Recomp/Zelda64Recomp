@@ -30,7 +30,6 @@ public:
     ModMenu(Element *parent);
     virtual ~ModMenu();
     void set_active_mod(int32_t mod_index);
-    void set_config_sub_menu(ConfigSubMenu *config_sub_menu);
 private:
     void refresh_mods();
     void mod_toggled(bool enabled);
@@ -43,18 +42,18 @@ private:
     ModDetailsPanel *mod_details_panel = nullptr;
     Container *footer_container = nullptr;
     Button *refresh_button = nullptr;
-    ConfigSubMenu *ext_config_sub_menu = nullptr;
     int32_t active_mod_index = -1;
     std::vector<ModEntry *> mod_entries;
     std::vector<recomp::mods::ModDetails> mod_details{};
     std::string game_mod_id;
+
+    ConfigSubMenu *config_sub_menu;
 };
 
 class ElementModMenu : public Rml::Element {
 public:
     ElementModMenu(const Rml::String& tag);
     virtual ~ElementModMenu();
-    void set_config_sub_menu(ConfigSubMenu *config_sub_menu);
 private:
     ModMenu *mod_menu;
 };

@@ -132,7 +132,15 @@ void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
 void close_config_menu_impl() {
     zelda64::save_config();
 
-	recompui::hide_context(recompui::get_config_context_id());
+    recompui::ContextId config_context = recompui::get_config_context_id();
+    recompui::ContextId sub_menu_context = recompui::get_config_sub_menu_context_id();
+
+    if (recompui::is_context_open(sub_menu_context)) {
+    	recompui::hide_context(sub_menu_context);
+    }
+    else {
+    	recompui::hide_context(config_context);
+    }
 
     if (!ultramodern::is_game_started()) {
         recompui::show_context(recompui::get_launcher_context_id(), "");
@@ -435,7 +443,8 @@ public:
 
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
-		config_context = recompui::create_context(context, zelda64::get_asset_path("config_menu.rml"));
+        (void)context;
+		config_context = recompui::create_context(zelda64::get_asset_path("config_menu.rml"));
         Rml::ElementDocument* ret = config_context.get_document();
 		return ret;
     }
