@@ -5,6 +5,7 @@
 #include "slot_map.h"
 
 #include "ultramodern/error_handling.hpp"
+#include "recomp_ui.h"
 #include "ui_context.h"
 #include "../elements/ui_element.h"
 
@@ -62,8 +63,7 @@ enum class ContextErrorType {
     DestroyResourceWithoutOpen,
     DestroyResourceInWrongContext,
     DestroyResourceNotFound,
-    GetDocumentWithoutOpen,
-    GetDocumentInWrongContext,
+    GetDocumentInvalidContext,
 };
 
 enum class SlotTag : uint8_t {
@@ -116,11 +116,8 @@ void context_error(recompui::ContextId id, ContextErrorType type) {
         case ContextErrorType::DestroyResourceNotFound:
             error_message = "Attempted to destroy a UI resource that doesn't exist in the current context";
             break;
-        case ContextErrorType::GetDocumentWithoutOpen:
-            error_message = "Attempted to get the current UI context's document with no open UI context";
-            break;
-        case ContextErrorType::GetDocumentInWrongContext:
-            error_message = "Attempted to get the document of a UI context that's not open";
+        case ContextErrorType::GetDocumentInvalidContext:
+            error_message = "Attempted to get the document of an invalid UI context";
             break;
         default:
             error_message = "Unknown UI context error";
@@ -129,7 +126,7 @@ void context_error(recompui::ContextId id, ContextErrorType type) {
 
     // This assumes the error is coming from a mod, as it's unlikely that an end user will see a UI context error
     // in the base recomp.
-    ultramodern::error_handling::message_box((std::string{"Fatal error in mod - "} + error_message + ".").c_str());
+    recompui::message_box((std::string{"Fatal error in mod - "} + error_message + ".").c_str());
     assert(false);
     ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
 }
@@ -158,6 +155,8 @@ recompui::ContextId create_context_impl(Rml::ElementDocument* document) {
 
 recompui::ContextId recompui::create_context(Rml::Context* rml_context, const std::filesystem::path& path) {
     ContextId new_context = create_context_impl(nullptr);
+
+    auto workingdir = std::filesystem::current_path();
 
     new_context.open();
     Rml::ElementDocument* doc = rml_context->LoadDocument(path.string());
@@ -376,31 +375,25 @@ void recompui::ContextId::clear_children() {
 }
 
 Rml::ElementDocument* recompui::ContextId::get_document() {
-    // Ensure a context is currently opened by this thread.
-    if (opened_context_id == ContextId::null()) {
-        context_error(*this, ContextErrorType::GetDocumentWithoutOpen);
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        context_error(*this, ContextErrorType::GetDocumentInvalidContext);
     }
 
-    // Check that the context that was specified is the same one that's currently open.
-    if (*this != opened_context_id) {
-        context_error(*this, ContextErrorType::GetDocumentInWrongContext);
-    }
-
-    return opened_context->document;
+    return ctx->document;
 }
 
 recompui::Element* recompui::ContextId::get_root_element() {
-    // Ensure a context is currently opened by this thread.
-    if (opened_context_id == ContextId::null()) {
-        context_error(*this, ContextErrorType::GetDocumentWithoutOpen);
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        context_error(*this, ContextErrorType::GetDocumentInvalidContext);
     }
 
-    // Check that the context that was specified is the same one that's currently open.
-    if (*this != opened_context_id) {
-        context_error(*this, ContextErrorType::GetDocumentInWrongContext);
-    }
-
-    return &opened_context->root_element;
+    return &ctx->root_element;
 }
 
 recompui::ContextId recompui::get_current_context() {

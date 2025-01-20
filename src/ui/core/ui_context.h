@@ -43,6 +43,9 @@ namespace recompui {
         void close();
 
         static constexpr ContextId null() { return ContextId{ .slot_id = uint32_t(-1) }; }
+
+        // TODO
+        bool takes_input() { return true; }
     };
 
     ContextId create_context(Rml::Context*, const std::filesystem::path& path);

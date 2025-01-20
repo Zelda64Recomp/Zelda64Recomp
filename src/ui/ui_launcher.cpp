@@ -48,6 +48,12 @@ void select_rom() {
     });
 }
 
+recompui::ContextId launcher_context;
+
+recompui::ContextId recompui::get_launcher_context_id() {
+	return launcher_context;
+}
+
 class LauncherMenu : public recompui::MenuController {
 public:
     LauncherMenu() {
@@ -57,8 +63,9 @@ public:
 
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
-        const std::filesystem::path asset = zelda64::get_asset_path("launcher.rml");
-        return context->LoadDocument(asset.string());
+		launcher_context = recompui::create_context(context, zelda64::get_asset_path("launcher.rml"));
+        Rml::ElementDocument* ret = launcher_context.get_document();
+		return ret;
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "select_rom",
@@ -75,25 +82,25 @@ public:
         recompui::register_event(listener, "start_game",
             [](const std::string& param, Rml::Event& event) {
                 recomp::start_game(supported_games[0].game_id);
-                recompui::set_current_menu(recompui::Menu::None);
+                recompui::hide_all_contexts();
             }
         );
         recompui::register_event(listener, "open_controls",
             [](const std::string& param, Rml::Event& event) {
-                recompui::set_current_menu(recompui::Menu::Config);
-                recompui::set_config_submenu(recompui::ConfigSubmenu::Controls);
+                recompui::hide_all_contexts();
+                recompui::show_context(recompui::get_config_context_id(), "controls");
             }
         );
         recompui::register_event(listener, "open_settings",
             [](const std::string& param, Rml::Event& event) {
-                recompui::set_current_menu(recompui::Menu::Config);
-                recompui::set_config_submenu(recompui::ConfigSubmenu::General);
+                recompui::hide_all_contexts();
+                recompui::show_context(recompui::get_config_context_id(), "general");
             }
         );
         recompui::register_event(listener, "open_mods",
             [](const std::string &param, Rml::Event &event) {
-                recompui::set_current_menu(recompui::Menu::Config);
-                recompui::set_config_submenu(recompui::ConfigSubmenu::Mods);
+                recompui::hide_all_contexts();
+                recompui::show_context(recompui::get_config_context_id(), "mods");
             }
         );
         recompui::register_event(listener, "exit_game",
