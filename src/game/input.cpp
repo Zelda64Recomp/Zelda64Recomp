@@ -103,7 +103,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             SDL_KeyboardEvent* keyevent = &event->key;
 
             // Skip repeated events when not in the menu
-            if (recompui::get_current_menu() == recompui::Menu::None &&
+            if (!recompui::is_context_taking_input() &&
                 event->key.repeat) {
                 break;
             }
@@ -156,8 +156,9 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             return true;
         }
 
-        if (recompui::get_current_menu() != recompui::Menu::Config) {
-            recompui::set_current_menu(recompui::Menu::Config);
+        recompui::ContextId config_context_id = recompui::get_config_context_id();
+        if (!recompui::is_context_open(config_context_id)) {
+            recompui::show_context(config_context_id, "");
         }
 
         zelda64::open_quit_game_prompt();
@@ -711,8 +712,8 @@ void recomp::set_right_analog_suppressed(bool suppressed) {
 }
 
 bool recomp::game_input_disabled() {
-    // Disable input if any menu is open.
-    return recompui::get_current_menu() != recompui::Menu::None;
+    // Disable input if any menu that blocks input is open.
+    return recompui::is_any_context_open();
 }
 
 bool recomp::all_input_disabled() {

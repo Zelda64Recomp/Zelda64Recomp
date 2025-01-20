@@ -33,7 +33,7 @@
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
-		<div id="window" class="rmlui-window rmlui-window--hidden" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
+		<div id="window" class="rmlui-window" style="display:flex; flex-flow: column; background-color:rgba(0,0,0,0)" onkeydown="config_keydown">
 			<div class="centered-page" onclick="close_config_menu_backdrop">
 				<div class="centered-page__modal">
 					<tabset class="tabs" id="config_tabset">
@@ -118,7 +118,7 @@
 					<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
 				</div>
 			</div>
-			<div
+			<!-- <div
 				id="prompt-root"
 				data-model="prompt_model"
 				data-if="prompt__open"
@@ -130,7 +130,7 @@
 				data-event-click="prompt__on_click"
 			>
 				<template src="prompt"/>
-			</div>
+			</div> -->
 		</div>
 	<!-- </handle> -->
 	<!-- <handle size_target="#document" style="position: absolute; width: 16dp; height: 16dp; bottom: 0px; right: 0px; cursor: resize;"></handle> -->
