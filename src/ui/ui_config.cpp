@@ -18,87 +18,6 @@ Rml::DataModelHandle controls_model_handle;
 Rml::DataModelHandle graphics_model_handle;
 Rml::DataModelHandle sound_options_model_handle;
 
-recompui::PromptContext prompt_context;
-
-namespace recompui {
-    const std::unordered_map<ButtonVariant, std::string> button_variants {
-        {ButtonVariant::Primary, "primary"},
-        {ButtonVariant::Secondary, "secondary"},
-        {ButtonVariant::Tertiary, "tertiary"},
-        {ButtonVariant::Success, "success"},
-        {ButtonVariant::Error, "error"},
-        {ButtonVariant::Warning, "warning"}
-    };
-
-    void PromptContext::close_prompt() {
-        open = false;
-        model_handle.DirtyVariable("prompt__open");
-    }
-
-    void PromptContext::open_prompt(
-        const std::string& headerText,
-        const std::string& contentText,
-        const std::string& confirmLabelText,
-        const std::string& cancelLabelText,
-        std::function<void()> confirmCb,
-        std::function<void()> cancelCb,
-        ButtonVariant _confirmVariant,
-        ButtonVariant _cancelVariant,
-        bool _focusOnCancel,
-        const std::string& _returnElementId
-    ) {
-        open = true;
-        header = headerText;
-        content = contentText;
-        confirmLabel = confirmLabelText;
-        cancelLabel = cancelLabelText;
-        onConfirm = confirmCb;
-        onCancel = cancelCb;
-        confirmVariant = _confirmVariant;
-        cancelVariant = _cancelVariant;
-        focusOnCancel = _focusOnCancel;
-        returnElementId = _returnElementId;
-
-        model_handle.DirtyVariable("prompt__open");
-        model_handle.DirtyVariable("prompt__header");
-        model_handle.DirtyVariable("prompt__content");
-        model_handle.DirtyVariable("prompt__confirmLabel");
-        model_handle.DirtyVariable("prompt__cancelLabel");
-        shouldFocus = true;
-    }
-
-    void PromptContext::on_confirm(void) {
-        onConfirm();
-        open = false;
-        model_handle.DirtyVariable("prompt__open");
-    }
-
-    void PromptContext::on_cancel(void) {
-        onCancel();
-        open = false;
-        model_handle.DirtyVariable("prompt__open");
-    }
-
-    void PromptContext::on_click(Rml::DataModelHandle model_handle, Rml::Event& event, const Rml::VariantList& inputs) {
-        Rml::Element *target = event.GetTargetElement();
-        auto id = target->GetId();
-        if (id == "prompt__confirm-button" || id == "prompt__confirm-button-label") {
-            on_confirm();
-            event.StopPropagation();
-        } else if (id == "prompt__cancel-button" || id == "prompt__cancel-button-label") {
-            on_cancel();
-            event.StopPropagation();
-        }
-        if (event.GetCurrentElement()->GetId() == "prompt-root") {
-            event.StopPropagation();
-        }
-    }
-
-    PromptContext *get_prompt_context() {
-        return &prompt_context;
-    }
-};
-
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false;
 
@@ -212,11 +131,10 @@ void recomp::config_menu_set_cont_or_kb(bool cont_interacted) {
 void close_config_menu_impl() {
     zelda64::save_config();
 
-    if (ultramodern::is_game_started()) {
-        recompui::set_current_menu(recompui::Menu::None);
-    }
-    else {
-        recompui::set_current_menu(recompui::Menu::Launcher);
+	recompui::hide_context(recompui::get_config_context_id());
+
+    if (!ultramodern::is_game_started()) {
+        recompui::show_context(recompui::get_launcher_context_id(), "");
     }
 }
 
@@ -238,7 +156,7 @@ void apply_graphics_config(void) {
 
 void close_config_menu() {
     if (ultramodern::renderer::get_graphics_config() != new_options) {
-        prompt_context.open_prompt(
+        recompui::open_prompt(
             "Graphics options have changed",
             "Would you like to apply or discard the changes?",
             "Apply",
@@ -265,7 +183,7 @@ void close_config_menu() {
 }
 
 void zelda64::open_quit_game_prompt() {
-    prompt_context.open_prompt(
+    recompui::open_prompt(
         "Are you sure you want to quit?",
         "Any progress since your last save will be lost.",
         "Quit",
@@ -499,22 +417,15 @@ struct DebugContext {
     }
 };
 
-void recompui::update_rml_display_refresh_rate() {
-    static uint32_t lastRate = 0;
-    if (!graphics_model_handle) return;
-
-    uint32_t curRate = ultramodern::get_display_refresh_rate();
-    if (curRate != lastRate) {
-        graphics_model_handle.DirtyVariable("display_refresh_rate");
-    }
-    lastRate = curRate;
-}
-
 DebugContext debug_context;
 
+recompui::ContextId config_context;
+
+recompui::ContextId recompui::get_config_context_id() {
+	return config_context;
+}
+
 class ConfigMenu : public recompui::MenuController {
-private:
-	recompui::ContextId config_context;
 public:
     ConfigMenu() {
 
@@ -524,9 +435,7 @@ public:
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
 		config_context = recompui::create_context(context, "assets/config_menu.rml");
-        config_context.open();
         Rml::ElementDocument* ret = config_context.get_document();
-        config_context.close();
 		return ret;
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
@@ -537,7 +446,7 @@ public:
             });
         recompui::register_event(listener, "config_keydown",
             [](const std::string& param, Rml::Event& event) {
-                if (!prompt_context.open && event.GetId() == Rml::EventId::Keydown) {
+                if (!recompui::is_prompt_open() && event.GetId() == Rml::EventId::Keydown) {
                     auto key = event.GetParameter<Rml::Input::KeyIdentifier>("key_identifier", Rml::Input::KeyIdentifier::KI_UNKNOWN);
                     switch (key) {
                         case Rml::Input::KeyIdentifier::KI_ESCAPE:
@@ -996,34 +905,15 @@ public:
         debug_context.model_handle = constructor.GetModelHandle();
     }
 
-    void make_prompt_bindings(Rml::Context* context) {
-        Rml::DataModelConstructor constructor = context->CreateDataModel("prompt_model");
-        if (!constructor) {
-            throw std::runtime_error("Failed to make RmlUi data model for the prompt");
-        }
-
-        // Bind the debug mode enabled flag.
-        constructor.Bind("prompt__open", &prompt_context.open);
-        constructor.Bind("prompt__header", &prompt_context.header);
-        constructor.Bind("prompt__content", &prompt_context.content);
-        constructor.Bind("prompt__confirmLabel", &prompt_context.confirmLabel);
-        constructor.Bind("prompt__cancelLabel", &prompt_context.cancelLabel);
-
-        constructor.BindEventCallback("prompt__on_click", &recompui::PromptContext::on_click, &prompt_context);
-
-        prompt_context.model_handle = constructor.GetModelHandle();
-    }
-
     void make_bindings(Rml::Context* context) override {
         // initially set cont state for ui help
-        recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
+        //recomp::config_menu_set_cont_or_kb(recompui::get_cont_active());
         make_nav_help_bindings(context);
         make_general_bindings(context);
         make_controls_bindings(context);
         make_graphics_bindings(context);
         make_sound_options_bindings(context);
         make_debug_bindings(context);
-        make_prompt_bindings(context);
     }
 };
 
@@ -1057,4 +947,25 @@ void recompui::toggle_fullscreen() {
     new_options.wm_option = (new_options.wm_option == ultramodern::renderer::WindowMode::Windowed) ? ultramodern::renderer::WindowMode::Fullscreen : ultramodern::renderer::WindowMode::Windowed;
     apply_graphics_config();
     graphics_model_handle.DirtyVariable("wm_option");
+}
+
+void recompui::open_prompt(
+	const std::string& headerText,
+	const std::string& contentText,
+	const std::string& confirmLabelText,
+	const std::string& cancelLabelText,
+	std::function<void()> confirmCb,
+	std::function<void()> cancelCb,
+	ButtonVariant _confirmVariant,
+	ButtonVariant _cancelVariant,
+	bool _focusOnCancel,
+	const std::string& _returnElementId
+) {
+	printf("Prompt opened\n    %s (%s): %s %s\n", contentText.c_str(), headerText.c_str(), confirmLabelText.c_str(), cancelLabelText.c_str());
+	printf("    Autoselected %s\n", confirmLabelText.c_str());
+	confirmCb();
+}
+
+bool recompui::is_prompt_open() {
+	return false;
 }
