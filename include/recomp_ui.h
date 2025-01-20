@@ -57,6 +57,17 @@ namespace recompui {
     ContextId get_config_sub_menu_context_id();
     ContextId get_close_prompt_context_id();
 
+    enum class ConfigTab {
+        General,
+        Controls,
+        Graphics,
+        Sound,
+        Mods,
+        Debug,
+    };
+
+    void set_config_tab(ConfigTab tab);
+
     enum class ButtonVariant {
         Primary,
         Secondary,
