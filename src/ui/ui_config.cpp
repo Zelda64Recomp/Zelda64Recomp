@@ -978,3 +978,44 @@ void recompui::open_prompt(
 bool recompui::is_prompt_open() {
 	return false;
 }
+
+void recompui::set_config_tab(ConfigTab tab) {
+    ContextId config_context = recompui::get_config_context_id();
+    
+    Rml::ElementDocument* doc = config_context.get_document();
+    assert(doc != nullptr);
+
+    Rml::Element* tabset_el = doc->GetElementById("config_tabset");
+    assert(tabset_el != nullptr);
+
+    Rml::ElementTabSet* tabset = rmlui_dynamic_cast<Rml::ElementTabSet*>(tabset_el);
+    assert(tabset != nullptr);
+
+    int tab_index = 0;
+
+    switch (tab) {
+        case ConfigTab::General:
+            tab_index = 0;
+            break;
+        case ConfigTab::Controls:
+            tab_index = 1;
+            break;
+        case ConfigTab::Graphics:
+            tab_index = 2;
+            break;
+        case ConfigTab::Sound:
+            tab_index = 3;
+            break;
+        case ConfigTab::Mods:
+            tab_index = 4;
+            break;
+        case ConfigTab::Debug:
+            tab_index = 5;
+            break;
+        default:
+            assert(false);
+            return;
+    }
+
+    tabset->SetActiveTab(tab_index);
+}
