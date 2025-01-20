@@ -23,7 +23,6 @@
 #include "ui_elements.h"
 #include "ui_mod_menu.h"
 #include "ui_renderer.h"
-#include "librecomp/config.hpp"
 
 bool can_focus(Rml::Element* element) {
     return element->GetOwnerDocument() != nullptr && element->GetProperty(Rml::PropertyId::TabIndex)->Get<Rml::Style::TabIndex>() != Rml::Style::TabIndex::None;

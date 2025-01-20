@@ -53,11 +53,12 @@ void ConfigOptionSlider::slider_value_changed(double v) {
     printf("%s changed to %f.\n", name.c_str(), v);
 }
 
-ConfigOptionSlider::ConfigOptionSlider(double value, double min_value, double max_value, Element *parent) : ConfigOptionElement(parent) {
-    slider = get_current_context().create_element<Slider>(SliderType::Percent, this);
+ConfigOptionSlider::ConfigOptionSlider(double value, double min_value, double max_value, double step_value, bool percent, Element *parent) : ConfigOptionElement(parent) {
+    slider = get_current_context().create_element<Slider>(percent ? SliderType::Percent : SliderType::Double, this);
     slider->set_value(value);
     slider->set_min_value(min_value);
     slider->set_max_value(max_value);
+    slider->set_step_value(step_value);
     slider->add_value_changed_callback(std::bind(&ConfigOptionSlider::slider_value_changed, this, std::placeholders::_1));
 }
 
@@ -79,7 +80,7 @@ void ConfigOptionRadio::index_changed(uint32_t index) {
     printf("%s changed to %d.\n", name.c_str(), index);
 }
 
-ConfigOptionRadio::ConfigOptionRadio(const std::initializer_list<std::string_view> &options, Element *parent) : ConfigOptionElement(parent) {
+ConfigOptionRadio::ConfigOptionRadio(const std::vector<std::string> &options, Element *parent) : ConfigOptionElement(parent) {
     radio = get_current_context().create_element<Radio>(this);
     radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
     for (std::string_view option : options) {
@@ -166,8 +167,8 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view nam
     config_option_elements.emplace_back(option);
 }
 
-void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max) {
-    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>((min + max) / 2.0, min, max, config_scroll_container);
+void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent) {
+    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>((min + max) / 2.0, min, max, step, percent, config_scroll_container);
     add_option(option_slider, name, description);
 }
 
@@ -176,7 +177,7 @@ void ConfigSubMenu::add_text_option(std::string_view name, std::string_view desc
     add_option(option_text_input, name, description);
 }
 
-void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view description, const std::initializer_list<std::string_view> &options) {
+void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options) {
     ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(options, config_scroll_container);
     add_option(option_radio, name, description);
 }

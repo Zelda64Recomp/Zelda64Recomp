@@ -2,7 +2,6 @@
 
 #include "recomp.h"
 #include "librecomp/overlays.hpp"
-#include "librecomp/config.hpp"
 #include "zelda_config.h"
 #include "recomp_input.h"
 #include "recomp_ui.h"
