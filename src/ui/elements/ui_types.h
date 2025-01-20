@@ -197,6 +197,11 @@ namespace recompui {
         Clone
     };
 
+    enum class TabIndex {
+        None,
+        Auto
+    };
+
     struct Animation {
         AnimationType type = AnimationType::None;
         float duration = 0.0f;
