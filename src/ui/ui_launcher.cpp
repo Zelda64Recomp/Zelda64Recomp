@@ -67,7 +67,8 @@ public:
 
     }
     Rml::ElementDocument* load_document(Rml::Context* context) override {
-		launcher_context = recompui::create_context(context, "assets/launcher.rml");
+        (void)context;
+		launcher_context = recompui::create_context("assets/launcher.rml");
         Rml::ElementDocument* ret = launcher_context.get_document();
 		return ret;
     }

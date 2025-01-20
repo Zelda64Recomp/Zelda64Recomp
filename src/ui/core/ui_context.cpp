@@ -153,13 +153,13 @@ recompui::ContextId create_context_impl(Rml::ElementDocument* document) {
     return ret;
 }
 
-recompui::ContextId recompui::create_context(Rml::Context* rml_context, const std::filesystem::path& path) {
+recompui::ContextId recompui::create_context(const std::filesystem::path& path) {
     ContextId new_context = create_context_impl(nullptr);
 
     auto workingdir = std::filesystem::current_path();
 
     new_context.open();
-    Rml::ElementDocument* doc = rml_context->LoadDocument(path.string());
+    Rml::ElementDocument* doc = recompui::load_document(path.string());
     opened_context->document = doc;
     opened_context->root_element.base = doc;
     new_context.close();

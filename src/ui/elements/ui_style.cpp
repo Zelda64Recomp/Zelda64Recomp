@@ -85,6 +85,18 @@ namespace recompui {
         }
     }
 
+    static Rml::Style::TabIndex to_rml(TabIndex tab_index) {
+        switch (tab_index) {
+        case TabIndex::None:
+            return Rml::Style::TabIndex::None;
+        case TabIndex::Auto:
+            return Rml::Style::TabIndex::Auto;
+        default:
+            assert(false && "Unknown tab index.");
+            return Rml::Style::TabIndex::None;
+        }
+    }
+
     void Style::set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation) {
         property_map[property_id] = property;
     }
@@ -457,6 +469,10 @@ namespace recompui {
 
     void Style::set_drag(Drag drag) {
         set_property(Rml::PropertyId::Drag, to_rml(drag), Animation());
+    }
+
+    void Style::set_tab_index(TabIndex tab_index) {
+        set_property(Rml::PropertyId::TabIndex, to_rml(tab_index), Animation());
     }
 
 } // namespace recompui

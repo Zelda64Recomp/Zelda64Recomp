@@ -4,6 +4,7 @@
 #include <memory>
 #include <utility>
 #include <filesystem>
+#include <functional>
 
 #include "RmlUi/Core.h"
 
@@ -48,7 +49,7 @@ namespace recompui {
         bool takes_input() { return true; }
     };
 
-    ContextId create_context(Rml::Context*, const std::filesystem::path& path);
+    ContextId create_context(const std::filesystem::path& path);
     ContextId create_context(Rml::ElementDocument* document);
     void destroy_context(ContextId id);
     ContextId get_current_context();
