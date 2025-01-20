@@ -178,6 +178,34 @@ recompui::ContextId recompui::create_context(Rml::ElementDocument* document) {
     return create_context_impl(document);
 }
 
+recompui::ContextId recompui::create_context() {
+    Rml::ElementDocument* doc = create_empty_document();
+    ContextId ret = create_context_impl(doc);
+    Element* root = ret.get_root_element();
+    // Mark the root element as not being a shim, as that's only needed for elements that were parented to Rml ones manually.
+    root->shim = false;
+
+    // TODO move these defaults elsewhere. Copied from the existing rcss.
+    ret.open();
+    root->set_width(100.0f, Unit::Percent);
+    root->set_height(100.0f, Unit::Percent);
+    root->set_display(Display::Flex);
+    root->set_opacity(1.0f);
+    root->set_font_family("chiaro");
+    root->set_font_style(FontStyle::Normal);
+    root->set_font_weight(400);
+
+    float sz = 16.0f;
+    float spacing = 0.0f;
+    float sz_add = sz + 4;
+    root->set_font_size(sz_add, Unit::Dp);
+    root->set_letter_spacing(sz_add * spacing, Unit::Dp);
+    root->set_line_height(sz_add, Unit::Dp);
+    ret.close();
+
+    return ret;
+}
+
 void recompui::destroy_context(ContextId id) {
     bool existed = false;
 
@@ -209,6 +237,8 @@ void recompui::destroy_context(ContextId id) {
 }
 
 void recompui::destroy_all_contexts() {
+    recompui::hide_all_contexts();
+
     std::lock_guard lock{ context_state.all_contexts_lock };
 
     // TODO prevent deletion of a context while its mutex is in use. Second lock on the context's mutex before popping

@@ -4,7 +4,7 @@
 
 namespace recompui {
 
-    Button::Button(const std::string &text, ButtonStyle style, Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
+    Button::Button(Element *parent, const std::string &text, ButtonStyle style) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
         this->style = style;
 
         set_text(text);

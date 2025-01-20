@@ -475,4 +475,8 @@ namespace recompui {
         set_property(Rml::PropertyId::TabIndex, to_rml(tab_index), Animation());
     }
 
+    void Style::set_font_family(std::string_view family) {
+        set_property(Rml::PropertyId::FontFamily, Rml::Property(Rml::String{ family }, Rml::Unit::UNKNOWN), Animation());
+    }
+
 } // namespace recompui

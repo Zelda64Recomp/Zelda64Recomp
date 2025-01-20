@@ -203,6 +203,9 @@ void Element::process_event(const Event &) {
 }
 
 void Element::clear_children() {
+    if (children.empty()) {
+        return;
+    }
     ContextId context = get_current_context();
 
     // Remove the children from the context.

@@ -51,8 +51,11 @@ namespace recompui {
 
     ContextId create_context(const std::filesystem::path& path);
     ContextId create_context(Rml::ElementDocument* document);
+    ContextId create_context();
     void destroy_context(ContextId id);
     ContextId get_current_context();
     ContextId get_context_from_document(Rml::ElementDocument* document);
     void destroy_all_contexts();
+
+    void register_ui_exports();
 } // namespace recompui

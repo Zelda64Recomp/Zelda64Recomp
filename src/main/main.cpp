@@ -599,6 +599,8 @@ int main(int argc, char** argv) {
         recomp::register_game(game);
     }
 
+    recompui::register_ui_exports();
+
     zelda64::register_overlays();
     zelda64::register_patches();
     zelda64::load_config();

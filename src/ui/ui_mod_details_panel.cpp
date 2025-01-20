@@ -14,13 +14,13 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 
     ContextId context = get_current_context();
 
-    header_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::FlexStart, this);
+    header_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
     header_container->set_flex(0.0f, 0.0f);
     header_container->set_padding(16.0f);
     header_container->set_gap(16.0f);
     header_container->set_background_color(Color{ 0, 0, 0, 89 });
     {
-        thumbnail_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::SpaceEvenly, header_container);
+        thumbnail_container = context.create_element<Container>(header_container, FlexDirection::Column, JustifyContent::SpaceEvenly);
         thumbnail_container->set_flex(0.0f, 0.0f);
         {
             thumbnail_image = context.create_element<Image>(thumbnail_container);
@@ -29,38 +29,38 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
             thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
         }
 
-        header_details_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::SpaceEvenly, header_container);
+        header_details_container = context.create_element<Container>(header_container, FlexDirection::Column, JustifyContent::SpaceEvenly);
         header_details_container->set_flex(1.0f, 1.0f);
         header_details_container->set_flex_basis(100.0f, Unit::Percent);
         header_details_container->set_text_align(TextAlign::Left);
         {
-            title_label = context.create_element<Label>(LabelStyle::Large, header_details_container);
-            version_label = context.create_element<Label>(LabelStyle::Normal, header_details_container);
+            title_label = context.create_element<Label>(header_details_container, LabelStyle::Large);
+            version_label = context.create_element<Label>(header_details_container, LabelStyle::Normal);
         }
     }
 
-    body_container = context.create_element<Container>(FlexDirection::Column, JustifyContent::FlexStart, this);
+    body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
     body_container->set_flex(0.0f, 0.0f);
     body_container->set_text_align(TextAlign::Left);
     body_container->set_padding(16.0f);
     body_container->set_gap(16.0f);
     {
-        description_label = context.create_element<Label>(LabelStyle::Normal, body_container);
-        authors_label = context.create_element<Label>(LabelStyle::Normal, body_container);
+        description_label = context.create_element<Label>(body_container, LabelStyle::Normal);
+        authors_label = context.create_element<Label>(body_container, LabelStyle::Normal);
     }
     
     spacer_element = context.create_element<Element>(this);
     spacer_element->set_flex(1.0f, 0.0f);
     
-    buttons_container = context.create_element<Container>(FlexDirection::Row, JustifyContent::SpaceAround, this);
+    buttons_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceAround);
     buttons_container->set_flex(0.0f, 0.0f);
     buttons_container->set_padding(16.0f);
     {
         enable_toggle = context.create_element<Toggle>(buttons_container);
         enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
-        configure_button = context.create_element<Button>("Configure", recompui::ButtonStyle::Secondary, buttons_container);
+        configure_button = context.create_element<Button>(buttons_container, "Configure", recompui::ButtonStyle::Secondary);
         configure_button->add_pressed_callback(std::bind(&ModDetailsPanel::configure_button_pressed, this));
-        erase_button = context.create_element<Button>("Erase", recompui::ButtonStyle::Secondary, buttons_container);
+        erase_button = context.create_element<Button>(buttons_container, "Erase", recompui::ButtonStyle::Secondary);
     }
 }
 

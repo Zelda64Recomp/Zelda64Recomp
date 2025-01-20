@@ -4,10 +4,10 @@
 #include <memory>
 
 namespace RT64 {
-    class RenderInterface;
-    class RenderDevice;
-    class RenderCommandList;
-    class RenderFramebuffer;
+    struct RenderInterface;
+    struct RenderDevice;
+    struct RenderCommandList;
+    struct RenderFramebuffer;
 };
 
 namespace Rml {
