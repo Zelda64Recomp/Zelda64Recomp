@@ -112,19 +112,24 @@ void ModMenu::mod_configure_requested() {
 
         const recomp::mods::ConfigSchema &config_schema = recomp::mods::get_mod_config_schema(mod_details[active_mod_index].mod_id);
         for (const recomp::mods::ConfigOption &option : config_schema.options) {
+            recomp::mods::ConfigValueVariant config_value = recomp::mods::get_mod_config_value(mod_details[active_mod_index].mod_id, option.id);
+            if (std::holds_alternative<std::monostate>(config_value)) {
+                continue;
+            }
+
             switch (option.type) {
             case recomp::mods::ConfigOptionType::Enum: {
                 const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
-                config_sub_menu->add_radio_option(option.name, option.description, option_enum.options);
+                config_sub_menu->add_radio_option(option.id, option.name, option.description, std::get<uint32_t>(config_value), option_enum.options, std::bind(&ModMenu::mod_enum_option_changed, this, std::placeholders::_1, std::placeholders::_2));
                 break;
             }
             case recomp::mods::ConfigOptionType::Number: {
                 const recomp::mods::ConfigOptionNumber &option_number = std::get<recomp::mods::ConfigOptionNumber>(option.variant);
-                config_sub_menu->add_slider_option(option.name, option.description, option_number.min, option_number.max, option_number.step, option_number.percent);
+                config_sub_menu->add_slider_option(option.id, option.name, option.description, std::get<double>(config_value), option_number.min, option_number.max, option_number.step, option_number.percent, std::bind(&ModMenu::mod_number_option_changed, this, std::placeholders::_1, std::placeholders::_2));
                 break;
             }
             case recomp::mods::ConfigOptionType::String: {
-                config_sub_menu->add_text_option(option.name, option.description);
+                config_sub_menu->add_text_option(option.id, option.name, option.description, std::get<std::string>(config_value), std::bind(&ModMenu::mod_string_option_changed, this, std::placeholders::_1, std::placeholders::_2));
                 break;
             }
             default:
@@ -142,6 +147,24 @@ void ModMenu::mod_configure_requested() {
         // Hide the config menu and show the sub menu.
         recompui::hide_context(recompui::get_config_context_id());
         recompui::show_context(sub_menu_context, "");
+    }
+}
+
+void ModMenu::mod_enum_option_changed(const std::string &id, uint32_t value) {
+    if (active_mod_index >= 0) {
+        recomp::mods::set_mod_config_value(mod_details[active_mod_index].mod_id, id, value);
+    }
+}
+
+void ModMenu::mod_string_option_changed(const std::string &id, const std::string &value) {
+    if (active_mod_index >= 0) {
+        recomp::mods::set_mod_config_value(mod_details[active_mod_index].mod_id, id, value);
+    }
+}
+
+void ModMenu::mod_number_option_changed(const std::string &id, double value) {
+    if (active_mod_index >= 0) {
+        recomp::mods::set_mod_config_value(mod_details[active_mod_index].mod_id, id, value);
     }
 }
 
