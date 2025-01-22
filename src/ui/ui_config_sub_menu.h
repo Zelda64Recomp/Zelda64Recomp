@@ -16,6 +16,7 @@ namespace recompui {
 class ConfigOptionElement : public Element {
 protected:
     Label *name_label = nullptr;
+    std::string id;
     std::string name;
     std::string description;
     std::function<void(ConfigOptionElement *, bool)> hover_callback = nullptr;
@@ -24,6 +25,7 @@ protected:
 public:
     ConfigOptionElement(Element *parent);
     virtual ~ConfigOptionElement();
+    void set_id(std::string_view id);
     void set_name(std::string_view name);
     void set_description(std::string_view description);
     void set_hover_callback(std::function<void(ConfigOptionElement *, bool)> callback);
@@ -33,28 +35,31 @@ public:
 class ConfigOptionSlider : public ConfigOptionElement {
 protected:
     Slider *slider = nullptr;
+    std::function<void(const std::string &, double)> callback;
 
     void slider_value_changed(double v);
 public:
-    ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent);
+    ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent, std::function<void(const std::string &, double)> callback);
 };
 
 class ConfigOptionTextInput : public ConfigOptionElement {
 protected:
     TextInput *text_input = nullptr;
+    std::function<void(const std::string &, const std::string &)> callback;
 
     void text_changed(const std::string &text);
 public:
-    ConfigOptionTextInput(Element *parent);
+    ConfigOptionTextInput(Element *parent, std::string_view value, std::function<void(const std::string &, const std::string &)> callback);
 };
 
 class ConfigOptionRadio : public ConfigOptionElement {
 protected:
     Radio *radio = nullptr;
+    std::function<void(const std::string &, uint32_t)> callback;
 
     void index_changed(uint32_t index);
 public:
-    ConfigOptionRadio(Element *parent, const std::vector<std::string> &options);
+    ConfigOptionRadio(Element *parent, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback);
 };
 
 class ConfigSubMenu : public Element {
@@ -71,16 +76,16 @@ private:
 
     void back_button_pressed();
     void option_hovered(ConfigOptionElement *option, bool active);
-    void add_option(ConfigOptionElement *option, std::string_view name, std::string_view description);
+    void add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description);
 
 public:
     ConfigSubMenu(Element *parent);
     virtual ~ConfigSubMenu();
     void enter(std::string_view title);
     void clear_options();
-    void add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent);
-    void add_text_option(std::string_view name, std::string_view description);
-    void add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options);
+    void add_slider_option(std::string_view id, std::string_view name, std::string_view description, double value, double min, double max, double step, bool percent, std::function<void(const std::string &, double)> callback);
+    void add_text_option(std::string_view id, std::string_view name, std::string_view description, std::string_view value, std::function<void(const std::string &, const std::string &)> callback);
+    void add_radio_option(std::string_view id, std::string_view name, std::string_view description, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback);
 };
 
 class ElementConfigSubMenu : public Rml::Element {

@@ -34,8 +34,11 @@ private:
     void refresh_mods();
     void mod_toggled(bool enabled);
     void mod_configure_requested();
+    void mod_enum_option_changed(const std::string &id, uint32_t value);
+    void mod_string_option_changed(const std::string &id, const std::string &value);
+    void mod_number_option_changed(const std::string &id, double value);
     void create_mod_list();
-    
+
     Container *body_container = nullptr;
     Container *list_container = nullptr;
     ScrollContainer *list_scroll_container = nullptr;

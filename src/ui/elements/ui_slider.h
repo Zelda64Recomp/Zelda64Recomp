@@ -21,7 +21,7 @@ namespace recompui {
         double value = 50.0;
         double min_value = 0.0;
         double max_value = 100.0;
-        double step_value = 1.0;
+        double step_value = 0.0;
         float slider_width_dp = 300.0;
         std::vector<std::function<void(double)>> value_changed_callbacks;
 
