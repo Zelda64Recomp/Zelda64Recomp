@@ -32,6 +32,10 @@ ConfigOptionElement::~ConfigOptionElement() {
 
 }
 
+void ConfigOptionElement::set_id(std::string_view id) {
+    this->id = id;
+}
+
 void ConfigOptionElement::set_name(std::string_view name) {
     this->name = name;
     name_label->set_text(name);
@@ -52,39 +56,45 @@ const std::string &ConfigOptionElement::get_description() const {
 // ConfigOptionSlider
 
 void ConfigOptionSlider::slider_value_changed(double v) {
-    // TODO: Hook up to whatever API Recomp exposes to set the value of the persisent configuration in mods.
-    printf("%s changed to %f.\n", name.c_str(), v);
+    callback(id, v);
 }
 
-ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent) : ConfigOptionElement(parent) {
+ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent, std::function<void(const std::string &, double)> callback) : ConfigOptionElement(parent) {
+    this->callback = callback;
+
     slider = get_current_context().create_element<Slider>(this, percent ? SliderType::Percent : SliderType::Double);
-    slider->set_value(value);
     slider->set_min_value(min_value);
     slider->set_max_value(max_value);
     slider->set_step_value(step_value);
+    slider->set_value(value);
     slider->add_value_changed_callback(std::bind(&ConfigOptionSlider::slider_value_changed, this, std::placeholders::_1));
 }
 
 // ConfigOptionTextInput
 
 void ConfigOptionTextInput::text_changed(const std::string &text) {
-    // TODO: Hook up to whatever API Recomp exposes to set the value of the persisent configuration in mods.
-    printf("%s changed to %s.\n", name.c_str(), text.c_str());
+    callback(id, text);
 }
 
-ConfigOptionTextInput::ConfigOptionTextInput(Element *parent) : ConfigOptionElement(parent) {
+ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view value, std::function<void(const std::string &, const std::string &)> callback) : ConfigOptionElement(parent) {
+    this->callback = callback;
+
     text_input = get_current_context().create_element<TextInput>(this);
+    text_input->set_text(value);
     text_input->add_text_changed_callback(std::bind(&ConfigOptionTextInput::text_changed, this, std::placeholders::_1));
 }
 
 // ConfigOptionRadio
 
 void ConfigOptionRadio::index_changed(uint32_t index) {
-    printf("%s changed to %d.\n", name.c_str(), index);
+    callback(id, index);
 }
 
-ConfigOptionRadio::ConfigOptionRadio(Element *parent, const std::vector<std::string> &options) : ConfigOptionElement(parent) {
+ConfigOptionRadio::ConfigOptionRadio(Element *parent, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback) : ConfigOptionElement(parent) {
+    this->callback = callback;
+
     radio = get_current_context().create_element<Radio>(this);
+    radio->set_index(value);
     radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
     for (std::string_view option : options) {
         radio->add_option(option);
@@ -164,26 +174,27 @@ void ConfigSubMenu::clear_options() {
     hover_option_elements.clear();
 }
 
-void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view name, std::string_view description) {
+void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description) {
+    option->set_id(id);
     option->set_name(name);
     option->set_description(description);
     option->set_hover_callback(std::bind(&ConfigSubMenu::option_hovered, this, std::placeholders::_1, std::placeholders::_2));
     config_option_elements.emplace_back(option);
 }
 
-void ConfigSubMenu::add_slider_option(std::string_view name, std::string_view description, double min, double max, double step, bool percent) {
-    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>(config_scroll_container, (min + max) / 2.0, min, max, step, percent);
-    add_option(option_slider, name, description);
+void ConfigSubMenu::add_slider_option(std::string_view id, std::string_view name, std::string_view description, double value, double min, double max, double step, bool percent, std::function<void(const std::string &, double)> callback) {
+    ConfigOptionSlider *option_slider = get_current_context().create_element<ConfigOptionSlider>(config_scroll_container, value, min, max, step, percent, callback);
+    add_option(option_slider, id, name, description);
 }
 
-void ConfigSubMenu::add_text_option(std::string_view name, std::string_view description) {
-    ConfigOptionTextInput *option_text_input = get_current_context().create_element<ConfigOptionTextInput>(config_scroll_container);
-    add_option(option_text_input, name, description);
+void ConfigSubMenu::add_text_option(std::string_view id, std::string_view name, std::string_view description, std::string_view value, std::function<void(const std::string &, const std::string &)> callback) {
+    ConfigOptionTextInput *option_text_input = get_current_context().create_element<ConfigOptionTextInput>(config_scroll_container, value, callback);
+    add_option(option_text_input, id, name, description);
 }
 
-void ConfigSubMenu::add_radio_option(std::string_view name, std::string_view description, const std::vector<std::string> &options) {
-    ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(config_scroll_container, options);
-    add_option(option_radio, name, description);
+void ConfigSubMenu::add_radio_option(std::string_view id, std::string_view name, std::string_view description, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback) {
+    ConfigOptionRadio *option_radio = get_current_context().create_element<ConfigOptionRadio>(config_scroll_container, value, options, callback);
+    add_option(option_radio, id, name, description);
 }
 
 // ElementConfigSubMenu
