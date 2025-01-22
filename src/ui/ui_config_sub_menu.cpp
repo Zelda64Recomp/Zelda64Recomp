@@ -94,10 +94,13 @@ ConfigOptionRadio::ConfigOptionRadio(Element *parent, uint32_t value, const std:
     this->callback = callback;
 
     radio = get_current_context().create_element<Radio>(this);
-    radio->set_index(value);
     radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
     for (std::string_view option : options) {
         radio->add_option(option);
+    }
+
+    if (value < options.size()) {
+        radio->set_index(value);
     }
 }
 
