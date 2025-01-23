@@ -11,7 +11,7 @@
 
 namespace recompui {
 
-ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uint32_t mod_index, ModMenu *mod_menu) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Focus)) {
+ModEntry::ModEntry(Element *parent, uint32_t mod_index, ModMenu *mod_menu) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Focus, EventType::Drag)) {
     assert(mod_menu != nullptr);
 
     this->mod_index = mod_index;
@@ -29,6 +29,7 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
     set_border_color(Color{ 242, 242, 242, 204 });
     set_background_color(Color{ 242, 242, 242, 12 });
     set_cursor(Cursor::Pointer);
+    set_drag(Drag::Drag);
 
     ContextId context = get_current_context();
 
@@ -47,7 +48,7 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
         body_container->set_overflow(Overflow::Hidden);
 
         {
-            name_label = context.create_element<Label>(body_container, details.mod_id, LabelStyle::Normal);
+            name_label = context.create_element<Label>(body_container, LabelStyle::Normal);
             description_label = context.create_element<Label>(body_container, "Short description of mod here.", LabelStyle::Small);
         } // body_container
     } // this
@@ -55,6 +56,14 @@ ModEntry::ModEntry(Element *parent, const recomp::mods::ModDetails &details, uin
 
 ModEntry::~ModEntry() {
 
+}
+
+void ModEntry::set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback) {
+    drag_callback = callback;
+}
+
+void ModEntry::set_mod_details(const recomp::mods::ModDetails &details) {
+    name_label->set_text(details.mod_id);
 }
 
 void ModEntry::process_event(const Event& e) {
@@ -65,6 +74,9 @@ void ModEntry::process_event(const Event& e) {
     case EventType::Hover:
         break;
     case EventType::Focus:
+        break;
+    case EventType::Drag:
+        drag_callback(mod_index, std::get<EventDrag>(e.variant));
         break;
     default:
         break;
@@ -90,6 +102,39 @@ void ModMenu::refresh_mods() {
 void ModMenu::mod_toggled(bool enabled) {
     if (active_mod_index >= 0) {
         recomp::mods::enable_mod(mod_details[active_mod_index].mod_id, enabled);
+    }
+}
+
+void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
+    // Binary search for the drag area.
+    size_t low = 0;
+    size_t high = mod_entries.size();
+    while (low < high) {
+        size_t mid = low + (high - low) / 2;
+        float drag_area_top = mod_entries[mid]->get_absolute_top();
+        if (drag.y < drag_area_top) {
+            high = mid;
+        }
+        else {
+            low = mid + 1;
+        }
+    }
+
+    size_t new_index = 0;
+    if (low > 0) {
+        new_index = low - 1;
+    }
+
+    switch (drag.phase) {
+    case DragPhase::End:
+        recomp::mods::set_mod_index(game_mod_id, mod_details[mod_index].mod_id, new_index);
+        mod_details = recomp::mods::get_mod_details(game_mod_id);
+        for (size_t i = 0; i < mod_entries.size(); i++) {
+            mod_entries[i]->set_mod_details(mod_details[i]);
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -177,7 +222,10 @@ void ModMenu::create_mod_list() {
 
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
-        mod_entries.emplace_back(context.create_element<ModEntry>(list_scroll_container, mod_details[mod_index], mod_index, this));
+        ModEntry *mod_entry = context.create_element<ModEntry>(list_scroll_container, mod_index, this);
+        mod_entry->set_mod_drag_callback(std::bind(&ModMenu::mod_dragged, this, std::placeholders::_1, std::placeholders::_2));
+        mod_entry->set_mod_details(mod_details[mod_index]);
+        mod_entries.emplace_back(mod_entry);
     }
 
     set_active_mod(0);
