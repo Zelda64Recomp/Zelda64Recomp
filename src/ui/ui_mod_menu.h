@@ -12,8 +12,10 @@ class ModMenu;
 
 class ModEntry : public Element {
 public:
-    ModEntry(Element *parent, const recomp::mods::ModDetails &details, uint32_t mod_index, ModMenu *mod_menu);
+    ModEntry(Element *parent, uint32_t mod_index, ModMenu *mod_menu);
     virtual ~ModEntry();
+    void set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback);
+    void set_mod_details(const recomp::mods::ModDetails &details);
 protected:
     virtual void process_event(const Event &e);
 private:
@@ -23,6 +25,7 @@ private:
     Container *body_container = nullptr;
     Label *name_label = nullptr;
     Label *description_label = nullptr;
+    std::function<void(uint32_t, EventDrag)> drag_callback = nullptr;
 };
 
 class ModMenu : public Element {
@@ -33,6 +36,7 @@ public:
 private:
     void refresh_mods();
     void mod_toggled(bool enabled);
+    void mod_dragged(uint32_t mod_index, EventDrag drag);
     void mod_configure_requested();
     void mod_enum_option_changed(const std::string &id, uint32_t value);
     void mod_string_option_changed(const std::string &id, const std::string &value);
