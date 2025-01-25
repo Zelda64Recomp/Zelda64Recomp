@@ -11,11 +11,10 @@
 
 namespace recompui {
 
-ModEntry::ModEntry(Element *parent, uint32_t mod_index, ModMenu *mod_menu) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Focus, EventType::Drag)) {
-    assert(mod_menu != nullptr);
+// ModEntryView
 
-    this->mod_index = mod_index;
-    this->mod_menu = mod_menu;
+ModEntryView::ModEntryView(Element *parent) : Element(parent) {
+    ContextId context = get_current_context();
 
     set_display(Display::Flex);
     set_flex_direction(FlexDirection::Row);
@@ -29,9 +28,6 @@ ModEntry::ModEntry(Element *parent, uint32_t mod_index, ModMenu *mod_menu) : Ele
     set_border_color(Color{ 242, 242, 242, 204 });
     set_background_color(Color{ 242, 242, 242, 12 });
     set_cursor(Cursor::Pointer);
-    set_drag(Drag::Drag);
-
-    ContextId context = get_current_context();
 
     {
         thumbnail_image = context.create_element<Image>(this);
@@ -54,22 +50,45 @@ ModEntry::ModEntry(Element *parent, uint32_t mod_index, ModMenu *mod_menu) : Ele
     } // this
 }
 
-ModEntry::~ModEntry() {
+ModEntryView::~ModEntryView() {
 
 }
 
-void ModEntry::set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback) {
-    drag_callback = callback;
-}
-
-void ModEntry::set_mod_details(const recomp::mods::ModDetails &details) {
+void ModEntryView::set_mod_details(const recomp::mods::ModDetails &details) {
     name_label->set_text(details.mod_id);
 }
 
-void ModEntry::process_event(const Event& e) {
+// ModEntryButton
+
+ModEntryButton::ModEntryButton(Element *parent, uint32_t mod_index) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Focus, EventType::Drag)) {
+    this->mod_index = mod_index;
+
+    set_drag(Drag::Drag);
+
+    ContextId context = get_current_context();
+    view = context.create_element<ModEntryView>(this);
+}
+
+ModEntryButton::~ModEntryButton() {
+
+}
+
+void ModEntryButton::set_mod_selected_callback(std::function<void(uint32_t)> callback) {
+    selected_callback = callback;
+}
+
+void ModEntryButton::set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback) {
+    drag_callback = callback;
+}
+
+void ModEntryButton::set_mod_details(const recomp::mods::ModDetails &details) {
+    view->set_mod_details(details);
+}
+
+void ModEntryButton::process_event(const Event& e) {
     switch (e.type) {
     case EventType::Click:
-        mod_menu->set_active_mod(mod_index);
+        selected_callback(mod_index);
         break;
     case EventType::Hover:
         break;
@@ -83,15 +102,7 @@ void ModEntry::process_event(const Event& e) {
     }
 }
 
-void ModMenu::set_active_mod(int32_t mod_index) {
-    active_mod_index = mod_index;
-    if (active_mod_index >= 0) {
-        bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
-        bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[mod_index].mod_id);
-        bool toggle_enabled = !auto_enabled && (mod_details[mod_index].runtime_toggleable || !ultramodern::is_game_started());
-        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled, toggle_enabled);
-    }
-}
+// ModMenu
 
 void ModMenu::refresh_mods() {
     recomp::mods::scan_mods();
@@ -105,34 +116,93 @@ void ModMenu::mod_toggled(bool enabled) {
     }
 }
 
+void ModMenu::mod_selected(uint32_t mod_index) {
+    active_mod_index = mod_index;
+    if (active_mod_index >= 0) {
+        bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
+        bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[mod_index].mod_id);
+        bool toggle_enabled = !auto_enabled && (mod_details[mod_index].runtime_toggleable || !ultramodern::is_game_started());
+        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled, toggle_enabled);
+    }
+}
+
 void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
-    // Binary search for the drag area.
-    size_t low = 0;
-    size_t high = mod_entries.size();
-    while (low < high) {
-        size_t mid = low + (high - low) / 2;
-        float drag_area_top = mod_entries[mid]->get_absolute_top();
-        if (drag.y < drag_area_top) {
-            high = mid;
-        }
-        else {
-            low = mid + 1;
-        }
-    }
-
-    size_t new_index = 0;
-    if (low > 0) {
-        new_index = low - 1;
-    }
-
     switch (drag.phase) {
-    case DragPhase::End:
-        recomp::mods::set_mod_index(game_mod_id, mod_details[mod_index].mod_id, new_index);
+    case DragPhase::Start: {
+        for (size_t i = 0; i < mod_entry_buttons.size(); i++) {
+            mod_entry_middles[i] = mod_entry_buttons[i]->get_absolute_top() + mod_entry_buttons[i]->get_client_height() / 2.0f;
+        }
+
+        // When the drag phase starts, we make the floating mod details visible and store the relative coordinate of the
+        // mouse cursor. Instantly hide the real element and use a spacer in its place that will stay on the same size as
+        // long as the cursor is hovering over this slot.
+        float width = mod_entry_buttons[mod_index]->get_client_width();
+        float height = mod_entry_buttons[mod_index]->get_client_height();
+        float left = mod_entry_buttons[mod_index]->get_absolute_left() - get_absolute_left();
+        float top = mod_entry_buttons[mod_index]->get_absolute_top() - (height / 2.0f); // TODO: Figure out why this adjustment is even necessary.
+        mod_entry_buttons[mod_index]->set_display(Display::None);
+        mod_entry_floating_view->set_display(Display::Flex);
+        mod_entry_floating_view->set_mod_details(mod_details[mod_index]);
+        mod_entry_floating_view->set_left(left, Unit::Px);
+        mod_entry_floating_view->set_top(top, Unit::Px);
+        mod_entry_floating_view->set_width(width, Unit::Px);
+        mod_entry_floating_view->set_height(height, Unit::Px);
+        mod_drag_start_coordinates[0] = drag.x;
+        mod_drag_start_coordinates[1] = drag.y;
+        mod_drag_view_coordinates[0] = left;
+        mod_drag_view_coordinates[1] = top;
+        
+        mod_drag_target_index = mod_index;
+        mod_drag_spacer_height = height;
+        mod_entry_spacers[mod_drag_target_index]->set_height(mod_drag_spacer_height, Unit::Px);
+        break;
+    }
+    case DragPhase::Move: {
+        // Binary search for the drag area.
+        uint32_t low = 0;
+        uint32_t high = mod_entry_buttons.size();
+        while (low < high) {
+            uint32_t mid = low + (high - low) / 2;
+            if (drag.y < mod_entry_middles[mid]) {
+                high = mid;
+            }
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        uint32_t new_index = low;
+        float delta_x = drag.x - mod_drag_start_coordinates[0];
+        float delta_y = drag.y - mod_drag_start_coordinates[1];
+        mod_entry_floating_view->set_left(mod_drag_view_coordinates[0] + delta_x, Unit::Px);
+        mod_entry_floating_view->set_top(mod_drag_view_coordinates[1] + delta_y, Unit::Px);
+        if (mod_drag_target_index != new_index) {
+            mod_entry_spacers[mod_drag_target_index]->set_height(0.0f, Unit::Px);
+            mod_entry_spacers[new_index]->set_height(mod_drag_spacer_height, Unit::Px);
+            mod_drag_target_index = new_index;
+        }
+
+        break;
+    }
+    case DragPhase::End: {
+        // Dragging has ended, hide the floating view.
+        mod_entry_buttons[mod_index]->set_display(Display::Block);
+        mod_entry_spacers[mod_drag_target_index]->set_height(0.0f, Unit::Px);
+        mod_entry_floating_view->set_display(Display::None);
+
+        // Result needs a small substraction when dragging downwards.
+        if (mod_drag_target_index > mod_index) {
+            mod_drag_target_index--;
+        }
+
+        // Re-order the mods and update all the details on the menu.
+        recomp::mods::set_mod_index(game_mod_id, mod_details[mod_index].mod_id, mod_drag_target_index);
         mod_details = recomp::mods::get_mod_details(game_mod_id);
-        for (size_t i = 0; i < mod_entries.size(); i++) {
-            mod_entries[i]->set_mod_details(mod_details[i]);
+        for (size_t i = 0; i < mod_entry_buttons.size(); i++) {
+            mod_entry_buttons[i]->set_mod_details(mod_details[i]);
         }
         break;
+    }
     default:
         break;
     }
@@ -218,17 +288,28 @@ void ModMenu::create_mod_list() {
 
     // Clear the contents of the list scroll.
     list_scroll_container->clear_children();
-    mod_entries.clear();
+    mod_entry_buttons.clear();
+    mod_entry_spacers.clear();
 
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
-        ModEntry *mod_entry = context.create_element<ModEntry>(list_scroll_container, mod_index, this);
+        Element *spacer = context.create_element<Element>(list_scroll_container);
+        mod_entry_spacers.emplace_back(spacer);
+
+        ModEntryButton *mod_entry = context.create_element<ModEntryButton>(list_scroll_container, mod_index);
+        mod_entry->set_mod_selected_callback(std::bind(&ModMenu::mod_selected, this, std::placeholders::_1));
         mod_entry->set_mod_drag_callback(std::bind(&ModMenu::mod_dragged, this, std::placeholders::_1, std::placeholders::_2));
         mod_entry->set_mod_details(mod_details[mod_index]);
-        mod_entries.emplace_back(mod_entry);
+        mod_entry_buttons.emplace_back(mod_entry);
     }
 
-    set_active_mod(0);
+    // Add one extra spacer at the bottom.
+    Element *spacer = context.create_element<Element>(list_scroll_container);
+    mod_entry_spacers.emplace_back(spacer);
+
+    mod_entry_middles.resize(mod_entry_buttons.size());
+
+    mod_selected(0);
 }
 
 ModMenu::ModMenu(Element *parent) : Element(parent) {
@@ -281,6 +362,10 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
         } // footer_container
     } // this
+    
+    mod_entry_floating_view = context.create_element<ModEntryView>(this);
+    mod_entry_floating_view->set_display(Display::None);
+    mod_entry_floating_view->set_position(Position::Absolute);
 
     refresh_mods();
 

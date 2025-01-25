@@ -6,8 +6,8 @@ namespace recompui {
 
     static Rml::Unit to_rml(Unit unit) {
         switch (unit) {
-        case Unit::Float:
-            return Rml::Unit::NUMBER;
+        case Unit::Px:
+            return Rml::Unit::PX;
         case Unit::Dp:
             return Rml::Unit::DP;
         case Unit::Percent:
@@ -94,6 +94,62 @@ namespace recompui {
         default:
             assert(false && "Unknown tab index.");
             return Rml::Style::TabIndex::None;
+        }
+    }
+
+    static Rml::Style::Display to_rml(Display display) {
+        switch (display) {
+        case Display::None:
+            return Rml::Style::Display::None;
+        case Display::Block:
+            return Rml::Style::Display::Block;
+        case Display::Inline:
+            return Rml::Style::Display::Inline;
+        case Display::InlineBlock:
+            return Rml::Style::Display::InlineBlock;
+        case Display::FlowRoot:
+            return Rml::Style::Display::FlowRoot;
+        case Display::Flex:
+            return Rml::Style::Display::Flex;
+        case Display::InlineFlex:
+            return Rml::Style::Display::InlineFlex;
+        case Display::Table:
+            return Rml::Style::Display::Table;
+        case Display::InlineTable:
+            return Rml::Style::Display::InlineTable;
+        case Display::TableRow:
+            return Rml::Style::Display::TableRow;
+        case Display::TableRowGroup:
+            return Rml::Style::Display::TableRowGroup;
+        case Display::TableColumn:
+            return Rml::Style::Display::TableColumn;
+        case Display::TableColumnGroup:
+            return Rml::Style::Display::TableColumnGroup;
+        case Display::TableCell:
+            return Rml::Style::Display::TableCell;
+        default:
+            assert(false && "Unknown display.");
+            return Rml::Style::Display::Block;
+        }
+    }
+
+    static Rml::Style::JustifyContent to_rml(JustifyContent justify_content) {
+        switch (justify_content) {
+        case JustifyContent::FlexStart:
+            return Rml::Style::JustifyContent::FlexStart;
+        case JustifyContent::FlexEnd:
+            return Rml::Style::JustifyContent::FlexEnd;
+        case JustifyContent::Center:
+            return Rml::Style::JustifyContent::Center;
+        case JustifyContent::SpaceBetween:
+            return Rml::Style::JustifyContent::SpaceBetween;
+        case JustifyContent::SpaceAround:
+            return Rml::Style::JustifyContent::SpaceAround;
+        case JustifyContent::SpaceEvenly:
+            return Rml::Style::JustifyContent::SpaceEvenly;
+        default:
+            assert(false && "Unknown justify content.");
+            return Rml::Style::JustifyContent::FlexStart;
         }
     }
 
@@ -322,43 +378,11 @@ namespace recompui {
     }
 
     void Style::set_display(Display display) {
-        switch (display) {
-        case Display::Block:
-            set_property(Rml::PropertyId::Display, Rml::Style::Display::Block, Animation());
-            break;
-        case Display::Flex:
-            set_property(Rml::PropertyId::Display, Rml::Style::Display::Flex, Animation());
-            break;
-        default:
-            assert(false && "Unknown display.");
-            break;
-        }
+        set_property(Rml::PropertyId::Display, to_rml(display), Animation());
     }
 
     void Style::set_justify_content(JustifyContent justify_content) {
-        switch (justify_content) {
-        case JustifyContent::FlexStart:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::FlexStart, Animation());
-            break;
-        case JustifyContent::FlexEnd:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::FlexEnd, Animation());
-            break;
-        case JustifyContent::Center:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::Center, Animation());
-            break;
-        case JustifyContent::SpaceBetween:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::SpaceBetween, Animation());
-            break;
-        case JustifyContent::SpaceAround:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::SpaceAround, Animation());
-            break;
-        case JustifyContent::SpaceEvenly:
-            set_property(Rml::PropertyId::JustifyContent, Rml::Style::JustifyContent::SpaceEvenly, Animation());
-            break;
-        default:
-            assert(false && "Unknown justify content.");
-            break;
-        }
+        set_property(Rml::PropertyId::JustifyContent, to_rml(justify_content), Animation());
     }
 
     void Style::set_flex_grow(float grow, Animation animation) {
