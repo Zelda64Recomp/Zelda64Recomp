@@ -127,8 +127,20 @@ namespace recompui {
     };
 
     enum class Display {
+        None,
         Block,
-        Flex
+        Inline,
+        InlineBlock,
+        FlowRoot,
+        Flex,
+        InlineFlex,
+        Table,
+        InlineTable,
+        TableRow,
+        TableRowGroup,
+        TableColumn,
+        TableColumnGroup,
+        TableCell
     };
 
     enum class Position {
@@ -166,7 +178,7 @@ namespace recompui {
     };
 
     enum class Unit {
-        Float,
+        Px,
         Dp,
         Percent
     };
@@ -209,6 +221,7 @@ namespace recompui {
         static Animation set() {
             Animation a;
             a.type = AnimationType::Set;
+            a.duration = 0.0f;
             return a;
         }
 
