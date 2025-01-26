@@ -163,9 +163,5 @@ std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_
     // Write 0xFF as the padding.
     std::fill(ret.begin() + content_end, ret.end(), 0xFF);
 
-    // TEST write to a file.
-    std::ofstream output_file{"mm.decompressed.z64", std::ios::binary};
-    output_file.write(reinterpret_cast<char*>(ret.data()), ret.size());
-
     return ret;
 }
