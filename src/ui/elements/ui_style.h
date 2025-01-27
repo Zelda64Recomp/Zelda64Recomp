@@ -81,6 +81,7 @@ namespace recompui {
         void set_font_style(FontStyle style);
         void set_font_weight(uint32_t weight, Animation animation = Animation());
         void set_text_align(TextAlign text_align);
+        void set_text_transform(TextTransform text_transform);
         void set_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_row_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
         void set_column_gap(float size, Unit unit = Unit::Dp, Animation animation = Animation());
