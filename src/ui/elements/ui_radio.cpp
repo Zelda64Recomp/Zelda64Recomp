@@ -9,13 +9,16 @@ namespace recompui {
 
         set_text(name);
         set_cursor(Cursor::Pointer);
-        set_font_size(28.0f);
-        set_letter_spacing(3.08f);
-        set_line_height(28.0f);
-        set_font_weight(700);
+        set_font_size(20.0f);
+        set_letter_spacing(2.8f);
+        set_line_height(20.0f);
+        set_font_weight(400);
+        set_font_style(FontStyle::Normal);
         set_border_color(Color{ 242, 242, 242, 255 });
         set_border_bottom_width(0.0f);
         set_color(Color{ 255, 255, 255, 153 });
+        set_padding_bottom(8.0f);
+        set_text_transform(TextTransform::Uppercase);
         hover_style.set_color(Color{ 255, 255, 255, 204 });
         checked_style.set_color(Color{ 255, 255, 255, 255 });
         checked_style.set_border_bottom_width(1.0f);
@@ -69,7 +72,8 @@ namespace recompui {
     }
 
     Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart) {
-        set_gap(12.0f);
+        set_gap(24.0f);
+        set_flex_grow(0.0f);
     }
 
     Radio::~Radio() {
