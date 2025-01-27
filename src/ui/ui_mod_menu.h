@@ -44,6 +44,7 @@ public:
     virtual ~ModMenu();
 private:
     void refresh_mods();
+    void open_mods_folder();
     void mod_toggled(bool enabled);
     void mod_selected(uint32_t mod_index);
     void mod_dragged(uint32_t mod_index, EventDrag drag);
@@ -59,6 +60,7 @@ private:
     ModDetailsPanel *mod_details_panel = nullptr;
     Container *footer_container = nullptr;
     Button *refresh_button = nullptr;
+    Button *mods_folder_button = nullptr;
     int32_t active_mod_index = -1;
     std::vector<ModEntryButton *> mod_entry_buttons;
     std::vector<Element *> mod_entry_spacers;
