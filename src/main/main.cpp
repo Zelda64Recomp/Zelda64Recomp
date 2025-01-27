@@ -25,6 +25,7 @@
 #include "zelda_config.h"
 #include "zelda_sound.h"
 #include "zelda_render.h"
+#include "zelda_game.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 #include "librecomp/mods.hpp"
@@ -330,7 +331,9 @@ std::vector<recomp::GameEntry> supported_games = {
         .game_id = u8"mm.n64.us.1.0",
         .mod_game_id = "mm",
         .save_type = recomp::SaveType::Flashram,
-        .is_enabled = true,
+        .is_enabled = false,
+        .decompression_routine = zelda64::decompress_mm,
+        .has_compressed_code = true,
         .entrypoint_address = get_entrypoint_address(),
         .entrypoint = recomp_entrypoint,
     },
@@ -538,6 +541,8 @@ void disable_texture_pack(recomp::mods::ModContext& context, const recomp::mods:
 }
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     recomp::Version project_version{};
     if (!recomp::Version::from_string(version_string, project_version)) {
         ultramodern::error_handling::message_box(("Invalid version string: " + version_string).c_str());
