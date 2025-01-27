@@ -5,6 +5,10 @@
 
 #include <string>
 
+#ifdef WIN32
+#include <shellapi.h>
+#endif
+
 // TODO:
 // - Set up navigation.
 // - Add hover and active state for mod entries.
@@ -108,6 +112,19 @@ void ModMenu::refresh_mods() {
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
     create_mod_list();
+}
+
+void ModMenu::open_mods_folder() {
+    std::filesystem::path mods_directory = recomp::mods::get_mods_directory();
+#if defined(WIN32)
+    std::wstring path_wstr = mods_directory.wstring();
+    ShellExecuteW(NULL, L"open", path_wstr.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+#elif defined(__linux__)
+    std::string command = "xdg-open " + mods_directory.string() + " &";
+    std::system(command.c_str());
+#else
+    static_assert(false, "Not implemented for this platform.");
+#endif
 }
 
 void ModMenu::mod_toggled(bool enabled) {
@@ -360,6 +377,9 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         {
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
+
+            mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
+            mods_folder_button->add_pressed_callback(std::bind(&ModMenu::open_mods_folder, this));
         } // footer_container
     } // this
     
