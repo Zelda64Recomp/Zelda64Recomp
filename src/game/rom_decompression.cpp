@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <fstream>
 
 #include "zelda_game.h"
