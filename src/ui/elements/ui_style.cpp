@@ -67,6 +67,22 @@ namespace recompui {
         }
     }
 
+    static Rml::Style::TextTransform to_rml(TextTransform text_transform) {
+        switch (text_transform) {
+        case TextTransform::None:
+            return Rml::Style::TextTransform::None;
+        case TextTransform::Capitalize:
+            return Rml::Style::TextTransform::Capitalize;
+        case TextTransform::Uppercase:
+            return Rml::Style::TextTransform::Uppercase;
+        case TextTransform::Lowercase:
+            return Rml::Style::TextTransform::Lowercase;
+        default:
+            assert(false && "Unknown text transform.");
+            return Rml::Style::TextTransform::None;
+        }
+    }
+
     static Rml::Style::Drag to_rml(Drag drag) {
         switch (drag) {
         case Drag::None:
@@ -476,6 +492,10 @@ namespace recompui {
 
     void Style::set_text_align(TextAlign text_align) {
         set_property(Rml::PropertyId::TextAlign, to_rml(text_align), Animation());
+    }
+
+    void Style::set_text_transform(TextTransform text_transform) {
+        set_property(Rml::PropertyId::TextTransform, to_rml(text_transform), Animation());
     }
 
     void Style::set_gap(float size, Unit unit, Animation animation) {

@@ -22,8 +22,10 @@ void ConfigOptionElement::process_event(const Event &e) {
 }
 
 ConfigOptionElement::ConfigOptionElement(Element *parent) : Element(parent, Events(EventType::Hover)) {
-    set_gap(8.0f);
-    set_min_height(100.0f);
+    set_display(Display::Flex);
+    set_flex_direction(FlexDirection::Column);
+    set_gap(16.0f);
+    set_height(100.0f);
 
     name_label = get_current_context().create_element<Label>(this, LabelStyle::Normal);
 }
@@ -141,6 +143,10 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
 
     recompui::ContextId context = get_current_context();
     header_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
+    header_container->set_flex_grow(0.0f);
+    header_container->set_align_items(AlignItems::Center);
+    header_container->set_padding_left(12.0f);
+    header_container->set_gap(24.0f);
 
     {
         back_button = context.create_element<Button>(header_container, "Back", ButtonStyle::Secondary);
@@ -149,6 +155,7 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
     }
 
     body_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceEvenly);
+    body_container->set_padding(32.0f);
     {
         config_container = context.create_element<Container>(body_container, FlexDirection::Column, JustifyContent::Center);
         config_container->set_display(Display::Block);

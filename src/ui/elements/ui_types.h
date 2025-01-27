@@ -201,6 +201,13 @@ namespace recompui {
         Justify
     };
 
+    enum class TextTransform {
+        None,
+        Capitalize,
+        Uppercase,
+        Lowercase
+    };
+
     enum class Drag {
         None,
         Drag,

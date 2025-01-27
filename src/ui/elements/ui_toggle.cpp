@@ -63,7 +63,7 @@ namespace recompui {
     }
 
     float Toggle::floater_left_target() const {
-        return checked ? 4.0f : 78.0f;
+        return checked ? 78.0f : 4.0f;
     }
 
     void Toggle::process_event(const Event &e) {
