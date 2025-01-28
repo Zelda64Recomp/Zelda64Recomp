@@ -70,7 +70,7 @@ ModDetailsPanel::~ModDetailsPanel() {
 void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, bool mod_enabled, bool toggle_enabled) {
     cur_details = details;
 
-    title_label->set_text(cur_details.mod_id);
+    title_label->set_text(cur_details.display_name);
     version_label->set_text(cur_details.version.to_string());
 
     std::string authors_str = "<i>Authors</i>:";
@@ -81,7 +81,7 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, b
     }
 
     authors_label->set_text(authors_str);
-    description_label->set_text("Placeholder description. Some long text to make sure that wrapping is working correctly. Yet more text and so on.");
+    description_label->set_text(cur_details.description);
     enable_toggle->set_checked(mod_enabled);
     enable_toggle->set_enabled(toggle_enabled);
 }
