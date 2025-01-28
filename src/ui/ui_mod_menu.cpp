@@ -326,7 +326,9 @@ void ModMenu::create_mod_list() {
 
     mod_entry_middles.resize(mod_entry_buttons.size());
 
-    mod_selected(0);
+    if (!mod_details.empty()) {
+        mod_selected(0);
+    }
 }
 
 ModMenu::ModMenu(Element *parent) : Element(parent) {
