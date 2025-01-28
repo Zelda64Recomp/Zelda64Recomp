@@ -49,7 +49,7 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
 
         {
             name_label = context.create_element<Label>(body_container, LabelStyle::Normal);
-            description_label = context.create_element<Label>(body_container, "Short description of mod here.", LabelStyle::Small);
+            description_label = context.create_element<Label>(body_container, LabelStyle::Small);
         } // body_container
     } // this
 }
@@ -59,7 +59,8 @@ ModEntryView::~ModEntryView() {
 }
 
 void ModEntryView::set_mod_details(const recomp::mods::ModDetails &details) {
-    name_label->set_text(details.mod_id);
+    name_label->set_text(details.display_name);
+    description_label->set_text(details.short_description);
 }
 
 // ModEntryButton
