@@ -1,5 +1,6 @@
 #include "ui_slider.h"
 
+#include <cmath>
 #include <charconv>
 
 namespace recompui {
