@@ -29,6 +29,7 @@ namespace recompui {
         
         void start(RT64::RenderCommandList* list, int image_width, int image_height);
         void end(RT64::RenderCommandList* list, RT64::RenderFramebuffer* framebuffer);
+        void queue_image_from_bytes(const std::string &src, const std::vector<char> &bytes);
     };
 } // namespace recompui
 

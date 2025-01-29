@@ -23,7 +23,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         thumbnail_container = context.create_element<Container>(header_container, FlexDirection::Column, JustifyContent::SpaceEvenly);
         thumbnail_container->set_flex(0.0f, 0.0f);
         {
-            thumbnail_image = context.create_element<Image>(thumbnail_container);
+            thumbnail_image = context.create_element<Image>(thumbnail_container, "");
             thumbnail_image->set_width(100.0f);
             thumbnail_image->set_height(100.0f);
             thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
@@ -67,8 +67,10 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
-void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, bool mod_enabled, bool toggle_enabled) {
+void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool mod_enabled, bool toggle_enabled) {
     cur_details = details;
+
+    thumbnail_image->set_src(thumbnail);
 
     title_label->set_text(cur_details.display_name);
     version_label->set_text(cur_details.version.to_string());

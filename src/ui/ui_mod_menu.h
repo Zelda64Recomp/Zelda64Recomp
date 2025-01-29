@@ -15,6 +15,7 @@ public:
     ModEntryView(Element *parent);
     virtual ~ModEntryView();
     void set_mod_details(const recomp::mods::ModDetails &details);
+    void set_mod_thumbnail(const std::string &thumbnail);
 private:
     Image *thumbnail_image = nullptr;
     Container *body_container = nullptr;
@@ -29,6 +30,7 @@ public:
     void set_mod_selected_callback(std::function<void(uint32_t)> callback);
     void set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback);
     void set_mod_details(const recomp::mods::ModDetails &details);
+    void set_mod_thumbnail(const std::string &thumbnail);
 protected:
     virtual void process_event(const Event &e);
 private:
@@ -71,6 +73,7 @@ private:
     uint32_t mod_drag_target_index = 0;
     float mod_drag_spacer_height = 0.0f;
     std::vector<recomp::mods::ModDetails> mod_details{};
+    std::unordered_set<std::string> loaded_thumbnails;
     std::string game_mod_id;
 
     ConfigSubMenu *config_sub_menu;

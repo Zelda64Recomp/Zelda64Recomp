@@ -252,6 +252,10 @@ void Element::set_text(std::string_view text) {
     base->SetInnerRML(std::string(text));
 }
 
+void Element::set_src(std::string_view src) {
+    base->SetAttribute("src", std::string(src));
+}
+
 void Element::set_style_enabled(std::string_view style_name, bool enable) {
     if (enable && style_active_set.find(style_name) == style_active_set.end()) {
         // Style was disabled and will be enabled.

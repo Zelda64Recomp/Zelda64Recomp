@@ -15,6 +15,10 @@
 
 namespace recompui {
 
+static std::string generate_thumbnail_src_for_mod(const std::string &mod_id) {
+    return "?/mods/" + mod_id + "/thumb";
+}
+
 // ModEntryView
 
 ModEntryView::ModEntryView(Element *parent) : Element(parent) {
@@ -34,12 +38,13 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     set_cursor(Cursor::Pointer);
 
     {
-        thumbnail_image = context.create_element<Image>(this);
+        thumbnail_image = context.create_element<Image>(this, "");
         thumbnail_image->set_width(100.0f);
         thumbnail_image->set_height(100.0f);
         thumbnail_image->set_min_width(100.0f);
         thumbnail_image->set_min_height(100.0f);
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
+
 
         body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
         body_container->set_width_auto();
@@ -61,6 +66,10 @@ ModEntryView::~ModEntryView() {
 void ModEntryView::set_mod_details(const recomp::mods::ModDetails &details) {
     name_label->set_text(details.display_name);
     description_label->set_text(details.short_description);
+}
+
+void ModEntryView::set_mod_thumbnail(const std::string &thumbnail) {
+    thumbnail_image->set_src(thumbnail);
 }
 
 // ModEntryButton
@@ -90,6 +99,10 @@ void ModEntryButton::set_mod_details(const recomp::mods::ModDetails &details) {
     view->set_mod_details(details);
 }
 
+void ModEntryButton::set_mod_thumbnail(const std::string &thumbnail) {
+    view->set_mod_thumbnail(thumbnail);
+}
+
 void ModEntryButton::process_event(const Event& e) {
     switch (e.type) {
     case EventType::Click:
@@ -110,6 +123,10 @@ void ModEntryButton::process_event(const Event& e) {
 // ModMenu
 
 void ModMenu::refresh_mods() {
+    for (const std::string &thumbnail : loaded_thumbnails) {
+        recompui::release_image(thumbnail);
+    }
+
     recomp::mods::scan_mods();
     mod_details = recomp::mods::get_mod_details(game_mod_id);
     create_mod_list();
@@ -137,10 +154,11 @@ void ModMenu::mod_toggled(bool enabled) {
 void ModMenu::mod_selected(uint32_t mod_index) {
     active_mod_index = mod_index;
     if (active_mod_index >= 0) {
+        std::string thumbnail_src = generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id);
         bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
         bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[mod_index].mod_id);
         bool toggle_enabled = !auto_enabled && (mod_details[mod_index].runtime_toggleable || !ultramodern::is_game_started());
-        mod_details_panel->set_mod_details(mod_details[mod_index], mod_enabled, toggle_enabled);
+        mod_details_panel->set_mod_details(mod_details[mod_index], thumbnail_src, mod_enabled, toggle_enabled);
     }
 }
 
@@ -161,6 +179,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         mod_entry_buttons[mod_index]->set_display(Display::None);
         mod_entry_floating_view->set_display(Display::Flex);
         mod_entry_floating_view->set_mod_details(mod_details[mod_index]);
+        mod_entry_floating_view->set_mod_thumbnail(generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id));
         mod_entry_floating_view->set_left(left, Unit::Px);
         mod_entry_floating_view->set_top(top, Unit::Px);
         mod_entry_floating_view->set_width(width, Unit::Px);
@@ -218,7 +237,9 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         mod_details = recomp::mods::get_mod_details(game_mod_id);
         for (size_t i = 0; i < mod_entry_buttons.size(); i++) {
             mod_entry_buttons[i]->set_mod_details(mod_details[i]);
+            mod_entry_buttons[i]->set_mod_thumbnail(generate_thumbnail_src_for_mod(mod_details[i].mod_id));
         }
+
         break;
     }
     default:
@@ -311,6 +332,13 @@ void ModMenu::create_mod_list() {
 
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
+        const std::vector<char> &thumbnail = recomp::mods::get_mod_thumbnail(mod_details[mod_index].mod_id);
+        std::string thumbnail_name = generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id);
+        if (!thumbnail.empty()) {
+            recompui::queue_image_from_bytes(thumbnail_name, thumbnail);
+            loaded_thumbnails.emplace(thumbnail_name);
+        }
+
         Element *spacer = context.create_element<Element>(list_scroll_container);
         mod_entry_spacers.emplace_back(spacer);
 
@@ -318,6 +346,7 @@ void ModMenu::create_mod_list() {
         mod_entry->set_mod_selected_callback(std::bind(&ModMenu::mod_selected, this, std::placeholders::_1));
         mod_entry->set_mod_drag_callback(std::bind(&ModMenu::mod_dragged, this, std::placeholders::_1, std::placeholders::_2));
         mod_entry->set_mod_details(mod_details[mod_index]);
+        mod_entry->set_mod_thumbnail(thumbnail_name);
         mod_entry_buttons.emplace_back(mod_entry);
     }
 
