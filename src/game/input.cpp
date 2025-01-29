@@ -157,7 +157,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
         }
 
         recompui::ContextId config_context_id = recompui::get_config_context_id();
-        if (!recompui::is_context_open(config_context_id)) {
+        if (!recompui::is_context_shown(config_context_id)) {
             recompui::show_context(config_context_id, "");
         }
 
@@ -713,7 +713,7 @@ void recomp::set_right_analog_suppressed(bool suppressed) {
 
 bool recomp::game_input_disabled() {
     // Disable input if any menu that blocks input is open.
-    return recompui::is_any_context_open();
+    return recompui::is_context_taking_input();
 }
 
 bool recomp::all_input_disabled() {

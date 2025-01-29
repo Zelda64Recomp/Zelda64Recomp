@@ -86,6 +86,9 @@ namespace recompui {
             floater->set_style_enabled(disabled_state, !enable_active);
             break;
         }
+        case EventType::Update: {
+            break;
+        }
         default:
             assert(false && "Unknown event type.");
             break;

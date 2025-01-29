@@ -78,6 +78,8 @@ namespace recompui {
         case EventType::Enable:
             set_style_enabled(disabled_state, !std::get<EventEnable>(e.variant).active);
             break;
+        case EventType::Update:
+            break;
         default:
             assert(false && "Unknown event type.");
             break;

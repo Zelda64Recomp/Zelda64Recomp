@@ -33,6 +33,7 @@ namespace recompui {
         Rml::ElementDocument* document;
         Element root_element;
         std::vector<Element*> loose_elements;
+        std::unordered_set<ResourceId> to_update;
         Context(Rml::ElementDocument* document) : document(document), root_element(document) {}
     };
 } // namespace recompui
@@ -58,12 +59,15 @@ enum class ContextErrorType {
     GetContextWithoutOpen,
     AddResourceWithoutOpen,
     AddResourceToWrongContext,
+    UpdateElementWithoutContext,
+    UpdateElementInWrongContext,
     GetResourceWithoutOpen,
     GetResourceFailed,
     DestroyResourceWithoutOpen,
     DestroyResourceInWrongContext,
     DestroyResourceNotFound,
     GetDocumentInvalidContext,
+    InternalError,
 };
 
 enum class SlotTag : uint8_t {
@@ -101,6 +105,12 @@ void context_error(recompui::ContextId id, ContextErrorType type) {
         case ContextErrorType::AddResourceToWrongContext:
             error_message = "Attempted to create a UI resource in a different UI context than the one that's open";
             break;
+        case ContextErrorType::UpdateElementWithoutContext:
+            error_message = "Attempted to update a UI element with no open UI context";
+            break;
+        case ContextErrorType::UpdateElementInWrongContext:
+            error_message = "Attempted to update a UI element in a different UI context than the one that's open";
+            break;
         case ContextErrorType::GetResourceWithoutOpen:
             error_message = "Attempted to get a UI resource with no open UI context";
             break;
@@ -118,6 +128,9 @@ void context_error(recompui::ContextId id, ContextErrorType type) {
             break;
         case ContextErrorType::GetDocumentInvalidContext:
             error_message = "Attempted to get the document of an invalid UI context";
+            break;
+        case ContextErrorType::InternalError:
+            error_message = "Internal error in UI context";
             break;
         default:
             error_message = "Unknown UI context error";
@@ -317,6 +330,47 @@ void recompui::ContextId::close() {
     }
 }
 
+void recompui::ContextId::process_updates() {
+    // Ensure a context is currently opened by this thread.
+    if (opened_context_id == ContextId::null()) {
+        context_error(*this, ContextErrorType::InternalError);
+    }
+
+    // Check that the context that was specified is the same one that's currently open.
+    if (*this != opened_context_id) {
+        context_error(*this, ContextErrorType::InternalError);
+    }
+
+    // Move the current update set into a local variable. This clears the update set
+    // and allows it to be used to queue updates from any element callbacks.
+    std::unordered_set<ResourceId> to_update = std::move(opened_context->to_update);
+
+    Event update_event = Event::update_event();
+
+    for (auto cur_resource_id : to_update) {
+        resource_slotmap::key cur_key{ cur_resource_id.slot_id };
+
+        // Ignore any resources that aren't elements.
+        if (cur_key.get_tag() != static_cast<uint8_t>(SlotTag::Element)) {
+            // Assert to catch errors of queueing other resource types for update.
+            // This isn't an actual error, so there's no issue with continuing in release builds.
+            assert(false);
+            continue;
+        }
+
+        // Get the resource being updaten from the context.
+        std::unique_ptr<Style>* cur_resource = opened_context->resources.get(cur_key);
+
+        // Make sure the resource exists before dispatching the event. It may have been deleted
+        // after being queued for a update, so just continue to the next element if it doesn't exist.
+        if (cur_resource == nullptr) {
+            continue;
+        }
+
+        static_cast<Element*>(cur_resource->get())->process_event(update_event);
+    }
+}
+
 recompui::Style* recompui::ContextId::add_resource_impl(std::unique_ptr<Style>&& resource) {
     // Ensure a context is currently opened by this thread.
     if (opened_context_id == ContextId::null()) {
@@ -334,6 +388,8 @@ recompui::Style* recompui::ContextId::add_resource_impl(std::unique_ptr<Style>&&
 
     if (is_element) {
         key.set_tag(static_cast<uint8_t>(SlotTag::Element));
+        // Send one update to the element.
+        opened_context->to_update.emplace(ResourceId{ key.raw });
     }
     else {
         key.set_tag(static_cast<uint8_t>(SlotTag::Style));
@@ -355,6 +411,26 @@ void recompui::ContextId::add_loose_element(Element* element) {
     }
 
     opened_context->loose_elements.emplace_back(element);
+}
+
+void recompui::ContextId::queue_element_update(ResourceId element) {
+    // Ensure a context is currently opened by this thread.
+    if (opened_context_id == ContextId::null()) {
+        context_error(*this, ContextErrorType::UpdateElementWithoutContext);
+    }
+
+    // Check that the context that was specified is the same one that's currently open.
+    if (*this != opened_context_id) {
+        context_error(*this, ContextErrorType::UpdateElementInWrongContext);
+    }
+
+    // Check that the element that was specified is in the open context.
+    auto* elementPtr = opened_context->resources.get(resource_slotmap::key{ element.slot_id });
+    if (elementPtr == nullptr) {
+        context_error(*this, ContextErrorType::UpdateElementInWrongContext);
+    }
+
+    opened_context->to_update.emplace(element);
 }
 
 recompui::Style* recompui::ContextId::create_style() {

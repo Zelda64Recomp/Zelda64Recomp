@@ -30,6 +30,7 @@ namespace recompui {
         }
 
         void add_loose_element(Element* element);
+        void queue_element_update(ResourceId element);
 
         Style* create_style();
 
@@ -42,6 +43,7 @@ namespace recompui {
 
         void open();
         void close();
+        void process_updates();
 
         static constexpr ContextId null() { return ContextId{ .slot_id = uint32_t(-1) }; }
 
