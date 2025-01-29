@@ -39,6 +39,8 @@ endif()
 
 set(RT64_STATIC TRUE)
 set(RT64_SDL_WINDOW_VULKAN TRUE)
+add_compile_definitions(HLSL_CPU)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 # set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
