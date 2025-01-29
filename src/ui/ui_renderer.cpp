@@ -8,10 +8,9 @@
 
 #include <concurrentqueue.h>
 
-#include "stb/stb_image.h"
-
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
+#include "rt64_texture_cache.h"
 
 #include "RmlUi/Core/RenderInterfaceCompatibility.h"
 
@@ -394,25 +393,29 @@ public:
             return true;
         }
         
-        constexpr uint32_t PNG_MAGIC = 0x474E5089;
-        uint32_t magicNumber = *reinterpret_cast<const uint32_t *>(it->second.data());
-        if (magicNumber == PNG_MAGIC) {
-            int width, height;
-            stbi_uc *stbi_data = stbi_load_from_memory((const stbi_uc *)(it->second.data()), it->second.size(), &width, &height, nullptr, 4);
-            if (stbi_data == nullptr) {
-                return false;
-            }
+        // TODO: This data copy can be avoided when RT64::TextureCache::loadTextureFromBytes's function is updated to only take a pointer and size as the input.
+        std::vector<uint8_t> data_copy(it->second.data(), it->second.data() + it->second.size());
+        std::unique_ptr<RT64::RenderBuffer> texture_buffer;
+        copy_command_list_->begin();
+        RT64::Texture *texture = RT64::TextureCache::loadTextureFromBytes(device_, copy_command_list_.get(), data_copy, texture_buffer);
+        copy_command_list_->end();
+        copy_command_queue_->executeCommandLists(copy_command_list_.get(), copy_command_fence_.get());
+        copy_command_queue_->waitForCommandFence(copy_command_fence_.get());
 
-            texture_dimensions.x = width;
-            texture_dimensions.y = height;
-
-            bool texture_generated = GenerateTexture(texture_handle, stbi_data, texture_dimensions);
-            stbi_image_free(stbi_data);
-            return texture_generated;
-        }
-        else {
+        if (texture == nullptr) {
             return false;
         }
+
+        texture_handle = texture_count_++;
+        texture_dimensions.x = texture->width;
+        texture_dimensions.y = texture->height;
+
+        std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(device_);
+        set->setTexture(gTexture_descriptor_index, texture->texture.get(), RT64::RenderTextureLayout::SHADER_READ);
+        textures_.emplace(texture_handle, TextureHandle{ std::move(texture->texture), std::move(set), false });
+        delete texture;
+
+        return true;
     }
 
     bool GenerateTexture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions) override {
