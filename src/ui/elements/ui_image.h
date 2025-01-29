@@ -6,7 +6,7 @@ namespace recompui {
 
     class Image : public Element {
     public:
-        Image(Element *parent);
+        Image(Element *parent, std::string_view src);
     };
 
 } // namespace recompui
