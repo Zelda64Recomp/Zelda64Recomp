@@ -16,11 +16,15 @@ public:
     virtual ~ModEntryView();
     void set_mod_details(const recomp::mods::ModDetails &details);
     void set_mod_thumbnail(const std::string &thumbnail);
+    void set_selected(bool selected);
 private:
     Image *thumbnail_image = nullptr;
     Container *body_container = nullptr;
     Label *name_label = nullptr;
     Label *description_label = nullptr;
+    Style checked_style;
+    Style hover_style;
+    Style checked_hover_style;
 };
 
 class ModEntryButton : public Element {
@@ -31,6 +35,7 @@ public:
     void set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback);
     void set_mod_details(const recomp::mods::ModDetails &details);
     void set_mod_thumbnail(const std::string &thumbnail);
+    void set_selected(bool selected);
 protected:
     virtual void process_event(const Event &e);
 private:

@@ -60,14 +60,13 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
         configure_button = context.create_element<Button>(buttons_container, "Configure", recompui::ButtonStyle::Secondary);
         configure_button->add_pressed_callback(std::bind(&ModDetailsPanel::configure_button_pressed, this));
-        erase_button = context.create_element<Button>(buttons_container, "Erase", recompui::ButtonStyle::Secondary);
     }
 }
 
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
-void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool mod_enabled, bool toggle_enabled) {
+void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool mod_enabled, bool toggle_enabled, bool configure_enabled) {
     cur_details = details;
 
     thumbnail_image->set_src(thumbnail);
@@ -86,6 +85,7 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, c
     description_label->set_text(cur_details.description);
     enable_toggle->set_checked(mod_enabled);
     enable_toggle->set_enabled(toggle_enabled);
+    configure_button->set_enabled(configure_enabled);
 }
 
 void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callback) {

@@ -109,7 +109,7 @@ class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
     Rml::Matrix4f transform_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f mvp_ = Rml::Matrix4f::Identity();
     std::unordered_map<Rml::TextureHandle, TextureHandle> textures_{};
-    Rml::TextureHandle texture_count_ = 1; // Start at 1 to reserve texture 0 as the 1x1 pixel white texture
+    Rml::TextureHandle texture_count_ = 2; // Start at 1 to reserve texture 0 as the 1x1 pixel white texture
     DynamicBuffer upload_buffer_;
     DynamicBuffer vertex_buffer_;
     DynamicBuffer index_buffer_;
@@ -321,13 +321,16 @@ public:
         // Otherwise allocate the padding and required bytes and offset the allocated position by the padding size.
         return allocate_dynamic_data(dynamic_buffer, padding_bytes + num_bytes) + padding_bytes;
     }
-
+    
     void RenderGeometry(Rml::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rml::TextureHandle texture, const Rml::Vector2f& translation) override {
         if (!textures_.contains(texture)) {
             if (texture == 0) {
-                // Create a 1x1 pixel white texture as the first handle
                 Rml::byte white_pixel[] = { 255, 255, 255, 255 };
-                create_texture(0, white_pixel, Rml::Vector2i{ 1,1 });
+                create_texture(0, white_pixel, Rml::Vector2i{ 1, 1 });
+            }
+            else if (texture == 1) {
+                Rml::byte transparent_pixel[] = { 0, 0, 0, 0 };
+                create_texture(1, transparent_pixel, Rml::Vector2i{ 1, 1 });
             }
             else {
                 assert(false && "Rendered without texture!");
@@ -394,7 +397,11 @@ public:
 
         auto it = image_from_bytes_map.find(source);
         if (it == image_from_bytes_map.end()) {
-            return false;
+            // Return a transparent texture if the image can't be found.
+            texture_handle = 1;
+            texture_dimensions.x = 1;
+            texture_dimensions.y = 1;
+            return true;
         }
         
         constexpr uint32_t PNG_MAGIC = 0x474E5089;
@@ -508,7 +515,10 @@ public:
     }
 
 	void ReleaseTexture(Rml::TextureHandle texture) override {
-        textures_.erase(texture);
+        if (texture > 1) {
+            // Textures #0 and #1 are reserved and should never be released.
+            textures_.erase(texture);
+        }
     }
 
     void SetTransform(const Rml::Matrix4f* transform) override {
