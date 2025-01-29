@@ -51,6 +51,7 @@ public:
     void set_enabled(bool enabled);
     bool is_enabled() const;
     void set_text(std::string_view text);
+    void set_src(std::string_view src);
     void set_style_enabled(std::string_view style_name, bool enabled);
     bool is_element() override { return true; }
     float get_absolute_left();

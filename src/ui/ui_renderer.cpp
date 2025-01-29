@@ -6,6 +6,10 @@
 #include <fstream>
 #include <filesystem>
 
+#include <concurrentqueue.h>
+
+#include "stb/stb_image.h"
+
 #include "rt64_render_hooks.h"
 #include "rt64_render_interface_builders.h"
 
@@ -51,32 +55,15 @@ struct RmlPushConstants {
 struct TextureHandle {
     std::unique_ptr<RT64::RenderTexture> texture;
     std::unique_ptr<RT64::RenderDescriptorSet> set;
+    bool transitioned = false;
 };
-
-static std::vector<char> read_file(const std::filesystem::path& filepath) {
-    std::vector<char> ret{};
-    std::ifstream input_file{ filepath, std::ios::binary };
-
-    if (!input_file) {
-        return ret;
-    }
-
-    input_file.seekg(0, std::ios::end);
-    std::streampos filesize = input_file.tellg();
-    input_file.seekg(0, std::ios::beg);
-
-    ret.resize(filesize);
-
-    input_file.read(ret.data(), filesize);
-
-    return ret;
-}
-
 
 template <typename T>
 T from_bytes_le(const char* input) {
     return *reinterpret_cast<const T*>(input);
 }
+
+typedef std::pair<std::string, std::vector<char>> ImageFromBytes;
 
 namespace recompui {
 class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
@@ -130,12 +117,19 @@ class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
     std::unique_ptr<RT64::RenderFramebuffer> screen_framebuffer_{};
     std::unique_ptr<RT64::RenderDescriptorSet> screen_descriptor_set_{};
     std::unique_ptr<RT64::RenderBuffer> screen_vertex_buffer_{};
+    std::unique_ptr<RT64::RenderCommandQueue> copy_command_queue_{};
+    std::unique_ptr<RT64::RenderCommandList> copy_command_list_{};
+    std::unique_ptr<RT64::RenderBuffer> copy_buffer_{};
+    std::unique_ptr<RT64::RenderCommandFence> copy_command_fence_;
+    uint64_t copy_buffer_size_ = 0;
     uint64_t screen_vertex_buffer_size_ = 0;
     uint32_t gTexture_descriptor_index;
     RT64::RenderInputSlot vertex_slot_{ 0, sizeof(Rml::Vertex) };
     RT64::RenderCommandList* list_ = nullptr;
     bool scissor_enabled_ = false;
     std::vector<std::unique_ptr<RT64::RenderBuffer>> stale_buffers_{};
+    moodycamel::ConcurrentQueue<ImageFromBytes> image_from_bytes_queue;
+    std::unordered_map<std::string, std::vector<char>> image_from_bytes_map;
 public:
     RmlRenderInterface_RT64_impl(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         interface_ = interface;
@@ -241,6 +235,10 @@ public:
             vertices[2] = Rml::Vertex{ Rml::Vector2f(3.0f, 1.0f), white, Rml::Vector2f(2.0f, 0.0f) };
             screen_vertex_buffer_->unmap();
         }
+
+        copy_command_queue_ = device->createCommandQueue(RT64::RenderCommandListType::COPY);
+        copy_command_list_ = device->createCommandList(RT64::RenderCommandListType::COPY);
+        copy_command_fence_ = device->createCommandFence();
     }
 
     void reset_dynamic_buffer(DynamicBuffer &dynamic_buffer) {
@@ -350,7 +348,15 @@ public:
         list_->setIndexBuffer(&index_view);
         RT64::RenderVertexBufferView vertex_view{vertex_buffer_.buffer_->at(vertex_buffer_offset), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
-        list_->setGraphicsDescriptorSet(textures_.at(texture).set.get(), 1);
+
+        TextureHandle &texture_handle = textures_.at(texture);
+        if (!texture_handle.transitioned) {
+            // Prepare the texture for being read from a pixel shader.
+            list_->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(texture_handle.texture.get(), RT64::RenderTextureLayout::SHADER_READ));
+            texture_handle.transitioned = true;
+        }
+
+        list_->setGraphicsDescriptorSet(texture_handle.set.get(), 1);
 
         RmlPushConstants constants{
             .transform = mvp_,
@@ -374,72 +380,32 @@ public:
     }
 
     bool LoadTexture(Rml::TextureHandle& texture_handle, Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
-        std::filesystem::path image_path{ source.c_str() };
+        flush_image_from_bytes_queue();
 
-        if (image_path.extension() == ".tga") {
-            std::vector<char> file_data = read_file(image_path);
-
-            if (file_data.empty()) {
-                printf("  File not found or empty\n");
-                return false;
-            }
-
-            // Make sure ID length is zero
-            if (file_data[0] != 0) {
-                printf("  Nonzero ID length not supported\n");
-                return false;
-            }
-
-            // Make sure no color map is used
-            if (file_data[1] != 0) {
-                printf("  Color maps not supported\n");
-                return false;
-            }
-
-            // Make sure the image is uncompressed
-            if (file_data[2] != 2) {
-                printf("  Only uncompressed tga files supported\n");
-                return false;
-            }
-
-            uint16_t origin_x = from_bytes_le<uint16_t>(file_data.data() + 8);
-            uint16_t origin_y = from_bytes_le<uint16_t>(file_data.data() + 10);
-            uint16_t size_x = from_bytes_le<uint16_t>(file_data.data() + 12);
-            uint16_t size_y = from_bytes_le<uint16_t>(file_data.data() + 14);
-
-            // Nonzero origin not supported
-            if (origin_x != 0 || origin_y != 0) {
-                printf("  Nonzero origin not supported\n");
-                return false;
-            }
-
-            uint8_t pixel_depth = file_data[16];
-
-            if (pixel_depth != 32) {
-                printf("  Only 32bpp images supported\n");
-                return false;
-            }
-
-            uint8_t image_descriptor = file_data[17];
-
-            if ((image_descriptor & 0b1111) != 8) {
-                printf("  Only 8bpp alpha supported\n");
-            }
-
-            if (image_descriptor & 0b110000) {
-                printf("  Only bottom-to-top, left-to-right pixel order supported\n");
-            }
-
-            texture_dimensions.x = size_x;
-            texture_dimensions.y = size_y;
-
-            texture_handle = texture_count_++;
-            create_texture(texture_handle, reinterpret_cast<const Rml::byte*>(file_data.data() + 18), texture_dimensions, true, true);
-
-            return true;
+        auto it = image_from_bytes_map.find(source);
+        if (it == image_from_bytes_map.end()) {
+            return false;
         }
+        
+        constexpr uint32_t PNG_MAGIC = 0x474E5089;
+        uint32_t magicNumber = *reinterpret_cast<const uint32_t *>(it->second.data());
+        if (magicNumber == PNG_MAGIC) {
+            int width, height;
+            stbi_uc *stbi_data = stbi_load_from_memory((const stbi_uc *)(it->second.data()), it->second.size(), &width, &height, nullptr, 4);
+            if (stbi_data == nullptr) {
+                return false;
+            }
 
-        return false;
+            texture_dimensions.x = width;
+            texture_dimensions.y = height;
+
+            bool texture_generated = GenerateTexture(texture_handle, stbi_data, texture_dimensions);
+            stbi_image_free(stbi_data);
+            return texture_generated;
+        }
+        else {
+            return false;
+        }
     }
 
     bool GenerateTexture(Rml::TextureHandle& texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions) override {
@@ -469,11 +435,13 @@ public:
             uint32_t uploaded_size_bytes = row_byte_width * source_dimensions.y;
 
             // Allocate room in the upload buffer for the uploaded data.
-            uint32_t upload_buffer_offset = allocate_dynamic_data_aligned(upload_buffer_, uploaded_size_bytes, 512);
+            if (uploaded_size_bytes > copy_buffer_size_) {
+                copy_buffer_size_ = (uploaded_size_bytes * 3) / 2;
+                copy_buffer_ = device_->createBuffer(RT64::RenderBufferDesc::UploadBuffer(copy_buffer_size_));
+            }
 
             // Copy the source data into the upload buffer.
-            uint8_t* dst_data = upload_buffer_.mapped_data_ + upload_buffer_offset;
-                
+            uint8_t* dst_data = (uint8_t *)(copy_buffer_->map());
             if (row_byte_padding == 0) {
                 // Copy row-by-row if the image is flipped.
                 if (flip_y) {
@@ -498,23 +466,30 @@ public:
                 }
             }
 
+            copy_buffer_->unmap();
+
+            // Reset the command list.
+            copy_command_list_->begin();
+
             // Prepare the texture to be a destination for copying.
-            list_->barriers(RT64::RenderBarrierStage::COPY, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::COPY_DEST));
+            copy_command_list_->barriers(RT64::RenderBarrierStage::COPY, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::COPY_DEST));
             
             // Copy the upload buffer into the texture.
-            list_->copyTextureRegion(
+            copy_command_list_->copyTextureRegion(
                 RT64::RenderTextureCopyLocation::Subresource(texture.get()),
-                RT64::RenderTextureCopyLocation::PlacedFootprint(upload_buffer_.buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width, upload_buffer_offset));
+                RT64::RenderTextureCopyLocation::PlacedFootprint(copy_buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width));
             
-            // Prepare the texture for being read from a pixel shader.
-            list_->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::SHADER_READ));
+            // End the command list, execute it and wait.
+            copy_command_list_->end();
+            copy_command_queue_->executeCommandLists(copy_command_list_.get(), copy_command_fence_.get());
+            copy_command_queue_->waitForCommandFence(copy_command_fence_.get());
 
             // Create a descriptor set with this texture in it.
             std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(device_);
 
             set->setTexture(gTexture_descriptor_index, texture.get(), RT64::RenderTextureLayout::SHADER_READ);
 
-            textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(set) });
+            textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(set), false });
 
             return true;
         }
@@ -615,6 +590,17 @@ public:
 
         list_ = nullptr;
     }
+
+    void queue_image_from_bytes(const std::string &src, const std::vector<char> &bytes) {
+        image_from_bytes_queue.enqueue(ImageFromBytes(src, bytes));
+    }
+
+    void flush_image_from_bytes_queue() {
+        ImageFromBytes image_from_bytes;
+        while (image_from_bytes_queue.try_dequeue(image_from_bytes)) {
+            image_from_bytes_map.emplace(image_from_bytes.first, std::move(image_from_bytes.second));
+        }
+    }
 };
 } // namespace recompui
 
@@ -646,4 +632,10 @@ void recompui::RmlRenderInterface_RT64::end(RT64::RenderCommandList* list, RT64:
     assert(static_cast<bool>(impl));
 
     impl->end(list, framebuffer);
+}
+
+void recompui::RmlRenderInterface_RT64::queue_image_from_bytes(const std::string &src, const std::vector<char> &bytes) {
+    assert(static_cast<bool>(impl));
+
+    impl->queue_image_from_bytes(src, bytes);
 }
