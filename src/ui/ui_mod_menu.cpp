@@ -1,4 +1,4 @@
-#include "ui_mod_menu.h"
+﻿#include "ui_mod_menu.h"
 #include "recomp_ui.h"
 
 #include "librecomp/mods.hpp"
@@ -33,9 +33,13 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     set_padding_bottom(4.0f);
     set_padding_left(8.0f);
     set_border_width(1.1f);
-    set_border_color(Color{ 242, 242, 242, 204 });
+    set_border_color(Color{ 242, 242, 242, 12 });
     set_background_color(Color{ 242, 242, 242, 12 });
     set_cursor(Cursor::Pointer);
+
+    checked_style.set_border_color(Color{ 242, 242, 242, 160 });
+    hover_style.set_border_color(Color{ 242, 242, 242, 64 });
+    checked_hover_style.set_border_color(Color{ 242, 242, 242, 204 });
 
     {
         thumbnail_image = context.create_element<Image>(this, "");
@@ -57,6 +61,10 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
             description_label = context.create_element<Label>(body_container, LabelStyle::Small);
         } // body_container
     } // this
+
+    add_style(&checked_style, checked_state);
+    add_style(&hover_style, hover_state);
+    add_style(&checked_hover_style, { checked_state, hover_state });
 }
 
 ModEntryView::~ModEntryView() {
@@ -70,6 +78,10 @@ void ModEntryView::set_mod_details(const recomp::mods::ModDetails &details) {
 
 void ModEntryView::set_mod_thumbnail(const std::string &thumbnail) {
     thumbnail_image->set_src(thumbnail);
+}
+
+void ModEntryView::set_selected(bool selected) {
+    set_style_enabled(checked_state, selected);
 }
 
 // ModEntryButton
@@ -103,12 +115,17 @@ void ModEntryButton::set_mod_thumbnail(const std::string &thumbnail) {
     view->set_mod_thumbnail(thumbnail);
 }
 
+void ModEntryButton::set_selected(bool selected) {
+    view->set_selected(selected);
+}
+
 void ModEntryButton::process_event(const Event& e) {
     switch (e.type) {
     case EventType::Click:
         selected_callback(mod_index);
         break;
     case EventType::Hover:
+        view->set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
         break;
     case EventType::Focus:
         break;
@@ -152,13 +169,21 @@ void ModMenu::mod_toggled(bool enabled) {
 }
 
 void ModMenu::mod_selected(uint32_t mod_index) {
+    if (active_mod_index >= 0) {
+        mod_entry_buttons[active_mod_index]->set_selected(false);
+    }
+
     active_mod_index = mod_index;
+
     if (active_mod_index >= 0) {
         std::string thumbnail_src = generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id);
+        const recomp::mods::ConfigSchema &config_schema = recomp::mods::get_mod_config_schema(mod_details[active_mod_index].mod_id);
         bool mod_enabled = recomp::mods::is_mod_enabled(mod_details[mod_index].mod_id);
         bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[mod_index].mod_id);
         bool toggle_enabled = !auto_enabled && (mod_details[mod_index].runtime_toggleable || !ultramodern::is_game_started());
-        mod_details_panel->set_mod_details(mod_details[mod_index], thumbnail_src, mod_enabled, toggle_enabled);
+        bool configure_enabled = !config_schema.options.empty();
+        mod_details_panel->set_mod_details(mod_details[mod_index], thumbnail_src, mod_enabled, toggle_enabled, configure_enabled);
+        mod_entry_buttons[active_mod_index]->set_selected(true);
     }
 }
 
@@ -224,6 +249,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
     case DragPhase::End: {
         // Dragging has ended, hide the floating view.
         mod_entry_buttons[mod_index]->set_display(Display::Block);
+        mod_entry_buttons[mod_index]->set_selected(false);
         mod_entry_spacers[mod_drag_target_index]->set_height(0.0f, Unit::Px);
         mod_entry_floating_view->set_display(Display::None);
 
@@ -239,6 +265,9 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
             mod_entry_buttons[i]->set_mod_details(mod_details[i]);
             mod_entry_buttons[i]->set_mod_thumbnail(generate_thumbnail_src_for_mod(mod_details[i].mod_id));
         }
+
+        mod_entry_buttons[mod_drag_target_index]->set_selected(true);
+        active_mod_index = mod_drag_target_index;
 
         break;
     }
@@ -324,7 +353,7 @@ void ModMenu::mod_number_option_changed(const std::string &id, double value) {
 
 void ModMenu::create_mod_list() {
     ContextId context = get_current_context();
-
+    
     // Clear the contents of the list scroll.
     list_scroll_container->clear_children();
     mod_entry_buttons.clear();
@@ -410,6 +439,8 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
             refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
 
+            context.create_element<Label>(footer_container, "⚠ UNDER CONSTRUCTION ⚠", LabelStyle::Small);
+
             mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
             mods_folder_button->add_pressed_callback(std::bind(&ModMenu::open_mods_folder, this));
         } // footer_container
@@ -418,6 +449,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     mod_entry_floating_view = context.create_element<ModEntryView>(this);
     mod_entry_floating_view->set_display(Display::None);
     mod_entry_floating_view->set_position(Position::Absolute);
+    mod_entry_floating_view->set_selected(true);
 
     refresh_mods();
 

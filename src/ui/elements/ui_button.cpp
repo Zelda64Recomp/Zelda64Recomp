@@ -21,6 +21,8 @@ namespace recompui {
         set_color(Color{ 204, 204, 204, 255 });
         set_tab_index(TabIndex::Auto);
         hover_style.set_color(Color{ 242, 242, 242, 255 });
+        disabled_style.set_color(Color{ 204, 204, 204, 128 });
+        hover_disabled_style.set_color(Color{ 242, 242, 242, 128 });
 
         const uint8_t border_opacity = 204;
         const uint8_t background_opacity = 13;
@@ -32,6 +34,10 @@ namespace recompui {
             set_background_color({ 185, 125, 242, background_opacity });
             hover_style.set_border_color({ 185, 125, 242, border_hover_opacity });
             hover_style.set_background_color({ 185, 125, 242, background_hover_opacity });
+            disabled_style.set_border_color({ 185, 125, 242, border_opacity / 4 });
+            disabled_style.set_background_color({ 185, 125, 242, background_opacity / 4 });
+            hover_disabled_style.set_border_color({ 185, 125, 242, border_hover_opacity / 4 });
+            hover_disabled_style.set_background_color({ 185, 125, 242, background_hover_opacity / 4 });
             break;
         }
         case ButtonStyle::Secondary: {
@@ -39,17 +45,16 @@ namespace recompui {
             set_background_color({ 23, 214, 232, background_opacity });
             hover_style.set_border_color({ 23, 214, 232, border_hover_opacity });
             hover_style.set_background_color({ 23, 214, 232, background_hover_opacity });
+            disabled_style.set_border_color({ 23, 214, 232, border_opacity / 4 });
+            disabled_style.set_background_color({ 23, 214, 232, background_opacity / 4 });
+            hover_disabled_style.set_border_color({ 23, 214, 232, border_hover_opacity / 4 });
+            hover_disabled_style.set_background_color({ 23, 214, 232, background_hover_opacity / 4 });
             break;
         }
         default:
             assert(false && "Unknown button style.");
             break;
         }
-
-        disabled_style.set_border_color({ 128, 128, 128, border_hover_opacity });
-        disabled_style.set_background_color({ 128, 128, 128, background_hover_opacity });
-        hover_disabled_style.set_border_color({ 196, 196, 196, border_hover_opacity });
-        hover_disabled_style.set_background_color({ 196, 196, 196, background_hover_opacity });
 
         add_style(&hover_style, hover_state);
         add_style(&disabled_style, disabled_state);
@@ -61,8 +66,10 @@ namespace recompui {
     void Button::process_event(const Event &e) {
         switch (e.type) {
         case EventType::Click:
-            for (const auto &function : pressed_callbacks) {
-                function();
+            if (is_enabled()) {
+                for (const auto &function : pressed_callbacks) {
+                    function();
+                }
             }
             break;
         case EventType::Hover: 
