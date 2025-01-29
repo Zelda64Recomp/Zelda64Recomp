@@ -308,4 +308,15 @@ float Element::get_client_height() {
     return base->GetClientHeight();
 }
 
+void Element::queue_update() {
+    ContextId cur_context = get_current_context();
+
+    // TODO disallow null contexts once the entire UI system has been migrated.
+    if (cur_context == ContextId::null()) {
+        return;
+    }    
+
+    cur_context.queue_element_update(resource_id);
+}
+
 }

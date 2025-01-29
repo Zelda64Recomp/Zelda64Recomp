@@ -29,6 +29,7 @@ namespace recompui {
         Enable,
         Drag,
         Text,
+        Update,
         Count
     };
 
@@ -76,7 +77,7 @@ namespace recompui {
         std::string text;
     };
 
-    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText>;
+    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText, std::monostate>;
 
     struct Event {
         EventType type;
@@ -122,6 +123,13 @@ namespace recompui {
             Event e;
             e.type = EventType::Text;
             e.variant = EventText{ text };
+            return e;
+        }
+
+        static Event update_event() {
+            Event e;
+            e.type = EventType::Update;
+            e.variant = std::monostate{};
             return e;
         }
     };
