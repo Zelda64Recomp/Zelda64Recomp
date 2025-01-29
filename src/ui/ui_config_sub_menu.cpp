@@ -15,6 +15,8 @@ void ConfigOptionElement::process_event(const Event &e) {
     case EventType::Hover:
         hover_callback(this, std::get<EventHover>(e.variant).active);
         break;
+    case EventType::Update:
+        break;
     default:
         assert(false && "Unknown event type.");
         break;

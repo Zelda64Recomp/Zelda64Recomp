@@ -6,9 +6,11 @@
 #include <unordered_set>
 
 namespace recompui {
+class ContextId;
 class Element : public Style, public Rml::EventListener {
     friend ContextId create_context(const std::filesystem::path& path);
     friend ContextId create_context();
+    friend class ContextId; // To allow ContextId to call the process_event method directly.
 private:
     Rml::Element *base = nullptr;
     Rml::ElementPtr base_owning = {};
@@ -60,6 +62,7 @@ public:
     float get_client_top();
     float get_client_width();
     float get_client_height();
+    void queue_update();
 };
 
 } // namespace recompui

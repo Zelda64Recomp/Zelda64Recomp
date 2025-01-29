@@ -159,7 +159,7 @@ class UIState {
     bool mouse_is_active_changed = false;
     std::unique_ptr<recompui::MenuController> launcher_menu_controller{};
     std::unique_ptr<recompui::MenuController> config_menu_controller{};
-    std::vector<ContextDetails> opened_contexts{};
+    std::vector<ContextDetails> shown_contexts{};
 public:
     bool mouse_is_active_initialized = false;
     bool mouse_is_active = false;
@@ -337,13 +337,13 @@ public:
     }
 
     void show_context(recompui::ContextId context) {
-        if (std::find_if(opened_contexts.begin(), opened_contexts.end(), [context](auto& c){ return c.context == context; }) != opened_contexts.end()) {
+        if (std::find_if(shown_contexts.begin(), shown_contexts.end(), [context](auto& c){ return c.context == context; }) != shown_contexts.end()) {
             recompui::message_box("Attemped to show the same context twice");
             assert(false);
         }
         bool takes_input = context.takes_input();
         Rml::ElementDocument* document = context.get_document();
-        opened_contexts.push_back(ContextDetails{
+        shown_contexts.push_back(ContextDetails{
             .context = context,
             .document = document,
             .takes_input = takes_input
@@ -361,44 +361,52 @@ public:
     }
 
     void hide_context(recompui::ContextId context) {
-        auto remove_it = std::remove_if(opened_contexts.begin(), opened_contexts.end(), [context](auto& c) { return c.context == context; });
-        if (remove_it == opened_contexts.end()) {
+        auto remove_it = std::remove_if(shown_contexts.begin(), shown_contexts.end(), [context](auto& c) { return c.context == context; });
+        if (remove_it == shown_contexts.end()) {
             recompui::message_box("Attemped to hide a context that isn't shown");
             assert(false);
         }
-        opened_contexts.erase(remove_it, opened_contexts.end());
+        shown_contexts.erase(remove_it, shown_contexts.end());
 
         context.get_document()->Hide();
     }
     
     void hide_all_contexts() {
-        for (auto& context : opened_contexts) {
+        for (auto& context : shown_contexts) {
             context.document->Hide();
         }
 
-        opened_contexts.clear();
+        shown_contexts.clear();
     }
 
-    bool is_context_open(recompui::ContextId context) {
-        return std::find_if(opened_contexts.begin(), opened_contexts.end(), [context](auto& c){ return c.context == context; }) != opened_contexts.end();
+    bool is_context_shown(recompui::ContextId context) {
+        return std::find_if(shown_contexts.begin(), shown_contexts.end(), [context](auto& c){ return c.context == context; }) != shown_contexts.end();
     }
 
     bool is_context_taking_input() {
-        return std::find_if(opened_contexts.begin(), opened_contexts.end(), [](auto& c){ return c.takes_input; }) != opened_contexts.end();
+        return std::find_if(shown_contexts.begin(), shown_contexts.end(), [](auto& c){ return c.takes_input; }) != shown_contexts.end();
     }
 
-    bool is_any_context_open() {
-        return !opened_contexts.empty();
+    bool is_any_context_shown() {
+        return !shown_contexts.empty();
     }
 
     Rml::ElementDocument* top_input_document() {
         // Iterate backwards and stop at the first context that takes input.
-        for (auto it = opened_contexts.rbegin(); it != opened_contexts.rend(); it++) {
+        for (auto it = shown_contexts.rbegin(); it != shown_contexts.rend(); it++) {
             if (it->takes_input) {
                 return it->document;
             }
         }
         return nullptr;
+    }
+
+    void update_contexts() {
+        for (auto& context_details : shown_contexts) {
+            context_details.context.open();
+            context_details.context.process_updates();
+            context_details.context.close();
+        }
     }
 };
 
@@ -531,7 +539,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     }
 
     // Return to the launcher if no menu is open and the game isn't started.
-    if (!recompui::is_any_context_open() && !ultramodern::is_game_started()) {
+    if (!recompui::is_any_context_shown() && !ultramodern::is_game_started()) {
         recompui::show_context(recompui::get_launcher_context_id(), "");
     }
 
@@ -545,7 +553,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool cont_interacted = false;
     bool kb_interacted = false;
 
-    bool config_was_open = recompui::is_context_open(recompui::get_config_context_id()) || recompui::is_context_open(recompui::get_config_sub_menu_context_id());
+    bool config_was_open = recompui::is_context_shown(recompui::get_config_context_id()) || recompui::is_context_shown(recompui::get_config_sub_menu_context_id());
 
     while (recompui::try_deque_event(cur_event)) {
         bool context_taking_input = recompui::is_context_taking_input();
@@ -669,7 +677,9 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     ui_state->update_primary_input(mouse_moved, non_mouse_interacted);
     ui_state->update_focus(mouse_moved, non_mouse_interacted);
 
-    if (recompui::is_any_context_open()) {
+    if (recompui::is_any_context_shown()) {
+        ui_state->update_contexts();
+
         int width = swap_chain_framebuffer->getWidth();
         int height = swap_chain_framebuffer->getHeight();
 
@@ -733,14 +743,14 @@ void recompui::hide_all_contexts() {
     }
 }
 
-bool recompui::is_context_open(ContextId context) {
+bool recompui::is_context_shown(ContextId context) {
     std::lock_guard lock{ui_state_mutex};
 
     if (!ui_state) {
         return false;
     }
 
-    return ui_state->is_context_open(context);
+    return ui_state->is_context_shown(context);
 }
 
 bool recompui::is_context_taking_input() {
@@ -753,14 +763,14 @@ bool recompui::is_context_taking_input() {
     return ui_state->is_context_taking_input();
 }
 
-bool recompui::is_any_context_open() {
+bool recompui::is_any_context_shown() {
     std::lock_guard lock{ui_state_mutex};
 
     if (!ui_state) {
         return false;
     }
 
-    return ui_state->is_any_context_open();
+    return ui_state->is_any_context_shown();
 }
 
 Rml::ElementDocument* recompui::load_document(const std::filesystem::path& path) {

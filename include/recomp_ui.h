@@ -48,9 +48,9 @@ namespace recompui {
     void show_context(ContextId context, std::string_view param);
     void hide_context(ContextId context);
     void hide_all_contexts();
-    bool is_context_open(ContextId context);
+    bool is_context_shown(ContextId context);
     bool is_context_taking_input();
-    bool is_any_context_open();
+    bool is_any_context_shown();
 
     ContextId get_launcher_context_id();
     ContextId get_config_context_id();

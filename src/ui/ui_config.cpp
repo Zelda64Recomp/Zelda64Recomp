@@ -135,7 +135,7 @@ void close_config_menu_impl() {
     recompui::ContextId config_context = recompui::get_config_context_id();
     recompui::ContextId sub_menu_context = recompui::get_config_sub_menu_context_id();
 
-    if (recompui::is_context_open(sub_menu_context)) {
+    if (recompui::is_context_shown(sub_menu_context)) {
     	recompui::hide_context(sub_menu_context);
     }
     else {
