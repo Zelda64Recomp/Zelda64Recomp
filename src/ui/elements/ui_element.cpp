@@ -48,21 +48,11 @@ void Element::add_child(Element *child) {
     }
 }
 
-void Element::set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation animation) {
+void Element::set_property(Rml::PropertyId property_id, const Rml::Property &property) {
     assert(base != nullptr);
 
-    if (animation.type == AnimationType::None || animation.type == AnimationType::Set) {
-        base->SetProperty(property_id, property);
-
-        if (animation.type == AnimationType::None) {
-            // Only non-animated properties should be stored as part of the style.
-            Style::set_property(property_id, property, animation);
-        }
-    }
-    else {
-        const Rml::String property_name = Rml::StyleSheetSpecification::GetPropertyName(property_id);
-        base->Animate(property_name, property, animation.duration);
-    }
+    base->SetProperty(property_id, property);
+    Style::set_property(property_id, property);
 }
 
 void Element::register_event_listeners(uint32_t events_enabled) {
