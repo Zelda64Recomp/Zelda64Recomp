@@ -16,6 +16,7 @@ public:
     virtual ~ModEntryView();
     void set_mod_details(const recomp::mods::ModDetails &details);
     void set_mod_thumbnail(const std::string &thumbnail);
+    void set_mod_enabled(bool enabled);
     void set_selected(bool selected);
 private:
     Image *thumbnail_image = nullptr;
@@ -35,6 +36,7 @@ public:
     void set_mod_drag_callback(std::function<void(uint32_t, EventDrag)> callback);
     void set_mod_details(const recomp::mods::ModDetails &details);
     void set_mod_thumbnail(const std::string &thumbnail);
+    void set_mod_enabled(bool enabled);
     void set_selected(bool selected);
 protected:
     virtual void process_event(const Event &e) override;
