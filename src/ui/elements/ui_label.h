@@ -5,6 +5,7 @@
 namespace recompui {
 
     enum class LabelStyle {
+        Annotation,
         Small,
         Normal,
         Large

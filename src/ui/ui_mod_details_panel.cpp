@@ -55,9 +55,18 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
     buttons_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceAround);
     buttons_container->set_flex(0.0f, 0.0f);
     buttons_container->set_padding(16.0f);
+    buttons_container->set_justify_content(JustifyContent::SpaceBetween);
     {
-        enable_toggle = context.create_element<Toggle>(buttons_container);
-        enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
+        enable_container = context.create_element<Container>(buttons_container, FlexDirection::Row, JustifyContent::FlexStart);
+        enable_container->set_align_items(AlignItems::Center);
+        enable_container->set_gap(16.0f);
+        {
+            enable_toggle = context.create_element<Toggle>(enable_container);
+            enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
+
+            enable_label = context.create_element<Label>(enable_container, "A currently enabled mod requires this mod", LabelStyle::Annotation);
+        }
+
         configure_button = context.create_element<Button>(buttons_container, "Configure", recompui::ButtonStyle::Secondary);
         configure_button->add_pressed_callback(std::bind(&ModDetailsPanel::configure_button_pressed, this));
     }
@@ -66,7 +75,7 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
-void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool mod_enabled, bool toggle_enabled, bool configure_enabled) {
+void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool toggle_checked, bool toggle_enabled, bool toggle_label_visible, bool configure_enabled) {
     cur_details = details;
 
     thumbnail_image->set_src(thumbnail);
@@ -83,9 +92,10 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, c
 
     authors_label->set_text(authors_str);
     description_label->set_text(cur_details.description);
-    enable_toggle->set_checked(mod_enabled);
+    enable_toggle->set_checked(toggle_checked);
     enable_toggle->set_enabled(toggle_enabled);
     configure_button->set_enabled(configure_enabled);
+    enable_label->set_display(toggle_label_visible ? Display::Block : Display::None);
 }
 
 void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callback) {
