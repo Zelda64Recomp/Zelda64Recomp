@@ -83,18 +83,6 @@ Style* arg_style(uint8_t* rdram, recomp_context* ctx) {
     return *resource;
 }
 
-template <int arg_index>
-Animation arg_animation(uint8_t* rdram, recomp_context* ctx) {
-    PTR(Animation) anim_ptr = _arg<arg_index, PTR(Animation)>(rdram, ctx);
-    
-    if (anim_ptr == NULLPTR) {
-        return Animation{};
-    }
-    else {
-        return *TO_PTR(Animation, anim_ptr);
-    }
-}
-
 void return_resource(recomp_context* ctx, ResourceId resource) {
     _return<uint32_t>(ctx, resource.slot_id);
 }
@@ -172,18 +160,16 @@ extern "C" void recompui_set_width(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     float width = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
-    Animation animation = arg_animation<3>(rdram, ctx);
 
-    resource->set_width(width, static_cast<Unit>(unit), animation);
+    resource->set_width(width, static_cast<Unit>(unit));
 }
 
 extern "C" void recompui_set_height(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     float height = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
-    Animation animation = arg_animation<3>(rdram, ctx);
 
-    resource->set_height(height, static_cast<Unit>(unit), animation);
+    resource->set_height(height, static_cast<Unit>(unit));
 }
 
 extern "C" void recompui_set_display(uint8_t* rdram, recomp_context* ctx) {
@@ -200,20 +186,18 @@ extern "C" void recompui_set_flex_direction(uint8_t* rdram, recomp_context* ctx)
     resource->set_flex_direction(static_cast<FlexDirection>(direction));
 }
 
-extern "C" void recompui_set_flex_grow(uint8_t* rdram, recomp_context* ctx) { // float grow, Animation animation = Animation()
+extern "C" void recompui_set_flex_grow(uint8_t* rdram, recomp_context* ctx) { // float grow
     Style* resource = arg_style<0>(rdram, ctx);
     float grow = _arg_float_a1(rdram, ctx);
-    Animation animation = arg_animation<2>(rdram, ctx);
 
-    resource->set_flex_grow(grow, animation);
+    resource->set_flex_grow(grow);
 }
 
-extern "C" void recompui_set_flex_shrink(uint8_t* rdram, recomp_context* ctx) { // float shrink, Animation animation = Animation()
+extern "C" void recompui_set_flex_shrink(uint8_t* rdram, recomp_context* ctx) { // float shrink
     Style* resource = arg_style<0>(rdram, ctx);
     float shrink = _arg_float_a1(rdram, ctx);
-    Animation animation = arg_animation<2>(rdram, ctx);
 
-    resource->set_flex_shrink(shrink, animation);
+    resource->set_flex_shrink(shrink);
 }
 
 extern "C" void recompui_set_flex_basis_auto(uint8_t* rdram, recomp_context* ctx) {
@@ -222,13 +206,12 @@ extern "C" void recompui_set_flex_basis_auto(uint8_t* rdram, recomp_context* ctx
     resource->set_flex_basis_auto();
 }
 
-extern "C" void recompui_set_flex_basis(uint8_t* rdram, recomp_context* ctx) { // float basis, Unit unit = Unit::Percent, Animation animation = Animation()
+extern "C" void recompui_set_flex_basis(uint8_t* rdram, recomp_context* ctx) { // float basis, Unit unit = Unit::Percent
     Style* resource = arg_style<0>(rdram, ctx);
     float basis = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
-    Animation animation = arg_animation<3>(rdram, ctx);
 
-    resource->set_flex_basis(basis, static_cast<Unit>(unit), animation);
+    resource->set_flex_basis(basis, static_cast<Unit>(unit));
 }
 
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)

@@ -7,6 +7,8 @@ namespace recompui {
     class Toggle : public Element {
     protected:
         Element *floater;
+        float floater_left = 0.0f;
+        std::chrono::high_resolution_clock::duration last_time;
         std::list<std::function<void(bool)>> checked_callbacks;
         Style checked_style;
         Style hover_style;

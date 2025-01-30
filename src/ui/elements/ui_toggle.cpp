@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <ultramodern/ultramodern.hpp>
+
 namespace recompui {
 
     Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
@@ -49,7 +51,15 @@ namespace recompui {
         if (this->checked != checked || setup) {
             this->checked = checked;
 
-            floater->set_left(floater_left_target(), Unit::Dp, animate ? Animation::tween(0.1f) : Animation::set());
+            if (animate) {
+                last_time = ultramodern::time_since_start();
+                queue_update();
+            }
+            else {
+                floater_left = floater_left_target();
+            }
+
+            floater->set_left(floater_left, Unit::Dp);
 
             if (trigger_callbacks) {
                 for (const auto &function : checked_callbacks) {
@@ -87,10 +97,31 @@ namespace recompui {
             break;
         }
         case EventType::Update: {
+            std::chrono::high_resolution_clock::duration now = ultramodern::time_since_start();
+            float delta_time = std::chrono::duration<float>(now - last_time).count();
+            last_time = now;
+
+            constexpr float dp_speed = 740.0f;
+            const float target = floater_left_target();
+            if (target < floater_left) {
+                floater_left += std::max(-dp_speed * delta_time, target - floater_left);
+            }
+            else {
+                floater_left += std::min(dp_speed * delta_time, target - floater_left);
+            }
+
+            if (abs(target - floater_left) < 1e-4f) {
+                floater_left = target;
+            }
+            else {
+                queue_update();
+            }
+
+            floater->set_left(floater_left, Unit::Dp);
+
             break;
         }
         default:
-            assert(false && "Unknown event type.");
             break;
         }
     }
