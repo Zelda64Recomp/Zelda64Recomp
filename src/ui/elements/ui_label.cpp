@@ -6,6 +6,13 @@ namespace recompui {
 
     Label::Label(Element *parent, LabelStyle label_style) : Element(parent) {
         switch (label_style) {
+        case LabelStyle::Annotation:
+            set_color(Color{ 185, 125, 242, 255 });
+            set_font_size(18.0f);
+            set_letter_spacing(2.52f);
+            set_line_height(18.0f);
+            set_font_weight(400);
+            break;
         case LabelStyle::Small:
             set_font_size(20.0f);
             set_letter_spacing(0.0f);

@@ -14,7 +14,7 @@ class ModDetailsPanel : public Element {
 public:
     ModDetailsPanel(Element *parent);
     virtual ~ModDetailsPanel();
-    void set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool mod_enabled, bool toggle_enabled, bool configure_enabled);
+    void set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool toggle_checked, bool toggle_enabled, bool toggle_label_visible, bool configure_enabled);
     void set_mod_toggled_callback(std::function<void(bool)> callback);
     void set_mod_configure_pressed_callback(std::function<void()> callback);
 private:
@@ -30,7 +30,9 @@ private:
     Label *authors_label = nullptr;
     Element *spacer_element = nullptr;
     Container *buttons_container = nullptr;
+    Container *enable_container = nullptr;
     Toggle *enable_toggle = nullptr;
+    Label *enable_label = nullptr;
     Button *configure_button = nullptr;
     std::function<void(bool)> mod_toggled_callback = nullptr;
     std::function<void()> mod_configure_pressed_callback = nullptr;
