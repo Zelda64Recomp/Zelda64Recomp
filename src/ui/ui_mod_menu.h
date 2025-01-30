@@ -37,12 +37,26 @@ public:
     void set_mod_thumbnail(const std::string &thumbnail);
     void set_selected(bool selected);
 protected:
-    virtual void process_event(const Event &e);
+    virtual void process_event(const Event &e) override;
 private:
     uint32_t mod_index = 0;
     ModEntryView *view = nullptr;
     std::function<void(uint32_t)> selected_callback = nullptr;
     std::function<void(uint32_t, EventDrag)> drag_callback = nullptr;
+};
+
+class ModEntrySpacer : public Element {
+private:
+    float height = 0.0f;
+    float target_height = 0.0f;
+    std::chrono::high_resolution_clock::duration last_time;
+
+    void check_height_distance();
+protected:
+    virtual void process_event(const Event &e) override;
+public:
+    ModEntrySpacer(Element *parent);
+    void set_target_height(float target_height, bool animate_to_target);
 };
 
 class ModMenu : public Element {
@@ -70,13 +84,12 @@ private:
     Button *mods_folder_button = nullptr;
     int32_t active_mod_index = -1;
     std::vector<ModEntryButton *> mod_entry_buttons;
-    std::vector<Element *> mod_entry_spacers;
+    std::vector<ModEntrySpacer *> mod_entry_spacers;
     std::vector<float> mod_entry_middles;
     ModEntryView *mod_entry_floating_view = nullptr;
     float mod_drag_start_coordinates[2] = {};
     float mod_drag_view_coordinates[2] = {};
     uint32_t mod_drag_target_index = 0;
-    float mod_drag_spacer_height = 0.0f;
     std::vector<recomp::mods::ModDetails> mod_details{};
     std::unordered_set<std::string> loaded_thumbnails;
     std::string game_mod_id;

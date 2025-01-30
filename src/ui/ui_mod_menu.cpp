@@ -137,6 +137,60 @@ void ModEntryButton::process_event(const Event& e) {
     }
 }
 
+// ModEntrySpacer
+
+void ModEntrySpacer::check_height_distance() {
+    constexpr float tolerance = 0.01f;
+    if (abs(target_height - height) < tolerance) {
+        height = target_height;
+        set_height(height, Unit::Dp);
+    }
+    else {
+        queue_update();
+    }
+}
+
+void ModEntrySpacer::process_event(const Event &e) {
+    switch (e.type) {
+    case EventType::Update: {
+        std::chrono::high_resolution_clock::duration now = ultramodern::time_since_start();
+        float delta_time = std::chrono::duration<float>(now - last_time).count();
+        constexpr float dp_speed = 1000.0f;
+        last_time = now;
+
+        if (target_height < height) {
+            height += std::max(-dp_speed * delta_time, target_height - height);
+        }
+        else {
+            height += std::min(dp_speed * delta_time, target_height - height);
+        }
+
+        set_height(height, Unit::Dp);
+        check_height_distance();
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+ModEntrySpacer::ModEntrySpacer(Element *parent) : Element(parent) {
+    // Do nothing.
+}
+
+void ModEntrySpacer::set_target_height(float target_height, bool animate_to_target) {
+    this->target_height = target_height;
+
+    if (animate_to_target) {
+        last_time = ultramodern::time_since_start();
+        check_height_distance();
+    }
+    else {
+        height = target_height;
+        set_height(target_height, Unit::Dp);
+    }
+}
+
 // ModMenu
 
 void ModMenu::refresh_mods() {
@@ -188,6 +242,7 @@ void ModMenu::mod_selected(uint32_t mod_index) {
 }
 
 void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
+    constexpr float spacer_height = 110.0f;
     switch (drag.phase) {
     case DragPhase::Start: {
         for (size_t i = 0; i < mod_entry_buttons.size(); i++) {
@@ -215,8 +270,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         mod_drag_view_coordinates[1] = top;
         
         mod_drag_target_index = mod_index;
-        mod_drag_spacer_height = height;
-        mod_entry_spacers[mod_drag_target_index]->set_height(mod_drag_spacer_height, Unit::Px);
+        mod_entry_spacers[mod_drag_target_index]->set_target_height(spacer_height, false);
         break;
     }
     case DragPhase::Move: {
@@ -239,8 +293,8 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         mod_entry_floating_view->set_left(mod_drag_view_coordinates[0] + delta_x, Unit::Px);
         mod_entry_floating_view->set_top(mod_drag_view_coordinates[1] + delta_y, Unit::Px);
         if (mod_drag_target_index != new_index) {
-            mod_entry_spacers[mod_drag_target_index]->set_height(0.0f, Unit::Px);
-            mod_entry_spacers[new_index]->set_height(mod_drag_spacer_height, Unit::Px);
+            mod_entry_spacers[mod_drag_target_index]->set_target_height(0.0f, true);
+            mod_entry_spacers[new_index]->set_target_height(spacer_height, true);
             mod_drag_target_index = new_index;
         }
 
@@ -250,7 +304,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         // Dragging has ended, hide the floating view.
         mod_entry_buttons[mod_index]->set_display(Display::Block);
         mod_entry_buttons[mod_index]->set_selected(false);
-        mod_entry_spacers[mod_drag_target_index]->set_height(0.0f, Unit::Px);
+        mod_entry_spacers[mod_drag_target_index]->set_target_height(0.0f, false);
         mod_entry_floating_view->set_display(Display::None);
 
         // Result needs a small substraction when dragging downwards.
@@ -368,7 +422,7 @@ void ModMenu::create_mod_list() {
             loaded_thumbnails.emplace(thumbnail_name);
         }
 
-        Element *spacer = context.create_element<Element>(list_scroll_container);
+        ModEntrySpacer *spacer = context.create_element<ModEntrySpacer>(list_scroll_container);
         mod_entry_spacers.emplace_back(spacer);
 
         ModEntryButton *mod_entry = context.create_element<ModEntryButton>(list_scroll_container, mod_index);
@@ -380,7 +434,7 @@ void ModMenu::create_mod_list() {
     }
 
     // Add one extra spacer at the bottom.
-    Element *spacer = context.create_element<Element>(list_scroll_container);
+    ModEntrySpacer *spacer = context.create_element<ModEntrySpacer>(list_scroll_container);
     mod_entry_spacers.emplace_back(spacer);
 
     mod_entry_middles.resize(mod_entry_buttons.size());
