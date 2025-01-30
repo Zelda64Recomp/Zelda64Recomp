@@ -229,23 +229,4 @@ namespace recompui {
         Auto
     };
 
-    struct Animation {
-        AnimationType type = AnimationType::None;
-        float duration = 0.0f;
-
-        static Animation set() {
-            Animation a;
-            a.type = AnimationType::Set;
-            a.duration = 0.0f;
-            return a;
-        }
-
-        static Animation tween(float duration) {
-            Animation a;
-            a.type = AnimationType::Tween;
-            a.duration = duration;
-            return a;
-        }
-    };
-
 } // namespace recompui

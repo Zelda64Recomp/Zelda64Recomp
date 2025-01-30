@@ -32,7 +32,7 @@ private:
     void propagate_disabled(bool disabled);
 
     // Style overrides.
-    virtual void set_property(Rml::PropertyId property_id, const Rml::Property &property, Animation animation) override;
+    virtual void set_property(Rml::PropertyId property_id, const Rml::Property &property) override;
 
     // Rml::EventListener overrides.
     void ProcessEvent(Rml::Event &event) override final;
