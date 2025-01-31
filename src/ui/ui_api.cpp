@@ -89,39 +89,39 @@ void return_resource(recomp_context* ctx, ResourceId resource) {
 
 // Context functions
 
-extern "C" void recompui_create_context(uint8_t* rdram, recomp_context* ctx) {
+void recompui_create_context(uint8_t* rdram, recomp_context* ctx) {
     (void)rdram;
     ContextId ui_context = create_context();
     
     _return<uint32_t>(ctx, ui_context.slot_id);
 }
 
-extern "C" void recompui_open_context(uint8_t* rdram, recomp_context* ctx) {
+void recompui_open_context(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
 
     ui_context.open();
 }
 
-extern "C" void recompui_close_context(uint8_t* rdram, recomp_context* ctx) {
+void recompui_close_context(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
 
     ui_context.close();
 }
 
-extern "C" void recompui_context_root(uint8_t* rdram, recomp_context* ctx) {
+void recompui_context_root(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     (void)ui_context;
 
     return_resource(ctx, root_element_id);
 }
 
-extern "C" void recompui_show_context(uint8_t* rdram, recomp_context* ctx) {
+void recompui_show_context(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
 
     recompui::show_context(ui_context, "");
 }
 
-extern "C" void recompui_hide_context(uint8_t* rdram, recomp_context* ctx) {
+void recompui_hide_context(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
 
     recompui::hide_context(ui_context);
@@ -129,14 +129,14 @@ extern "C" void recompui_hide_context(uint8_t* rdram, recomp_context* ctx) {
 
 // Resource creation functions
 
-extern "C" void recompui_create_style(uint8_t* rdram, recomp_context* ctx) {
+void recompui_create_style(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
 
     Style* ret = ui_context.create_style();
     return_resource(ctx, ret->get_resource_id());
 }
 
-extern "C" void recompui_create_element(uint8_t* rdram, recomp_context* ctx) {
+void recompui_create_element(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     Element* parent = arg_element<1>(rdram, ctx, ui_context);
 
@@ -144,7 +144,7 @@ extern "C" void recompui_create_element(uint8_t* rdram, recomp_context* ctx) {
     return_resource(ctx, ret->get_resource_id());
 }
 
-extern "C" void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
+void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     Element* parent = arg_element<1>(rdram, ctx, ui_context);
     std::string text = arg_string<2>(rdram, ctx);
@@ -156,7 +156,7 @@ extern "C" void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
 
 // Style functions
 
-extern "C" void recompui_set_width(uint8_t* rdram, recomp_context* ctx) {
+void recompui_set_width(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     float width = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
@@ -164,7 +164,7 @@ extern "C" void recompui_set_width(uint8_t* rdram, recomp_context* ctx) {
     resource->set_width(width, static_cast<Unit>(unit));
 }
 
-extern "C" void recompui_set_height(uint8_t* rdram, recomp_context* ctx) {
+void recompui_set_height(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     float height = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
@@ -172,41 +172,41 @@ extern "C" void recompui_set_height(uint8_t* rdram, recomp_context* ctx) {
     resource->set_height(height, static_cast<Unit>(unit));
 }
 
-extern "C" void recompui_set_display(uint8_t* rdram, recomp_context* ctx) {
+void recompui_set_display(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     uint32_t display = _arg<1, uint32_t>(rdram, ctx);
 
     resource->set_display(static_cast<Display>(display));
 }
 
-extern "C" void recompui_set_flex_direction(uint8_t* rdram, recomp_context* ctx) {
+void recompui_set_flex_direction(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     uint32_t direction = _arg<1, uint32_t>(rdram, ctx);
 
     resource->set_flex_direction(static_cast<FlexDirection>(direction));
 }
 
-extern "C" void recompui_set_flex_grow(uint8_t* rdram, recomp_context* ctx) { // float grow
+void recompui_set_flex_grow(uint8_t* rdram, recomp_context* ctx) { // float grow
     Style* resource = arg_style<0>(rdram, ctx);
     float grow = _arg_float_a1(rdram, ctx);
 
     resource->set_flex_grow(grow);
 }
 
-extern "C" void recompui_set_flex_shrink(uint8_t* rdram, recomp_context* ctx) { // float shrink
+void recompui_set_flex_shrink(uint8_t* rdram, recomp_context* ctx) { // float shrink
     Style* resource = arg_style<0>(rdram, ctx);
     float shrink = _arg_float_a1(rdram, ctx);
 
     resource->set_flex_shrink(shrink);
 }
 
-extern "C" void recompui_set_flex_basis_auto(uint8_t* rdram, recomp_context* ctx) {
+void recompui_set_flex_basis_auto(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
 
     resource->set_flex_basis_auto();
 }
 
-extern "C" void recompui_set_flex_basis(uint8_t* rdram, recomp_context* ctx) { // float basis, Unit unit = Unit::Percent
+void recompui_set_flex_basis(uint8_t* rdram, recomp_context* ctx) { // float basis, Unit unit = Unit::Percent
     Style* resource = arg_style<0>(rdram, ctx);
     float basis = _arg_float_a1(rdram, ctx);
     uint32_t unit = _arg<2, uint32_t>(rdram, ctx);
