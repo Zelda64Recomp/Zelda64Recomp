@@ -98,7 +98,7 @@ namespace recompui {
         }
         case EventType::Update: {
             std::chrono::high_resolution_clock::duration now = ultramodern::time_since_start();
-            float delta_time = std::chrono::duration<float>(now - last_time).count();
+            float delta_time = std::max(std::chrono::duration<float>(now - last_time).count(), 0.0f);
             last_time = now;
 
             constexpr float dp_speed = 740.0f;
