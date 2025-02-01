@@ -166,7 +166,7 @@ void ModEntrySpacer::process_event(const Event &e) {
     switch (e.type) {
     case EventType::Update: {
         std::chrono::high_resolution_clock::duration now = ultramodern::time_since_start();
-        float delta_time = std::chrono::duration<float>(now - last_time).count();
+        float delta_time = std::max(std::chrono::duration<float>(now - last_time).count(), 0.0f);
         constexpr float dp_speed = 1000.0f;
         last_time = now;
 
