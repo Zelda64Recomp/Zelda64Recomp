@@ -22,6 +22,11 @@ namespace recompui {
     }
     
     TextInput::TextInput(Element *parent) : Element(parent, Events(EventType::Text), "input") {
+        set_min_width(60.0f);
+        set_max_width(400.0f);
+        set_border_color(Color{ 242, 242, 242, 255 });
+        set_border_bottom_width(1.0f);
+        set_padding_bottom(6.0f);
     }
 
     void TextInput::set_text(std::string_view text) {

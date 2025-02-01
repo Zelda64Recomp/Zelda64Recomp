@@ -394,7 +394,7 @@ void ModMenu::mod_configure_requested() {
             }
         }
 
-        config_sub_menu->enter(mod_details[active_mod_index].mod_id);
+        config_sub_menu->enter(mod_details[active_mod_index].display_name);
         sub_menu_context.close();
 
         // Reopen the context that was open when this function was called.
