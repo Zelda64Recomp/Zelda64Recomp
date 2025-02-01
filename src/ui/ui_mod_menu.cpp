@@ -459,7 +459,10 @@ void ModMenu::create_mod_list() {
 
     mod_entry_middles.resize(mod_entry_buttons.size());
 
-    if (!mod_details.empty()) {
+    bool mods_available = !mod_details.empty();
+    body_container->set_display(mods_available ? Display::Flex : Display::None);
+    body_empty_container->set_display(mods_available ? Display::None : Display::Flex);
+    if (mods_available) {
         mod_selected(0);
     }
 }
@@ -499,6 +502,14 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             mod_details_panel->set_mod_configure_pressed_callback(std::bind(&ModMenu::mod_configure_requested, this));
         } // body_container
         
+        body_empty_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::SpaceBetween);
+        body_empty_container->set_flex(1.0f, 1.0f, 100.0f);
+        body_empty_container->set_display(Display::None);
+        {
+            context.create_element<Element>(body_empty_container);
+            context.create_element<Label>(body_empty_container, "You have no mods. Go get some!", LabelStyle::Large);
+            context.create_element<Element>(body_empty_container);
+        } // body_empty_container
 
         footer_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceBetween);
         footer_container->set_width(100.0f, recompui::Unit::Percent);
