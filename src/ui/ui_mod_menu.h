@@ -81,6 +81,7 @@ private:
     Container *list_container = nullptr;
     ScrollContainer *list_scroll_container = nullptr;
     ModDetailsPanel *mod_details_panel = nullptr;
+    Container *body_empty_container = nullptr;
     Container *footer_container = nullptr;
     Button *refresh_button = nullptr;
     Button *mods_folder_button = nullptr;
