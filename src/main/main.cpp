@@ -117,7 +117,7 @@ bool SetImageAsIcon(const char* filename, SDL_Window* window)
 SDL_Window* window;
 
 ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
-    uint32_t flags = SDL_WINDOW_RESIZABLE;
+    uint32_t flags = (SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
 #if defined(RT64_SDL_WINDOW_VULKAN)
     flags |= SDL_WINDOW_VULKAN;
