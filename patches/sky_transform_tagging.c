@@ -150,7 +150,7 @@ RECOMP_PATCH void Environment_DrawSkyboxStarsImpl(PlayState* play, Gfx** gfxP) {
     f32(*viewProjectionMtxF)[4];
     // @recomp Get the original and actual aspect ratios.
     f32 original_aspect_ratio = view_aspect_ratio(&play->view);
-    f32 recomp_aspect_ratio = recomp_get_aspect_ratio(original_aspect_ratio);
+    f32 recomp_aspect_ratio = recomp_get_target_aspect_ratio(original_aspect_ratio);
     f32 recomp_aspect_ratio_scale = recomp_aspect_ratio / original_aspect_ratio;
 
     // @recomp Store the original billboard matrix.

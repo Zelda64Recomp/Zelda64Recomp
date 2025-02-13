@@ -17,7 +17,7 @@ RECOMP_PATCH void TransitionWipe3_Draw(void* thisx, Gfx** gfxP) {
     
     // @recomp Modify the scale based on the aspect ratio to make sure the transition circle covers the whole screen
     float original_aspect_ratio = ((float)SCREEN_WIDTH) / ((float)SCREEN_HEIGHT);
-    scale *= recomp_get_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
+    scale *= recomp_get_target_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
 
     THIS->frame ^= 1;
     gDPPipeSync(gfx++);
@@ -129,7 +129,7 @@ RECOMP_PATCH void Play_DrawMotionBlur(PlayState* this) {
 RECOMP_PATCH void Actor_DrawLensOverlay(Gfx** gfxP, s32 lensMaskSize) {
     // @recomp Calculate the increase in aspect ratio.
     f32 original_aspect_ratio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
-    f32 aspect_ratio_scale = recomp_get_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
+    f32 aspect_ratio_scale = recomp_get_target_aspect_ratio(original_aspect_ratio) / original_aspect_ratio;
 
     // @recomp Increase the circle's scale based on the aspect ratio scale. Also increase the base scaling
     // from 0.003f to 0.004f to account for overscan removal.
