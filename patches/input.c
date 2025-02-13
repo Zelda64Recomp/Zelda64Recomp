@@ -34,7 +34,7 @@ RECOMP_PATCH s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
     // @recomp Get the analog camera input values if analog cam is enabled, or right-stick aiming is being forced.
     s32 analog_x = 0;
     s32 analog_y = 0;
-    if (recomp_analog_cam_enabled() || recomp_aiming_override_mode == RECOMP_AIMING_OVERRIDE_FORCE_RIGHT_STICK) {
+    if (recomp_get_analog_cam_enabled() || recomp_aiming_override_mode == RECOMP_AIMING_OVERRIDE_FORCE_RIGHT_STICK) {
         float analog_x_float = 0.0f;
         float analog_y_float = 0.0f;
         recomp_get_camera_inputs(&analog_x_float, &analog_y_float);
@@ -198,7 +198,7 @@ RECOMP_PATCH void func_8083A98C(Actor* thisx, PlayState* play2) {
     // @recomp Get the analog camera input values if analog cam is enabled.
     s32 analog_x = 0;
     s32 analog_y = 0;
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         float analog_x_float = 0.0f;
         float analog_y_float = 0.0f;
         recomp_get_camera_inputs(&analog_x_float, &analog_y_float);

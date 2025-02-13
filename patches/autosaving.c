@@ -114,7 +114,7 @@ RECOMP_PATCH void func_80147314(SramContext* sramCtx, s32 fileNum) {
 
     // @recomp Prevent owl save/autosave deletion if autosaving is enabled, and...
     // @recomp_use_export_var loading_deletes_owl_save: Prevent owl save deletion if mods disable it.
-    if (!recomp_autosave_enabled() && loading_deletes_owl_save) {
+    if (!recomp_get_autosave_enabled() && loading_deletes_owl_save) {
         gSaveContext.save.saveInfo.playerData.newf[0] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[1] = '\0';
         gSaveContext.save.saveInfo.playerData.newf[2] = '\0';
@@ -390,7 +390,7 @@ RECOMP_EXPORT void recomp_reset_autosave_timer_slow() {
 void autosave_post_play_update(PlayState* play) {
     static int frames_since_save_changed = 0;
     static int frames_since_autosave_ready = 0;
-    if (recomp_autosave_enabled()) {
+    if (recomp_get_autosave_enabled()) {
         if (autosave_compare_saves(&gSaveContext, &prev_save_ctx)) {
             frames_since_save_changed = 0;
             Lib_MemCpy(&prev_save_ctx, &gSaveContext, offsetof(SaveContext, fileNum));
@@ -801,7 +801,7 @@ RECOMP_PATCH void ObjWarpstone_Update(Actor* thisx, PlayState* play) {
     }
 
     // @recomp_use_export_var loading_deletes_owl_save: Skip the text talking about the save being deleted on load, if autosave is enabled or if owl save deletion is disabled.
-    if (recomp_autosave_enabled() || !loading_deletes_owl_save) {
+    if (recomp_get_autosave_enabled() || !loading_deletes_owl_save) {
         if (this->isTalking && play->msgCtx.currentTextId == 0xC01 && play->msgCtx.msgBufPos == 269) {
             play->msgCtx.msgBufPos = 530;
         }

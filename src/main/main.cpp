@@ -29,6 +29,12 @@
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 #include "librecomp/mods.hpp"
+#include "librecomp/helpers.hpp"
+
+#include "../../patches/graphics.h"
+#include "../../patches/input.h"
+#include "../../patches/sound.h"
+#include "../../patches/misc_funcs.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -540,6 +546,8 @@ void disable_texture_pack(recomp::mods::ModContext& context, const recomp::mods:
     zelda64::renderer::disable_texture_pack(mod);
 }
 
+#define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
+
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
@@ -598,6 +606,20 @@ int main(int argc, char** argv) {
     for (const auto& game : supported_games) {
         recomp::register_game(game);
     }
+
+    REGISTER_FUNC(recomp_get_window_resolution);
+    REGISTER_FUNC(recomp_get_target_aspect_ratio);
+    REGISTER_FUNC(recomp_get_target_framerate);
+    REGISTER_FUNC(recomp_get_autosave_enabled);
+    REGISTER_FUNC(recomp_get_analog_cam_enabled);
+    REGISTER_FUNC(recomp_get_camera_inputs);
+    REGISTER_FUNC(recomp_get_targeting_mode);
+    REGISTER_FUNC(recomp_get_bgm_volume);
+    REGISTER_FUNC(recomp_get_low_health_beeps_enabled);
+    REGISTER_FUNC(recomp_get_gyro_deltas);
+    REGISTER_FUNC(recomp_get_mouse_deltas);
+    REGISTER_FUNC(recomp_get_inverted_axes);
+    REGISTER_FUNC(recomp_get_analog_inverted_axes);
 
     zelda64::register_overlays();
     zelda64::register_patches();

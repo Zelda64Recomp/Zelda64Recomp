@@ -788,7 +788,7 @@ RECOMP_PATCH s32 Camera_Normal1(Camera* camera) {
     }
 
     // @recomp Update the analog camera.
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         update_analog_cam(camera);
 
         if (analog_cam_active) {
@@ -844,7 +844,7 @@ RECOMP_PATCH s32 Camera_Normal1(Camera* camera) {
     phi_f2 = (gSaveContext.save.saveInfo.playerData.health <= 0x10) ? 0.8f : 1.0f;
 
     // @recomp Don't zoom in on low health when dual analog is used
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         phi_f2 = 1.0f;
     }
 
@@ -1028,7 +1028,7 @@ RECOMP_PATCH s32 Camera_Jump2(Camera* camera) {
     spB4.pitch = CLAMP_MIN(spB4.pitch, -DEG_TO_BINANG(60.43f));
 
     // @recomp Update the analog camera.
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         update_analog_cam(camera);
 
         if (analog_cam_active) {
@@ -1431,7 +1431,7 @@ RECOMP_PATCH s32 Camera_Parallel1(Camera* camera) {
     }
 
     // @recomp Update the analog camera.
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         update_analog_cam(camera);
 
         if (analog_cam_active) {
@@ -1654,7 +1654,7 @@ RECOMP_PATCH s32 Camera_Normal3(Camera* camera) {
     }
 
     // @recomp Update the analog camera.
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         update_analog_cam(camera);
 
         if (analog_cam_active) {
@@ -1892,7 +1892,7 @@ RECOMP_PATCH s32 Camera_Jump3(Camera* camera) {
     }
 
     // @recomp Update the analog camera.
-    if (recomp_analog_cam_enabled()) {
+    if (recomp_get_analog_cam_enabled()) {
         update_analog_cam(camera);
 
         if (analog_cam_active) {
@@ -2006,7 +2006,7 @@ RECOMP_PATCH void func_809EC568(Boss04* this, PlayState* play) {
             this->unk_2D0 = 2000.0f;
             // @recomp do not require being in c-up mode if analog cam is enabled
             // also, use the new variable instead of the vanilla value to check if the player is looking at the boss.
-            if (((player->stateFlags1 & PLAYER_STATE1_100000) || (recomp_analog_cam_enabled())) && (this->actor.projectedPos.z > 0.0f) &&
+            if (((player->stateFlags1 & PLAYER_STATE1_100000) || (recomp_get_analog_cam_enabled())) && (this->actor.projectedPos.z > 0.0f) &&
                 (fabsf(this->actor.projectedPos.x) < maxProjectedPosToStartFight) && (fabsf(this->actor.projectedPos.y) < maxProjectedPosToStartFight)) {
                 if ((this->unk_704 >= 15) && (CutsceneManager_GetCurrentCsId() == CS_ID_NONE)) {
                     Actor* boss;

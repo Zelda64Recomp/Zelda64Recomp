@@ -70,7 +70,7 @@ void poll_inputs(void) {
     // Begin reading controller data
     osContStartReadData(serialEventQueue);
 
-    bool needs_right_stick = recomp_analog_cam_enabled() || recomp_aiming_override_mode == RECOMP_AIMING_OVERRIDE_FORCE_RIGHT_STICK;
+    bool needs_right_stick = recomp_get_analog_cam_enabled() || recomp_aiming_override_mode == RECOMP_AIMING_OVERRIDE_FORCE_RIGHT_STICK;
     // Suppress the right analog stick if analog camera is active unless the ocarina is in use.
     recomp_set_right_analog_suppressed(needs_right_stick && sOcarinaInstrumentId == OCARINA_INSTRUMENT_OFF);
     // Resets this flag for the next frame;
