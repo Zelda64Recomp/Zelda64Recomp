@@ -43,6 +43,11 @@ namespace recompui {
         void set_margin_top(float margin, Unit unit = Unit::Dp);
         void set_margin_right(float margin, Unit unit = Unit::Dp);
         void set_margin_bottom(float margin, Unit unit = Unit::Dp);
+        void set_margin_auto();
+        void set_margin_left_auto();
+        void set_margin_top_auto();
+        void set_margin_right_auto();
+        void set_margin_bottom_auto();
         void set_border_width(float width, Unit unit = Unit::Dp);
         void set_border_left_width(float width, Unit unit = Unit::Dp);
         void set_border_top_width(float width, Unit unit = Unit::Dp);
