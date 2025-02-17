@@ -289,6 +289,29 @@ namespace recompui {
         set_property(Rml::PropertyId::MarginBottom, Rml::Property(margin, to_rml(unit)));
     }
 
+    void Style::set_margin_auto() {
+        set_property(Rml::PropertyId::MarginLeft, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+        set_property(Rml::PropertyId::MarginTop, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+        set_property(Rml::PropertyId::MarginRight, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+        set_property(Rml::PropertyId::MarginBottom, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+    }
+
+    void Style::set_margin_left_auto() {
+        set_property(Rml::PropertyId::MarginLeft, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+    }
+
+    void Style::set_margin_top_auto() {
+        set_property(Rml::PropertyId::MarginTop, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+    }
+
+    void Style::set_margin_right_auto() {
+        set_property(Rml::PropertyId::MarginRight, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+    }
+
+    void Style::set_margin_bottom_auto() {
+        set_property(Rml::PropertyId::MarginBottom, Rml::Property(Rml::Style::Margin::Type::Auto, Rml::Unit::KEYWORD));
+    }
+
     void Style::set_border_width(float width, Unit unit) {
         Rml::Property property(width, to_rml(unit));
         set_property(Rml::PropertyId::BorderTopWidth, property);
