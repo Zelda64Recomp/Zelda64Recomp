@@ -19,6 +19,7 @@
 
 #include "librecomp/overlays.hpp"
 #include "librecomp/helpers.hpp"
+#include "ultramodern/error_handling.hpp"
 
 using namespace recompui;
 
@@ -696,6 +697,22 @@ void recompui_set_tab_index(uint8_t* rdram, recomp_context* ctx) {
     resource->set_tab_index(static_cast<TabIndex>(tab_index));
 }
 
+void recompui_register_callback(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to register callback on non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+
+    Element* element = static_cast<Element*>(resource);
+    PTR(void) callback = _arg<1, PTR(void)>(rdram, ctx);
+    PTR(void) userdata = _arg<2, PTR(void)>(rdram, ctx);
+
+    element->register_callback(callback, userdata);
+}
+
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
 void recompui::register_ui_exports() {
@@ -777,4 +794,5 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_set_column_gap);
     REGISTER_FUNC(recompui_set_drag);
     REGISTER_FUNC(recompui_set_tab_index);
+    REGISTER_FUNC(recompui_register_callback);
 }

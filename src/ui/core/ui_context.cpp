@@ -367,7 +367,7 @@ void recompui::ContextId::process_updates() {
             continue;
         }
 
-        static_cast<Element*>(cur_resource->get())->process_event(update_event);
+        static_cast<Element*>(cur_resource->get())->handle_event(update_event);
     }
 }
 

@@ -110,13 +110,21 @@ void Element::propagate_disabled(bool disabled) {
         base->SetAttribute("disabled", attribute_state);
 
         if (events_enabled & Events(EventType::Enable)) {
-            process_event(Event::enable_event(!attribute_state));
+            handle_event(Event::enable_event(!attribute_state));
         }
 
         for (auto &child : children) {
             child->propagate_disabled(attribute_state);
         }
     }
+}
+
+void Element::handle_event(const Event& event) {
+    for (const auto& callback : callbacks) {
+        recompui::queue_ui_callback(resource_id, event, callback);
+    }
+
+    process_event(event);
 }
 
 void Element::ProcessEvent(Rml::Event &event) {
@@ -134,10 +142,10 @@ void Element::ProcessEvent(Rml::Event &event) {
     // Events that are processed during any phase.
     switch (event.GetId()) {
     case Rml::EventId::Mousedown:
-        process_event(Event::click_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f)));
+        handle_event(Event::click_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f)));
         break;
     case Rml::EventId::Drag:
-        process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Move));
+        handle_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Move));
         break;
     default:
         break;
@@ -147,28 +155,28 @@ void Element::ProcessEvent(Rml::Event &event) {
     if (event.GetPhase() == Rml::EventPhase::Target) {
         switch (event.GetId()) {
         case Rml::EventId::Mouseover:
-            process_event(Event::hover_event(true));
+            handle_event(Event::hover_event(true));
             break;
         case Rml::EventId::Mouseout:
-            process_event(Event::hover_event(false));
+            handle_event(Event::hover_event(false));
             break;
         case Rml::EventId::Focus:
-            process_event(Event::focus_event(true));
+            handle_event(Event::focus_event(true));
             break;
         case Rml::EventId::Blur:
-            process_event(Event::focus_event(false));
+            handle_event(Event::focus_event(false));
             break;
         case Rml::EventId::Dragstart:
-            process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Start));
+            handle_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Start));
             break;
         case Rml::EventId::Dragend:
-            process_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::End));
+            handle_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::End));
             break;
         case Rml::EventId::Change: {
             if (events_enabled & Events(EventType::Text)) {
                 Rml::Variant *value_variant = base->GetAttribute("value");
                 if (value_variant != nullptr) {
-                    process_event(Event::text_event(value_variant->Get<std::string>()));
+                    handle_event(Event::text_event(value_variant->Get<std::string>()));
                 }
             }
 
@@ -307,6 +315,10 @@ void Element::queue_update() {
     }    
 
     cur_context.queue_element_update(resource_id);
+}
+
+void Element::register_callback(PTR(void) callback, PTR(void) userdata) {
+    callbacks.emplace_back(UICallback{.callback = callback, .userdata = userdata});
 }
 
 }

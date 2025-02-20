@@ -3,14 +3,22 @@
 #include "ui_style.h"
 #include "../core/ui_context.h"
 
+#include "recomp.h"
+#include <ultramodern/ultra64.h>
+
 #include <unordered_set>
 
 namespace recompui {
+struct UICallback {
+    PTR(void) callback;
+    PTR(void) userdata;
+};
+
 class ContextId;
 class Element : public Style, public Rml::EventListener {
     friend ContextId create_context(const std::filesystem::path& path);
     friend ContextId create_context();
-    friend class ContextId; // To allow ContextId to call the process_event method directly.
+    friend class ContextId; // To allow ContextId to call the handle_event method directly.
 private:
     Rml::Element *base = nullptr;
     Rml::ElementPtr base_owning = {};
@@ -19,6 +27,7 @@ private:
     std::vector<uint32_t> styles_counter;
     std::unordered_set<std::string_view> style_active_set;
     std::unordered_multimap<std::string_view, uint32_t> style_name_index_map;
+    std::vector<UICallback> callbacks;
     std::vector<Element *> children;
     bool shim = false;
     bool enabled = true;
@@ -30,6 +39,7 @@ private:
     void apply_style(Style *style);
     void apply_styles();
     void propagate_disabled(bool disabled);
+    void handle_event(const Event &e);
 
     // Style overrides.
     virtual void set_property(Rml::PropertyId property_id, const Rml::Property &property) override;
@@ -63,6 +73,9 @@ public:
     float get_client_width();
     float get_client_height();
     void queue_update();
+    void register_callback(PTR(void) callback, PTR(void) userdata);
 };
+
+void queue_ui_callback(recompui::ResourceId resource, const Event& e, const UICallback& callback);
 
 } // namespace recompui
