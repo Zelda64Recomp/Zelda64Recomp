@@ -1,13 +1,16 @@
 #include "patches.h"
 #include "fault.h"
 #include "transform_ids.h"
+#include "extended_actors.h"
 #include "z64actor.h"
-
-u16 next_actor_transform = 0;
+#include "mem_funcs.h"
 
 extern FaultClient sActorFaultClient;
+void Actor_Destroy(Actor* actor, PlayState* play);
 Actor* Actor_Delete(ActorContext* actorCtx, Actor* actor, PlayState* play);
 void ZeldaArena_Free(void* ptr);
+Actor* Actor_RemoveFromCategory(PlayState* play, ActorContext* actorCtx, Actor* actorToRemove);
+void Actor_FreeOverlay(ActorOverlay* entry);
 
 RECOMP_PATCH void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
     s32 i;
@@ -34,18 +37,11 @@ RECOMP_PATCH void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) 
         actorCtx->absoluteSpace = NULL;
     }
 
-    // @recomp Reset the actor transform IDs as all actors have been deleted.
-    next_actor_transform = 0;
+    // @recomp Reset the actor extension data.
+    recomp_clear_all_actor_data();
 
     Play_SaveCycleSceneFlags(&play->state);
     ActorOverlayTable_Cleanup();
-}
-
-u32 create_actor_transform_id() {
-    u32 ret = next_actor_transform;
-    next_actor_transform++;
-
-    return ret;
 }
 
 RECOMP_DECLARE_EVENT(recomp_should_actor_init(PlayState* play, Actor* actor, bool* should));
@@ -54,6 +50,9 @@ RECOMP_DECLARE_EVENT(recomp_should_actor_update(PlayState* play, Actor* actor, b
 RECOMP_DECLARE_EVENT(recomp_after_actor_update(PlayState* play, Actor* actor));
 
 RECOMP_PATCH void Actor_Init(Actor* actor, PlayState* play) {
+    // @recomp Allocate the actor's extension data.
+    actor_set_slot(actor, recomp_create_actor_data(actor->id));
+
     Actor_SetWorldToHome(actor);
     Actor_SetShapeRotToWorld(actor);
     Actor_SetFocus(actor, 0.0f);
@@ -88,11 +87,47 @@ RECOMP_PATCH void Actor_Init(Actor* actor, PlayState* play) {
             Actor_Kill(actor);
         }
     }
+}
+
+RECOMP_PATCH Actor* Actor_Delete(ActorContext* actorCtx, Actor* actor, PlayState* play) {
+    s32 pad;
+    Player* player = GET_PLAYER(play);
+    Actor* newHead;
+    ActorOverlay* overlayEntry = actor->overlayEntry;
+
+    if ((player != NULL) && (actor == player->lockOnActor)) {
+        Player_Untarget(player);
+        Camera_ChangeMode(Play_GetCamera(play, Play_GetActiveCamId(play)), CAM_MODE_NORMAL);
+    }
+
+    if (actor == actorCtx->targetCtx.fairyActor) {
+        actorCtx->targetCtx.fairyActor = NULL;
+    }
+
+    if (actor == actorCtx->targetCtx.forcedTargetActor) {
+        actorCtx->targetCtx.forcedTargetActor = NULL;
+    }
+
+    if (actor == actorCtx->targetCtx.bgmEnemy) {
+        actorCtx->targetCtx.bgmEnemy = NULL;
+    }
+
+    AudioSfx_StopByPos(&actor->projectedPos);
+    Actor_Destroy(actor, play);
+
+    newHead = Actor_RemoveFromCategory(play, actorCtx, actor);
+
+    // @recomp Destroy the actor's extension data.
+    recomp_destroy_actor_data(actor_get_slot(actor));
     
-    // @recomp Pick a transform ID for this actor and encode it into struct padding
-    u32 cur_transform_id = create_actor_transform_id();
-    actorIdByte0(actor) = (cur_transform_id >>  0) & 0xFF;
-    actorIdByte1(actor) = (cur_transform_id >>  8) & 0xFF;;
+    ZeldaArena_Free(actor);
+
+    if (overlayEntry->vramStart != NULL) {
+        overlayEntry->numLoaded--;
+        Actor_FreeOverlay(overlayEntry);
+    }
+
+    return newHead;
 }
 
 // @recomp Copied from z_actor.c
@@ -105,8 +140,6 @@ typedef struct {
     /* 0x14 */ Player* player;
     /* 0x18 */ u32 updateActorFlagsMask; // Actor will update only if at least 1 actor flag is set in this bitmask
 } UpdateActor_Params;                    // size = 0x1C
-
-void Actor_Destroy(Actor* actor, PlayState* play);
 
 RECOMP_PATCH Actor* Actor_UpdateActor(UpdateActor_Params* params) {
     PlayState* play = params->play;
@@ -1403,3 +1436,10 @@ RECOMP_PATCH void Actor_Draw(PlayState* play, Actor* actor) {
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
+
+ActorExtensionId z64recomp_extend_actor(s16 actor_id, u32 size);
+ActorExtensionId z64recomp_extend_actor_all(u32 size);
+
+void* z64recomp_get_extended_actor_data(Actor* actor, ActorExtensionId extension);
+u32 z64recomp_get_actor_spawn_index(Actor* actor);
+
