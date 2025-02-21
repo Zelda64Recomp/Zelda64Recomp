@@ -21,6 +21,7 @@ namespace recompui {
         Pointer
     };
 
+    // These two enums must be kept in sync with patches/recompui_event_structs.h!
     enum class EventType {
         None,
         Click,

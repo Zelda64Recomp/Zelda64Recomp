@@ -1,5 +1,6 @@
 #include "patches.h"
 #include "misc_funcs.h"
+#include "transform_ids.h"
 #include "loadfragment.h"
 
 void Main_ClearMemory(void* begin, void* end);
@@ -15,6 +16,9 @@ RECOMP_PATCH void Main_Init(void) {
     OSMesgQueue mq;
     OSMesg msg[1];
     size_t prevSize;
+
+    // @recomp Register base actor extensions.
+    register_base_actor_extensions();
 
     // @recomp_event recomp_on_init(): Allow mods to initialize themselves once.
     recomp_on_init();

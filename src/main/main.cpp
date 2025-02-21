@@ -27,6 +27,7 @@
 #include "zelda_render.h"
 #include "zelda_support.h"
 #include "zelda_game.h"
+#include "recomp_data.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
 #include "librecomp/mods.hpp"
@@ -631,6 +632,7 @@ int main(int argc, char** argv) {
 
     zelda64::register_overlays();
     zelda64::register_patches();
+    recomp::init_extended_actor_data();
     zelda64::load_config();
 
     recomp::rsp::callbacks_t rsp_callbacks{
