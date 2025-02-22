@@ -137,6 +137,11 @@ extern "C" void recomp_create_actor_data(uint8_t* rdram, recomp_context* ctx) {
         void* data = recomp::alloc(rdram, alloc_size);
         alloc_count++;
         data_ptr = reinterpret_cast<uint8_t*>(data) - rdram + 0xFFFFFFFF80000000U;
+        // Zero the allocated memory.
+        // A memset should be fine here since this data is aligned, but use a byteswapped loop just to be safe.
+        for (size_t i = 0; i < alloc_size; i++) {
+            MEM_B(i, data_ptr) = 0;
+        }
     }
 
     // Add the actor's fields to the actor data slotmap.
