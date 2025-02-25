@@ -1,7 +1,7 @@
 #ifndef __ZELDA_RENDER_H__
 #define __ZELDA_RENDER_H__
 
-#include <unordered_set>
+#include <set>
 #include <filesystem>
 
 #include "common/rt64_user_configuration.h"
@@ -32,7 +32,7 @@ namespace zelda64 {
 
         protected:
             std::unique_ptr<RT64::Application> app;
-            std::unordered_set<std::filesystem::path> enabled_texture_packs;
+            std::set<std::filesystem::path> enabled_texture_packs;
         };
 
         std::unique_ptr<ultramodern::renderer::RendererContext> create_render_context(uint8_t *rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode);

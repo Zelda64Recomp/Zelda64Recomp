@@ -15,6 +15,7 @@
 #include "recomp_input.h"
 #include "librecomp/game.hpp"
 #include "zelda_config.h"
+#include "zelda_support.h"
 #include "ui_rml_hacks.hpp"
 
 #include "concurrentqueue.h"
@@ -34,6 +35,9 @@
 #ifdef _WIN32
 #   include "InterfaceVS.hlsl.dxil.h"
 #   include "InterfacePS.hlsl.dxil.h"
+#elif defined(__APPLE__)
+#   include "InterfaceVS.hlsl.metal.h"
+#   include "InterfacePS.hlsl.metal.h"
 #endif
 
 #ifdef _WIN32
@@ -43,6 +47,13 @@
 #    define GET_SHADER_SIZE(name, format) \
         ((format) == RT64::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
         (format) == RT64::RenderShaderFormat::DXIL ? std::size(name##BlobDXIL) : 0)
+#elif defined(__APPLE__)
+#    define GET_SHADER_BLOB(name, format) \
+((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
+(format) == RT64::RenderShaderFormat::METAL ? name##BlobMSL : nullptr)
+#    define GET_SHADER_SIZE(name, format) \
+((format) == RT64::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
+(format) == RT64::RenderShaderFormat::METAL ? std::size(name##BlobMSL) : 0)
 #else
 #    define GET_SHADER_BLOB(name, format) \
         ((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : nullptr)
@@ -1144,8 +1155,6 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     Rml::Debugger::Initialise(ui_context->rml.context);
 
     {
-        const Rml::String directory = "assets/";
-
         struct FontFace {
             const char* filename;
             bool fallback_face;
@@ -1162,7 +1171,8 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
         };
 
         for (const FontFace& face : font_faces) {
-            Rml::LoadFontFace(directory + face.filename, face.fallback_face);
+            auto font = zelda64::get_asset_path(face.filename);
+            Rml::LoadFontFace(font.string(), face.fallback_face);
         }
     }
 

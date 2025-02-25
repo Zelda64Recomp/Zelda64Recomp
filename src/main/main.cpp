@@ -25,6 +25,7 @@
 #include "zelda_config.h"
 #include "zelda_sound.h"
 #include "zelda_render.h"
+#include "zelda_support.h"
 #include "zelda_game.h"
 #include "ovl_patches.hpp"
 #include "librecomp/game.hpp"
@@ -51,7 +52,8 @@ void exit_error(const char* str, Ts ...args) {
     // TODO pop up an error
     ((void)fprintf(stderr, str, args), ...);
     assert(false);
-    std::quick_exit(EXIT_FAILURE);
+        
+    ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
 }
 
 ultramodern::gfx_callbacks_t::gfx_data_t create_gfx() {
@@ -125,7 +127,9 @@ SDL_Window* window;
 ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::gfx_data_t) {
     uint32_t flags = SDL_WINDOW_RESIZABLE;
 
-#if defined(RT64_SDL_WINDOW_VULKAN)
+#if defined(__APPLE__)
+    flags |= SDL_WINDOW_METAL;
+#elif defined(RT64_SDL_WINDOW_VULKAN)
     flags |= SDL_WINDOW_VULKAN;
 #endif
 
@@ -151,6 +155,9 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
     return ultramodern::renderer::WindowHandle{ wmInfo.info.win.window, GetCurrentThreadId() };
 #elif defined(__linux__) || defined(__ANDROID__)
     return ultramodern::renderer::WindowHandle{ window };
+#elif defined(__APPLE__)
+    SDL_MetalView view = SDL_Metal_CreateView(window);
+    return ultramodern::renderer::WindowHandle{ wmInfo.info.cocoa.window,  SDL_Metal_GetLayer(view) };
 #else
     static_assert(false && "Unimplemented");
 #endif

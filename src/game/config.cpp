@@ -13,6 +13,8 @@
 #elif defined(__linux__)
 #include <unistd.h>
 #include <pwd.h>
+#elif defined(__APPLE__)
+#include "apple/rt64_apple.h"
 #endif
 
 constexpr std::u8string_view general_filename = u8"general.json";
@@ -71,7 +73,7 @@ T from_or_default(const json& j, const std::string& key, T default_value) {
     else {
         ret = default_value;
     }
-    
+
     return ret;
 }
 
@@ -129,7 +131,7 @@ namespace recomp {
 }
 
 std::filesystem::path zelda64::get_app_folder_path() {
-   // directly check for portable.txt (windows and native linux binary)    
+   // directly check for portable.txt (windows and native linux binary)
    if (std::filesystem::exists("portable.txt")) {
        return std::filesystem::current_path();
    }
@@ -145,8 +147,8 @@ std::filesystem::path zelda64::get_app_folder_path() {
    }
 
    CoTaskMemFree(known_path);
-#elif defined(__linux__)
-   // check for APP_FOLDER_PATH env var used by AppImage
+#elif defined(__linux__) || defined(__APPLE__)
+   // check for APP_FOLDER_PATH env var
    if (getenv("APP_FOLDER_PATH") != nullptr) {
        return std::filesystem::path{getenv("APP_FOLDER_PATH")};
    }
@@ -154,7 +156,11 @@ std::filesystem::path zelda64::get_app_folder_path() {
    const char *homedir;
 
    if ((homedir = getenv("HOME")) == nullptr) {
+    #if defined(__linux__)
        homedir = getpwuid(getuid())->pw_dir;
+    #elif defined(__APPLE__)
+        homedir = GetHomeDirectory();
+    #endif
    }
 
    if (homedir != nullptr) {
@@ -206,7 +212,7 @@ bool save_json_with_backups(const std::filesystem::path& path, const nlohmann::j
     return recomp::finalize_output_file_with_backup(path);
 }
 
-bool save_general_config(const std::filesystem::path& path) {    
+bool save_general_config(const std::filesystem::path& path) {
     nlohmann::json config_json{};
 
     zelda64::to_json(config_json["targeting_mode"], zelda64::get_targeting_mode());
@@ -220,7 +226,7 @@ bool save_general_config(const std::filesystem::path& path) {
     config_json["analog_cam_mode"] = zelda64::get_analog_cam_mode();
     config_json["analog_camera_invert_mode"] = zelda64::get_analog_camera_invert_mode();
     config_json["debug_mode"] = zelda64::get_debug_mode_enabled();
-    
+
     return save_json_with_backups(path, config_json);
 }
 
@@ -438,7 +444,7 @@ bool save_sound_config(const std::filesystem::path& path) {
     config_json["main_volume"] = zelda64::get_main_volume();
     config_json["bgm_volume"] = zelda64::get_bgm_volume();
     config_json["low_health_beeps"] = zelda64::get_low_health_beeps_enabled();
-    
+
     return save_json_with_backups(path, config_json);
 }
 
@@ -500,7 +506,7 @@ void zelda64::save_config() {
     }
 
     std::filesystem::create_directories(recomp_dir);
-    
+
     // TODO error handling for failing to save config files.
 
     save_general_config(recomp_dir / general_filename);

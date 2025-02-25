@@ -263,6 +263,9 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
         case ultramodern::renderer::GraphicsApi::Vulkan:
             app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::Vulkan;
             break;
+        case ultramodern::renderer::GraphicsApi::Metal:
+            app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::Metal;
+            break;
         default:
         case ultramodern::renderer::GraphicsApi::Auto:
             // Don't override if auto is selected.
