@@ -247,7 +247,16 @@ bool Element::is_enabled() const {
 }
 
 void Element::set_text(std::string_view text) {
+    // TODO escape this
     base->SetInnerRML(std::string(text));
+}
+
+std::string Element::get_input_text() {
+    return base->GetAttribute("value", std::string{});
+}
+
+void Element::set_input_text(std::string_view val) {
+    base->SetAttribute("value", std::string{ val });
 }
 
 void Element::set_src(std::string_view src) {
@@ -317,8 +326,8 @@ void Element::queue_update() {
     cur_context.queue_element_update(resource_id);
 }
 
-void Element::register_callback(PTR(void) callback, PTR(void) userdata) {
-    callbacks.emplace_back(UICallback{.callback = callback, .userdata = userdata});
+void Element::register_callback(ContextId context, PTR(void) callback, PTR(void) userdata) {
+    callbacks.emplace_back(UICallback{.context = context, .callback = callback, .userdata = userdata});
 }
 
 }

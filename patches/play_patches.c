@@ -179,7 +179,7 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
         if (CHECK_EVENTINF(EVENTINF_TRIGGER_DAYTELOP)) {
             CLEAR_EVENTINF(EVENTINF_TRIGGER_DAYTELOP);
             STOP_GAMESTATE(&this->state);
-            // Use non-relocatable reference to DayTelop_Init instead.
+            // @recomp Use non-relocatable reference to DayTelop_Init instead.
             SET_NEXT_GAMESTATE(&this->state, DayTelop_Init_NORELOCATE, sizeof(DayTelopState));
             return;
         }
@@ -195,7 +195,7 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
     if (gSaveContext.save.entrance == -1) {
         gSaveContext.save.entrance = 0;
         STOP_GAMESTATE(&this->state);
-        // Use non-relocatable reference to TitleSetup_Init instead.
+        // @recomp Use non-relocatable reference to TitleSetup_Init instead.
         SET_NEXT_GAMESTATE(&this->state, TitleSetup_Init_NORELOCATE, sizeof(TitleSetupState));
         return;
     }
