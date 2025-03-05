@@ -10,6 +10,7 @@
 
 namespace recompui {
 struct UICallback {
+    ContextId context;
     PTR(void) callback;
     PTR(void) userdata;
 };
@@ -63,6 +64,8 @@ public:
     void set_enabled(bool enabled);
     bool is_enabled() const;
     void set_text(std::string_view text);
+    std::string get_input_text();
+    void set_input_text(std::string_view text);
     void set_src(std::string_view src);
     void set_style_enabled(std::string_view style_name, bool enabled);
     bool is_element() override { return true; }
@@ -73,7 +76,7 @@ public:
     float get_client_width();
     float get_client_height();
     void queue_update();
-    void register_callback(PTR(void) callback, PTR(void) userdata);
+    void register_callback(ContextId context, PTR(void) callback, PTR(void) userdata);
 };
 
 void queue_ui_callback(recompui::ResourceId resource, const Event& e, const UICallback& callback);

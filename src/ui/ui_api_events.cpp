@@ -106,11 +106,15 @@ extern "C" void recomp_run_ui_callbacks(uint8_t* rdram, recomp_context* ctx) {
 
     while (queued_callbacks.try_dequeue(cur_callback)) {
         if (convert_event(cur_callback.event, *event_data)) {
+            recompui::ContextId cur_context = cur_callback.callback.context;
+            cur_context.open();
+
             ctx->r4 = static_cast<int32_t>(cur_callback.resource.slot_id);
             ctx->r5 = stack_frame;
             ctx->r6 = cur_callback.callback.userdata;
 
             LOOKUP_FUNC(cur_callback.callback.callback)(rdram, ctx);
+            cur_context.close();
         }
     }
 

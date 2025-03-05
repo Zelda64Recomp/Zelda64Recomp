@@ -179,6 +179,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_radio.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_scroll_container.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_slider.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_span.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_style.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_text_input.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_toggle.cpp
