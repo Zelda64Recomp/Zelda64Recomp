@@ -138,6 +138,20 @@ void recompui_hide_context(uint8_t* rdram, recomp_context* ctx) {
     recompui::hide_context(ui_context);
 }
 
+void recompui_set_context_captures_input(uint8_t* rdram, recomp_context* ctx) {
+    ContextId ui_context = get_context(rdram, ctx);
+    bool captures_input = _arg<1, int>(rdram, ctx) != 0;
+
+    ui_context.set_captures_input(captures_input);
+}
+
+void recompui_set_context_captures_mouse(uint8_t* rdram, recomp_context* ctx) {
+    ContextId ui_context = get_context(rdram, ctx);
+    bool captures_mouse = _arg<1, int>(rdram, ctx) != 0;
+
+    ui_context.set_captures_mouse(captures_mouse);
+}
+
 // Resources
 void recompui_create_style(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
@@ -780,6 +794,8 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_context_root);
     REGISTER_FUNC(recompui_show_context);
     REGISTER_FUNC(recompui_hide_context);
+    REGISTER_FUNC(recompui_set_context_captures_input);
+    REGISTER_FUNC(recompui_set_context_captures_mouse);
     REGISTER_FUNC(recompui_create_style);
     REGISTER_FUNC(recompui_create_element);
     REGISTER_FUNC(recompui_create_label);

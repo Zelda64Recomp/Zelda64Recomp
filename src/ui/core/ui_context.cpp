@@ -34,6 +34,8 @@ namespace recompui {
         Element root_element;
         std::vector<Element*> loose_elements;
         std::unordered_set<ResourceId> to_update;
+        bool captures_input = true;
+        bool captures_mouse = true;
         Context(Rml::ElementDocument* document) : document(document), root_element(document) {}
     };
 } // namespace recompui
@@ -369,6 +371,47 @@ void recompui::ContextId::process_updates() {
 
         static_cast<Element*>(cur_resource->get())->handle_event(update_event);
     }
+}
+
+bool recompui::ContextId::captures_input() {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        return false;
+    }
+    return ctx->captures_input;
+
+}
+
+bool recompui::ContextId::captures_mouse() {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        return false;
+    }
+    return ctx->captures_mouse;
+}
+
+void recompui::ContextId::set_captures_input(bool captures_input) {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        return;
+    }
+    ctx->captures_input = captures_input;
+}
+
+void recompui::ContextId::set_captures_mouse(bool captures_mouse) {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        return;
+    }
+    ctx->captures_mouse = captures_mouse;
 }
 
 recompui::Style* recompui::ContextId::add_resource_impl(std::unique_ptr<Style>&& resource) {

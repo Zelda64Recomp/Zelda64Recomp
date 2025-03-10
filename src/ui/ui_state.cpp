@@ -151,7 +151,6 @@ Rml::Element* find_autofocus_element(Rml::Element* start) {
 struct ContextDetails {
     recompui::ContextId context;
     Rml::ElementDocument* document;
-    bool takes_input;
 };
 
 class UIState {
@@ -266,7 +265,7 @@ public:
             recompui::set_cursor_visible(mouse_is_active);
         }
 
-        Rml::ElementDocument* current_document = top_input_document();
+        Rml::ElementDocument* current_document = top_mouse_document();
         if (current_document == nullptr) {
             return;
         }
@@ -286,7 +285,7 @@ public:
     }
 
     void update_focus(bool mouse_moved, bool non_mouse_interacted) {
-        Rml::ElementDocument* current_document = top_input_document();
+        Rml::ElementDocument* current_document = top_mouse_document();
 
         if (current_document == nullptr) {
             return;
@@ -341,12 +340,10 @@ public:
             recompui::message_box("Attemped to show the same context twice");
             assert(false);
         }
-        bool takes_input = context.takes_input();
         Rml::ElementDocument* document = context.get_document();
         shown_contexts.push_back(ContextDetails{
             .context = context,
-            .document = document,
-            .takes_input = takes_input
+            .document = document
         });
 
         // auto& on_show = context.on_show;
@@ -383,8 +380,12 @@ public:
         return std::find_if(shown_contexts.begin(), shown_contexts.end(), [context](auto& c){ return c.context == context; }) != shown_contexts.end();
     }
 
-    bool is_context_taking_input() {
-        return std::find_if(shown_contexts.begin(), shown_contexts.end(), [](auto& c){ return c.takes_input; }) != shown_contexts.end();
+    bool is_context_capturing_input() {
+        return std::find_if(shown_contexts.begin(), shown_contexts.end(), [](auto& c){ return c.context.captures_input(); }) != shown_contexts.end();
+    }
+
+    bool is_context_capturing_mouse() {
+        return std::find_if(shown_contexts.begin(), shown_contexts.end(), [](auto& c){ return c.context.captures_mouse(); }) != shown_contexts.end();
     }
 
     bool is_any_context_shown() {
@@ -394,7 +395,17 @@ public:
     Rml::ElementDocument* top_input_document() {
         // Iterate backwards and stop at the first context that takes input.
         for (auto it = shown_contexts.rbegin(); it != shown_contexts.rend(); it++) {
-            if (it->takes_input) {
+            if (it->context.captures_input()) {
+                return it->document;
+            }
+        }
+        return nullptr;
+    }
+
+    Rml::ElementDocument* top_mouse_document() {
+        // Iterate backwards and stop at the first context that takes input.
+        for (auto it = shown_contexts.rbegin(); it != shown_contexts.rend(); it++) {
+            if (it->context.captures_mouse()) {
                 return it->document;
             }
         }
@@ -556,8 +567,10 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     bool config_was_open = recompui::is_context_shown(recompui::get_config_context_id()) || recompui::is_context_shown(recompui::get_config_sub_menu_context_id());
 
     while (recompui::try_deque_event(cur_event)) {
-        bool context_taking_input = recompui::is_context_taking_input();
+        bool context_capturing_input = recompui::is_context_capturing_input();
+        bool context_capturing_mouse = recompui::is_context_capturing_mouse();
         if (!recomp::all_input_disabled()) {
+            bool is_mouse_input = false;
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
             switch (cur_event.type) {
             case SDL_EventType::SDL_MOUSEMOTION: {
@@ -582,11 +595,17 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             case SDL_EventType::SDL_MOUSEBUTTONDOWN:
                 mouse_moved = true;
                 mouse_clicked = true;
+                is_mouse_input = true;
+                break;
+                
+            case SDL_EventType::SDL_MOUSEBUTTONUP:
+            case SDL_EventType::SDL_MOUSEWHEEL:
+                is_mouse_input = true;
                 break;
                 
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN: {
                 int rml_key = cont_button_to_key(cur_event.cbutton);
-                if (context_taking_input && rml_key) {
+                if (context_capturing_input && rml_key) {
                     ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
                 }
                 non_mouse_interacted = true;
@@ -619,7 +638,7 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                         *await_stick_return = true;
                         non_mouse_interacted = true;
                         int rml_key = cont_axis_to_key(cur_event.caxis, axis_value);
-                        if (context_taking_input && rml_key) {
+                        if (context_capturing_input && rml_key) {
                             ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
                         }
                     }
@@ -632,8 +651,16 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 break;
             }
 
-            if (context_taking_input) {
-                RmlSDL::InputEventHandler(ui_state->context, cur_event);
+            // Send the event to RmlUi if this type of event is being captured.
+            if (is_mouse_input) {
+                if (context_capturing_mouse) {
+                    RmlSDL::InputEventHandler(ui_state->context, cur_event);
+                }
+            }
+            else {
+                if (context_capturing_input) {
+                    RmlSDL::InputEventHandler(ui_state->context, cur_event);
+                }
             }
         }
 
@@ -753,14 +780,24 @@ bool recompui::is_context_shown(ContextId context) {
     return ui_state->is_context_shown(context);
 }
 
-bool recompui::is_context_taking_input() {
+bool recompui::is_context_capturing_input() {
     std::lock_guard lock{ui_state_mutex};
 
     if (!ui_state) {
         return false;
     }
 
-    return ui_state->is_context_taking_input();
+    return ui_state->is_context_capturing_input();
+}
+
+bool recompui::is_context_capturing_mouse() {
+    std::lock_guard lock{ui_state_mutex};
+
+    if (!ui_state) {
+        return false;
+    }
+
+    return ui_state->is_context_capturing_mouse();
 }
 
 bool recompui::is_any_context_shown() {

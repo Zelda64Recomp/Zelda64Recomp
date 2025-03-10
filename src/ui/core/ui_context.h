@@ -47,8 +47,11 @@ namespace recompui {
 
         static constexpr ContextId null() { return ContextId{ .slot_id = uint32_t(-1) }; }
 
-        // TODO
-        bool takes_input() { return true; }
+        bool captures_input();
+        bool captures_mouse();
+
+        void set_captures_input(bool captures_input);
+        void set_captures_mouse(bool captures_input);
     };
 
     ContextId create_context(const std::filesystem::path& path);

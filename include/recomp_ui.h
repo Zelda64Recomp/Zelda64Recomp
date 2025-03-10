@@ -49,7 +49,8 @@ namespace recompui {
     void hide_context(ContextId context);
     void hide_all_contexts();
     bool is_context_shown(ContextId context);
-    bool is_context_taking_input();
+    bool is_context_capturing_input();
+    bool is_context_capturing_mouse();
     bool is_any_context_shown();
 
     ContextId get_launcher_context_id();

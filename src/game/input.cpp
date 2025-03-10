@@ -103,7 +103,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             SDL_KeyboardEvent* keyevent = &event->key;
 
             // Skip repeated events when not in the menu
-            if (!recompui::is_context_taking_input() &&
+            if (!recompui::is_context_capturing_input() &&
                 event->key.repeat) {
                 break;
             }
@@ -713,7 +713,7 @@ void recomp::set_right_analog_suppressed(bool suppressed) {
 
 bool recomp::game_input_disabled() {
     // Disable input if any menu that blocks input is open.
-    return recompui::is_context_taking_input();
+    return recompui::is_context_capturing_input();
 }
 
 bool recomp::all_input_disabled() {
