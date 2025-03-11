@@ -33,7 +33,7 @@ namespace recompui {
         Rml::ElementDocument* document;
         Element root_element;
         std::vector<Element*> loose_elements;
-        std::unordered_set<ResourceId> to_update;
+        std::unordered_set<ResourceId> to_update;        
         bool captures_input = true;
         bool captures_mouse = true;
         Context(Rml::ElementDocument* document) : document(document), root_element(document) {}
@@ -307,6 +307,15 @@ void recompui::ContextId::open() {
     ctx->context_lock.lock();
     opened_context = ctx;
     opened_context_id = *this;
+}
+
+bool recompui::ContextId::open_if_not_already() {
+    if (opened_context_id == *this) {
+        return false;
+    }
+
+    open();
+    return true;
 }
 
 void recompui::ContextId::close() {

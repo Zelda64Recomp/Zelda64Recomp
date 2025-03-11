@@ -4,7 +4,7 @@ namespace recompui {
 
     // RadioOption
 
-    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "label") {
+    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "label", true) {
         this->index = index;
 
         set_text(name);

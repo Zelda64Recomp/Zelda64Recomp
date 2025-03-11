@@ -181,6 +181,17 @@ namespace recompui {
 
     }
 
+    void Style::set_visibility(Visibility visibility) {
+        switch (visibility) {
+        case Visibility::Visible:
+            set_property(Rml::PropertyId::Visibility, Rml::Style::Visibility::Visible);
+            break;
+        case Visibility::Hidden:
+            set_property(Rml::PropertyId::Visibility, Rml::Style::Visibility::Hidden);
+            break;
+        }
+    }
+
     void Style::set_position(Position position) {
         switch (position) {
         case Position::Absolute:

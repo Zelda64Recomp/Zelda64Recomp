@@ -34,6 +34,7 @@ private:
     bool enabled = true;
     bool disabled_attribute = false;
     bool disabled_from_parent = false;
+    bool can_set_text = false;
 
     void add_child(Element *child);
     void register_event_listeners(uint32_t events_enabled);
@@ -56,9 +57,11 @@ public:
     Element(Rml::Element *base);
 
     // Used to actually construct elements.
-    Element(Element* parent, uint32_t events_enabled = 0, Rml::String base_class = "div");
+    Element(Element* parent, uint32_t events_enabled = 0, Rml::String base_class = "div", bool can_set_text = false);
     virtual ~Element();
     void clear_children();
+    bool remove_child(ResourceId child);
+    bool remove_child(Element *child) { remove_child(child->get_resource_id()); }
     void add_style(Style *style, std::string_view style_name);
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);

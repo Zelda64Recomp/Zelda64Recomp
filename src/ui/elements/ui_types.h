@@ -152,6 +152,11 @@ namespace recompui {
         TableCell
     };
 
+    enum class Visibility {
+        Visible,
+        Hidden
+    };
+
     enum class Position {
         Absolute,
         Relative

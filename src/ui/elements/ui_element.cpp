@@ -1,3 +1,5 @@
+#include "RmlUi/Core/StringUtilities.h"
+
 #include "ui_element.h"
 #include "../core/ui_context.h"
 
@@ -13,7 +15,7 @@ Element::Element(Rml::Element *base) {
     this->shim = true;
 }
 
-Element::Element(Element* parent, uint32_t events_enabled, Rml::String base_class) {
+Element::Element(Element* parent, uint32_t events_enabled, Rml::String base_class, bool can_set_text) : can_set_text(can_set_text) {
     ContextId context = get_current_context();
     base_owning = context.get_document()->CreateElement(base_class);
 
@@ -39,6 +41,10 @@ Element::~Element() {
 
 void Element::add_child(Element *child) {
     assert(child != nullptr);
+    if (can_set_text) {
+        assert(false && "Elements with settable text cannot have children");
+        return;
+    }
 
     children.emplace_back(child);
 
@@ -134,9 +140,11 @@ void Element::ProcessEvent(Rml::Event &event) {
         context = get_context_from_document(doc);
     }
 
+    bool did_open = false;
+
     // TODO disallow null contexts once the entire UI system has been migrated.
     if (context != ContextId::null()) {
-        context.open();
+        did_open = context.open_if_not_already();
     }
 
     // Events that are processed during any phase.
@@ -187,7 +195,7 @@ void Element::ProcessEvent(Rml::Event &event) {
         }
     }
 
-    if (context != ContextId::null()) {
+    if (context != ContextId::null() && did_open) {
         context.close();
     }
 }
@@ -213,6 +221,24 @@ void Element::clear_children() {
 
     // Clear the child list.
     children.clear();
+}
+
+bool Element::remove_child(ResourceId child) {
+    bool found = false;
+
+    ContextId context = get_current_context();
+
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        Element* cur_child = *it;
+        if (cur_child->get_resource_id() == child) {
+            children.erase(it);
+            context.destroy_resource(cur_child);
+            found = true;
+            break;
+        }
+    }
+
+    return found;
 }
 
 void Element::add_style(Style *style, const std::string_view style_name) {
@@ -247,8 +273,13 @@ bool Element::is_enabled() const {
 }
 
 void Element::set_text(std::string_view text) {
-    // TODO escape this
-    base->SetInnerRML(std::string(text));
+    if (can_set_text) {
+        // Escape the string into Rml to prevent element injection.
+        base->SetInnerRML(Rml::StringUtilities::EncodeRml(std::string(text)));
+    }
+    else {
+        assert(false && "Attempted to set text of an element that cannot have its text set.");
+    }
 }
 
 std::string Element::get_input_text() {

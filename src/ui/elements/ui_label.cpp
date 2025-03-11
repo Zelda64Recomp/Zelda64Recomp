@@ -4,7 +4,7 @@
 
 namespace recompui {
 
-    Label::Label(Element *parent, LabelStyle label_style) : Element(parent) {
+    Label::Label(Element *parent, LabelStyle label_style) : Element(parent, 0U, "div", true) {
         switch (label_style) {
         case LabelStyle::Annotation:
             set_color(Color{ 185, 125, 242, 255 });

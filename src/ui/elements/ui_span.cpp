@@ -4,7 +4,7 @@
 
 namespace recompui {
 
-    Span::Span(Element *parent) : Element(parent, 0, "span") {
+    Span::Span(Element *parent) : Element(parent, 0, "span", true) {
         set_font_style(FontStyle::Normal);
     }
 

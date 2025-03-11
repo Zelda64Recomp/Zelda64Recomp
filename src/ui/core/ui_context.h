@@ -42,6 +42,7 @@ namespace recompui {
         Element* get_root_element();
 
         void open();
+        bool open_if_not_already();
         void close();
         void process_updates();
 

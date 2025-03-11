@@ -20,6 +20,7 @@ namespace recompui {
     public:
         Style();
         virtual ~Style();
+        void set_visibility(Visibility visibility);
         void set_position(Position position);
         void set_left(float left, Unit unit = Unit::Dp);
         void set_top(float top, Unit unit = Unit::Dp);

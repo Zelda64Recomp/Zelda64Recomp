@@ -168,6 +168,25 @@ void recompui_create_element(uint8_t* rdram, recomp_context* ctx) {
     return_resource(ctx, ret->get_resource_id());
 }
 
+void recompui_destroy_element(uint8_t* rdram, recomp_context* ctx) {
+    Style* parent_resource = arg_style<0>(rdram, ctx);
+
+    if (!parent_resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to remove child from non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+
+    Element* parent = static_cast<Element*>(parent_resource);
+    ResourceId to_remove = arg_resource_id<1>(rdram, ctx);
+
+    if (!parent->remove_child(to_remove)) {
+        recompui::message_box("Fatal error in mod - attempted to remove child from wrong parent");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+}
+
 void recompui_create_label(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     Element* parent = arg_element<1>(rdram, ctx, ui_context);
@@ -206,6 +225,13 @@ void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
 }
 
 // Position and Layout
+void recompui_set_visibility(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+    uint32_t visibility = _arg<1, uint32_t>(rdram, ctx);
+
+    resource->set_visibility(static_cast<Visibility>(visibility));
+}
+
 void recompui_set_position(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     uint32_t position = _arg<1, uint32_t>(rdram, ctx);
@@ -645,6 +671,19 @@ void recompui_set_overflow_y(uint8_t* rdram, recomp_context* ctx) {
 }
 
 // Text and Fonts
+void recompui_set_text(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to set text of non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+
+    Element* element = static_cast<Element*>(resource);
+    element->set_text(_arg_string<1>(rdram, ctx));
+}
+
 void recompui_set_font_size(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
     float size = _arg_float_a1(rdram, ctx);
@@ -731,12 +770,12 @@ void recompui_set_tab_index(uint8_t* rdram, recomp_context* ctx) {
     resource->set_tab_index(static_cast<TabIndex>(tab_index));
 }
 
-// Getters
+// Text
 void recompui_get_input_text(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
 
     if (!resource->is_element()) {
-        recompui::message_box("Fatal error in mod - attempted to get text of non-element");
+        recompui::message_box("Fatal error in mod - attempted to get input text of non-element");
         assert(false);
         ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
     }
@@ -746,12 +785,11 @@ void recompui_get_input_text(uint8_t* rdram, recomp_context* ctx) {
     return_string(rdram, ctx, ret);
 }
 
-// Setters
 void recompui_set_input_text(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
 
     if (!resource->is_element()) {
-        recompui::message_box("Fatal error in mod - attempted to set text of non-element");
+        recompui::message_box("Fatal error in mod - attempted to set input text of non-element");
         assert(false);
         ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
     }
@@ -798,10 +836,12 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_set_context_captures_mouse);
     REGISTER_FUNC(recompui_create_style);
     REGISTER_FUNC(recompui_create_element);
+    REGISTER_FUNC(recompui_destroy_element);
     REGISTER_FUNC(recompui_create_label);
     // REGISTER_FUNC(recompui_create_span);
     REGISTER_FUNC(recompui_create_textinput);
     REGISTER_FUNC(recompui_create_button);
+    REGISTER_FUNC(recompui_set_visibility);
     REGISTER_FUNC(recompui_set_position);
     REGISTER_FUNC(recompui_set_left);
     REGISTER_FUNC(recompui_set_top);
@@ -860,6 +900,7 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_set_overflow);
     REGISTER_FUNC(recompui_set_overflow_x);
     REGISTER_FUNC(recompui_set_overflow_y);
+    REGISTER_FUNC(recompui_set_text);
     REGISTER_FUNC(recompui_set_font_size);
     REGISTER_FUNC(recompui_set_letter_spacing);
     REGISTER_FUNC(recompui_set_line_height);
