@@ -83,7 +83,7 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, c
     title_label->set_text(cur_details.display_name);
     version_label->set_text(cur_details.version.to_string());
 
-    std::string authors_str = "<i>Authors</i>:";
+    std::string authors_str = "Authors:";
     bool first = true;
     for (const std::string& author : details.authors) {
         authors_str += (first ? " " : ", ") + author;

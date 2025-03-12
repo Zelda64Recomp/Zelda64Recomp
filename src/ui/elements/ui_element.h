@@ -61,7 +61,7 @@ public:
     virtual ~Element();
     void clear_children();
     bool remove_child(ResourceId child);
-    bool remove_child(Element *child) { remove_child(child->get_resource_id()); }
+    bool remove_child(Element *child) { return remove_child(child->get_resource_id()); }
     void add_style(Style *style, std::string_view style_name);
     void add_style(Style *style, const std::initializer_list<std::string_view> &style_names);
     void set_enabled(bool enabled);
