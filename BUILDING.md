@@ -39,7 +39,7 @@ choco install make
 You will need to decompress the NTSC-U N64 Majora's Mask ROM (sha1: d6133ace5afaa0882cf214cf88daba39e266c078) before running the recompiler.
 
 There are a few tools that can do it:
-* This python script from the Majora's Mask decompilation project: https://github.com/zeldaret/mm/blob/main/tools/buildtools/decompress_baserom.py
+* This python script from the Majora's Mask decompilation project: https://github.com/zeldaret/mm/blob/main/tools/decompress_baserom.py
 * https://github.com/z64tools/z64decompress
 
 Regardless of which method you use, copy the decompressed ROM to the root of the Zelda64Recomp repository with this filename:
@@ -73,5 +73,5 @@ cmake --build build-cmake --target Zelda64Recompiled -j$(nproc) --config Release
 
 Voilà! You should now have a `Zelda64Recompiled` executable in the build directory! If you used Visual Studio this will be `out/build/x64-[Configuration]` and if you used the provided CMake commands then this will be `build-cmake`. You will need to run the executable out of the root folder of this project or copy the assets folder to the build folder to run it.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > In the game itself, you should be using a standard ROM, not the decompressed one.
