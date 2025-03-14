@@ -49,16 +49,16 @@ namespace recompui {
 
     void Slider::update_label_text() {
         char text_buffer[32];
-        int precision = type == SliderType::Double ? 1 : 0;
-        auto result = std::to_chars(text_buffer, text_buffer + sizeof(text_buffer) - 1, value, std::chars_format::fixed, precision);
-        if (result.ec == std::errc()) {
-            if (type == SliderType::Percent) {
-                *result.ptr = '%';
-                result.ptr++;
-            }
 
-            value_label->set_text(std::string(text_buffer, result.ptr));
+        if (type == SliderType::Double) {
+            std::snprintf(text_buffer, sizeof(text_buffer), "%.1f", value);
+        } else if (type == SliderType::Percent) {
+            std::snprintf(text_buffer, sizeof(text_buffer), "%d%%", static_cast<int>(value));
+        } else {
+            std::snprintf(text_buffer, sizeof(text_buffer), "%d", static_cast<int>(value));
         }
+
+        value_label->set_text(text_buffer);
     }
 
     Slider::Slider(Element *parent, SliderType type) : Element(parent) {
