@@ -246,7 +246,7 @@ public:
         }
 
         copy_command_queue_ = device->createCommandQueue(RT64::RenderCommandListType::COPY);
-        copy_command_list_ = device->createCommandList(RT64::RenderCommandListType::COPY);
+        copy_command_list_ = copy_command_queue_->createCommandList(RT64::RenderCommandListType::COPY);
         copy_command_fence_ = device->createCommandFence();
     }
 
