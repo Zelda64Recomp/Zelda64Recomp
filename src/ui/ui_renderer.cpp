@@ -211,7 +211,19 @@ public:
 
         // Create the pipeline description
         RT64::RenderGraphicsPipelineDesc pipeline_desc{};
-        pipeline_desc.renderTargetBlend[0] = RT64::RenderBlendDesc::AlphaBlend();
+        // Set up alpha blending for non-premultiplied alpha. RmlUi recommends using premultiplied alpha normally,
+        // but that would require preprocessing all input files, which would be difficult for user-provided content (such as mods).
+        // This blending setup produces similar results as premultipled alpha but for normal assets as it multiplies during blending and
+        // computes the output alpha value the same way that a premultipled alpha blender would.
+        pipeline_desc.renderTargetBlend[0] = RT64::RenderBlendDesc {
+            .blendEnabled = true,
+            .srcBlend = RT64::RenderBlend::SRC_ALPHA,
+            .dstBlend = RT64::RenderBlend::INV_SRC_ALPHA,
+            .blendOp = RT64::RenderBlendOperation::ADD,
+            .srcBlendAlpha = RT64::RenderBlend::ONE,
+            .dstBlendAlpha = RT64::RenderBlend::INV_SRC_ALPHA,
+            .blendOpAlpha = RT64::RenderBlendOperation::ADD,
+        };
         pipeline_desc.renderTargetFormat[0] = SwapChainFormat; // TODO: Use whatever format the swap chain was created with.
         pipeline_desc.renderTargetCount = 1;
         pipeline_desc.cullMode = RT64::RenderCullMode::NONE;
