@@ -441,7 +441,7 @@ void ModMenu::create_mod_list() {
         const std::vector<char> &thumbnail = recomp::mods::get_mod_thumbnail(mod_details[mod_index].mod_id);
         std::string thumbnail_name = generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id);
         if (!thumbnail.empty()) {
-            recompui::queue_image_from_bytes(thumbnail_name, thumbnail);
+            recompui::queue_image_from_bytes_file(thumbnail_name, thumbnail);
             loaded_thumbnails.emplace(thumbnail_name);
         }
 

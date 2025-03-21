@@ -822,8 +822,12 @@ Rml::ElementDocument* recompui::create_empty_document() {
     return ui_state->context->CreateDocument();
 }
 
-void recompui::queue_image_from_bytes(const std::string &src, const std::vector<char> &bytes) {
-    ui_state->render_interface.queue_image_from_bytes(src, bytes);
+void recompui::queue_image_from_bytes_file(const std::string &src, const std::vector<char> &bytes) {
+    ui_state->render_interface.queue_image_from_bytes_file(src, bytes);
+}
+
+void recompui::queue_image_from_bytes_rgba32(const std::string &src, const std::vector<char> &bytes, uint32_t width, uint32_t height) {
+    ui_state->render_interface.queue_image_from_bytes_rgba32(src, bytes, width, height);
 }
 
 void recompui::release_image(const std::string &src) {

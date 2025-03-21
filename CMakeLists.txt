@@ -178,6 +178,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_menu.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_api.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_api_events.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_api_images.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/util/hsv.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/core/ui_context.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/elements/ui_button.cpp

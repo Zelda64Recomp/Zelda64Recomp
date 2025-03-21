@@ -110,7 +110,9 @@ namespace recompui {
     Rml::ElementPtr create_custom_element(Rml::Element* parent, std::string tag);
     Rml::ElementDocument* load_document(const std::filesystem::path& path);
     Rml::ElementDocument* create_empty_document();
-    void queue_image_from_bytes(const std::string &src, const std::vector<char> &bytes);
+
+    void queue_image_from_bytes_rgba32(const std::string &src, const std::vector<char> &bytes, uint32_t width, uint32_t height);
+    void queue_image_from_bytes_file(const std::string &src, const std::vector<char> &bytes);
     void release_image(const std::string &src);
 }
 
