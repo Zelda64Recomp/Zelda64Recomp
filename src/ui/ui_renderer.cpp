@@ -659,11 +659,11 @@ public:
 
     void queue_image_from_bytes_file(const std::string &src, const std::vector<char> &bytes) {
         // Width and height aren't used for file images, so set them to 0.
-        image_from_bytes_queue.enqueue(ImageFromBytes(ImageType::File, 0, 0, src, bytes));
+        image_from_bytes_queue.enqueue(ImageFromBytes{ .type = ImageType::File, .width = 0, .height = 0, .name = src, .bytes = bytes });
     }
 
     void queue_image_from_bytes_rgba32(const std::string &src, const std::vector<char> &bytes, uint32_t width, uint32_t height) {
-        image_from_bytes_queue.enqueue(ImageFromBytes(ImageType::RGBA32, width, height, src, bytes));
+        image_from_bytes_queue.enqueue(ImageFromBytes{ .type = ImageType::RGBA32, .width = width, .height = height, .name = src, .bytes = bytes });
     }
 
     void flush_image_from_bytes_queue() {
