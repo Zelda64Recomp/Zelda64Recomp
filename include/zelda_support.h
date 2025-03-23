@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <filesystem>
+#include <optional>
 
 namespace zelda64 {
     std::filesystem::path get_asset_path(const char* asset);
@@ -12,6 +13,7 @@ namespace zelda64 {
 // Apple specific methods that usually require Objective-C. Implemented in support_apple.mm.
 #ifdef __APPLE__
     void dispatch_on_ui_thread(std::function<void()> func);
+    std::optional<std::filesystem::path> get_application_support_directory();
     std::filesystem::path get_bundle_resource_directory();
     std::filesystem::path get_bundle_directory();
 #endif
