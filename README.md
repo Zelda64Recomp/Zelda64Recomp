@@ -122,6 +122,7 @@ You'll probably also want to change the default behavior so that you don't need 
 #### Where is the savefile stored?
 - Windows: `%LOCALAPPDATA%\Zelda64Recompiled\saves`
 - Linux: `~/.config/Zelda64Recompiled/saves`
+- macOS: `~/Library/Application Support/Zelda64Recompiled/saves`
 
 #### How do I choose a different ROM?
 **You don't.** This project is **only** a port of Majora's Mask (and Ocarina of Time in the future), and it will only accept one specific ROM: the US version of the N64 release of Majora's Mask. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.** 
