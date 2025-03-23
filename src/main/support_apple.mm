@@ -1,4 +1,5 @@
 #include "zelda_support.h"
+#include <dlfcn.h>
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
@@ -12,9 +13,41 @@ namespace zelda64 {
         });
     }
 
-    const char* get_bundle_resource_directory() {
+    std::filesystem::path get_bundle_resource_directory() {
         NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
-        return strdup([bundlePath UTF8String]);
+        return std::filesystem::path([bundlePath UTF8String]);
+    }
+
+    std::filesystem::path get_bundle_directory() {
+        NSURL *bundleUrl = [[NSBundle mainBundle] bundleURL];
+
+        // The OS may relocate the app elsewhere for security reasons if, for example,
+        // it was downloaded and opened from the Downloads folder. In this case, we need
+        // to untranslocate the path to find out where the actual app bundle is.
+        if (void* securityHandle = dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY)) {
+            using IsTranslocatedURLFunc = Boolean (*)(CFURLRef path, bool* isTranslocated,
+                                                      CFErrorRef* __nullable error);
+            using CreateOriginalPathForURLFunc = CFURLRef __nullable (*)(CFURLRef translocatedPath,
+                                                                         CFErrorRef* __nullable error);
+
+            const auto IsTranslocatedURL = reinterpret_cast<IsTranslocatedURLFunc>(
+                dlsym(securityHandle, "SecTranslocateIsTranslocatedURL"));
+            const auto CreateOriginalPathForURL = reinterpret_cast<CreateOriginalPathForURLFunc>(
+                dlsym(securityHandle, "SecTranslocateCreateOriginalPathForURL"));
+
+            bool translocated = false;
+            if (IsTranslocatedURL && CreateOriginalPathForURL &&
+                IsTranslocatedURL((__bridge CFURLRef) bundleUrl, &translocated, nullptr) && translocated) {
+                CFURLRef untranslocated = CreateOriginalPathForURL((__bridge CFURLRef) bundleUrl, nullptr);
+                if (untranslocated) {
+                    bundleUrl = (NSURL*) untranslocated;
+                }
+            }
+
+            dlclose(securityHandle);
+        }
+
+        return std::filesystem::path([bundleUrl fileSystemRepresentation]);
     }
 }
 
