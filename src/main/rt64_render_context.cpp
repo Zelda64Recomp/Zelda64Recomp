@@ -193,6 +193,23 @@ ultramodern::renderer::SetupResult map_setup_result(RT64::Application::SetupResu
     std::exit(EXIT_FAILURE);
 }
 
+ultramodern::renderer::GraphicsApi map_graphics_api(RT64::UserConfiguration::GraphicsAPI api) {
+    switch (api) {
+        case RT64::UserConfiguration::GraphicsAPI::D3D12:
+            return ultramodern::renderer::GraphicsApi::D3D12;
+        case RT64::UserConfiguration::GraphicsAPI::Vulkan:
+            return ultramodern::renderer::GraphicsApi::Vulkan;
+        case RT64::UserConfiguration::GraphicsAPI::Metal:
+            return ultramodern::renderer::GraphicsApi::Metal;
+        case RT64::UserConfiguration::GraphicsAPI::Automatic:
+            return ultramodern::renderer::GraphicsApi::Auto;
+    }
+
+    fprintf(stderr, "Unhandled `RT64::UserConfiguration::GraphicsAPI` ?\n");
+    assert(false);
+    std::exit(EXIT_FAILURE);
+}
+
 zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::renderer::WindowHandle window_handle, bool debug) {
     static unsigned char dummy_rom_header[0x40];
     recompui::set_render_hooks();
@@ -267,9 +284,8 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
         case ultramodern::renderer::GraphicsApi::Metal:
             app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::Metal;
             break;
-        default:
         case ultramodern::renderer::GraphicsApi::Auto:
-            // Don't override if auto is selected.
+            app->userConfig.graphicsAPI = RT64::UserConfiguration::GraphicsAPI::Automatic;
             break;
     }
 
@@ -279,6 +295,8 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
     thread_id = window_handle.thread_id;
 #endif
     setup_result = map_setup_result(app->setup(thread_id));
+    // Get the API that RT64 chose.
+    chosen_api = map_graphics_api(app->chosenGraphicsAPI);
     if (setup_result != ultramodern::renderer::SetupResult::Success) {
         app = nullptr;
         return;
