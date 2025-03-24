@@ -2,6 +2,7 @@
 #include "recomp_input.h"
 #include "zelda_sound.h"
 #include "zelda_render.h"
+#include "zelda_support.h"
 #include "ultramodern/config.hpp"
 #include "librecomp/files.hpp"
 #include <filesystem>
@@ -135,6 +136,14 @@ std::filesystem::path zelda64::get_app_folder_path() {
    if (std::filesystem::exists("portable.txt")) {
        return std::filesystem::current_path();
    }
+
+#if defined(__APPLE__)
+   // Check for portable file in the directory containing the app bundle.
+   const auto app_bundle_path = zelda64::get_bundle_directory().parent_path();
+   if (std::filesystem::exists(app_bundle_path / "portable.txt")) {
+       return app_bundle_path;
+   }
+#endif
 
    std::filesystem::path recomp_dir{};
 

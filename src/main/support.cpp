@@ -25,9 +25,7 @@ namespace zelda64 {
     std::filesystem::path get_asset_path(const char* asset) {
         std::filesystem::path base_path = "";
 #if defined(__APPLE__)
-        const char* resource_dir = get_bundle_resource_directory();
-        base_path = resource_dir;
-        free((void*)resource_dir);
+        base_path = get_bundle_resource_directory();
 #endif
 
         return base_path / "assets" / asset;
