@@ -199,7 +199,7 @@ namespace recompui {
                     continue;
                 }
 
-                dynamic_lib_files.emplace_back(target_write_path);
+                dynamic_lib_files.emplace_back(target_path);
             }
         }
 
