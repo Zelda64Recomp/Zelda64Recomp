@@ -175,6 +175,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_elements.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_details_panel.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_installer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_mod_menu.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_api.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_api_events.cpp
