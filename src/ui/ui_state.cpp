@@ -23,6 +23,7 @@
 #include "ui_rml_hacks.hpp"
 #include "ui_elements.h"
 #include "ui_mod_menu.h"
+#include "ui_mod_installer.h"
 #include "ui_renderer.h"
 
 bool can_focus(Rml::Element* element) {
@@ -833,4 +834,11 @@ void recompui::queue_image_from_bytes_rgba32(const std::string &src, const std::
 
 void recompui::release_image(const std::string &src) {
     Rml::ReleaseTexture(src);
+}
+
+void recompui::drop_files(const std::list<std::filesystem::path> &file_list) {
+    // TODO: Needs a progress callback and a prompt for every mod that needs to be confirmed to be overwritten.
+    ModInstaller::Result result;
+    ModInstaller::start_mod_installation(file_list, nullptr, result);
+    ModInstaller::finish_mod_installation({}, result);
 }

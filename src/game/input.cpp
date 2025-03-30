@@ -42,6 +42,10 @@ static struct {
     bool rumble_active;
 } InputState;
 
+static struct {
+    std::list<std::filesystem::path> files_dropped;
+} DropState;
+
 std::atomic<recomp::InputDevice> scanning_device = recomp::InputDevice::COUNT;
 std::atomic<recomp::InputField> scanned_input;
 
@@ -271,6 +275,18 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             InputState.pending_mouse_delta[0] += motion_event->xrel;
             InputState.pending_mouse_delta[1] += motion_event->yrel;
         }
+        queue_if_enabled(event);
+        break;
+    case SDL_EventType::SDL_DROPBEGIN:
+        DropState.files_dropped.clear();
+        break;
+    case SDL_EventType::SDL_DROPFILE:
+        DropState.files_dropped.emplace_back(std::filesystem::path(std::u8string_view((const char8_t *)(event->drop.file))));
+        SDL_free(event->drop.file);
+        break;
+    case SDL_EventType::SDL_DROPCOMPLETE:
+        recompui::drop_files(DropState.files_dropped);
+        break;
     default:
         queue_if_enabled(event);
         break;
