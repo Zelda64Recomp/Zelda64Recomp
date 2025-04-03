@@ -8,7 +8,7 @@
 #include "ultramodern/error_handling.hpp"
 #include "recomp_ui.h"
 #include "recomp_data.h"
-#include "../patches/mem_funcs.h"
+#include "../patches/actor_funcs.h"
 
 struct ExtensionInfo {
     // Either the actor's type ID, or 0xFFFFFFFF if this is for generic data.
@@ -41,7 +41,7 @@ bool can_register = false;
 size_t alloc_count = 0;
 size_t free_count = 0;
 
-void recomp::init_extended_actor_data() {
+void recomputil::init_extended_actor_data() {
     std::lock_guard lock{ actor_data_mutex };
 
     actor_data_sizes.clear();
@@ -54,7 +54,7 @@ void recomp::init_extended_actor_data() {
     actor_extensions.push_back({});
 }
 
-void recomp::reset_actor_data() {
+void recomputil::reset_actor_data() {
     std::lock_guard lock{ actor_data_mutex };
     actor_data.reset();
     actor_spawn_count = 0;
@@ -113,7 +113,7 @@ extern "C" void recomp_register_actor_extension_generic(uint8_t* rdram, recomp_c
 extern "C" void recomp_clear_all_actor_data(uint8_t* rdram, recomp_context* ctx) {
     (void)rdram;
     (void)ctx;
-    recomp::reset_actor_data();
+    recomputil::reset_actor_data();
 }
 
 extern "C" void recomp_create_actor_data(uint8_t* rdram, recomp_context* ctx) {

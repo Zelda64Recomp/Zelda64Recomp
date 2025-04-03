@@ -629,10 +629,11 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_inverted_axes);
     REGISTER_FUNC(recomp_get_analog_inverted_axes);
     recompui::register_ui_exports();
+    recomputil::register_data_api_exports();
 
     zelda64::register_overlays();
     zelda64::register_patches();
-    recomp::init_extended_actor_data();
+    recomputil::init_extended_actor_data();
     zelda64::load_config();
 
     recomp::rsp::callbacks_t rsp_callbacks{
