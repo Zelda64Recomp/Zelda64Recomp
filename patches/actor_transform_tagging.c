@@ -3,7 +3,7 @@
 #include "transform_ids.h"
 #include "extended_actors.h"
 #include "z64actor.h"
-#include "mem_funcs.h"
+#include "actor_funcs.h"
 
 extern FaultClient sActorFaultClient;
 void Actor_Destroy(Actor* actor, PlayState* play);

@@ -43,7 +43,7 @@ namespace recompui {
 using context_slotmap = dod::slot_map32<recompui::Context>;
 
 static struct {
-    std::mutex all_contexts_lock;
+    std::recursive_mutex all_contexts_lock;
     context_slotmap all_contexts;
     std::unordered_set<recompui::ContextId> opened_contexts;
     std::unordered_map<Rml::ElementDocument*, recompui::ContextId> documents_to_contexts;

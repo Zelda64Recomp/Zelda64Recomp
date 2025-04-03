@@ -1,7 +1,7 @@
 #include "patches.h"
 #include "extended_actors.h"
 #include "transform_ids.h"
-#include "mem_funcs.h"
+#include "actor_funcs.h"
 
 // Use 32 bits of compiler-inserted padding to hold the actor's slot.
 // 0x22 between halfDaysBits and world
