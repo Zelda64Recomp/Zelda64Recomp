@@ -109,7 +109,7 @@ class LockedSlotmap {
 private:
     std::mutex mutex{};
     dod::slot_map32<ValueType> map{};
-    using key_t = dod::slot_map32<ValueType>::key;
+    using key_t = typename dod::slot_map32<ValueType>::key;
 public:
     bool get(uint32_t key, ValueType** out) {
         std::lock_guard lock{mutex};
