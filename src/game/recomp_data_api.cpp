@@ -172,13 +172,18 @@ LockedSlotmap<MemorySlotmap> memory_slotmaps{};
 
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
+static void show_fatal_error_message_box(const char* funcname, const char* errstr) {
+    std::string message = std::string{"Fatal error in mod - "} + funcname + " : " + errstr;
+    recompui::message_box(message.c_str());
+}
+
 #define HANDLE_INVALID_ERROR() \
-    recompui::message_box("Fatal error in mod - " __FUNCTION__ " : handle is invalid"); \
+    show_fatal_error_message_box(__FUNCTION__, "handle is invalid"); \
     assert(false); \
     ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
 
 #define SLOTMAP_KEY_INVALID_ERROR() \
-    recompui::message_box("Fatal error in mod - " __FUNCTION__ " : slotmap key is invalid"); \
+    show_fatal_error_message_box(__FUNCTION__, "slotmap key is invalid"); \
     assert(false); \
     ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
 
