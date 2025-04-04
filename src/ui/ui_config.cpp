@@ -442,11 +442,8 @@ public:
     ~ConfigMenu() override {
 
     }
-    Rml::ElementDocument* load_document(Rml::Context* context) override {
-        (void)context;
+    void load_document() override {
 		config_context = recompui::create_context(zelda64::get_asset_path("config_menu.rml"));
-        Rml::ElementDocument* ret = config_context.get_document();
-		return ret;
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "apply_options",
@@ -957,27 +954,6 @@ void recompui::toggle_fullscreen() {
     new_options.wm_option = (new_options.wm_option == ultramodern::renderer::WindowMode::Windowed) ? ultramodern::renderer::WindowMode::Fullscreen : ultramodern::renderer::WindowMode::Windowed;
     apply_graphics_config();
     graphics_model_handle.DirtyVariable("wm_option");
-}
-
-void recompui::open_prompt(
-	const std::string& headerText,
-	const std::string& contentText,
-	const std::string& confirmLabelText,
-	const std::string& cancelLabelText,
-	std::function<void()> confirmCb,
-	std::function<void()> cancelCb,
-	ButtonVariant _confirmVariant,
-	ButtonVariant _cancelVariant,
-	bool _focusOnCancel,
-	const std::string& _returnElementId
-) {
-	printf("Prompt opened\n    %s (%s): %s %s\n", contentText.c_str(), headerText.c_str(), confirmLabelText.c_str(), cancelLabelText.c_str());
-	printf("    Autoselected %s\n", confirmLabelText.c_str());
-	confirmCb();
-}
-
-bool recompui::is_prompt_open() {
-	return false;
 }
 
 void recompui::set_config_tab(ConfigTab tab) {

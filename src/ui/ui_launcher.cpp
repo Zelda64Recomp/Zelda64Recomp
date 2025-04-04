@@ -62,11 +62,8 @@ public:
     ~LauncherMenu() override {
 
     }
-    Rml::ElementDocument* load_document(Rml::Context* context) override {
-        (void)context;
+    void load_document() override {
 		launcher_context = recompui::create_context(zelda64::get_asset_path("launcher.rml"));
-        Rml::ElementDocument* ret = launcher_context.get_document();
-		return ret;
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "select_rom",

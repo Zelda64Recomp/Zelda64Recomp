@@ -156,11 +156,6 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             return true;
         }
 
-        recompui::ContextId config_context_id = recompui::get_config_context_id();
-        if (!recompui::is_context_shown(config_context_id)) {
-            recompui::show_context(config_context_id, "");
-        }
-
         zelda64::open_quit_game_prompt();
         recompui::activate_mouse();
         break;

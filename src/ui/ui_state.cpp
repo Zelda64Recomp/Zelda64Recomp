@@ -231,9 +231,10 @@ public:
         }
     }
 
-    void load_documents() {
-        launcher_menu_controller->load_document(context);
-        config_menu_controller->load_document(context);
+    void create_menus() {
+        launcher_menu_controller->load_document();
+        config_menu_controller->load_document();
+        recompui::init_prompt_context();
     }
 
     void unload() {
@@ -443,7 +444,7 @@ void init_hook(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
     std::locale::global(std::locale::classic());
 #endif
     ui_state = std::make_unique<UIState>(window, interface, device);
-    ui_state->load_documents();
+    ui_state->create_menus();
 }
 
 moodycamel::ConcurrentQueue<SDL_Event> ui_event_queue{};

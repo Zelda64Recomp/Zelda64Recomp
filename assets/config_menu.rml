@@ -29,7 +29,6 @@
 	<link type="text/template" href="config_menu/sound.rml" />
 	<link type="text/template" href="config_menu/mods.rml" />
 	<link type="text/template" href="config_menu/debug.rml" />
-	<link type="text/template" href="components/prompt.rml" />
 </head>
 <body class="window">
 	<!-- <handle move_target="#document"> -->
@@ -117,19 +116,6 @@
 					<label><span style="font-family:promptfont;">&#x21A7;</span> Accept</label> -->
 				</div>
 			</div>
-			<!-- <div
-				id="prompt-root"
-				data-model="prompt_model"
-				data-if="prompt__open"
-				data-alias-promptOpen="prompt__open"
-				data-alias-promptHeader="prompt__header"
-				data-alias-promptContent="prompt__content"
-				data-alias-promptConfirmLabel="prompt__confirmLabel"
-				data-alias-promptCancelLabel="prompt__cancelLabel"
-				data-event-click="prompt__on_click"
-			>
-				<template src="prompt"/>
-			</div> -->
 		</div>
 	<!-- </handle> -->
 	<!-- <handle size_target="#document" style="position: absolute; width: 16dp; height: 16dp; bottom: 0px; right: 0px; cursor: resize;"></handle> -->

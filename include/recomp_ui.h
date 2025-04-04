@@ -29,7 +29,7 @@ namespace recompui {
     class MenuController {
     public:
         virtual ~MenuController() {}
-        virtual Rml::ElementDocument* load_document(Rml::Context* context) = 0;
+        virtual void load_document() = 0;
         virtual void register_events(UiEventListenerInstancer& listener) = 0;
         virtual void make_bindings(Rml::Context* context) = 0;
     };
@@ -56,7 +56,6 @@ namespace recompui {
     ContextId get_launcher_context_id();
     ContextId get_config_context_id();
     ContextId get_config_sub_menu_context_id();
-    ContextId get_close_prompt_context_id();
 
     enum class ConfigTab {
         General,
@@ -79,6 +78,7 @@ namespace recompui {
         NumVariants,
     };
 
+    void init_prompt_context();
     void open_prompt(
         const std::string& headerText,
         const std::string& contentText,

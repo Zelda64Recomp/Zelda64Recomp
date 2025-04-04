@@ -206,6 +206,7 @@ recompui::ContextId recompui::create_context() {
     root->set_height(100.0f, Unit::Percent);
     root->set_display(Display::Flex);
     root->set_opacity(1.0f);
+    root->set_color(Color{ 242, 242, 242, 255 });
     root->set_font_family("chiaro");
     root->set_font_style(FontStyle::Normal);
     root->set_font_weight(400);
@@ -217,6 +218,8 @@ recompui::ContextId recompui::create_context() {
     root->set_letter_spacing(sz_add * spacing, Unit::Dp);
     root->set_line_height(sz_add, Unit::Dp);
     ret.close();
+
+    doc->Hide();
 
     return ret;
 }
