@@ -84,8 +84,8 @@ namespace recompui {
             bar_element->set_height(2.0f);
             bar_element->set_margin_top(8.0f);
             bar_element->set_background_color(Color{ 255, 255, 255, 50 });
-            bar_element->add_pressed_callback(std::bind(&Slider::bar_clicked, this, std::placeholders::_1, std::placeholders::_2));
-            bar_element->add_dragged_callback(std::bind(&Slider::bar_dragged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            bar_element->add_pressed_callback([this](float x, float y){ bar_clicked(x, y); });
+            bar_element->add_dragged_callback([this](float x, float y, recompui::DragPhase phase){ bar_dragged(x, y, phase); });
             
             circle_element = context.create_element<Clickable>(slider_element, true);
             circle_element->set_position(Position::Relative);
@@ -96,7 +96,7 @@ namespace recompui {
             circle_element->set_margin_left(-8.0f);
             circle_element->set_background_color(Color{ 204, 204, 204, 255 });
             circle_element->set_border_radius(8.0f);
-            circle_element->add_dragged_callback(std::bind(&Slider::circle_dragged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            circle_element->add_dragged_callback([this](float x, float y, recompui::DragPhase phase){ circle_dragged(x, y, phase); });
             circle_element->set_cursor(Cursor::Pointer);
         }
 

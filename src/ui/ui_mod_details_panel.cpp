@@ -62,13 +62,13 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         enable_container->set_gap(16.0f);
         {
             enable_toggle = context.create_element<Toggle>(enable_container);
-            enable_toggle->add_checked_callback(std::bind(&ModDetailsPanel::enable_toggle_checked, this, std::placeholders::_1));
+            enable_toggle->add_checked_callback([this](bool checked){ enable_toggle_checked(checked); });
 
             enable_label = context.create_element<Label>(enable_container, "A currently enabled mod requires this mod", LabelStyle::Annotation);
         }
 
         configure_button = context.create_element<Button>(buttons_container, "Configure", recompui::ButtonStyle::Secondary);
-        configure_button->add_pressed_callback(std::bind(&ModDetailsPanel::configure_button_pressed, this));
+        configure_button->add_pressed_callback([this](){ configure_button_pressed(); });
     }
 }
 

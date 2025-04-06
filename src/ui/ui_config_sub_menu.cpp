@@ -71,7 +71,7 @@ ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min
     slider->set_max_value(max_value);
     slider->set_step_value(step_value);
     slider->set_value(value);
-    slider->add_value_changed_callback(std::bind(&ConfigOptionSlider::slider_value_changed, this, std::placeholders::_1));
+    slider->add_value_changed_callback([this](double v){ slider_value_changed(v); });
 }
 
 // ConfigOptionTextInput
@@ -85,7 +85,7 @@ ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view v
 
     text_input = get_current_context().create_element<TextInput>(this);
     text_input->set_text(value);
-    text_input->add_text_changed_callback(std::bind(&ConfigOptionTextInput::text_changed, this, std::placeholders::_1));
+    text_input->add_text_changed_callback([this](const std::string &text){ text_changed(text); });
 }
 
 // ConfigOptionRadio
@@ -98,7 +98,7 @@ ConfigOptionRadio::ConfigOptionRadio(Element *parent, uint32_t value, const std:
     this->callback = callback;
 
     radio = get_current_context().create_element<Radio>(this);
-    radio->add_index_changed_callback(std::bind(&ConfigOptionRadio::index_changed, this, std::placeholders::_1));
+    radio->add_index_changed_callback([this](uint32_t index){ index_changed(index); });
     for (std::string_view option : options) {
         radio->add_option(option);
     }
@@ -152,7 +152,7 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
 
     {
         back_button = context.create_element<Button>(header_container, "Back", ButtonStyle::Secondary);
-        back_button->add_pressed_callback(std::bind(&ConfigSubMenu::back_button_pressed, this));
+        back_button->add_pressed_callback([this](){ back_button_pressed(); });
         title_label = context.create_element<Label>(header_container, "Title", LabelStyle::Large);
     }
 
@@ -190,7 +190,7 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view id,
     option->set_id(id);
     option->set_name(name);
     option->set_description(description);
-    option->set_hover_callback(std::bind(&ConfigSubMenu::option_hovered, this, std::placeholders::_1, std::placeholders::_2));
+    option->set_hover_callback([this](ConfigOptionElement *option, bool active){ option_hovered(option, active); });
     config_option_elements.emplace_back(option);
 }
 

@@ -1,4 +1,4 @@
-﻿#include "ui_mod_menu.h"
+#include "ui_mod_menu.h"
 #include "recomp_ui.h"
 #include "zelda_support.h"
 
@@ -380,16 +380,19 @@ void ModMenu::mod_configure_requested() {
             switch (option.type) {
             case recomp::mods::ConfigOptionType::Enum: {
                 const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
-                config_sub_menu->add_radio_option(option.id, option.name, option.description, std::get<uint32_t>(config_value), option_enum.options, std::bind(&ModMenu::mod_enum_option_changed, this, std::placeholders::_1, std::placeholders::_2));
+                config_sub_menu->add_radio_option(option.id, option.name, option.description, std::get<uint32_t>(config_value), option_enum.options,
+                    [this](const std::string &id, uint32_t value){ mod_enum_option_changed(id, value); });
                 break;
             }
             case recomp::mods::ConfigOptionType::Number: {
                 const recomp::mods::ConfigOptionNumber &option_number = std::get<recomp::mods::ConfigOptionNumber>(option.variant);
-                config_sub_menu->add_slider_option(option.id, option.name, option.description, std::get<double>(config_value), option_number.min, option_number.max, option_number.step, option_number.percent, std::bind(&ModMenu::mod_number_option_changed, this, std::placeholders::_1, std::placeholders::_2));
+                config_sub_menu->add_slider_option(option.id, option.name, option.description, std::get<double>(config_value), option_number.min, option_number.max, option_number.step, option_number.percent,
+                    [this](const std::string &id, double value){ mod_number_option_changed(id, value); });
                 break;
             }
             case recomp::mods::ConfigOptionType::String: {
-                config_sub_menu->add_text_option(option.id, option.name, option.description, std::get<std::string>(config_value), std::bind(&ModMenu::mod_string_option_changed, this, std::placeholders::_1, std::placeholders::_2));
+                config_sub_menu->add_text_option(option.id, option.name, option.description, std::get<std::string>(config_value),
+                    [this](const std::string &id, const std::string &value){ mod_string_option_changed(id, value); });
                 break;
             }
             default:
@@ -449,8 +452,8 @@ void ModMenu::create_mod_list() {
         mod_entry_spacers.emplace_back(spacer);
 
         ModEntryButton *mod_entry = context.create_element<ModEntryButton>(list_scroll_container, mod_index);
-        mod_entry->set_mod_selected_callback(std::bind(&ModMenu::mod_selected, this, std::placeholders::_1));
-        mod_entry->set_mod_drag_callback(std::bind(&ModMenu::mod_dragged, this, std::placeholders::_1, std::placeholders::_2));
+        mod_entry->set_mod_selected_callback([this](uint32_t mod_index){ mod_selected(mod_index); });
+        mod_entry->set_mod_drag_callback([this](uint32_t mod_index, recompui::EventDrag drag){ mod_dragged(mod_index, drag); });
         mod_entry->set_mod_details(mod_details[mod_index]);
         mod_entry->set_mod_thumbnail(thumbnail_name);
         mod_entry->set_mod_enabled(is_mod_enabled_or_auto(mod_details[mod_index].mod_id));
@@ -521,8 +524,8 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             } // list_container
 
             mod_details_panel = context.create_element<ModDetailsPanel>(body_container);
-            mod_details_panel->set_mod_toggled_callback(std::bind(&ModMenu::mod_toggled, this, std::placeholders::_1));
-            mod_details_panel->set_mod_configure_pressed_callback(std::bind(&ModMenu::mod_configure_requested, this));
+            mod_details_panel->set_mod_toggled_callback([this](bool enabled){ mod_toggled(enabled); });
+            mod_details_panel->set_mod_configure_pressed_callback([this](){ mod_configure_requested(); });
         } // body_container
         
         body_empty_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::SpaceBetween);
@@ -534,7 +537,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             context.create_element<Element>(body_empty_container);
         } // body_empty_container
 
-        footer_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceBetween);
+        footer_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
         footer_container->set_width(100.0f, recompui::Unit::Percent);
         footer_container->set_align_items(recompui::AlignItems::Center);
         footer_container->set_background_color(Color{ 0, 0, 0, 89 });
@@ -545,12 +548,10 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_right_radius(16.0f);
         {
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
-            refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); this->refresh_mods(); });
-
-            context.create_element<Label>(footer_container, "⚠ UNDER CONSTRUCTION ⚠", LabelStyle::Small);
+            refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); refresh_mods(); });
 
             mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
-            mods_folder_button->add_pressed_callback(std::bind(&ModMenu::open_mods_folder, this));
+            mods_folder_button->add_pressed_callback([this](){ open_mods_folder(); });
         } // footer_container
     } // this
     

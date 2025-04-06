@@ -82,7 +82,7 @@ namespace recompui {
 
     void Radio::add_option(std::string_view name) {
         RadioOption *option = get_current_context().create_element<RadioOption>(this, name, uint32_t(options.size()));
-        option->set_pressed_callback(std::bind(&Radio::option_selected, this, std::placeholders::_1));
+        option->set_pressed_callback([this](uint32_t index){ option_selected(index); });
         options.emplace_back(option);
 
         // The first option was added, select it.
