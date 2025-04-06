@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <list>
 
 // TODO move this file into src/ui
 

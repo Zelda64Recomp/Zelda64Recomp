@@ -53,12 +53,12 @@ namespace recompui {
         if (exists) {
             std::filesystem::copy(file_path, target_write_path, ec);
             if (ec) {
-                result.error_messages.emplace_back(std::format("Unable to install {} to mod directory.", file_path.filename().string()));
+                result.error_messages.emplace_back("Unable to install " + file_path.filename().string() + " to mod directory.");
                 return;
             }
         }
         else {
-            result.error_messages.emplace_back(std::format("{} is not a mod.", file_path.string()));
+            result.error_messages.emplace_back(file_path.string() + " is not a mod.");
             std::filesystem::remove(target_write_path, ec);
             return;
         }
@@ -102,21 +102,21 @@ namespace recompui {
                 std::filesystem::path target_write_path = target_path.u8string() + NewExtension;
                 std::ofstream output_stream(target_write_path, std::ios::binary);
                 if (!output_stream.is_open()) {
-                    result.error_messages.emplace_back(std::format("Unable to write to mod directory."));
+                    result.error_messages.emplace_back("Unable to write to mod directory.");
                     continue;
                 }
 
                 if (!mz_zip_reader_extract_to_callback(zip_archive, i, &zip_write_func, &output_stream, 0)) {
                     output_stream.close();
                     std::filesystem::remove(target_write_path, ec);
-                    result.error_messages.emplace_back(std::format("Failed to install {} to mod directory.", path.filename().string()));
+                    result.error_messages.emplace_back("Failed to install " + path.filename().string() + " to mod directory.");
                     continue;
                 }
 
                 output_stream.close();
                 if (output_stream.bad()) {
                     std::filesystem::remove(target_write_path, ec);
-                    result.error_messages.emplace_back(std::format("Failed to install {} to mod directory.", path.filename().string()));
+                    result.error_messages.emplace_back("Failed to install " + path.filename().string() + " to mod directory.");
                     continue;
                 }
 
@@ -124,7 +124,7 @@ namespace recompui {
                 recomp::mods::ModOpenError open_error;
                 std::unique_ptr<recomp::mods::ZipModFileHandle> extracted_file_handle = std::make_unique<recomp::mods::ZipModFileHandle>(target_write_path, open_error);
                 if (open_error != recomp::mods::ModOpenError::Good) {
-                    result.error_messages.emplace_back(std::format("Invalid mod ({}) in {}.", target_path.filename().string(), path.filename().string()));
+                    result.error_messages.emplace_back("Invalid mod (" + target_path.filename().string() + ") in " + path.filename().string() + ".");
                     extracted_file_handle.reset();
                     std::filesystem::remove(target_write_path, ec);
                     continue;
@@ -160,7 +160,7 @@ namespace recompui {
                 }
 
                 if (!exists) {
-                    result.error_messages.emplace_back(std::format("Invalid mod ({}) in {}.", target_path.filename().string(), path.filename().string()));
+                    result.error_messages.emplace_back("Invalid mod (" + target_path.filename().string() + ") in " + path.filename().string() + ".");
                     extracted_file_handle.reset();
                     std::filesystem::remove(target_write_path, ec);
                     continue;
@@ -199,21 +199,21 @@ namespace recompui {
                 std::filesystem::path target_write_path = target_path.u8string() + NewExtension;
                 std::ofstream output_stream(target_write_path, std::ios::binary);
                 if (!output_stream.is_open()) {
-                    result.error_messages.emplace_back(std::format("Failed to install {} to mod directory.", path.filename().string()));
+                    result.error_messages.emplace_back("Failed to install " + path.filename().string() + " to mod directory.");
                     continue;
                 }
 
                 if (!mz_zip_reader_extract_to_callback(zip_archive, i, &zip_write_func, &output_stream, 0)) {
                     output_stream.close();
                     std::filesystem::remove(target_write_path, ec);
-                    result.error_messages.emplace_back(std::format("Failed to install {} to mod directory.", path.filename().string()));
+                    result.error_messages.emplace_back("Failed to install " + path.filename().string() + " to mod directory.");
                     continue;
                 }
 
                 output_stream.close();
                 if (output_stream.bad()) {
                     std::filesystem::remove(target_write_path, ec);
-                    result.error_messages.emplace_back(std::format("Failed to install {} to mod directory.", path.filename().string()));
+                    result.error_messages.emplace_back("Failed to install " + path.filename().string() + " to mod directory.");
                     continue;
                 }
 
@@ -243,7 +243,7 @@ namespace recompui {
         }
 
         if (!found_mod) {
-            result.error_messages.emplace_back(std::format("No mods found in {}.", path.filename().string()));
+            result.error_messages.emplace_back("No mods found in " + path.filename().string() + ".");
         }
     }
 
@@ -259,7 +259,7 @@ namespace recompui {
             if (ec) {
                 // If it fails, remove the new path.
                 std::filesystem::remove(new_path, ec);
-                error_messages.emplace_back(std::format("Unable to rename {}.", path.filename().string()));
+                error_messages.emplace_back("Unable to rename " + path.filename().string() + ".");
                 return;
             }
         }
@@ -270,7 +270,7 @@ namespace recompui {
             // If it fails, remove the new path and also restore the temporary old path to the current path.
             std::filesystem::remove(new_path, ec);
             std::filesystem::rename(old_path, path, ec);
-            error_messages.emplace_back(std::format("Unable to rename {}.", path.filename().string()));
+            error_messages.emplace_back("Unable to rename " + path.filename().string() + ".");
             return;
         }
 
@@ -285,7 +285,7 @@ namespace recompui {
             recomp::mods::ModOpenError open_error;
             recomp::mods::ZipModFileHandle file_handle(path, open_error);
             if (open_error != recomp::mods::ModOpenError::Good) {
-                result.error_messages.emplace_back(std::format("{} is not a valid zip or mod.", path.filename().string()));
+                result.error_messages.emplace_back(path.filename().string() + " is not a valid zip or mod.");
                 continue;
             }
 

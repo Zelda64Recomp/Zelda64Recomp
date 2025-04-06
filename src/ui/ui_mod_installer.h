@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
+#include <list>
 
 namespace recompui {
     struct ModInstaller {
