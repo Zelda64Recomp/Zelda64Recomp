@@ -582,7 +582,7 @@ ModMenu::~ModMenu() {
 
 recompui::ModMenu* mod_menu;
 
-void recompui::update_mod_list() {
+void update_mod_list() {
     if (mod_menu) {
         recompui::ContextId ui_context = recompui::get_config_context_id();
         bool opened = ui_context.open_if_not_already();
@@ -596,7 +596,7 @@ void recompui::update_mod_list() {
     }
 }
 
-void recompui::process_game_started() {
+void process_game_started() {
     if (mod_menu) {
         recompui::ContextId ui_context = recompui::get_config_context_id();
         bool opened = ui_context.open_if_not_already();

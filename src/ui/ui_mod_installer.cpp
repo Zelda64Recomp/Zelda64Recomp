@@ -44,7 +44,7 @@ namespace recompui {
             if (exists) {
                 installation.mod_id = std::string((const char *)(target_path.stem().u8string().c_str()));
                 installation.display_name = installation.mod_id;
-                installation.mod_version = recomp::Version(0, 0, 0);
+                installation.mod_version = recomp::Version{0, 0, 0, ""};
                 installation.mod_file = target_path;
             }
         }
