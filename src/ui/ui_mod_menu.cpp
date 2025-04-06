@@ -1,4 +1,4 @@
-#include "ui_mod_menu.h"
+﻿#include "ui_mod_menu.h"
 #include "recomp_ui.h"
 #include "zelda_support.h"
 
@@ -230,6 +230,20 @@ void ModMenu::open_mods_folder() {
 #else
     static_assert(false, "Not implemented for this platform.");
 #endif
+}
+
+void ModMenu::open_install_dialog() {
+    zelda64::open_file_dialog([](bool success, const std::filesystem::path& path) {
+        if (success) {
+            ContextId old_context = recompui::try_close_current_context();
+
+            recompui::drop_files({ path });
+
+            if (old_context != ContextId::null()) {
+                old_context.open();
+            }
+        }
+    });
 }
 
 void ModMenu::mod_toggled(bool enabled) {
@@ -481,6 +495,7 @@ void ModMenu::process_event(const Event &e) {
             mods_dirty = false;
         }
         if (ultramodern::is_game_started()) {
+            install_mods_button->set_enabled(false);
             refresh_button->set_enabled(false);
         }
         if (active_mod_index != -1) {        
@@ -544,9 +559,16 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_top_width(1.1f);
         footer_container->set_border_top_color(Color{ 255, 255, 255, 25 });
         footer_container->set_padding(20.0f);
+        footer_container->set_gap(20.0f);
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
+            install_mods_button = context.create_element<Button>(footer_container, "Install Mods", recompui::ButtonStyle::Primary);
+            install_mods_button->add_pressed_callback([this](){ open_install_dialog(); });
+
+            Element* footer_spacer = context.create_element<Element>(footer_container);
+            footer_spacer->set_flex(1.0f, 0.0f);
+
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
             refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); refresh_mods(); });
 

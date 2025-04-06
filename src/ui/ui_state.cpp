@@ -901,6 +901,12 @@ void recompui::drop_files(const std::list<std::filesystem::path> &file_list) {
     if (confirmations.empty()) {
         std::vector<std::string> error_messages{};
         ModInstaller::finish_mod_installation(result, error_messages);
+        recomp::mods::scan_mods();
+        ContextId old_context = recompui::try_close_current_context();
+        recompui::update_mod_list();
+        if (old_context != ContextId::null()) {
+            old_context.open();
+        }
         // TODO show errors
     }
     else {
@@ -929,10 +935,11 @@ void recompui::drop_files(const std::list<std::filesystem::path> &file_list) {
                 recomp::mods::close_mods();
                 ModInstaller::finish_mod_installation(result, error_messages);
                 recomp::mods::scan_mods();
-                ContextId old_context = recompui::get_current_context();
-                old_context.close();
+                ContextId old_context = recompui::try_close_current_context();
                 recompui::update_mod_list();
-                old_context.open();
+                if (old_context != ContextId::null()) {
+                    old_context.open();
+                }
                 // TODO show errors
             },
             [result]() {

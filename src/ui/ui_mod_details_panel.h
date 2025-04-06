@@ -7,6 +7,7 @@
 #include "elements/ui_image.h"
 #include "elements/ui_label.h"
 #include "elements/ui_toggle.h"
+#include "elements/ui_scroll_container.h"
 
 namespace recompui {
 
@@ -26,10 +27,9 @@ private:
     Container *header_details_container = nullptr;
     Label *title_label = nullptr;
     Label *version_label = nullptr;
-    Container *body_container = nullptr;
+    ScrollContainer *body_container = nullptr;
     Label *description_label = nullptr;
     Label *authors_label = nullptr;
-    Element *spacer_element = nullptr;
     Container *buttons_container = nullptr;
     Container *enable_container = nullptr;
     Toggle *enable_toggle = nullptr;

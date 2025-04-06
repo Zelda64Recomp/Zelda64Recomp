@@ -9,7 +9,6 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
     set_height(100.0f, Unit::Percent);
     set_display(Display::Flex);
     set_flex_direction(FlexDirection::Column);
-    set_border_bottom_right_radius(16.0f);
     set_background_color(Color{ 190, 184, 219, 25 });
 
     ContextId context = get_current_context();
@@ -19,6 +18,8 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
     header_container->set_padding(16.0f);
     header_container->set_gap(16.0f);
     header_container->set_background_color(Color{ 0, 0, 0, 89 });
+    header_container->set_border_bottom_width(1.1f);
+    header_container->set_border_bottom_color(Color{ 255, 255, 255, 25 });
     {
         thumbnail_container = context.create_element<Container>(header_container, FlexDirection::Column, JustifyContent::SpaceEvenly);
         thumbnail_container->set_flex(0.0f, 0.0f);
@@ -39,23 +40,22 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         }
     }
 
-    body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
-    body_container->set_flex(0.0f, 0.0f);
+    body_container = context.create_element<ScrollContainer>(this, ScrollDirection::Vertical);
     body_container->set_text_align(TextAlign::Left);
     body_container->set_padding(16.0f);
-    body_container->set_gap(16.0f);
     {
-        description_label = context.create_element<Label>(body_container, LabelStyle::Normal);
         authors_label = context.create_element<Label>(body_container, LabelStyle::Normal);
+        authors_label->set_margin_bottom(16.0f);
+        description_label = context.create_element<Label>(body_container, LabelStyle::Normal);
     }
-    
-    spacer_element = context.create_element<Element>(this);
-    spacer_element->set_flex(1.0f, 0.0f);
     
     buttons_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::SpaceAround);
     buttons_container->set_flex(0.0f, 0.0f);
     buttons_container->set_padding(16.0f);
     buttons_container->set_justify_content(JustifyContent::SpaceBetween);
+    buttons_container->set_border_top_width(1.1f);
+    buttons_container->set_border_top_color(Color{ 255, 255, 255, 25 });
+    buttons_container->set_background_color(Color{ 0, 0, 0, 89 });
     {
         enable_container = context.create_element<Container>(buttons_container, FlexDirection::Row, JustifyContent::FlexStart);
         enable_container->set_align_items(AlignItems::Center);
