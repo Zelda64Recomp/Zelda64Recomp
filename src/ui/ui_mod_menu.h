@@ -65,6 +65,7 @@ class ModMenu : public Element {
 public:
     ModMenu(Element *parent);
     virtual ~ModMenu();
+    void set_mods_dirty() { mods_dirty = true; }
 private:
     void refresh_mods();
     void open_mods_folder();
@@ -76,6 +77,7 @@ private:
     void mod_string_option_changed(const std::string &id, const std::string &value);
     void mod_number_option_changed(const std::string &id, double value);
     void create_mod_list();
+    void process_event(const Event &e) override;
 
     Container *body_container = nullptr;
     Container *list_container = nullptr;
@@ -96,6 +98,7 @@ private:
     std::vector<recomp::mods::ModDetails> mod_details{};
     std::unordered_set<std::string> loaded_thumbnails;
     std::string game_mod_id;
+    bool mods_dirty = false;
 
     ConfigSubMenu *config_sub_menu;
 };
@@ -104,8 +107,6 @@ class ElementModMenu : public Rml::Element {
 public:
     ElementModMenu(const Rml::String& tag);
     virtual ~ElementModMenu();
-private:
-    ModMenu *mod_menu;
 };
 
 } // namespace recompui

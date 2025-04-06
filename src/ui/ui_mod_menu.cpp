@@ -212,7 +212,7 @@ void ModMenu::refresh_mods() {
     }
 
     recomp::mods::scan_mods();
-    mod_details = recomp::mods::get_mod_details(game_mod_id);
+    mod_details = recomp::mods::get_all_mod_details(game_mod_id);
     create_mod_list();
 }
 
@@ -336,7 +336,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
 
         // Re-order the mods and update all the details on the menu.
         recomp::mods::set_mod_index(game_mod_id, mod_details[mod_index].mod_id, mod_drag_target_index);
-        mod_details = recomp::mods::get_mod_details(game_mod_id);
+        mod_details = recomp::mods::get_all_mod_details(game_mod_id);
         for (size_t i = 0; i < mod_entry_buttons.size(); i++) {
             mod_entry_buttons[i]->set_mod_details(mod_details[i]);
             mod_entry_buttons[i]->set_mod_thumbnail(generate_thumbnail_src_for_mod(mod_details[i].mod_id));
@@ -471,6 +471,25 @@ void ModMenu::create_mod_list() {
     }
 }
 
+void ModMenu::process_event(const Event &e) {
+    if (e.type == EventType::Update) {
+        if (mods_dirty) {
+            refresh_mods();
+            mods_dirty = false;
+        }
+        if (ultramodern::is_game_started()) {
+            refresh_button->set_enabled(false);
+        }
+        if (active_mod_index != -1) {        
+            bool auto_enabled = recomp::mods::is_mod_auto_enabled(mod_details[active_mod_index].mod_id);
+            bool toggle_enabled = !auto_enabled && (mod_details[active_mod_index].runtime_toggleable || !ultramodern::is_game_started());
+            if (!toggle_enabled) {
+                mod_details_panel->disable_toggle();
+            }
+        }
+    }
+}
+
 ModMenu::ModMenu(Element *parent) : Element(parent) {
     game_mod_id = "mm";
 
@@ -526,7 +545,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_right_radius(16.0f);
         {
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
-            refresh_button->add_pressed_callback(std::bind(&ModMenu::refresh_mods, this));
+            refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); this->refresh_mods(); });
 
             context.create_element<Label>(footer_container, "⚠ UNDER CONSTRUCTION ⚠", LabelStyle::Small);
 
@@ -540,6 +559,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     mod_entry_floating_view->set_position(Position::Absolute);
     mod_entry_floating_view->set_selected(true);
 
+    recomp::mods::scan_mods();
     refresh_mods();
 
     context.close();
@@ -559,6 +579,35 @@ ModMenu::~ModMenu() {
 }
 
 // Placeholder class until the rest of the UI refactor is finished.
+
+recompui::ModMenu* mod_menu;
+
+void recompui::update_mod_list() {
+    if (mod_menu) {
+        recompui::ContextId ui_context = recompui::get_config_context_id();
+        bool opened = ui_context.open_if_not_already();
+
+        mod_menu->set_mods_dirty();
+        mod_menu->queue_update();
+
+        if (opened) {
+            ui_context.close();
+        }
+    }
+}
+
+void recompui::process_game_started() {
+    if (mod_menu) {
+        recompui::ContextId ui_context = recompui::get_config_context_id();
+        bool opened = ui_context.open_if_not_already();
+
+        mod_menu->queue_update();
+
+        if (opened) {
+            ui_context.close();
+        }
+    }
+}
 
 ElementModMenu::ElementModMenu(const Rml::String &tag) : Rml::Element(tag) {
     SetProperty("width", "100%");

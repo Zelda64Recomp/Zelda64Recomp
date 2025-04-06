@@ -52,6 +52,7 @@ namespace recompui {
     bool is_context_capturing_input();
     bool is_context_capturing_mouse();
     bool is_any_context_shown();
+    ContextId try_close_current_context();
 
     ContextId get_launcher_context_id();
     ContextId get_config_context_id();
@@ -79,19 +80,35 @@ namespace recompui {
     };
 
     void init_prompt_context();
-    void open_prompt(
-        const std::string& headerText,
-        const std::string& contentText,
-        const std::string& confirmLabelText,
-        const std::string& cancelLabelText,
-        std::function<void()> confirmCb,
-        std::function<void()> cancelCb,
-        ButtonVariant _confirmVariant = ButtonVariant::Success,
-        ButtonVariant _cancelVariant = ButtonVariant::Error,
-        bool _focusOnCancel = true,
-        const std::string& _returnElementId = ""
+    void open_choice_prompt(
+        const std::string& header_text,
+        const std::string& content_text,
+        const std::string& confirm_label_text,
+        const std::string& cancel_label_text,
+        std::function<void()> confirm_action,
+        std::function<void()> cancel_action,
+        ButtonVariant confirm_variant = ButtonVariant::Success,
+        ButtonVariant cancel_variant = ButtonVariant::Error,
+        bool focus_on_cancel = true,
+        const std::string& return_element_id = ""
     );
+    void open_info_prompt(
+        const std::string& header_text,
+        const std::string& content_text,
+        const std::string& okay_label_text,
+        std::function<void()> okay_action,
+        ButtonVariant okay_variant = ButtonVariant::Error,
+        const std::string& return_element_id = ""
+    );
+    void open_notification(
+        const std::string& header_text,
+        const std::string& content_text,
+        const std::string& return_element_id = ""
+    );
+    void close_prompt();
     bool is_prompt_open();
+    void update_mod_list();
+    void process_game_started();
 
     void apply_color_hack();
     void get_window_size(int& width, int& height);

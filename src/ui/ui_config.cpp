@@ -165,7 +165,7 @@ void apply_graphics_config(void) {
 
 void close_config_menu() {
     if (ultramodern::renderer::get_graphics_config() != new_options) {
-        recompui::open_prompt(
+        recompui::open_choice_prompt(
             "Graphics options have changed",
             "Would you like to apply or discard the changes?",
             "Apply",
@@ -192,7 +192,7 @@ void close_config_menu() {
 }
 
 void zelda64::open_quit_game_prompt() {
-    recompui::open_prompt(
+    recompui::open_choice_prompt(
         "Are you sure you want to quit?",
         "Any progress since your last save will be lost.",
         "Quit",

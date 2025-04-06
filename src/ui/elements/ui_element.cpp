@@ -1,5 +1,6 @@
 #include "RmlUi/Core/StringUtilities.h"
 
+#include "recomp_ui.h"
 #include "ui_element.h"
 #include "../core/ui_context.h"
 
@@ -134,6 +135,7 @@ void Element::handle_event(const Event& event) {
 }
 
 void Element::ProcessEvent(Rml::Event &event) {
+    ContextId prev_context = recompui::try_close_current_context();
     ContextId context = ContextId::null();
     Rml::ElementDocument* doc = event.GetTargetElement()->GetOwnerDocument();
     if (doc != nullptr) {
@@ -197,6 +199,10 @@ void Element::ProcessEvent(Rml::Event &event) {
 
     if (context != ContextId::null() && did_open) {
         context.close();
+    }
+
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
     }
 }
 

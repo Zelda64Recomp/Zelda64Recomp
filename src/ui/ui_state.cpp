@@ -837,8 +837,113 @@ void recompui::release_image(const std::string &src) {
 }
 
 void recompui::drop_files(const std::list<std::filesystem::path> &file_list) {
+    // Prevent mod installation after the game has started.
+    if (ultramodern::is_game_started()) {
+        return;
+    }
+
+    recompui::open_notification("Installing Mods", "Please Wait");
     // TODO: Needs a progress callback and a prompt for every mod that needs to be confirmed to be overwritten.
+    // TODO: Run this on a background thread and use the callbacks to advance the state instead of blocking.
     ModInstaller::Result result;
     ModInstaller::start_mod_installation(file_list, nullptr, result);
-    ModInstaller::finish_mod_installation({}, result);
+
+    recompui::close_prompt();
+
+    if (!result.error_messages.empty()) {
+        std::string error_label = std::accumulate(result.error_messages.begin(), result.error_messages.end(), std::string{},
+            [](const std::string &lhs, const std::string &rhs)
+            {
+                return lhs.empty() ? rhs : lhs + '\n' + rhs;
+            });
+
+        recompui::open_info_prompt("Error Installing Mods", error_label, "OK", {}, recompui::ButtonVariant::Tertiary);
+        std::vector<std::string> dummy_error_messages{};
+        ModInstaller::cancel_mod_installation(result, dummy_error_messages);
+        return;
+    }
+
+    std::vector<ModInstaller::Confirmation> confirmations{};
+
+    for (const ModInstaller::Installation& pending_install : result.pending_installations) {
+        if (pending_install.needs_overwrite_confirmation) {
+            // Get the mod details for the current mod at this file path.
+            std::string old_mod_id = recomp::mods::get_mod_id_from_filename(pending_install.mod_file.filename());
+            std::optional<recomp::mods::ModDetails> old_mod_details = {};
+
+            if (!old_mod_id.empty()) {
+                old_mod_details = recomp::mods::get_details_for_mod(old_mod_id);
+            }
+
+            if (old_mod_details) {
+                confirmations.emplace_back(ModInstaller::Confirmation {
+                    .old_display_name = old_mod_details->display_name,
+                    .new_display_name = pending_install.display_name,
+                    .old_mod_id = old_mod_details->mod_id,
+                    .new_mod_id = pending_install.mod_id,
+                    .old_version = old_mod_details->version,
+                    .new_version = pending_install.mod_version
+                });
+            }
+            else {
+                confirmations.emplace_back(ModInstaller::Confirmation {
+                    .old_display_name = "?",
+                    .new_display_name = pending_install.display_name,
+                    .old_mod_id = "",
+                    .new_mod_id = pending_install.mod_id,
+                    .old_version = recomp::Version{0, 0, 0, ""},
+                    .new_version = pending_install.mod_version
+                });
+            }
+        }
+    }
+
+    if (confirmations.empty()) {
+        std::vector<std::string> error_messages{};
+        ModInstaller::finish_mod_installation(result, error_messages);
+        // TODO show errors
+    }
+    else {
+        std::string prompt_text = std::accumulate(confirmations.begin(), confirmations.end(), std::string{},
+            [](const std::string &cur_text, const ModInstaller::Confirmation &confirmation)
+            {
+                std::string new_text{};
+                if (confirmation.old_display_name == confirmation.new_display_name) {
+                    new_text = confirmation.old_display_name + " (" + confirmation.old_version.to_string() + " -> " + confirmation.new_version.to_string() + ")";
+                }
+                else {
+                    new_text =
+                        confirmation.old_display_name + " (" + confirmation.old_version.to_string() + ") -> " +
+                        confirmation.new_display_name + " (" + confirmation.new_version.to_string() + ")";
+                }
+                return cur_text.empty() ? new_text : cur_text + '\n' + new_text;
+            });
+
+        // open prompt where confirm finishes the mod installation with the overwritten files
+        recompui::open_choice_prompt("Overwrite Mods?",
+            prompt_text,
+            "Overwrite",
+            "Cancel",
+            [result]() {
+                std::vector<std::string> error_messages{};
+                recomp::mods::close_mods();
+                ModInstaller::finish_mod_installation(result, error_messages);
+                recomp::mods::scan_mods();
+                ContextId old_context = recompui::get_current_context();
+                old_context.close();
+                recompui::update_mod_list();
+                old_context.open();
+                // TODO show errors
+            },
+            [result]() {
+                std::vector<std::string> error_messages{};
+                ModInstaller::cancel_mod_installation(result, error_messages);
+                // TODO show errors
+            },
+            recompui::ButtonVariant::Success,
+            recompui::ButtonVariant::Error,
+            true,
+            ""
+        );
+    }
 }

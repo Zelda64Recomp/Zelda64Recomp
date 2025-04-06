@@ -344,6 +344,15 @@ void recompui::ContextId::close() {
     }
 }
 
+recompui::ContextId recompui::try_close_current_context() {
+    if (opened_context_id != ContextId::null()) {
+        ContextId prev_context = opened_context_id;
+        opened_context_id.close();
+        return prev_context;
+    }
+    return ContextId::null();
+}
+
 void recompui::ContextId::process_updates() {
     // Ensure a context is currently opened by this thread.
     if (opened_context_id == ContextId::null()) {

@@ -75,6 +75,10 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
 ModDetailsPanel::~ModDetailsPanel() {
 }
 
+void ModDetailsPanel::disable_toggle() {
+    enable_toggle->set_enabled(false);
+}
+
 void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, const std::string &thumbnail, bool toggle_checked, bool toggle_enabled, bool toggle_label_visible, bool configure_enabled) {
     cur_details = details;
 

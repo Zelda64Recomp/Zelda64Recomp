@@ -296,6 +296,7 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
 
 void recomp::handle_events() {
     SDL_Event cur_event;
+    static bool started = false;
     static bool exited = false;
     while (SDL_PollEvent(&cur_event) && !exited) {
         exited = sdl_event_filter(nullptr, &cur_event);
@@ -311,6 +312,11 @@ void recomp::handle_events() {
 
         SDL_ShowCursor(cursor_visible ? SDL_ENABLE : SDL_DISABLE);
         SDL_SetRelativeMouseMode(cursor_locked ? SDL_TRUE : SDL_FALSE);
+    }
+
+    if (!started && ultramodern::is_game_started()) {
+        started = true;
+        recompui::process_game_started();
     }
 }
 
