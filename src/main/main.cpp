@@ -544,14 +544,16 @@ void release_preload(PreloadContext& context) {
 
 #endif
 
-void enable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
-    (void)context;
+void enable_texture_pack(recomp::mods::ModContext&, const recomp::mods::ModHandle& mod) {
     zelda64::renderer::enable_texture_pack(mod);
 }
 
-void disable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
-    (void)context;
+void disable_texture_pack(recomp::mods::ModContext&, const recomp::mods::ModHandle& mod) {
     zelda64::renderer::disable_texture_pack(mod);
+}
+
+void reorder_texture_pack(recomp::mods::ModContext&) {
+    zelda64::renderer::trigger_texture_pack_update();
 }
 
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
@@ -682,6 +684,7 @@ int main(int argc, char** argv) {
         .allow_runtime_toggle = true,
         .on_enabled = enable_texture_pack,
         .on_disabled = disable_texture_pack,
+        .on_reordered = reorder_texture_pack,
     };
     auto texture_pack_content_type_id = recomp::mods::register_mod_content_type(texture_pack_content_type);
 

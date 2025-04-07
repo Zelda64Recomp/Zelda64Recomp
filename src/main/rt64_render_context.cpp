@@ -1,6 +1,7 @@
 #include <memory>
 #include <cstring>
 #include <variant>
+#include <algorithm>
 
 #define HLSL_CPU
 #include "hle/rt64_application.h"
@@ -27,14 +28,17 @@ static uint8_t DMEM[0x1000];
 static uint8_t IMEM[0x1000];
 
 struct TexturePackEnableAction {
-    std::filesystem::path path;
+    std::string mod_id;
 };
 
 struct TexturePackDisableAction {
-    std::filesystem::path path;
+    std::string mod_id;
 };
 
-using TexturePackAction = std::variant<TexturePackEnableAction, TexturePackDisableAction>;
+struct TexturePackUpdateAction {
+};
+
+using TexturePackAction = std::variant<TexturePackEnableAction, TexturePackDisableAction, TexturePackUpdateAction>;
 
 static moodycamel::ConcurrentQueue<TexturePackAction> texture_pack_action_queue;
 
@@ -325,32 +329,7 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
 zelda64::renderer::RT64Context::~RT64Context() = default;
 
 void zelda64::renderer::RT64Context::send_dl(const OSTask* task) {
-    bool packs_disabled = false;
-    TexturePackAction cur_action;
-    while (texture_pack_action_queue.try_dequeue(cur_action)) {
-        std::visit(overloaded{
-            [&](TexturePackDisableAction& to_disable) {
-                enabled_texture_packs.erase(to_disable.path);
-                packs_disabled = true;
-            },
-            [&](TexturePackEnableAction& to_enable) {
-                enabled_texture_packs.insert(to_enable.path);
-                // Load the pack now if no packs have been disabled.
-                if (!packs_disabled) {
-                    app->textureCache->loadReplacementDirectory(to_enable.path);
-                }
-            }
-        }, cur_action);
-    }
-
-    // If any packs were disabled, unload all packs and load all the active ones.
-    if (packs_disabled) {
-        app->textureCache->clearReplacementDirectories();
-        for (const std::filesystem::path& cur_pack_path : enabled_texture_packs) {
-            app->textureCache->loadReplacementDirectory(cur_pack_path);
-        }
-    }
-
+    check_texture_pack_actions();
     app->state->rsp->reset();
     app->interpreter->loadUCodeGBI(task->t.ucode & 0x3FFFFFF, task->t.ucode_data & 0x3FFFFFF, true);
     app->processDisplayLists(app->core.RDRAM, task->t.data_ptr & 0x3FFFFFF, 0, true);
@@ -416,6 +395,52 @@ float zelda64::renderer::RT64Context::get_resolution_scale() const {
     }
 }
 
+void zelda64::renderer::RT64Context::check_texture_pack_actions() {
+    bool packs_changed = false;
+    TexturePackAction cur_action;
+    while (texture_pack_action_queue.try_dequeue(cur_action)) {
+        std::visit(overloaded{
+            [&](TexturePackDisableAction &to_disable) {
+                enabled_texture_packs.erase(to_disable.mod_id);
+                packs_changed = true;
+            },
+            [&](TexturePackEnableAction &to_enable) {
+                enabled_texture_packs.insert(to_enable.mod_id);
+                packs_changed = true;
+            },
+            [&](TexturePackUpdateAction &) {
+                packs_changed = true;
+            }
+        }, cur_action);
+    }
+
+    // If any packs were disabled, unload all packs and load all the active ones.
+    if (packs_changed) {
+        if (!enabled_texture_packs.empty()) {
+            // Sort the enabled texture packs in reverse order so that earlier ones override later ones.
+            std::vector<std::string> sorted_texture_packs{};
+            sorted_texture_packs.assign(enabled_texture_packs.begin(), enabled_texture_packs.end());
+            std::sort(sorted_texture_packs.begin(), sorted_texture_packs.end(),
+                [](const std::string& lhs, const std::string& rhs) {
+                    return recomp::mods::get_mod_order_index(lhs) > recomp::mods::get_mod_order_index(rhs);
+                }
+            );
+
+            // Build the path list from the sorted mod list.
+            std::vector<RT64::ReplacementDirectory> replacement_directories;
+            replacement_directories.reserve(enabled_texture_packs.size());
+            for (const std::string &mod_id : sorted_texture_packs) {
+                replacement_directories.emplace_back(RT64::ReplacementDirectory(recomp::mods::get_mod_filename(mod_id)));
+            }
+
+            app->textureCache->loadReplacementDirectories(replacement_directories);
+        }
+        else {
+            app->textureCache->clearReplacementDirectories();
+        }
+    }
+}
+
 RT64::UserConfiguration::Antialiasing zelda64::renderer::RT64MaxMSAA() {
     return device_max_msaa;
 }
@@ -432,10 +457,14 @@ bool zelda64::renderer::RT64HighPrecisionFBEnabled() {
     return high_precision_fb_enabled;
 }
 
+void zelda64::renderer::trigger_texture_pack_update() {
+    texture_pack_action_queue.enqueue(TexturePackUpdateAction{});
+}
+
 void zelda64::renderer::enable_texture_pack(const recomp::mods::ModHandle& mod) {
-    texture_pack_action_queue.enqueue(TexturePackEnableAction{mod.manifest.mod_root_path});
+    texture_pack_action_queue.enqueue(TexturePackEnableAction{mod.manifest.mod_id});
 }
 
 void zelda64::renderer::disable_texture_pack(const recomp::mods::ModHandle& mod) {
-    texture_pack_action_queue.enqueue(TexturePackDisableAction{mod.manifest.mod_root_path});
+    texture_pack_action_queue.enqueue(TexturePackDisableAction{mod.manifest.mod_id});
 }
