@@ -80,6 +80,7 @@ namespace recompui {
         NumVariants,
     };
 
+    void init_styling(const std::filesystem::path& rcss_file);
     void init_prompt_context();
     void open_choice_prompt(
         const std::string& header_text,

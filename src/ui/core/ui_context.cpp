@@ -1,8 +1,10 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <fstream>
 
 #include "slot_map.h"
+#include "RmlUi/Core/StreamMemory.h"
 
 #include "ultramodern/error_handling.hpp"
 #include "recomp_ui.h"
@@ -47,6 +49,7 @@ static struct {
     context_slotmap all_contexts;
     std::unordered_set<recompui::ContextId> opened_contexts;
     std::unordered_map<Rml::ElementDocument*, recompui::ContextId> documents_to_contexts;
+    Rml::SharedPtr<Rml::StyleSheetContainer> style_sheet;
 } context_state;
 
 thread_local recompui::Context* opened_context = nullptr;
@@ -168,6 +171,21 @@ recompui::ContextId create_context_impl(Rml::ElementDocument* document) {
     return ret;
 }
 
+void recompui::init_styling(const std::filesystem::path& rcss_file) {
+    std::string style{};
+    {
+        std::ifstream style_stream{rcss_file};
+        style_stream.seekg(0, std::ios::end);
+        style.resize(style_stream.tellg());
+        style_stream.seekg(0, std::ios::beg);
+
+        style_stream.read(style.data(), style.size());
+    }
+    std::unique_ptr<Rml::StreamMemory> rml_stream = std::make_unique<Rml::StreamMemory>(reinterpret_cast<Rml::byte*>(style.data()), style.size());
+    rml_stream->SetSourceURL(rcss_file.filename().string());
+    context_state.style_sheet = Rml::Factory::InstanceStyleSheetStream(rml_stream.get());
+}
+
 recompui::ContextId recompui::create_context(const std::filesystem::path& path) {
     ContextId new_context = create_context_impl(nullptr);
 
@@ -195,28 +213,16 @@ recompui::ContextId recompui::create_context(Rml::ElementDocument* document) {
 
 recompui::ContextId recompui::create_context() {
     Rml::ElementDocument* doc = create_empty_document();
+    doc->SetStyleSheetContainer(context_state.style_sheet);
     ContextId ret = create_context_impl(doc);
     Element* root = ret.get_root_element();
     // Mark the root element as not being a shim, as that's only needed for elements that were parented to Rml ones manually.
     root->shim = false;
 
-    // TODO move these defaults elsewhere. Copied from the existing rcss.
     ret.open();
     root->set_width(100.0f, Unit::Percent);
     root->set_height(100.0f, Unit::Percent);
     root->set_display(Display::Flex);
-    root->set_opacity(1.0f);
-    root->set_color(Color{ 242, 242, 242, 255 });
-    root->set_font_family("chiaro");
-    root->set_font_style(FontStyle::Normal);
-    root->set_font_weight(400);
-
-    float sz = 16.0f;
-    float spacing = 0.0f;
-    float sz_add = sz + 4;
-    root->set_font_size(sz_add, Unit::Dp);
-    root->set_letter_spacing(sz_add * spacing, Unit::Dp);
-    root->set_line_height(sz_add, Unit::Dp);
     ret.close();
 
     doc->Hide();

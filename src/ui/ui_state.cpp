@@ -233,6 +233,7 @@ public:
     }
 
     void create_menus() {
+        recompui::init_styling(zelda64::get_asset_path("recomp.rcss"));
         launcher_menu_controller->load_document();
         config_menu_controller->load_document();
         recompui::init_prompt_context();
