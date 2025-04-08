@@ -25,6 +25,11 @@ static bool is_mod_enabled_or_auto(const std::string &mod_id) {
 }
 
 // ModEntryView
+#define COL_TEXT_DEFAULT 242, 242, 242
+#define COL_TEXT_DIM 204, 204, 204
+#define COL_SECONDARY 23, 214, 232
+constexpr float modEntryHeight = 120.0f;
+constexpr float modEntryPadding = 4.0f;
 
 ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     ContextId context = get_current_context();
@@ -33,37 +38,41 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     set_flex_direction(FlexDirection::Row);
     set_width(100.0f, Unit::Percent);
     set_height_auto();
-    set_padding_top(4.0f);
-    set_padding_right(8.0f);
-    set_padding_bottom(4.0f);
-    set_padding_left(8.0f);
-    set_border_width(1.1f);
-    set_border_color(Color{ 242, 242, 242, 12 });
-    set_background_color(Color{ 242, 242, 242, 12 });
+    set_padding(modEntryPadding);
+    set_border_left_width(2.0f);
+    set_border_color(Color{ COL_TEXT_DEFAULT, 12 });
+    set_background_color(Color{ COL_TEXT_DEFAULT, 12 });
     set_cursor(Cursor::Pointer);
+    set_color(Color{ COL_TEXT_DEFAULT, 255 });
 
-    checked_style.set_border_color(Color{ 242, 242, 242, 160 });
-    hover_style.set_border_color(Color{ 242, 242, 242, 64 });
-    checked_hover_style.set_border_color(Color{ 242, 242, 242, 204 });
+    checked_style.set_border_color(Color{ COL_TEXT_DEFAULT, 160 });
+    checked_style.set_color(Color{ 255, 255, 255, 255 });
+    checked_style.set_background_color(Color{ 26, 24, 32, 255 });
+    hover_style.set_border_color(Color{ COL_TEXT_DEFAULT, 64 });
+    checked_hover_style.set_border_color(Color{ COL_TEXT_DEFAULT, 255 });
 
     {
         thumbnail_image = context.create_element<Image>(this, "");
-        thumbnail_image->set_width(100.0f);
-        thumbnail_image->set_height(100.0f);
-        thumbnail_image->set_min_width(100.0f);
-        thumbnail_image->set_min_height(100.0f);
+        thumbnail_image->set_width(modEntryHeight);
+        thumbnail_image->set_height(modEntryHeight);
+        thumbnail_image->set_min_width(modEntryHeight);
+        thumbnail_image->set_min_height(modEntryHeight);
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
 
 
-        body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
+        body_container = context.create_element<Element>(this);
         body_container->set_width_auto();
-        body_container->set_height(100.0f);
         body_container->set_margin_left(16.0f);
-        body_container->set_overflow(Overflow::Hidden);
+        body_container->set_padding_top(8.0f);
+        body_container->set_padding_bottom(8.0f);
+        body_container->set_max_height(modEntryHeight);
+        body_container->set_overflow_y(Overflow::Hidden);
 
         {
             name_label = context.create_element<Label>(body_container, LabelStyle::Normal);
             description_label = context.create_element<Label>(body_container, LabelStyle::Small);
+            description_label->set_margin_top(4.0f);
+            description_label->set_color(Color{ COL_TEXT_DIM, 255 });
         } // body_container
     } // this
 
@@ -277,7 +286,8 @@ void ModMenu::mod_selected(uint32_t mod_index) {
 }
 
 void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
-    constexpr float spacer_height = 110.0f;
+    constexpr float spacer_height = modEntryHeight + modEntryPadding * 2.0f;
+
     switch (drag.phase) {
     case DragPhase::Start: {
         for (size_t i = 0; i < mod_entry_buttons.size(); i++) {

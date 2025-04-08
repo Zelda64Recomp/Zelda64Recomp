@@ -20,7 +20,7 @@ public:
     void set_selected(bool selected);
 private:
     Image *thumbnail_image = nullptr;
-    Container *body_container = nullptr;
+    Element *body_container = nullptr;
     Label *name_label = nullptr;
     Label *description_label = nullptr;
     Style checked_style;
