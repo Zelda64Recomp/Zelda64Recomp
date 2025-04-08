@@ -26,6 +26,8 @@ namespace recompui {
 
         void set_index_internal(uint32_t index, bool setup, bool trigger_callbacks);
         void option_selected(uint32_t index);
+        void set_input_value(const ElementValue& val) override;
+        ElementValue get_element_value() override { return get_index(); }
     public:
         Radio(Element *parent);
         virtual ~Radio();

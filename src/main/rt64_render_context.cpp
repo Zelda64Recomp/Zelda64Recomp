@@ -6,6 +6,7 @@
 #define HLSL_CPU
 #include "hle/rt64_application.h"
 #include "rt64_render_hooks.h"
+#include "overloaded.h"
 
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
@@ -13,12 +14,6 @@
 #include "zelda_render.h"
 #include "recomp_ui.h"
 #include "concurrentqueue.h"
-
-// Helper class for variant visiting.
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
 
 static RT64::UserConfiguration::Antialiasing device_max_msaa = RT64::UserConfiguration::Antialiasing::None;
 static bool sample_positions_supported = false;

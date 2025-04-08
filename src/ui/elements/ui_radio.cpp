@@ -1,3 +1,4 @@
+#include "overloaded.h"
 #include "ui_radio.h"
 
 namespace recompui {
@@ -14,14 +15,15 @@ namespace recompui {
         set_line_height(20.0f);
         set_font_weight(400);
         set_font_style(FontStyle::Normal);
-        set_border_color(Color{ 242, 242, 242, 255 });
-        set_border_bottom_width(0.0f);
+        set_border_color(Color{ 242, 242, 242, 0 });
+        set_border_bottom_width(1.0f);
         set_color(Color{ 255, 255, 255, 153 });
         set_padding_bottom(8.0f);
         set_text_transform(TextTransform::Uppercase);
+        set_height_auto();
         hover_style.set_color(Color{ 255, 255, 255, 204 });
         checked_style.set_color(Color{ 255, 255, 255, 255 });
-        checked_style.set_border_bottom_width(1.0f);
+        checked_style.set_border_color(Color{ 242, 242, 242, 255 });
 
         add_style(&hover_style, { hover_state });
         add_style(&checked_style, { checked_state });
@@ -70,10 +72,19 @@ namespace recompui {
     void Radio::option_selected(uint32_t index) {
         set_index_internal(index, false, true);
     }
+    
+    void Radio::set_input_value(const ElementValue& val) {
+        std::visit(overloaded {
+            [this](uint32_t u) { set_index(u); }, 
+            [this](float f) { set_index(f); }, 
+            [this](double d) { set_index(d); },
+            [](std::monostate) {}
+        }, val);
+    }
 
     Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart) {
         set_gap(24.0f);
-        set_flex_grow(0.0f);
+        set_align_items(AlignItems::FlexStart);
     }
 
     Radio::~Radio() {

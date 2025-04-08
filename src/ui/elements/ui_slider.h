@@ -22,7 +22,6 @@ namespace recompui {
         double min_value = 0.0;
         double max_value = 100.0;
         double step_value = 0.0;
-        float slider_width_dp = 300.0;
         std::vector<std::function<void(double)>> value_changed_callbacks;
 
         void set_value_internal(double v, bool setup, bool trigger_callbacks);
@@ -32,6 +31,8 @@ namespace recompui {
         void update_value_from_mouse(float x);
         void update_circle_position();
         void update_label_text();
+        void set_input_value(const ElementValue& val) override;
+        ElementValue get_element_value() override { return get_value(); }
 
     public:
         Slider(Element *parent, SliderType type);

@@ -18,6 +18,56 @@ inline ContextId get_context(uint8_t* rdram, recomp_context* ctx) {
     return ContextId{ .slot_id = context_id };
 }
 
+inline float arg_float2(uint8_t* rdram, recomp_context* ctx) {
+    union {
+        float f32;
+        uint32_t u32;
+    } val;
+
+    val.u32 = _arg<2, uint32_t>(rdram, ctx);
+    return val.f32;
+}
+
+inline float arg_float3(uint8_t* rdram, recomp_context* ctx) {
+    union {
+        float f32;
+        uint32_t u32;
+    } val;
+
+    val.u32 = _arg<3, uint32_t>(rdram, ctx);
+    return val.f32;
+}
+
+inline float arg_float4(uint8_t* rdram, recomp_context* ctx) {
+    union {
+        float f32;
+        uint32_t u32;
+    } val;
+
+    val.u32 = MEM_W(0x10, ctx->r29);
+    return val.f32;
+}
+
+inline float arg_float5(uint8_t* rdram, recomp_context* ctx) {
+    union {
+        float f32;
+        uint32_t u32;
+    } val;
+
+    val.u32 = MEM_W(0x14, ctx->r29);
+    return val.f32;
+}
+
+inline float arg_float6(uint8_t* rdram, recomp_context* ctx) {
+    union {
+        float f32;
+        uint32_t u32;
+    } val;
+
+    val.u32 = MEM_W(0x18, ctx->r29);
+    return val.f32;
+}
+
 template <int arg_index>
 ResourceId arg_resource_id(uint8_t* rdram, recomp_context* ctx) {
     uint32_t slot_id = _arg<arg_index, uint32_t>(rdram, ctx);
@@ -81,6 +131,23 @@ inline void return_string(uint8_t* rdram, recomp_context* ctx, const std::string
     MEM_B(ret.size(), addr) = '\x00';
     
     _return<PTR(char)>(ctx, addr);
+}
+
+inline std::string decode_string(uint8_t* rdram, PTR(char) str) {
+    // Get the length of the byteswapped string.
+    size_t len = 0;
+    while (MEM_B(str, len) != 0x00) {
+        len++;
+    }
+
+    std::string ret{};
+    ret.reserve(len + 1);
+
+    for (size_t i = 0; i < len; i++) {
+        ret += (char)MEM_B(str, i);
+    }
+
+    return ret;
 }
 }
 

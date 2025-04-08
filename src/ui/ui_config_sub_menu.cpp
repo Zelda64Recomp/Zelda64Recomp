@@ -67,6 +67,7 @@ ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min
     this->callback = callback;
 
     slider = get_current_context().create_element<Slider>(this, percent ? SliderType::Percent : SliderType::Double);
+    slider->set_max_width(380.0f);
     slider->set_min_value(min_value);
     slider->set_max_value(max_value);
     slider->set_step_value(step_value);
@@ -84,6 +85,7 @@ ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view v
     this->callback = callback;
 
     text_input = get_current_context().create_element<TextInput>(this);
+    text_input->set_max_width(400.0f);
     text_input->set_text(value);
     text_input->add_text_changed_callback([this](const std::string &text){ text_changed(text); });
 }
@@ -147,7 +149,7 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
     header_container = context.create_element<Container>(this, FlexDirection::Row, JustifyContent::FlexStart);
     header_container->set_flex_grow(0.0f);
     header_container->set_align_items(AlignItems::Center);
-    header_container->set_padding_left(12.0f);
+    header_container->set_padding(12.0f);
     header_container->set_gap(24.0f);
 
     {

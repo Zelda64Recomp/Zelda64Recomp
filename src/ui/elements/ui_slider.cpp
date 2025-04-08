@@ -1,3 +1,4 @@
+#include "overloaded.h"
 #include "ui_slider.h"
 
 #include <cmath>
@@ -44,7 +45,8 @@ namespace recompui {
 
     void Slider::update_circle_position() {
         double ratio = std::clamp((value - min_value) / (max_value - min_value), 0.0, 1.0);
-        circle_element->set_left(slider_width_dp * ratio);
+        float slider_relative_left = slider_element->get_absolute_left() - get_absolute_left();
+        circle_element->set_left(ratio * 100.0, Unit::Percent);
     }
 
     void Slider::update_label_text() {
@@ -60,13 +62,23 @@ namespace recompui {
 
         value_label->set_text(text_buffer);
     }
+    
+    void Slider::set_input_value(const ElementValue& val) {
+        std::visit(overloaded {
+            [this](uint32_t u) { set_value(u); }, 
+            [this](float f) { set_value(f); }, 
+            [this](double d) { set_value(d); },
+            [](std::monostate) {}
+        }, val);
+    }
 
     Slider::Slider(Element *parent, SliderType type) : Element(parent) {
         this->type = type;
 
         set_display(Display::Flex);
-        set_flex(1.0f, 1.0f, 100.0f, Unit::Percent);
         set_flex_direction(FlexDirection::Row);
+        set_text_align(TextAlign::Left);
+        set_min_width(120.0f);
 
         ContextId context = get_current_context();
 
@@ -76,7 +88,7 @@ namespace recompui {
         value_label->set_max_width(60.0f);
 
         slider_element = context.create_element<Element>(this);
-        slider_element->set_width(slider_width_dp);
+        slider_element->set_flex(1.0f, 0.0f);
 
         {
             bar_element = context.create_element<Clickable>(slider_element, true);
@@ -87,11 +99,11 @@ namespace recompui {
             bar_element->add_pressed_callback([this](float x, float y){ bar_clicked(x, y); });
             bar_element->add_dragged_callback([this](float x, float y, recompui::DragPhase phase){ bar_dragged(x, y, phase); });
             
-            circle_element = context.create_element<Clickable>(slider_element, true);
+            circle_element = context.create_element<Clickable>(bar_element, true);
             circle_element->set_position(Position::Relative);
             circle_element->set_width(16.0f);
             circle_element->set_height(16.0f);
-            circle_element->set_margin_top(-8.0f);
+            circle_element->set_margin_top(-7.0f);
             circle_element->set_margin_right(-8.0f);
             circle_element->set_margin_left(-8.0f);
             circle_element->set_background_color(Color{ 204, 204, 204, 255 });

@@ -1,5 +1,6 @@
 #include "RmlUi/Core/StringUtilities.h"
 
+#include "overloaded.h"
 #include "recomp_ui.h"
 #include "ui_element.h"
 #include "../core/ui_context.h"
@@ -27,6 +28,9 @@ Element::Element(Element* parent, uint32_t events_enabled, Rml::String base_clas
     else {
         base = base_owning.get();
     }
+
+    set_display(Display::Block);
+    set_property(Rml::PropertyId::BoxSizing, Rml::Style::BoxSizing::BorderBox);
 
     register_event_listeners(events_enabled);
 }
@@ -370,6 +374,39 @@ float Element::get_client_width() {
 
 float Element::get_client_height() {
     return base->GetClientHeight();
+}
+
+uint32_t Element::get_input_value_u32() {
+    ElementValue value = get_element_value();
+    
+    return std::visit(overloaded {
+        [](double d) { return (uint32_t)d; },
+        [](float f) { return (uint32_t)f; },
+        [](uint32_t u) { return u; },
+        [](std::monostate) { return 0U; }
+    }, value);
+}
+
+float Element::get_input_value_float() {
+    ElementValue value = get_element_value();
+    
+    return std::visit(overloaded {
+        [](double d) { return (float)d; },
+        [](float f) { return f; },
+        [](uint32_t u) { return (float)u; },
+        [](std::monostate) { return 0.0f; }
+    }, value);
+}
+
+double Element::get_input_value_double() {
+    ElementValue value = get_element_value();
+    
+    return std::visit(overloaded {
+        [](double d) { return d; },
+        [](float f) { return (double)f; },
+        [](uint32_t u) { return (double)u; },
+        [](std::monostate) { return 0.0; }
+    }, value);
 }
 
 void Element::queue_update() {

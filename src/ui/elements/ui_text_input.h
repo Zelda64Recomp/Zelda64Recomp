@@ -11,7 +11,7 @@ namespace recompui {
     protected:
         virtual void process_event(const Event &e) override;
     public:
-        TextInput(Element *parent);
+        TextInput(Element *parent, bool text_visible = true);
         void set_text(std::string_view text);
         const std::string &get_text();
         void add_text_changed_callback(std::function<void(const std::string &)> callback);

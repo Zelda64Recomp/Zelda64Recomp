@@ -617,6 +617,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             case SDL_EventType::SDL_KEYDOWN:
                 non_mouse_interacted = true;
                 kb_interacted = true;
+                if (cur_event.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_F8) {
+                    if (zelda64::get_debug_mode_enabled()) {
+                        Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
+                    }
+                }
                 break;
             case SDL_EventType::SDL_USEREVENT:
                 if (cur_event.user.code == SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY) {

@@ -116,6 +116,16 @@ void recompui_destroy_element(uint8_t* rdram, recomp_context* ctx) {
     }
 }
 
+void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
+    ContextId ui_context = get_context(rdram, ctx);
+    Element* parent = arg_element<1>(rdram, ctx, ui_context);
+    std::string text = _arg_string<2>(rdram, ctx);
+    uint32_t style = _arg<3, uint32_t>(rdram, ctx);
+
+    Button* ret = ui_context.create_element<Button>(parent, text, static_cast<ButtonStyle>(style));
+    return_resource(ctx, ret->get_resource_id());
+}
+
 void recompui_create_label(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     Element* parent = arg_element<1>(rdram, ctx, ui_context);
@@ -143,13 +153,43 @@ void recompui_create_textinput(uint8_t* rdram, recomp_context* ctx) {
     return_resource(ctx, ret->get_resource_id());
 }
 
-void recompui_create_button(uint8_t* rdram, recomp_context* ctx) {
+void recompui_create_passwordinput(uint8_t* rdram, recomp_context* ctx) {
     ContextId ui_context = get_context(rdram, ctx);
     Element* parent = arg_element<1>(rdram, ctx, ui_context);
-    std::string text = _arg_string<2>(rdram, ctx);
-    uint32_t style = _arg<3, uint32_t>(rdram, ctx);
 
-    Button* ret = ui_context.create_element<Button>(parent, text, static_cast<ButtonStyle>(style));
+    Element* ret = ui_context.create_element<TextInput>(parent, false);
+    return_resource(ctx, ret->get_resource_id());
+}
+
+void recompui_create_labelradio(uint8_t* rdram, recomp_context* ctx) {
+    ContextId ui_context = get_context(rdram, ctx);
+    Element* parent = arg_element<1>(rdram, ctx, ui_context);
+    PTR(PTR(char)) options = _arg<2, PTR(PTR(char))>(rdram, ctx);
+    uint32_t num_options = _arg<3, uint32_t>(rdram, ctx);
+
+    Radio* ret = ui_context.create_element<Radio>(parent);
+
+    for (size_t i = 0; i < num_options; i++) {
+        ret->add_option(decode_string(rdram, MEM_W(sizeof(uint32_t) * i, options)));
+    }
+
+    return_resource(ctx, ret->get_resource_id());
+}
+
+void recompui_create_slider(uint8_t* rdram, recomp_context* ctx) {
+    ContextId ui_context = get_context(rdram, ctx);
+    Element* parent = arg_element<1>(rdram, ctx, ui_context);
+    uint32_t type = _arg<2, uint32_t>(rdram, ctx);
+    float min_value = arg_float3(rdram, ctx);
+    float max_value = arg_float4(rdram, ctx);
+    float step = arg_float5(rdram, ctx);
+    float initial_value = arg_float6(rdram, ctx);
+
+    Slider* ret = ui_context.create_element<Slider>(parent, static_cast<SliderType>(type));
+    ret->set_min_value(min_value);
+    ret->set_max_value(max_value);
+    ret->set_step_value(step);
+    ret->set_value(initial_value);
     return_resource(ctx, ret->get_resource_id());
 }
 
@@ -699,7 +739,33 @@ void recompui_set_tab_index(uint8_t* rdram, recomp_context* ctx) {
     resource->set_tab_index(static_cast<TabIndex>(tab_index));
 }
 
-// Text
+// Values
+void recompui_get_input_value_u32(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to get value of non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+    
+    Element* element = static_cast<Element*>(resource);
+    _return<uint32_t>(ctx, element->get_input_value_u32());
+}
+
+void recompui_get_input_value_float(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to get value of non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+    
+    Element* element = static_cast<Element*>(resource);
+    _return<float>(ctx, element->get_input_value_float());
+}
+
 void recompui_get_input_text(uint8_t* rdram, recomp_context* ctx) {
     Style* resource = arg_style<0>(rdram, ctx);
 
@@ -712,6 +778,34 @@ void recompui_get_input_text(uint8_t* rdram, recomp_context* ctx) {
     Element* element = static_cast<Element*>(resource);
     std::string ret = element->get_input_text();
     return_string(rdram, ctx, ret);
+}
+
+void recompui_set_input_value_u32(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+    uint32_t value = _arg<1, uint32_t>(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to set value of non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+    
+    Element* element = static_cast<Element*>(resource);
+    element->set_input_value_u32(value);
+}
+
+void recompui_set_input_value_float(uint8_t* rdram, recomp_context* ctx) {
+    Style* resource = arg_style<0>(rdram, ctx);
+    float value = _arg_float_a1(rdram, ctx);
+
+    if (!resource->is_element()) {
+        recompui::message_box("Fatal error in mod - attempted to set value of non-element");
+        assert(false);
+        ultramodern::error_handling::quick_exit(__FILE__, __LINE__, __FUNCTION__);
+    }
+    
+    Element* element = static_cast<Element*>(resource);
+    element->set_input_value_float(value);
 }
 
 void recompui_set_input_text(uint8_t* rdram, recomp_context* ctx) {
@@ -766,10 +860,13 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_create_style);
     REGISTER_FUNC(recompui_create_element);
     REGISTER_FUNC(recompui_destroy_element);
+    REGISTER_FUNC(recompui_create_button);
     REGISTER_FUNC(recompui_create_label);
     // REGISTER_FUNC(recompui_create_span);
     REGISTER_FUNC(recompui_create_textinput);
-    REGISTER_FUNC(recompui_create_button);
+    REGISTER_FUNC(recompui_create_passwordinput);
+    REGISTER_FUNC(recompui_create_labelradio);
+    REGISTER_FUNC(recompui_create_slider);
     REGISTER_FUNC(recompui_set_visibility);
     REGISTER_FUNC(recompui_set_position);
     REGISTER_FUNC(recompui_set_left);
@@ -841,7 +938,11 @@ void recompui::register_ui_exports() {
     REGISTER_FUNC(recompui_set_column_gap);
     REGISTER_FUNC(recompui_set_drag);
     REGISTER_FUNC(recompui_set_tab_index);
+    REGISTER_FUNC(recompui_get_input_value_u32);
+    REGISTER_FUNC(recompui_get_input_value_float);
     REGISTER_FUNC(recompui_get_input_text);
+    REGISTER_FUNC(recompui_set_input_value_u32);
+    REGISTER_FUNC(recompui_set_input_value_float);
     REGISTER_FUNC(recompui_set_input_text);
     REGISTER_FUNC(recompui_register_callback);
     register_ui_image_exports();

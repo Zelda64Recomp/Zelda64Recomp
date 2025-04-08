@@ -7,6 +7,7 @@
 #include <ultramodern/ultra64.h>
 
 #include <unordered_set>
+#include <variant>
 
 namespace recompui {
 struct UICallback {
@@ -14,6 +15,8 @@ struct UICallback {
     PTR(void) callback;
     PTR(void) userdata;
 };
+
+using ElementValue = std::variant<uint32_t, float, double, std::monostate>;
 
 class ContextId;
 class Element : public Style, public Rml::EventListener {
@@ -52,6 +55,8 @@ protected:
     // Use of this method in inherited classes is discouraged unless it's necessary.
     void set_attribute(const Rml::String &attribute_key, const Rml::String &attribute_value);
     virtual void process_event(const Event &e);
+    virtual ElementValue get_element_value() { return std::monostate{}; }
+    virtual void set_input_value(const ElementValue&) {}
 public:
     // Used for backwards compatibility with legacy UI elements.
     Element(Rml::Element *base);
@@ -80,6 +85,12 @@ public:
     float get_client_height();
     void queue_update();
     void register_callback(ContextId context, PTR(void) callback, PTR(void) userdata);
+    uint32_t get_input_value_u32();
+    float get_input_value_float();
+    double get_input_value_double();
+    void set_input_value_u32(uint32_t val) { set_input_value(val); }
+    void set_input_value_float(float val) { set_input_value(val); }
+    void set_input_value_double(double val) { set_input_value(val); }
 };
 
 void queue_ui_callback(recompui::ResourceId resource, const Event& e, const UICallback& callback);

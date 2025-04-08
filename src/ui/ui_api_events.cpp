@@ -1,5 +1,6 @@
 #include "concurrentqueue.h"
 
+#include "overloaded.h"
 #include "recomp_ui.h"
 
 #include "core/ui_context.h"
@@ -23,11 +24,6 @@
 #include "librecomp/helpers.hpp"
 
 #include "../patches/ui_funcs.h"
-
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
 
 struct QueuedCallback {
     recompui::ResourceId resource;
