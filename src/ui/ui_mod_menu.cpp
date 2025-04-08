@@ -60,11 +60,13 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
         thumbnail_image->set_background_color(Color{ 190, 184, 219, 25 });
 
 
-        body_container = context.create_element<Container>(this, FlexDirection::Column, JustifyContent::FlexStart);
+        body_container = context.create_element<Element>(this);
         body_container->set_width_auto();
         body_container->set_margin_left(16.0f);
         body_container->set_padding_top(8.0f);
         body_container->set_padding_bottom(8.0f);
+        body_container->set_max_height(modEntryHeight);
+        body_container->set_overflow_y(Overflow::Hidden);
 
         {
             name_label = context.create_element<Label>(body_container, LabelStyle::Normal);
