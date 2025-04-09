@@ -234,6 +234,8 @@ void recompui::open_choice_prompt(
 
     std::function<void()> prev_cancel_action = std::move(prompt_state.cancel_action);
 
+    ContextId prev_context = try_close_current_context();
+
     prompt_state.ui_context.open();
 
     prompt_state.prompt_header->set_text(header_text);
@@ -252,6 +254,10 @@ void recompui::open_choice_prompt(
 
     prompt_state.ui_context.close();
 
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
+    }
+
     show_prompt(prev_cancel_action, focus_on_cancel);
 }
 
@@ -266,6 +272,8 @@ void recompui::open_info_prompt(
     std::lock_guard lock{ prompt_state.mutex };
 
     std::function<void()> prev_cancel_action = std::move(prompt_state.cancel_action);
+
+    ContextId prev_context = try_close_current_context();
 
     prompt_state.ui_context.open();
 
@@ -283,6 +291,10 @@ void recompui::open_info_prompt(
 
     prompt_state.ui_context.close();
 
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
+    }
+
     show_prompt(prev_cancel_action, true);
 }
 
@@ -294,6 +306,8 @@ void recompui::open_notification(
     std::lock_guard lock{ prompt_state.mutex };
 
     std::function<void()> prev_cancel_action = std::move(prompt_state.cancel_action);
+
+    ContextId prev_context = try_close_current_context();
 
     prompt_state.ui_context.open();
 
@@ -307,6 +321,10 @@ void recompui::open_notification(
     prompt_state.return_element_id = return_element_id;
 
     prompt_state.ui_context.close();
+
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
+    }
 
     show_prompt(prev_cancel_action, false);
 }

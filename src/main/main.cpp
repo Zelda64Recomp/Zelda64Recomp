@@ -544,8 +544,8 @@ void release_preload(PreloadContext& context) {
 
 #endif
 
-void enable_texture_pack(recomp::mods::ModContext&, const recomp::mods::ModHandle& mod) {
-    zelda64::renderer::enable_texture_pack(mod);
+void enable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
+    zelda64::renderer::enable_texture_pack(context, mod);
 }
 
 void disable_texture_pack(recomp::mods::ModContext&, const recomp::mods::ModHandle& mod) {

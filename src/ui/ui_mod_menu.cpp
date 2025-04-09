@@ -1,6 +1,7 @@
 ﻿#include "ui_mod_menu.h"
 #include "recomp_ui.h"
 #include "zelda_support.h"
+#include "zelda_render.h"
 
 #include "librecomp/mods.hpp"
 
@@ -384,6 +385,22 @@ ContextId get_config_sub_menu_context_id() {
     return sub_menu_context;
 }
 
+bool ModMenu::handle_special_config_options(const recomp::mods::ConfigOption& option, const recomp::mods::ConfigValueVariant& config_value) {
+    if (zelda64::renderer::is_texture_pack_enable_config_option(option, true)) {
+        const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
+
+        config_sub_menu->add_radio_option(option.id, option.name, option.description, std::get<uint32_t>(config_value), option_enum.options,
+            [this](const std::string &id, uint32_t value) {
+                mod_enum_option_changed(id, value);
+                mod_hd_textures_enabled_changed(value);
+            });
+
+        return true;
+    }
+
+    return false;
+}
+
 void ModMenu::mod_configure_requested() {
     if (active_mod_index >= 0) {
         // Record the context that was open when this function was called and close it.
@@ -398,6 +415,10 @@ void ModMenu::mod_configure_requested() {
         for (const recomp::mods::ConfigOption &option : config_schema.options) {
             recomp::mods::ConfigValueVariant config_value = recomp::mods::get_mod_config_value(mod_details[active_mod_index].mod_id, option.id);
             if (std::holds_alternative<std::monostate>(config_value)) {
+                continue;
+            }
+
+            if (handle_special_config_options(option, config_value)) {
                 continue;
             }
 
@@ -452,6 +473,17 @@ void ModMenu::mod_string_option_changed(const std::string &id, const std::string
 void ModMenu::mod_number_option_changed(const std::string &id, double value) {
     if (active_mod_index >= 0) {
         recomp::mods::set_mod_config_value(mod_details[active_mod_index].mod_id, id, value);
+    }
+}
+
+void ModMenu::mod_hd_textures_enabled_changed(uint32_t value) {
+    if (active_mod_index >= 0) {
+        if (value) {
+            zelda64::renderer::secondary_enable_texture_pack(mod_details[active_mod_index].mod_id);
+        }
+        else {
+            zelda64::renderer::secondary_disable_texture_pack(mod_details[active_mod_index].mod_id);
+        }
     }
 }
 

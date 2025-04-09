@@ -14,6 +14,8 @@ namespace RT64 {
 
 namespace zelda64 {
     namespace renderer {
+        inline const std::string special_option_texture_pack_enabled = "_recomp_texture_pack_enabled";
+
         class RT64Context final : public ultramodern::renderer::RendererContext {
         public:
             ~RT64Context() override;
@@ -33,6 +35,7 @@ namespace zelda64 {
         private:
             std::unique_ptr<RT64::Application> app;
             std::unordered_set<std::string> enabled_texture_packs;
+            std::unordered_set<std::string> secondary_disabled_texture_packs;
 
             void check_texture_pack_actions();
         };
@@ -44,8 +47,14 @@ namespace zelda64 {
         bool RT64HighPrecisionFBEnabled();
 
         void trigger_texture_pack_update();
-        void enable_texture_pack(const recomp::mods::ModHandle& mod);
+        void enable_texture_pack(const recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod);
         void disable_texture_pack(const recomp::mods::ModHandle& mod);
+        void secondary_enable_texture_pack(const std::string& mod_id);
+        void secondary_disable_texture_pack(const std::string& mod_id);
+
+        // Texture pack enable option. Must be an enum with two options.
+        // The first option is treated as disabled and the second option is treated as enabled.
+        bool is_texture_pack_enable_config_option(const recomp::mods::ConfigOption& option, bool show_errors);
     }
 }
 
