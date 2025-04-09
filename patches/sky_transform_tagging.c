@@ -3,6 +3,42 @@
 #include "transform_ids.h"
 #include "libc64/qrand.h"
 
+Gfx default_star_setup_dl[] = {
+    gsDPSetCombineLERP(PRIMITIVE, 0, ENVIRONMENT, 0, PRIMITIVE, 0, ENVIRONMENT, 0, PRIMITIVE, 0, ENVIRONMENT, 0,
+                      PRIMITIVE, 0, ENVIRONMENT, 0),
+    gsDPSetOtherMode(
+                    G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_NONE | G_TL_TILE |
+                        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE,
+                    G_AC_NONE | G_ZS_PRIM | G_RM_AA_XLU_LINE | G_RM_AA_XLU_LINE2),
+    gsSPLoadGeometryMode(0),
+    gsSPEndDisplayList(),
+};
+
+Gfx* star_setup_dl = default_star_setup_dl;
+
+RECOMP_EXPORT void recomp_set_star_setup_dl(Gfx* g) {
+    star_setup_dl = g;
+}
+
+static Vtx star_verts[] = {
+    {{{ -1, -1, 0 }, 0, {  0 << 6,  0 << 6 }, { 0, 0, 0, 0xFF }}},
+    {{{  1, -1, 0 }, 0, { 64 << 6,  0 << 6 }, { 0, 0, 0, 0xFF }}},
+    {{{ -1,  1, 0 }, 0, {  0 << 6, 64 << 6 }, { 0, 0, 0, 0xFF }}},
+    {{{  1,  1, 0 }, 0, { 64 << 6, 64 << 6 }, { 0, 0, 0, 0xFF }}}
+};
+
+Gfx default_star_draw_dl[] = {
+    gsSPVertex(star_verts, ARRAY_COUNT(star_verts), 0),
+    gsSP2Triangles(0, 1, 2, 0x0, 1, 3, 2, 0x0),
+    gsSPEndDisplayList(),
+};
+
+Gfx* star_draw_dl = default_star_draw_dl;
+
+RECOMP_EXPORT void recomp_set_star_draw_dl(Gfx* g) {
+    star_draw_dl = g;
+}
+
 extern Mtx* sSkyboxDrawMatrix;
 
 RECOMP_PATCH void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx, s16 skyboxId, s16 blend, f32 x, f32 y, f32 z) {
@@ -29,7 +65,7 @@ RECOMP_PATCH void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx,
     Matrix_ToMtx(sSkyboxDrawMatrix);
 
     gSPMatrix(POLY_OPA_DISP++, sSkyboxDrawMatrix, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-    
+
     // @recomp Tag the skybox's matrix, skipping interpolation if the camera's interpolation was also skipped.
     if (camera_was_skipped()) {
         gEXMatrixGroupDecomposedSkipAll(POLY_OPA_DISP++, SKYBOX_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
@@ -37,7 +73,7 @@ RECOMP_PATCH void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx,
     else {
         gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, SKYBOX_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
     }
-    
+
     gDPSetColorDither(POLY_OPA_DISP++, G_CD_MAGICSQ);
     gDPSetTextureFilter(POLY_OPA_DISP++, G_TF_BILERP);
     gDPLoadTLUT_pal256(POLY_OPA_DISP++, skyboxCtx->paletteStaticSegment);
@@ -66,14 +102,8 @@ RECOMP_PATCH void Skybox_Draw(SkyboxContext* skyboxCtx, GraphicsContext* gfxCtx,
     CLOSE_DISPS(gfxCtx);
 }
 
-// @recomp Draw stars with billboarding to allow for interpolation instead of rects. 
+// @recomp Draw stars with billboarding to allow for interpolation instead of rects.
 void Environment_DrawSkyboxStarBillboard(GraphicsContext* gfxCtx, MtxF* billboard_mtx, Gfx** gfxp, f32 x, f32 y, f32 z, s32 width, s32 height) {
-    static Vtx star_verts[] = {
-        {{{ -1, -1, 0 }, 0, { 0, 0 }, { 0, 0, 0, 0xFF }}},
-        {{{  1, -1, 0 }, 0, { 0, 0 }, { 0, 0, 0, 0xFF }}},
-        {{{ -1,  1, 0 }, 0, { 0, 0 }, { 0, 0, 0, 0xFF }}},
-        {{{  1,  1, 0 }, 0, { 0, 0 }, { 0, 0, 0, 0xFF }}}
-    };
     Gfx* gfx = *gfxp;
 
     MtxF scale_matrix;
@@ -83,7 +113,6 @@ void Environment_DrawSkyboxStarBillboard(GraphicsContext* gfxCtx, MtxF* billboar
     // Scales down the stars to roughly match what their original rect size was.
     SkinMatrix_SetScale(&scale_matrix, width * 25.0f / 4.0f, height * 25.0f / 4.0f, 1.0f);
     SkinMatrix_MtxFMtxFMult(billboard_mtx, &scale_matrix, &mv_matrix);
-    
     mv_matrix.mf[3][0] = x;
     mv_matrix.mf[3][1] = y;
     mv_matrix.mf[3][2] = z;
@@ -91,8 +120,9 @@ void Environment_DrawSkyboxStarBillboard(GraphicsContext* gfxCtx, MtxF* billboar
     MtxConv_F2L(m, &mv_matrix);
 
     gSPMatrix(gfx++, m, G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_PUSH);
-    gSPVertex(gfx++, star_verts, ARRAY_COUNT(star_verts), 0);
-    gSP2Triangles(gfx++, 0, 1, 2, 0x0, 1, 3, 2, 0x0);
+
+    gSPDisplayList(gfx++, star_draw_dl);
+
     gSPPopMatrix(gfx++, G_MTX_MODELVIEW);
 
     *gfxp = gfx;
@@ -168,14 +198,8 @@ RECOMP_PATCH void Environment_DrawSkyboxStarsImpl(PlayState* play, Gfx** gfxP) {
 
     gDPPipeSync(gfx++);
     gDPSetEnvColor(gfx++, 255, 255, 255, 255.0f * D_801F4F28);
-    gDPSetCombineLERP(gfx++, PRIMITIVE, 0, ENVIRONMENT, 0, PRIMITIVE, 0, ENVIRONMENT, 0, PRIMITIVE, 0, ENVIRONMENT, 0,
-                      PRIMITIVE, 0, ENVIRONMENT, 0);
-    gDPSetOtherMode(gfx++,
-                    G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_NONE | G_TL_TILE |
-                        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE,
-                    G_AC_NONE | G_ZS_PRIM | G_RM_AA_XLU_LINE | G_RM_AA_XLU_LINE2);
 
-    gSPLoadGeometryMode(gfx++, 0);
+    gSPDisplayList(gfx++, star_setup_dl);
 
     randInt = ((u32)gSaveContext.save.saveInfo.playerData.playerName[0] << 0x18) ^
               ((u32)gSaveContext.save.saveInfo.playerData.playerName[1] << 0x14) ^
