@@ -638,6 +638,7 @@ public:
             list->setGraphicsPipelineLayout(layout_.get());
             list->setGraphicsDescriptorSet(sampler_set_.get(), 0);
             list->setGraphicsDescriptorSet(screen_descriptor_set_.get(), 1);
+            list->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
             RT64::RenderVertexBufferView vertex_view(screen_vertex_buffer_.get(), screen_vertex_buffer_size_);
             list->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
 
