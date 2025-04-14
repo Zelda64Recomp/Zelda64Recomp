@@ -243,11 +243,11 @@ void ModMenu::open_mods_folder() {
 }
 
 void ModMenu::open_install_dialog() {
-    zelda64::open_file_dialog([](bool success, const std::filesystem::path& path) {
+    zelda64::open_file_dialog_multiple([](bool success, const std::list<std::filesystem::path>& paths) {
         if (success) {
             ContextId old_context = recompui::try_close_current_context();
 
-            recompui::drop_files({ path });
+            recompui::drop_files(paths);
 
             if (old_context != ContextId::null()) {
                 old_context.open();

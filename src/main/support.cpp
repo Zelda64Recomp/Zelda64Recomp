@@ -20,6 +20,29 @@ namespace zelda64 {
         callback(success, path);
     }
 
+    void perform_file_dialog_operation_multiple(const std::function<void(bool, const std::list<std::filesystem::path>&)>& callback) {
+        const nfdpathset_t* native_paths = nullptr;
+        nfdresult_t result = NFD_OpenDialogMultipleN(&native_paths, nullptr, 0, nullptr);
+
+        bool success = (result == NFD_OKAY);
+        std::list<std::filesystem::path> paths;
+        nfdpathsetsize_t count = 0;
+
+        if (success) {
+            NFD_PathSet_GetCount(native_paths, &count);
+            for (nfdpathsetsize_t i = 0; i < count; i++) {
+                nfdnchar_t* cur_path = nullptr;
+                nfdresult_t cur_result = NFD_PathSet_GetPathN(native_paths, i, &cur_path);
+                if (cur_result == NFD_OKAY) {
+                    paths.emplace_back(std::filesystem::path{cur_path});
+                }
+            }
+            NFD_PathSet_Free(native_paths);
+        }
+
+        callback(success, paths);
+    }
+
     // MARK: - Public API
 
     std::filesystem::path get_asset_path(const char* asset) {
@@ -38,6 +61,16 @@ namespace zelda64 {
         });
 #else
         perform_file_dialog_operation(callback);
+#endif
+    }
+
+    void open_file_dialog_multiple(std::function<void(bool success, const std::list<std::filesystem::path>& paths)> callback) {
+#ifdef __APPLE__
+        dispatch_on_ui_thread([callback]() {
+            perform_file_dialog_operation_multiple(callback);
+        });
+#else
+        perform_file_dialog_operation_multiple(callback);
 #endif
     }
 
