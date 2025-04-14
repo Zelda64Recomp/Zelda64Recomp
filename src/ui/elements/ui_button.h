@@ -13,6 +13,7 @@ namespace recompui {
     protected:
         ButtonStyle style = ButtonStyle::Primary;
         Style hover_style;
+        Style focus_style;
         Style disabled_style;
         Style hover_disabled_style;
         std::list<std::function<void()>> pressed_callbacks;
@@ -23,6 +24,7 @@ namespace recompui {
         Button(Element *parent, const std::string &text, ButtonStyle style);
         void add_pressed_callback(std::function<void()> callback);
         Style* get_hover_style() { return &hover_style; }
+        Style* get_focus_style() { return &focus_style; }
         Style* get_disabled_style() { return &disabled_style; }
         Style* get_hover_disabled_style() { return &hover_disabled_style; }
     };

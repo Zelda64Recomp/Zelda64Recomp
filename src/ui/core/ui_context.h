@@ -40,6 +40,8 @@ namespace recompui {
 
         Rml::ElementDocument* get_document();
         Element* get_root_element();
+        Element* get_autofocus_element();
+        void set_autofocus_element(Element* element);
 
         void open();
         bool open_if_not_already();

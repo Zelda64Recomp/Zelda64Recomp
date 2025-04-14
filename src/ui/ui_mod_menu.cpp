@@ -109,6 +109,7 @@ ModEntryButton::ModEntryButton(Element *parent, uint32_t mod_index) : Element(pa
     this->mod_index = mod_index;
 
     set_drag(Drag::Drag);
+    enable_focus();
 
     ContextId context = get_current_context();
     view = context.create_element<ModEntryView>(this);
@@ -145,12 +146,11 @@ void ModEntryButton::set_selected(bool selected) {
 void ModEntryButton::process_event(const Event& e) {
     switch (e.type) {
     case EventType::Click:
+    case EventType::Focus:
         selected_callback(mod_index);
         break;
     case EventType::Hover:
         view->set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
-        break;
-    case EventType::Focus:
         break;
     case EventType::Drag:
         drag_callback(mod_index, std::get<EventDrag>(e.variant));

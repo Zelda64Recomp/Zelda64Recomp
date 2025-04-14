@@ -1,13 +1,15 @@
 #include "overloaded.h"
 #include "ui_radio.h"
+#include "../ui_utils.h"
 
 namespace recompui {
 
     // RadioOption
 
-    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "label", true) {
+    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable, EventType::Update), "label", true) {
         this->index = index;
 
+        enable_focus();
         set_text(name);
         set_cursor(Cursor::Pointer);
         set_font_size(20.0f);
@@ -24,9 +26,11 @@ namespace recompui {
         hover_style.set_color(Color{ 255, 255, 255, 204 });
         checked_style.set_color(Color{ 255, 255, 255, 255 });
         checked_style.set_border_color(Color{ 242, 242, 242, 255 });
+        pulsing_style.set_border_color(Color{ 23, 214, 232, 244 });
 
         add_style(&hover_style, { hover_state });
         add_style(&checked_style, { checked_state });
+        add_style(&pulsing_style, { focus_state });
     }
 
     void RadioOption::set_pressed_callback(std::function<void(uint32_t)> callback) {
@@ -47,6 +51,22 @@ namespace recompui {
             break;
         case EventType::Enable:
             set_style_enabled(disabled_state, !std::get<EventEnable>(e.variant).active);
+            break;
+        case EventType::Focus:
+            {
+                bool active = std::get<EventFocus>(e.variant).active;
+                set_style_enabled(focus_state, active);
+                if (active) {
+                    queue_update();
+                }
+            }
+            break;
+        case EventType::Update:
+            if (is_style_enabled(focus_state)) {
+                pulsing_style.set_color(recompui::get_pulse_color(750));
+                apply_styles();
+                queue_update();
+            }
             break;
         default:
             break;

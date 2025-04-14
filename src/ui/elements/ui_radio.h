@@ -8,6 +8,7 @@ namespace recompui {
     private:
         Style hover_style;
         Style checked_style;
+        Style pulsing_style;
         std::function<void(uint32_t)> pressed_callback = nullptr;
         uint32_t index = 0;
     protected:

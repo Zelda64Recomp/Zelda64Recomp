@@ -42,7 +42,6 @@ private:
     void add_child(Element *child);
     void register_event_listeners(uint32_t events_enabled);
     void apply_style(Style *style);
-    void apply_styles();
     void propagate_disabled(bool disabled);
     void handle_event(const Event &e);
 
@@ -76,6 +75,8 @@ public:
     void set_input_text(std::string_view text);
     void set_src(std::string_view src);
     void set_style_enabled(std::string_view style_name, bool enabled);
+    bool is_style_enabled(std::string_view style_name);
+    void apply_styles();
     bool is_element() override { return true; }
     float get_absolute_left();
     float get_absolute_top();
@@ -83,6 +84,8 @@ public:
     float get_client_top();
     float get_client_width();
     float get_client_height();
+    void enable_focus();
+    void focus();
     void queue_update();
     void register_callback(ContextId context, PTR(void) callback, PTR(void) userdata);
     uint32_t get_input_value_u32();

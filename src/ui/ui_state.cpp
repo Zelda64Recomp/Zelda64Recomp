@@ -358,6 +358,10 @@ public:
 
         document->PullToFront();
         document->Show();
+        recompui::Element* default_element = context.get_autofocus_element();
+        if (default_element) {
+            default_element->focus();
+        }
     }
 
     void hide_context(recompui::ContextId context) {

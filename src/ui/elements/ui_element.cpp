@@ -72,7 +72,7 @@ void Element::register_event_listeners(uint32_t events_enabled) {
     this->events_enabled = events_enabled;
 
     if (events_enabled & Events(EventType::Click)) {
-        base->AddEventListener(Rml::EventId::Mousedown, this);
+        base->AddEventListener(Rml::EventId::Click, this);
     }
 
     if (events_enabled & Events(EventType::Focus)) {
@@ -94,11 +94,20 @@ void Element::register_event_listeners(uint32_t events_enabled) {
     if (events_enabled & Events(EventType::Text)) {
         base->AddEventListener(Rml::EventId::Change, this);
     }
+
+    if (events_enabled & Events(EventType::Navigate)) {
+        base->AddEventListener(Rml::EventId::Keydown, this);
+    }
 }
 
 void Element::apply_style(Style *style) {
     for (auto it : style->property_map) {
-        base->SetProperty(it.first, it.second);
+        // Skip redundant SetProperty calls to prevent dirtying unnecessary state.
+        // This avoids expensive layout operations when a simple color-only style is applied.
+        const Rml::Property* cur_value = base->GetLocalProperty(it.first);
+        if (*cur_value != it.second) {
+            base->SetProperty(it.first, it.second);
+        }
     }
 }
 
@@ -155,8 +164,24 @@ void Element::ProcessEvent(Rml::Event &event) {
 
     // Events that are processed during any phase.
     switch (event.GetId()) {
-    case Rml::EventId::Mousedown:
+    case Rml::EventId::Click:
         handle_event(Event::click_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f)));
+        break;
+    case Rml::EventId::Keydown:
+        switch ((Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0)) {
+            case Rml::Input::KeyIdentifier::KI_LEFT:
+                handle_event(Event::navigate_event(NavDirection::Left));
+                break;
+            case Rml::Input::KeyIdentifier::KI_UP:
+                handle_event(Event::navigate_event(NavDirection::Up));
+                break;
+            case Rml::Input::KeyIdentifier::KI_RIGHT:
+                handle_event(Event::navigate_event(NavDirection::Right));
+                break;
+            case Rml::Input::KeyIdentifier::KI_DOWN:
+                handle_event(Event::navigate_event(NavDirection::Down));
+                break;
+        }
         break;
     case Rml::EventId::Drag:
         handle_event(Event::drag_event(event.GetParameter("mouse_x", 0.0f), event.GetParameter("mouse_y", 0.0f), DragPhase::Move));
@@ -216,6 +241,15 @@ void Element::set_attribute(const Rml::String &attribute_key, const Rml::String 
 
 void Element::process_event(const Event &) {
     // Does nothing by default.
+}
+
+void Element::enable_focus() {
+    set_property(Rml::PropertyId::TabIndex, Rml::Style::TabIndex::Auto);
+    set_property(Rml::PropertyId::Focus, Rml::Style::Focus::Auto);
+    set_property(Rml::PropertyId::NavUp, Rml::Style::Nav::Auto);
+    set_property(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
+    set_property(Rml::PropertyId::NavLeft, Rml::Style::Nav::Auto);
+    set_property(Rml::PropertyId::NavRight, Rml::Style::Nav::Auto);
 }
 
 void Element::clear_children() {
@@ -352,6 +386,10 @@ void Element::set_style_enabled(std::string_view style_name, bool enable) {
     apply_styles();
 }
 
+bool Element::is_style_enabled(std::string_view style_name) {
+    return style_active_set.contains(style_name);
+}
+
 float Element::get_absolute_left() {
     return base->GetAbsoluteLeft();
 }
@@ -407,6 +445,10 @@ double Element::get_input_value_double() {
         [](uint32_t u) { return (double)u; },
         [](std::monostate) { return 0.0; }
     }, value);
+}
+
+void Element::focus() {
+    base->Focus();
 }
 
 void Element::queue_update() {

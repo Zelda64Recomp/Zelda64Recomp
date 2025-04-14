@@ -34,6 +34,7 @@ namespace recompui {
         resource_slotmap resources;
         Rml::ElementDocument* document;
         Element root_element;
+        Element* autofocus_element = nullptr;
         std::vector<Element*> loose_elements;
         std::unordered_set<ResourceId> to_update;        
         bool captures_input = true;
@@ -72,6 +73,8 @@ enum class ContextErrorType {
     DestroyResourceInWrongContext,
     DestroyResourceNotFound,
     GetDocumentInvalidContext,
+    GetAutofocusInvalidContext,
+    SetAutofocusInvalidContext,
     InternalError,
 };
 
@@ -133,6 +136,12 @@ void context_error(recompui::ContextId id, ContextErrorType type) {
             break;
         case ContextErrorType::GetDocumentInvalidContext:
             error_message = "Attempted to get the document of an invalid UI context";
+            break;
+        case ContextErrorType::GetAutofocusInvalidContext:
+            error_message = "Attempted to get the autofocus element of an invalid UI context";
+            break;
+        case ContextErrorType::SetAutofocusInvalidContext:
+            error_message = "Attempted to set the autofocus element of an invalid UI context";
             break;
         case ContextErrorType::InternalError:
             error_message = "Internal error in UI context";
@@ -570,6 +579,28 @@ recompui::Element* recompui::ContextId::get_root_element() {
     }
 
     return &ctx->root_element;
+}
+
+recompui::Element* recompui::ContextId::get_autofocus_element() {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        context_error(*this, ContextErrorType::GetAutofocusInvalidContext);
+    }
+    
+    return ctx->autofocus_element;
+}
+
+void recompui::ContextId::set_autofocus_element(Element* element) {
+    std::lock_guard lock{ context_state.all_contexts_lock };
+
+    Context* ctx = context_state.all_contexts.get(context_slotmap::key{ slot_id });
+    if (ctx == nullptr) {
+        context_error(*this, ContextErrorType::SetAutofocusInvalidContext);
+    }
+
+    ctx->autofocus_element = element;
 }
 
 recompui::ContextId recompui::get_current_context() {

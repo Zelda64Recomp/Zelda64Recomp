@@ -169,6 +169,22 @@ namespace recompui {
         }
     }
 
+    static Rml::PropertyId nav_to_property(NavDirection dir) {
+        switch (dir) {
+            case NavDirection::Up:
+                return Rml::PropertyId::NavUp;
+            case NavDirection::Right:
+                return Rml::PropertyId::NavRight;
+            case NavDirection::Down:
+                return Rml::PropertyId::NavDown;
+            case NavDirection::Left:
+                return Rml::PropertyId::NavLeft;
+            default:
+                assert(false && "Unknown nav direction.");
+                return Rml::PropertyId::Invalid;
+        }
+    }
+
     void Style::set_property(Rml::PropertyId property_id, const Rml::Property &property) {
         property_map[property_id] = property;
     }
@@ -471,6 +487,12 @@ namespace recompui {
         case FlexDirection::Column:
             set_property(Rml::PropertyId::FlexDirection, Rml::Style::FlexDirection::Column);
             break;
+        case FlexDirection::RowReverse:
+            set_property(Rml::PropertyId::FlexDirection, Rml::Style::FlexDirection::RowReverse);
+            break;
+        case FlexDirection::ColumnReverse:
+            set_property(Rml::PropertyId::FlexDirection, Rml::Style::FlexDirection::ColumnReverse);
+            break;
         default:
             assert(false && "Unknown flex direction.");
             break;
@@ -556,5 +578,22 @@ namespace recompui {
     void Style::set_font_family(std::string_view family) {
         set_property(Rml::PropertyId::FontFamily, Rml::Property(Rml::String{ family }, Rml::Unit::UNKNOWN));
     }
+    
+    void Style::set_nav_auto(NavDirection dir) {
+        set_property(nav_to_property(dir), Rml::Style::Nav::Auto);
+    }
+
+    void Style::set_nav_none(NavDirection dir) {
+        set_property(nav_to_property(dir), Rml::Style::Nav::None);
+    }
+
+    void Style::set_tab_index_auto() {
+        set_property(Rml::PropertyId::TabIndex, Rml::Style::Nav::Auto);
+    }
+
+    void Style::set_tab_index_none() {
+        set_property(Rml::PropertyId::TabIndex, Rml::Style::Nav::None);
+    }
+
 
 } // namespace recompui

@@ -94,6 +94,11 @@ namespace recompui {
         void set_drag(Drag drag);
         void set_tab_index(TabIndex focus);
         void set_font_family(std::string_view family);
+        // TODO set_nav with Element*
+        void set_nav_auto(NavDirection dir);
+        void set_nav_none(NavDirection dir);
+        void set_tab_index_auto();
+        void set_tab_index_none();
         virtual bool is_element() { return false; }
         ResourceId get_resource_id() { return resource_id; }
     };

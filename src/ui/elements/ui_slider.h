@@ -15,7 +15,7 @@ namespace recompui {
     private:
         SliderType type = SliderType::Percent;
         Label *value_label = nullptr;
-        Element *slider_element = nullptr;
+        Clickable *slider_element = nullptr;
         Clickable *bar_element = nullptr;
         Clickable *circle_element = nullptr;
         double value = 50.0;
@@ -34,6 +34,9 @@ namespace recompui {
         void set_input_value(const ElementValue& val) override;
         ElementValue get_element_value() override { return get_value(); }
 
+    protected:
+        virtual void process_event(const Event &e) override;
+
     public:
         Slider(Element *parent, SliderType type);
         virtual ~Slider();
@@ -46,6 +49,7 @@ namespace recompui {
         void set_step_value(double v);
         double get_step_value() const;
         void add_value_changed_callback(std::function<void(double)> callback);
+        void do_step(bool increment);
     };
 
 } // namespace recompui

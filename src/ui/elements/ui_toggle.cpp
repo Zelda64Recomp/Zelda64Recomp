@@ -7,6 +7,8 @@
 namespace recompui {
 
     Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
+        enable_focus();
+        
         set_width(162.0f);
         set_height(72.0f);
         set_border_radius(36.0f);

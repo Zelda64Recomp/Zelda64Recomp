@@ -7,6 +7,7 @@ namespace recompui {
 
     constexpr std::string_view checked_state = "checked";
     constexpr std::string_view hover_state = "hover";
+    constexpr std::string_view focus_state = "focus";
     constexpr std::string_view disabled_state = "disabled";
 
     struct Color {
@@ -31,6 +32,7 @@ namespace recompui {
         Drag,
         Text,
         Update,
+        Navigate,
         Count
     };
 
@@ -39,6 +41,13 @@ namespace recompui {
         Start,
         Move,
         End
+    };
+
+    enum class NavDirection {
+        Up,
+        Right,
+        Down,
+        Left
     };
 
     template <typename Enum, typename = std::enable_if_t<std::is_enum_v<Enum>>>
@@ -78,7 +87,11 @@ namespace recompui {
         std::string text;
     };
 
-    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText, std::monostate>;
+    struct EventNavigate {
+        NavDirection direction;
+    };
+
+    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText, EventNavigate, std::monostate>;
 
     struct Event {
         EventType type;
@@ -133,6 +146,13 @@ namespace recompui {
             e.variant = std::monostate{};
             return e;
         }
+
+        static Event navigate_event(NavDirection direction) {
+            Event e;
+            e.type = EventType::Navigate;
+            e.variant = EventNavigate{ direction };
+            return e;
+        }
     };
 
     enum class Display {
@@ -173,7 +193,9 @@ namespace recompui {
 
     enum class FlexDirection {
         Row,
-        Column
+        Column,
+        RowReverse,
+        ColumnReverse
     };
 
     enum class AlignItems {

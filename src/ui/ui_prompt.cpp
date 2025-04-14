@@ -124,13 +124,16 @@ void recompui::init_prompt_context() {
     prompt_state.confirm_button->set_text_align(TextAlign::Center);
     prompt_state.confirm_button->set_color(Color{ 204, 204, 204, 255 });
     prompt_state.confirm_button->add_pressed_callback(run_confirm_callback);
-    // TODO nav: autofocus
-    // TODO nav: nav-left: none; nav-right: cancel_button
     
     Style* confirm_hover_style = prompt_state.confirm_button->get_hover_style();
     confirm_hover_style->set_border_color(Color{ 69, 208, 67, 255 });
     confirm_hover_style->set_background_color(Color{ 69, 208, 67, 76 });
     confirm_hover_style->set_color(Color{ 242, 242, 242, 255 });
+    
+    Style* confirm_focus_style = prompt_state.confirm_button->get_focus_style();
+    confirm_focus_style->set_border_color(Color{ 69, 208, 67, 255 });
+    confirm_focus_style->set_background_color(Color{ 69, 208, 67, 76 });
+    confirm_focus_style->set_color(Color{ 242, 242, 242, 255 });
 
     prompt_state.cancel_button = context.create_element<Button>(prompt_state.prompt_controls, "", ButtonStyle::Primary);
     prompt_state.cancel_button->set_min_width(185.0f, Unit::Dp);
@@ -141,12 +144,17 @@ void recompui::init_prompt_context() {
     prompt_state.cancel_button->set_text_align(TextAlign::Center);
     prompt_state.cancel_button->set_color(Color{ 204, 204, 204, 255 });
     prompt_state.cancel_button->add_pressed_callback(run_cancel_callback);
-    // TODO nav: nav-left: confirm_button; nav-right: none
     
     Style* cancel_hover_style = prompt_state.cancel_button->get_hover_style();
     cancel_hover_style->set_border_color(Color{ 248, 96, 57, 255 });
     cancel_hover_style->set_background_color(Color{ 248, 96, 57, 76 });
     cancel_hover_style->set_color(Color{ 242, 242, 242, 255 });
+
+    Style* cancel_focus_style = prompt_state.cancel_button->get_focus_style();
+    cancel_focus_style->set_border_color(Color{ 248, 96, 57, 255 });
+    cancel_focus_style->set_background_color(Color{ 248, 96, 57, 76 });
+    cancel_focus_style->set_color(Color{ 242, 242, 242, 255 });
+
 
     context.close();
 }
@@ -192,6 +200,10 @@ void style_button(recompui::Button* button, recompui::ButtonVariant variant) {
     recompui::Style* hover_style = button->get_hover_style();
     hover_style->set_border_color(hover_border_color);
     hover_style->set_background_color(hover_background_color);
+    
+    recompui::Style* focus_style = button->get_focus_style();
+    focus_style->set_border_color(hover_border_color);
+    focus_style->set_background_color(hover_background_color);
 
     recompui::Color disabled_color { 255, 255, 255, 0.6f * 255 };
     recompui::Style* disabled_style = button->get_disabled_style();
@@ -200,6 +212,13 @@ void style_button(recompui::Button* button, recompui::ButtonVariant variant) {
 
 // Must be called while prompt_state.mutex is locked.
 void show_prompt(std::function<void()>& prev_cancel_action, bool focus_on_cancel) {
+    if (focus_on_cancel) {
+        prompt_state.ui_context.set_autofocus_element(prompt_state.cancel_button);
+    }
+    else {
+        prompt_state.ui_context.set_autofocus_element(prompt_state.confirm_button);
+    }
+
     if (!recompui::is_context_shown(prompt_state.ui_context)) {
         recompui::show_context(prompt_state.ui_context, "");
     }
@@ -208,13 +227,6 @@ void show_prompt(std::function<void()>& prev_cancel_action, bool focus_on_cancel
         if (prev_cancel_action) {
             prev_cancel_action();
         }
-    }
-    
-    if (focus_on_cancel) {
-        // TODO nav: focus cancel button
-    }
-    else {
-        // TODO nav: focus confirm button
     }
 }
 
