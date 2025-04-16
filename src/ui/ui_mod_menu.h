@@ -18,7 +18,9 @@ public:
     void set_mod_thumbnail(const std::string &thumbnail);
     void set_mod_enabled(bool enabled);
     void set_selected(bool selected);
+    void set_focused(bool focused);
 protected:
+    virtual void process_event(const Event &e) override;
     std::string_view get_type_name() override { return "ModEntryView"; }
 private:
     Image *thumbnail_image = nullptr;
@@ -28,6 +30,7 @@ private:
     Style checked_style;
     Style hover_style;
     Style checked_hover_style;
+    Style pulsing_style;
 };
 
 class ModEntryButton : public Element {
@@ -40,6 +43,7 @@ public:
     void set_mod_thumbnail(const std::string &thumbnail);
     void set_mod_enabled(bool enabled);
     void set_selected(bool selected);
+    void set_focused(bool focused);
 protected:
     virtual void process_event(const Event &e) override;
     std::string_view get_type_name() override { return "ModEntryButton"; }
