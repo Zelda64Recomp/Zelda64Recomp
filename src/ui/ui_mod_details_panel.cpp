@@ -105,6 +105,13 @@ void ModDetailsPanel::set_mod_details(const recomp::mods::ModDetails& details, c
     enable_toggle->set_enabled(toggle_enabled);
     configure_button->set_enabled(configure_enabled);
     enable_label->set_display(toggle_label_visible ? Display::Block : Display::None);
+
+    if (configure_enabled) {
+        enable_toggle->set_nav(NavDirection::Right, configure_button);
+    }
+    else {
+        enable_toggle->set_nav_none(NavDirection::Right);
+    }
 }
 
 void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callback) {
@@ -117,10 +124,18 @@ void ModDetailsPanel::set_mod_configure_pressed_callback(std::function<void()> c
 
 void ModDetailsPanel::setup_mod_navigation(Element* nav_target) {
     enable_toggle->set_nav(NavDirection::Left, nav_target);
+
+    if (enable_toggle->is_enabled()) {
+        configure_button->set_nav(NavDirection::Left, enable_toggle);
+    }
+    else {
+        configure_button->set_nav(NavDirection::Left, nav_target);
+    }
 }
 
 void ModDetailsPanel::clear_mod_navigation() {
     enable_toggle->set_nav_none(NavDirection::Left);
+    configure_button->set_nav_none(NavDirection::Left);
 }
 
 void ModDetailsPanel::enable_toggle_checked(bool checked) {

@@ -22,6 +22,26 @@ Rml::DataModelHandle sound_options_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false;
 
+static int config_tab_to_index(recompui::ConfigTab tab) {
+    switch (tab) {
+    case recompui::ConfigTab::General:
+        return 0;
+    case recompui::ConfigTab::Controls:
+        return 1;
+    case recompui::ConfigTab::Graphics:
+        return 2;
+    case recompui::ConfigTab::Sound:
+        return 3;
+    case recompui::ConfigTab::Mods:
+        return 4;
+    case recompui::ConfigTab::Debug:
+        return 5;
+    default:
+        assert(false && "Unknown config tab.");
+        return 0;
+    }
+}
+
 template <typename T>
 void get_option(const T& input, Rml::Variant& output) {
     std::string value = "";
@@ -522,6 +542,25 @@ public:
             [](const std::string& param, Rml::Event& event) {
                 zelda64::set_time(debug_context.set_time_day, debug_context.set_time_hour, debug_context.set_time_minute);
             });
+
+#if 0
+        class TabChangeListener : public Rml::EventListener {
+            void ProcessEvent(Rml::Event &event) override {
+                int new_tab_index = event.GetParameter("tab_index", 0);
+                if (new_tab_index == config_tab_to_index(recompui::ConfigTab::Mods)) {
+                    // Hook up this element to the mods menu's first list entry.
+                    recompui::get_config_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::None);
+                }
+                else {
+                    // Revert the navigation to auto.
+                    recompui::get_config_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::None);
+                }
+            }
+        };
+
+        static TabChangeListener tab_change_listener;
+        recompui::get_config_tab()->AddEventListener(Rml::EventId::Tabchange, &tab_change_listener);
+#endif
     }
 
     void bind_config_list_events(Rml::DataModelConstructor &constructor) {
@@ -957,42 +996,20 @@ void recompui::toggle_fullscreen() {
 }
 
 void recompui::set_config_tab(ConfigTab tab) {
+    get_config_tab()->SetActiveTab(config_tab_to_index(tab));
+}
+
+Rml::ElementTabSet* recompui::get_config_tab() {
     ContextId config_context = recompui::get_config_context_id();
-    
-    Rml::ElementDocument* doc = config_context.get_document();
+
+    Rml::ElementDocument *doc = config_context.get_document();
     assert(doc != nullptr);
 
-    Rml::Element* tabset_el = doc->GetElementById("config_tabset");
+    Rml::Element *tabset_el = doc->GetElementById("config_tabset");
     assert(tabset_el != nullptr);
 
-    Rml::ElementTabSet* tabset = rmlui_dynamic_cast<Rml::ElementTabSet*>(tabset_el);
+    Rml::ElementTabSet *tabset = rmlui_dynamic_cast<Rml::ElementTabSet *>(tabset_el);
     assert(tabset != nullptr);
 
-    int tab_index = 0;
-
-    switch (tab) {
-        case ConfigTab::General:
-            tab_index = 0;
-            break;
-        case ConfigTab::Controls:
-            tab_index = 1;
-            break;
-        case ConfigTab::Graphics:
-            tab_index = 2;
-            break;
-        case ConfigTab::Sound:
-            tab_index = 3;
-            break;
-        case ConfigTab::Mods:
-            tab_index = 4;
-            break;
-        case ConfigTab::Debug:
-            tab_index = 5;
-            break;
-        default:
-            assert(false);
-            return;
-    }
-
-    tabset->SetActiveTab(tab_index);
+    return tabset;
 }
