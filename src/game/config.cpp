@@ -162,6 +162,13 @@ std::filesystem::path zelda64::get_app_folder_path() {
        return std::filesystem::path{getenv("APP_FOLDER_PATH")};
    }
 
+#if defined(__APPLE__)
+   const auto supportdir = zelda64::get_application_support_directory();
+   if (supportdir) {
+       return *supportdir / zelda64::program_id;
+   }
+#endif
+
    const char *homedir;
 
    if ((homedir = getenv("HOME")) == nullptr) {

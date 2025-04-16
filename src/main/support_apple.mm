@@ -12,6 +12,15 @@ namespace zelda64 {
         });
     }
 
+    std::optional<std::filesystem::path> get_application_support_directory() {
+        NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+        if ([dirs count] > 0) {
+            NSString *dir = [dirs firstObject];
+            return std::filesystem::path([dir UTF8String]);
+        }
+        return std::nullopt;
+    }
+
     std::filesystem::path get_bundle_resource_directory() {
         NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
         return std::filesystem::path([bundlePath UTF8String]);
