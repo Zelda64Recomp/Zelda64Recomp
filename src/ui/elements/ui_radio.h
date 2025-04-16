@@ -13,6 +13,7 @@ namespace recompui {
         uint32_t index = 0;
     protected:
         virtual void process_event(const Event &e) override;
+        std::string_view get_type_name() override { return "LabelRadioOption"; }
     public:
         RadioOption(Element *parent, std::string_view name, uint32_t index);
         void set_pressed_callback(std::function<void(uint32_t)> callback);
@@ -29,6 +30,8 @@ namespace recompui {
         void option_selected(uint32_t index);
         void set_input_value(const ElementValue& val) override;
         ElementValue get_element_value() override { return get_index(); }
+    protected:
+        std::string_view get_type_name() override { return "LabelRadio"; }
     public:
         Radio(Element *parent);
         virtual ~Radio();

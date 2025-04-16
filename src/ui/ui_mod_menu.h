@@ -18,6 +18,8 @@ public:
     void set_mod_thumbnail(const std::string &thumbnail);
     void set_mod_enabled(bool enabled);
     void set_selected(bool selected);
+protected:
+    std::string_view get_type_name() override { return "ModEntryView"; }
 private:
     Image *thumbnail_image = nullptr;
     Element *body_container = nullptr;
@@ -40,6 +42,7 @@ public:
     void set_selected(bool selected);
 protected:
     virtual void process_event(const Event &e) override;
+    std::string_view get_type_name() override { return "ModEntryButton"; }
 private:
     uint32_t mod_index = 0;
     ModEntryView *view = nullptr;
@@ -56,6 +59,7 @@ private:
     void check_height_distance();
 protected:
     virtual void process_event(const Event &e) override;
+    std::string_view get_type_name() override { return "ModEntrySpacer"; }
 public:
     ModEntrySpacer(Element *parent);
     void set_target_height(float target_height, bool animate_to_target);
@@ -66,6 +70,8 @@ public:
     ModMenu(Element *parent);
     virtual ~ModMenu();
     void set_mods_dirty() { mods_dirty = true; }
+protected:
+    std::string_view get_type_name() override { return "ModMenu"; }
 private:
     void refresh_mods();
     void open_mods_folder();

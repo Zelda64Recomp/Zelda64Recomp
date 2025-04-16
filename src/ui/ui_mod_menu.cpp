@@ -32,6 +32,9 @@ static bool is_mod_enabled_or_auto(const std::string &mod_id) {
 constexpr float modEntryHeight = 120.0f;
 constexpr float modEntryPadding = 4.0f;
 
+extern const std::string mod_tab_id;
+const std::string mod_tab_id = "#tab_mods";
+
 ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     ContextId context = get_current_context();
 
@@ -283,6 +286,22 @@ void ModMenu::mod_selected(uint32_t mod_index) {
         bool configure_enabled = !config_schema.options.empty();
         mod_details_panel->set_mod_details(mod_details[mod_index], thumbnail_src, toggle_checked, toggle_enabled, auto_enabled, configure_enabled);
         mod_entry_buttons[active_mod_index]->set_selected(true);
+
+        mod_details_panel->setup_mod_navigation(mod_entry_buttons[mod_index]);
+        if (configure_enabled) {
+            Button* configure_button = mod_details_panel->get_configure_button();
+            refresh_button->set_nav(NavDirection::Up, configure_button);
+            mods_folder_button->set_nav(NavDirection::Up, configure_button);
+        }
+        else if (toggle_enabled) {
+            Toggle* enable_toggle = mod_details_panel->get_enable_toggle();
+            refresh_button->set_nav(NavDirection::Up, enable_toggle);
+            mods_folder_button->set_nav(NavDirection::Up, enable_toggle);
+        }
+        else {
+            refresh_button->set_nav_manual(NavDirection::Up, mod_tab_id);
+            mods_folder_button->set_nav_manual(NavDirection::Up, mod_tab_id);
+        }
     }
 }
 
@@ -495,6 +514,8 @@ void ModMenu::create_mod_list() {
     mod_entry_buttons.clear();
     mod_entry_spacers.clear();
 
+    Toggle* enable_toggle = mod_details_panel->get_enable_toggle();
+
     // Create the child elements for the list scroll.
     for (size_t mod_index = 0; mod_index < mod_details.size(); mod_index++) {
         const std::vector<char> &thumbnail = recomp::mods::get_mod_thumbnail(mod_details[mod_index].mod_id);
@@ -513,6 +534,13 @@ void ModMenu::create_mod_list() {
         mod_entry->set_mod_details(mod_details[mod_index]);
         mod_entry->set_mod_thumbnail(thumbnail_name);
         mod_entry->set_mod_enabled(is_mod_enabled_or_auto(mod_details[mod_index].mod_id));
+        mod_entry->set_nav(NavDirection::Right, enable_toggle);
+        if (mod_index == 0) {
+            mod_entry->set_nav_manual(NavDirection::Up, mod_tab_id);
+        }
+        if (mod_index == mod_details.size() - 1) {
+            mod_entry->set_nav(NavDirection::Down, install_mods_button);
+        }
         mod_entry_buttons.emplace_back(mod_entry);
     }
 
@@ -605,17 +633,23 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
+            Toggle* enable_toggle = mod_details_panel->get_enable_toggle();
+            Button* configure_button = mod_details_panel->get_configure_button();
             install_mods_button = context.create_element<Button>(footer_container, "Install Mods", recompui::ButtonStyle::Primary);
             install_mods_button->add_pressed_callback([this](){ open_install_dialog(); });
+            install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             Element* footer_spacer = context.create_element<Element>(footer_container);
             footer_spacer->set_flex(1.0f, 0.0f);
 
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
             refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); refresh_mods(); });
+            refresh_button->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
             mods_folder_button->add_pressed_callback([this](){ open_mods_folder(); });
+            mods_folder_button->set_nav(NavDirection::Up, configure_button);
+            mods_folder_button->set_nav_manual(NavDirection::Up, mod_tab_id);
         } // footer_container
     } // this
     

@@ -4,6 +4,8 @@
 
 namespace recompui {
 
+extern const std::string mod_tab_id;
+
 ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
     set_flex(1.0f, 1.0f, 200.0f);
     set_height(100.0f, Unit::Percent);
@@ -63,13 +65,16 @@ ModDetailsPanel::ModDetailsPanel(Element *parent) : Element(parent) {
         {
             enable_toggle = context.create_element<Toggle>(enable_container);
             enable_toggle->add_checked_callback([this](bool checked){ enable_toggle_checked(checked); });
+            enable_toggle->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             enable_label = context.create_element<Label>(enable_container, "A currently enabled mod requires this mod", LabelStyle::Annotation);
         }
 
         configure_button = context.create_element<Button>(buttons_container, "Configure", recompui::ButtonStyle::Secondary);
         configure_button->add_pressed_callback([this](){ configure_button_pressed(); });
+        configure_button->set_nav_manual(NavDirection::Up, mod_tab_id);
     }
+    clear_mod_navigation();
 }
 
 ModDetailsPanel::~ModDetailsPanel() {
@@ -108,6 +113,14 @@ void ModDetailsPanel::set_mod_toggled_callback(std::function<void(bool)> callbac
 
 void ModDetailsPanel::set_mod_configure_pressed_callback(std::function<void()> callback) {
     mod_configure_pressed_callback = callback;
+}
+
+void ModDetailsPanel::setup_mod_navigation(Element* nav_target) {
+    enable_toggle->set_nav(NavDirection::Left, nav_target);
+}
+
+void ModDetailsPanel::clear_mod_navigation() {
+    enable_toggle->set_nav_none(NavDirection::Left);
 }
 
 void ModDetailsPanel::enable_toggle_checked(bool checked) {

@@ -147,6 +147,11 @@ void Element::handle_event(const Event& event) {
     process_event(event);
 }
 
+void Element::set_id(const std::string& new_id) {
+    id = new_id;
+    base->SetId(new_id);
+}
+
 void Element::ProcessEvent(Rml::Event &event) {
     ContextId prev_context = recompui::try_close_current_context();
     ContextId context = ContextId::null();

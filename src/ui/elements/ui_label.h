@@ -12,6 +12,8 @@ namespace recompui {
     };
 
     class Label : public Element {
+    protected:
+        std::string_view get_type_name() override { return "Label"; }
     public:
         Label(Element *parent, LabelStyle label_style);
         Label(Element *parent, const std::string &text, LabelStyle label_style);

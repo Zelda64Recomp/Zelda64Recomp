@@ -1,4 +1,5 @@
 #include "ui_style.h"
+#include "ui_element.h"
 
 #include <cassert>
 
@@ -585,6 +586,14 @@ namespace recompui {
 
     void Style::set_nav_none(NavDirection dir) {
         set_property(nav_to_property(dir), Rml::Style::Nav::None);
+    }
+
+    void Style::set_nav(NavDirection dir, Element* element) {
+        set_property(nav_to_property(dir), Rml::Property(Rml::String{ "#" + element->get_id() }, Rml::Unit::STRING));
+    }
+
+    void Style::set_nav_manual(NavDirection dir, const std::string& target) {
+        set_property(nav_to_property(dir), Rml::Property(target, Rml::Unit::STRING));
     }
 
     void Style::set_tab_index_auto() {

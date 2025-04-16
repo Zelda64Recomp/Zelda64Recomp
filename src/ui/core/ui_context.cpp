@@ -466,6 +466,8 @@ recompui::Style* recompui::ContextId::add_resource_impl(std::unique_ptr<Style>&&
     auto key = opened_context->resources.emplace(std::move(resource));
 
     if (is_element) {
+        Element* element_ptr = static_cast<Element*>(resource_ptr);
+        element_ptr->set_id(std::string{element_ptr->get_type_name()} + "-" + std::to_string(key.raw));
         key.set_tag(static_cast<uint8_t>(SlotTag::Element));
         // Send one update to the element.
         opened_context->to_update.emplace(ResourceId{ key.raw });

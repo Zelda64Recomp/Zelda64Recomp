@@ -36,6 +36,7 @@ namespace recompui {
 
     protected:
         virtual void process_event(const Event &e) override;
+        std::string_view get_type_name() override { return "Slider"; }
 
     public:
         Slider(Element *parent, SliderType type);

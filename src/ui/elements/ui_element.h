@@ -33,6 +33,7 @@ private:
     std::unordered_multimap<std::string_view, uint32_t> style_name_index_map;
     std::vector<UICallback> callbacks;
     std::vector<Element *> children;
+    std::string id;
     bool shim = false;
     bool enabled = true;
     bool disabled_attribute = false;
@@ -44,6 +45,7 @@ private:
     void apply_style(Style *style);
     void propagate_disabled(bool disabled);
     void handle_event(const Event &e);
+    void set_id(const std::string& new_id);
 
     // Style overrides.
     virtual void set_property(Rml::PropertyId property_id, const Rml::Property &property) override;
@@ -56,6 +58,7 @@ protected:
     virtual void process_event(const Event &e);
     virtual ElementValue get_element_value() { return std::monostate{}; }
     virtual void set_input_value(const ElementValue&) {}
+    virtual std::string_view get_type_name() { return "Element"; }
 public:
     // Used for backwards compatibility with legacy UI elements.
     Element(Rml::Element *base);
@@ -94,6 +97,7 @@ public:
     void set_input_value_u32(uint32_t val) { set_input_value(val); }
     void set_input_value_float(float val) { set_input_value(val); }
     void set_input_value_double(double val) { set_input_value(val); }
+    const std::string& get_id() { return id; }
 };
 
 void queue_ui_callback(recompui::ResourceId resource, const Event& e, const UICallback& callback);

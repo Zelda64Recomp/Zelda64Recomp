@@ -36,8 +36,8 @@ ConfigOptionElement::~ConfigOptionElement() {
 
 }
 
-void ConfigOptionElement::set_id(std::string_view id) {
-    this->id = id;
+void ConfigOptionElement::set_option_id(std::string_view id) {
+    this->option_id = id;
 }
 
 void ConfigOptionElement::set_name(std::string_view name) {
@@ -60,7 +60,7 @@ const std::string &ConfigOptionElement::get_description() const {
 // ConfigOptionSlider
 
 void ConfigOptionSlider::slider_value_changed(double v) {
-    callback(id, v);
+    callback(option_id, v);
 }
 
 ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent, std::function<void(const std::string &, double)> callback) : ConfigOptionElement(parent) {
@@ -78,7 +78,7 @@ ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min
 // ConfigOptionTextInput
 
 void ConfigOptionTextInput::text_changed(const std::string &text) {
-    callback(id, text);
+    callback(option_id, text);
 }
 
 ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view value, std::function<void(const std::string &, const std::string &)> callback) : ConfigOptionElement(parent) {
@@ -93,7 +93,7 @@ ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view v
 // ConfigOptionRadio
 
 void ConfigOptionRadio::index_changed(uint32_t index) {
-    callback(id, index);
+    callback(option_id, index);
 }
 
 ConfigOptionRadio::ConfigOptionRadio(Element *parent, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback) : ConfigOptionElement(parent) {
@@ -189,7 +189,7 @@ void ConfigSubMenu::clear_options() {
 }
 
 void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description) {
-    option->set_id(id);
+    option->set_option_id(id);
     option->set_name(name);
     option->set_description(description);
     option->set_hover_callback([this](ConfigOptionElement *option, bool active){ option_hovered(option, active); });

@@ -10,6 +10,8 @@ namespace recompui {
     };
 
     class ScrollContainer : public Element {
+    protected:
+        std::string_view get_type_name() override { return "ScrollContainer"; }
     public:
         ScrollContainer(Element *parent, ScrollDirection direction);
     };

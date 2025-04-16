@@ -16,16 +16,17 @@ namespace recompui {
 class ConfigOptionElement : public Element {
 protected:
     Label *name_label = nullptr;
-    std::string id;
+    std::string option_id;
     std::string name;
     std::string description;
     std::function<void(ConfigOptionElement *, bool)> hover_callback = nullptr;
 
     virtual void process_event(const Event &e) override;
+    std::string_view get_type_name() override { return "ConfigOptionElement"; }
 public:
     ConfigOptionElement(Element *parent);
     virtual ~ConfigOptionElement();
-    void set_id(std::string_view id);
+    void set_option_id(std::string_view id);
     void set_name(std::string_view name);
     void set_description(std::string_view description);
     void set_hover_callback(std::function<void(ConfigOptionElement *, bool)> callback);
@@ -38,6 +39,7 @@ protected:
     std::function<void(const std::string &, double)> callback;
 
     void slider_value_changed(double v);
+    std::string_view get_type_name() override { return "ConfigOptionSlider"; }
 public:
     ConfigOptionSlider(Element *parent, double value, double min_value, double max_value, double step_value, bool percent, std::function<void(const std::string &, double)> callback);
 };
@@ -48,6 +50,7 @@ protected:
     std::function<void(const std::string &, const std::string &)> callback;
 
     void text_changed(const std::string &text);
+    std::string_view get_type_name() override { return "ConfigOptionTextInput"; }
 public:
     ConfigOptionTextInput(Element *parent, std::string_view value, std::function<void(const std::string &, const std::string &)> callback);
 };
@@ -58,6 +61,7 @@ protected:
     std::function<void(const std::string &, uint32_t)> callback;
 
     void index_changed(uint32_t index);
+    std::string_view get_type_name() override { return "ConfigOptionRadio"; }
 public:
     ConfigOptionRadio(Element *parent, uint32_t value, const std::vector<std::string> &options, std::function<void(const std::string &, uint32_t)> callback);
 };
@@ -77,7 +81,8 @@ private:
     void back_button_pressed();
     void option_hovered(ConfigOptionElement *option, bool active);
     void add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description);
-
+protected:
+    std::string_view get_type_name() override { return "ConfigSubMenu"; }
 public:
     ConfigSubMenu(Element *parent);
     virtual ~ConfigSubMenu();

@@ -12,7 +12,9 @@ namespace recompui {
         std::list<std::function<void(bool)>> checked_callbacks;
         Style checked_style;
         Style hover_style;
+        Style focus_style;
         Style checked_hover_style;
+        Style checked_focus_style;
         Style disabled_style;
         Style checked_disabled_style;
         Style floater_checked_style;
@@ -25,6 +27,7 @@ namespace recompui {
 
         // Element overrides.
         virtual void process_event(const Event &e) override;
+        std::string_view get_type_name() override { return "Toggle"; }
     public:
         Toggle(Element *parent);
         void set_checked(bool checked);

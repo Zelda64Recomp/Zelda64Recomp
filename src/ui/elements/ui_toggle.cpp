@@ -6,9 +6,9 @@
 
 namespace recompui {
 
-    Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable), "button") {
+    Toggle::Toggle(Element *parent) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable), "button") {
         enable_focus();
-        
+
         set_width(162.0f);
         set_height(72.0f);
         set_border_radius(36.0f);
@@ -20,13 +20,19 @@ namespace recompui {
         checked_style.set_border_color(Color{ 34, 177, 76, 255 });
         hover_style.set_border_color(Color{ 177, 76, 34, 255 });
         hover_style.set_background_color(Color{ 206, 120, 68, 76 });
+        focus_style.set_border_color(Color{ 177, 76, 34, 255 });
+        focus_style.set_background_color(Color{ 206, 120, 68, 76 });
         checked_hover_style.set_border_color(Color{ 34, 177, 76, 255 });
         checked_hover_style.set_background_color(Color{ 68, 206, 120, 76 });
+        checked_focus_style.set_border_color(Color{ 34, 177, 76, 255 });
+        checked_focus_style.set_background_color(Color{ 68, 206, 120, 76 });
         disabled_style.set_border_color(Color{ 177, 76, 34, 128 });
         checked_disabled_style.set_border_color(Color{ 34, 177, 76, 128 });
         add_style(&checked_style, checked_state);
         add_style(&hover_style, hover_state);
+        add_style(&focus_style, focus_state);
         add_style(&checked_hover_style, { checked_state, hover_state });
+        add_style(&checked_focus_style, { checked_state, focus_state });
         add_style(&disabled_style, disabled_state);
         add_style(&checked_disabled_style, { checked_state, disabled_state });
 
@@ -90,6 +96,11 @@ namespace recompui {
             bool hover_active = std::get<EventHover>(e.variant).active;
             set_style_enabled(hover_state, hover_active);
             floater->set_style_enabled(hover_state, hover_active);
+            break;
+        }
+        case EventType::Focus: {
+            bool focus_active = std::get<EventFocus>(e.variant).active;
+            set_style_enabled(focus_state, focus_active);
             break;
         }
         case EventType::Enable: {
