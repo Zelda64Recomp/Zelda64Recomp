@@ -4,6 +4,7 @@
 #else
 #include <SDL2/SDL_video.h>
 #endif
+#include <chrono>
 
 #include "rt64_render_hooks.h"
 
@@ -573,6 +574,14 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
 
     bool config_was_open = recompui::is_context_shown(recompui::get_config_context_id()) || recompui::is_context_shown(recompui::get_config_sub_menu_context_id());
 
+    using clock = std::chrono::system_clock;
+
+    // TODO move these into a more appropriate place.
+    constexpr clock::duration start_repeat_delay = std::chrono::milliseconds{500};
+    constexpr clock::duration repeat_rate = std::chrono::milliseconds{50};
+    static clock::time_point next_repeat_time = {};
+    static int latest_controller_key_pressed = SDLK_UNKNOWN;
+
     while (recompui::try_deque_event(cur_event)) {
         bool context_capturing_input = recompui::is_context_capturing_input();
         bool context_capturing_mouse = recompui::is_context_capturing_mouse();
@@ -611,12 +620,21 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 break;
                 
             case SDL_EventType::SDL_CONTROLLERBUTTONDOWN: {
-                int rml_key = cont_button_to_key(cur_event.cbutton);
-                if (context_capturing_input && rml_key) {
-                    ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
+                int sdl_key = cont_button_to_key(cur_event.cbutton);
+                if (context_capturing_input && sdl_key) {
+                    ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(sdl_key), 0);
+                    latest_controller_key_pressed = sdl_key;
+                    next_repeat_time = clock::now() + start_repeat_delay;
                 }
                 non_mouse_interacted = true;
                 cont_interacted = true;
+                break;
+            }
+            case SDL_EventType::SDL_CONTROLLERBUTTONUP: {
+                int sdl_key = cont_button_to_key(cur_event.cbutton);
+                if (sdl_key == latest_controller_key_pressed) {
+                    latest_controller_key_pressed = SDLK_UNKNOWN;
+                }
                 break;
             }
             case SDL_EventType::SDL_KEYDOWN:
@@ -649,9 +667,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                     if (!*await_stick_return) {
                         *await_stick_return = true;
                         non_mouse_interacted = true;
-                        int rml_key = cont_axis_to_key(cur_event.caxis, axis_value);
-                        if (context_capturing_input && rml_key) {
-                            ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(rml_key), 0);
+                        int sdl_key = cont_axis_to_key(cur_event.caxis, axis_value);
+                        if (context_capturing_input && sdl_key) {
+                            ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(sdl_key), 0);
+                            latest_controller_key_pressed = sdl_key;
+                            next_repeat_time = clock::now() + start_repeat_delay;
                         }
                     }
                     non_mouse_interacted = true;
@@ -659,6 +679,11 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 }
                 else if (*await_stick_return && fabsf(axis_value) < 0.15f) {
                     *await_stick_return = false;
+                    // Stop pressing the current key if the axis that was released was the one triggering key presses.
+                    int sdl_key = cont_axis_to_key(cur_event.caxis, axis_value);
+                    if (sdl_key == latest_controller_key_pressed) {
+                        latest_controller_key_pressed = SDLK_UNKNOWN;
+                    }
                 }
                 break;
             }
@@ -702,6 +727,15 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
             }
         }
     } // end dequeue event loop
+
+    // Handle controller key repeats.
+    if (latest_controller_key_pressed != SDLK_UNKNOWN) {
+        clock::time_point now = clock::now();
+        if (now >= next_repeat_time) {
+            ui_state->context->ProcessKeyDown(RmlSDL::ConvertKey(latest_controller_key_pressed), 0);
+            next_repeat_time += repeat_rate;
+        }
+    }
 
     if (cont_interacted || kb_interacted || mouse_clicked) {
         recompui::set_cont_active(cont_interacted);
