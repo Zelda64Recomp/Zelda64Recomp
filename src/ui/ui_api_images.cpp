@@ -45,8 +45,9 @@ static void release_texture(uint32_t texture_id) {
     recompui::release_image(texture_name);
 }
 
+thread_local std::vector<char> swapped_image_bytes;
+
 void recompui_create_texture_rgba32(uint8_t* rdram, recomp_context* ctx) {
-    thread_local std::vector<char> data;
     PTR(void) data_in = _arg<0, PTR(void)>(rdram, ctx);
     uint32_t width = _arg<1, uint32_t>(rdram, ctx);
     uint32_t height = _arg<2, uint32_t>(rdram, ctx);
@@ -54,16 +55,37 @@ void recompui_create_texture_rgba32(uint8_t* rdram, recomp_context* ctx) {
 
     // The size in bytes of the image's pixel data.
     size_t size_bytes = width * height * 4 * sizeof(uint8_t);
-    data.resize(size_bytes);
+    swapped_image_bytes.resize(size_bytes);
 
     // Byteswap copy the pixel data.
     for (size_t i = 0; i < size_bytes; i++) {
-        data[i] = MEM_B(i, data_in);
+        swapped_image_bytes[i] = MEM_B(i, data_in);
     }
 
     // Create a texture name from the ID and queue its bytes.
     std::string texture_name = get_texture_name(cur_id);
-    recompui::queue_image_from_bytes_rgba32(texture_name, data, width, height);
+    recompui::queue_image_from_bytes_rgba32(texture_name, swapped_image_bytes, width, height);
+
+    // Return the new texture ID.
+    _return(ctx, cur_id);
+}
+
+void recompui_create_texture_image_bytes(uint8_t* rdram, recomp_context* ctx) {
+    PTR(void) data_in = _arg<0, PTR(void)>(rdram, ctx);
+    uint32_t size_bytes = _arg<1, u32>(rdram, ctx);
+    uint32_t cur_id = get_new_texture_id();
+
+    // The size in bytes of the image's data.
+    swapped_image_bytes.resize(size_bytes);
+
+    // Byteswap copy the image's data.
+    for (size_t i = 0; i < size_bytes; i++) {
+        swapped_image_bytes[i] = MEM_B(i, data_in);
+    }
+
+    // Create a texture name from the ID and queue its bytes.
+    std::string texture_name = get_texture_name(cur_id);
+    recompui::queue_image_from_bytes_file(texture_name, swapped_image_bytes);
 
     // Return the new texture ID.
     _return(ctx, cur_id);
@@ -102,6 +124,7 @@ void recompui_set_imageview_texture(uint8_t* rdram, recomp_context* ctx) {
 
 void recompui::register_ui_image_exports() {
     REGISTER_FUNC(recompui_create_texture_rgba32);
+    REGISTER_FUNC(recompui_create_texture_image_bytes);
     REGISTER_FUNC(recompui_destroy_texture);
     REGISTER_FUNC(recompui_create_imageview);
     REGISTER_FUNC(recompui_set_imageview_texture);
