@@ -288,19 +288,32 @@ void ModMenu::mod_selected(uint32_t mod_index) {
         mod_entry_buttons[active_mod_index]->set_selected(true);
 
         mod_details_panel->setup_mod_navigation(mod_entry_buttons[mod_index]);
+
+        // Navigation from the bottom bar.
+        Button *configure_button = mod_details_panel->get_configure_button();
+        Toggle *enable_toggle = mod_details_panel->get_enable_toggle();
         if (configure_enabled) {
-            Button* configure_button = mod_details_panel->get_configure_button();
             refresh_button->set_nav(NavDirection::Up, configure_button);
             mods_folder_button->set_nav(NavDirection::Up, configure_button);
         }
         else if (toggle_enabled) {
-            Toggle* enable_toggle = mod_details_panel->get_enable_toggle();
             refresh_button->set_nav(NavDirection::Up, enable_toggle);
             mods_folder_button->set_nav(NavDirection::Up, enable_toggle);
         }
         else {
             refresh_button->set_nav_manual(NavDirection::Up, mod_tab_id);
             mods_folder_button->set_nav_manual(NavDirection::Up, mod_tab_id);
+        }
+
+        // Navigation from the mod list.
+        if (toggle_enabled) {
+            mod_entry_buttons[active_mod_index]->set_nav(NavDirection::Right, enable_toggle);
+        }
+        else if (configure_enabled) {
+            mod_entry_buttons[active_mod_index]->set_nav(NavDirection::Right, configure_button);
+        }
+        else {
+            mod_entry_buttons[active_mod_index]->set_nav_none(NavDirection::Right);
         }
     }
 }
@@ -534,14 +547,16 @@ void ModMenu::create_mod_list() {
         mod_entry->set_mod_details(mod_details[mod_index]);
         mod_entry->set_mod_thumbnail(thumbnail_name);
         mod_entry->set_mod_enabled(is_mod_enabled_or_auto(mod_details[mod_index].mod_id));
-        mod_entry->set_nav(NavDirection::Right, enable_toggle);
-        if (mod_index == 0) {
-            mod_entry->set_nav_manual(NavDirection::Up, mod_tab_id);
-        }
-        if (mod_index == mod_details.size() - 1) {
-            mod_entry->set_nav(NavDirection::Down, install_mods_button);
-        }
         mod_entry_buttons.emplace_back(mod_entry);
+    }
+
+    if (!mod_entry_buttons.empty()) {
+        mod_entry_buttons.front()->set_nav_manual(NavDirection::Up, mod_tab_id);
+        mod_entry_buttons.back()->set_nav(NavDirection::Down, install_mods_button);
+        install_mods_button->set_nav(NavDirection::Up, mod_entry_buttons.back());
+    }
+    else {
+        install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
     }
 
     // Add one extra spacer at the bottom.
@@ -633,11 +648,9 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
         footer_container->set_border_bottom_left_radius(16.0f);
         footer_container->set_border_bottom_right_radius(16.0f);
         {
-            Toggle* enable_toggle = mod_details_panel->get_enable_toggle();
             Button* configure_button = mod_details_panel->get_configure_button();
             install_mods_button = context.create_element<Button>(footer_container, "Install Mods", recompui::ButtonStyle::Primary);
             install_mods_button->add_pressed_callback([this](){ open_install_dialog(); });
-            install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             Element* footer_spacer = context.create_element<Element>(footer_container);
             footer_spacer->set_flex(1.0f, 0.0f);
