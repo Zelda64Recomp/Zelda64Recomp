@@ -1,4 +1,5 @@
 ﻿#include "ui_mod_menu.h"
+#include "ui_utils.h"
 #include "recomp_ui.h"
 #include "zelda_support.h"
 #include "zelda_render.h"
@@ -35,7 +36,7 @@ constexpr float modEntryPadding = 4.0f;
 extern const std::string mod_tab_id;
 const std::string mod_tab_id = "#tab_mods";
 
-ModEntryView::ModEntryView(Element *parent) : Element(parent) {
+ModEntryView::ModEntryView(Element *parent) : Element(parent, Events(EventType::Update)) {
     ContextId context = get_current_context();
 
     set_display(Display::Flex);
@@ -54,6 +55,7 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     checked_style.set_background_color(Color{ 26, 24, 32, 255 });
     hover_style.set_border_color(Color{ COL_TEXT_DEFAULT, 64 });
     checked_hover_style.set_border_color(Color{ COL_TEXT_DEFAULT, 255 });
+    pulsing_style.set_border_color(Color{ 23, 214, 232, 244 });
 
     {
         thumbnail_image = context.create_element<Image>(this, "");
@@ -83,6 +85,7 @@ ModEntryView::ModEntryView(Element *parent) : Element(parent) {
     add_style(&checked_style, checked_state);
     add_style(&hover_style, hover_state);
     add_style(&checked_hover_style, { checked_state, hover_state });
+    add_style(&pulsing_style, { focus_state });
 }
 
 ModEntryView::~ModEntryView() {
@@ -104,6 +107,25 @@ void ModEntryView::set_mod_enabled(bool enabled) {
 
 void ModEntryView::set_selected(bool selected) {
     set_style_enabled(checked_state, selected);
+}
+
+void ModEntryView::set_focused(bool focused) {
+    set_style_enabled(focus_state, focused);
+}
+
+void ModEntryView::process_event(const Event &e) {
+    switch (e.type) {
+    case EventType::Update:
+        if (is_style_enabled(focus_state)) {
+            pulsing_style.set_color(recompui::get_pulse_color(750));
+            apply_styles();
+            queue_update();
+        }
+
+        break;
+    default:
+        break;
+    }
 }
 
 // ModEntryButton
@@ -146,11 +168,16 @@ void ModEntryButton::set_selected(bool selected) {
     view->set_selected(selected);
 }
 
+void ModEntryButton::set_focused(bool focused) {
+    view->set_focused(focused);
+    view->queue_update();
+}
+
 void ModEntryButton::process_event(const Event& e) {
     switch (e.type) {
-    case EventType::Click:
     case EventType::Focus:
         selected_callback(mod_index);
+        set_focused(std::get<EventFocus>(e.variant).active);
         break;
     case EventType::Hover:
         view->set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
@@ -335,6 +362,7 @@ void ModMenu::mod_dragged(uint32_t mod_index, EventDrag drag) {
         float left = mod_entry_buttons[mod_index]->get_absolute_left() - get_absolute_left();
         float top = mod_entry_buttons[mod_index]->get_absolute_top() - (height / 2.0f); // TODO: Figure out why this adjustment is even necessary.
         mod_entry_buttons[mod_index]->set_display(Display::None);
+        mod_entry_buttons[mod_index]->set_focused(false);
         mod_entry_floating_view->set_display(Display::Flex);
         mod_entry_floating_view->set_mod_details(mod_details[mod_index]);
         mod_entry_floating_view->set_mod_thumbnail(generate_thumbnail_src_for_mod(mod_details[mod_index].mod_id));
