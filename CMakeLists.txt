@@ -48,7 +48,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/lib/lunasvg)
 SET(ENABLE_SVG_PLUGIN ON CACHE BOOL "" FORCE)
 SET(RMLUI_TESTS_ENABLED OFF CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/RmlUi)
-target_compile_definitions(rmlui_core PRIVATE LUNASVG_BUILD_STATIC)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime)
 
