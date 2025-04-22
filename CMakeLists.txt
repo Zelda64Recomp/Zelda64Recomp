@@ -399,6 +399,27 @@ endif()
 build_vertex_shader(Zelda64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
 build_pixel_shader(Zelda64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
 
+# Embed all .nrm files in the "mods" directory
+file(GLOB NRM_FILES "${CMAKE_SOURCE_DIR}/mods/*.nrm")
+
+set(GENERATED_NRM_SOURCES "")
+
+foreach(NRM_FILE ${NRM_FILES})
+    get_filename_component(NRM_NAME ${NRM_FILE} NAME_WE)
+    set(OUT_C "${CMAKE_CURRENT_BINARY_DIR}/mods/${NRM_NAME}.c")
+    set(OUT_H "${CMAKE_CURRENT_BINARY_DIR}/mods/${NRM_NAME}.h")
+
+    add_custom_command(
+        OUTPUT ${OUT_C} ${OUT_H}
+        COMMAND file_to_c ${NRM_FILE} ${NRM_NAME} ${OUT_C} ${OUT_H}
+        DEPENDS ${NRM_FILE}
+    )
+
+    list(APPEND GENERATED_NRM_SOURCES ${OUT_C})
+endforeach()
+
+target_sources(Zelda64Recompiled PRIVATE ${GENERATED_NRM_SOURCES})
+
 target_sources(Zelda64Recompiled PRIVATE ${SOURCES})
 
 set_property(TARGET Zelda64Recompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
