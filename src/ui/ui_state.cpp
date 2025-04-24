@@ -796,16 +796,28 @@ void recompui::message_box(const char* msg) {
 }
 
 void recompui::show_context(ContextId context, std::string_view param) {
-    std::lock_guard lock{ui_state_mutex};
+    ContextId prev_context = recompui::try_close_current_context();
+    {
+        std::lock_guard lock{ ui_state_mutex };
 
-    // TODO call the context's on_show callback with the param.
-    ui_state->show_context(context);
+        // TODO call the context's on_show callback with the param.
+        ui_state->show_context(context);
+    }
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
+    }
 }
 
 void recompui::hide_context(ContextId context) {
-    std::lock_guard lock{ui_state_mutex};
+    ContextId prev_context = recompui::try_close_current_context();
+    {
+        std::lock_guard lock{ ui_state_mutex };
 
-    ui_state->hide_context(context);
+        ui_state->hide_context(context);
+    }
+    if (prev_context != ContextId::null()) {
+        prev_context.open();
+    }
 }
 
 void recompui::hide_all_contexts() {
