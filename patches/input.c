@@ -788,6 +788,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
             gSaveContext.buttonStatus[EQUIP_SLOT_C_LEFT] = BTN_DISABLED;
             gSaveContext.buttonStatus[EQUIP_SLOT_C_DOWN] = BTN_DISABLED;
             gSaveContext.buttonStatus[EQUIP_SLOT_C_RIGHT] = BTN_DISABLED;
+            recomp_set_extra_item_slot_statuses(play, BTN_DISABLED);
         }
     } else if (!gSaveContext.save.saveInfo.playerData.isMagicAcquired && (CUR_FORM == PLAYER_FORM_DEKU) &&
                (BUTTON_ITEM_EQUIP(CUR_FORM, EQUIP_SLOT_B) == ITEM_DEKU_NUT)) {
@@ -885,6 +886,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
             gSaveContext.buttonStatus[EQUIP_SLOT_C_LEFT] = BTN_DISABLED;
             gSaveContext.buttonStatus[EQUIP_SLOT_C_DOWN] = BTN_DISABLED;
             gSaveContext.buttonStatus[EQUIP_SLOT_C_RIGHT] = BTN_DISABLED;
+            recomp_set_extra_item_slot_statuses(play, BTN_DISABLED);
             restoreHudVisibility = true;
             Interface_SetHudVisibility(HUD_VISIBILITY_ALL);
         }
@@ -1092,7 +1094,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
                               (GET_CUR_FORM_BTN_ITEM(i) <= ITEM_MASK_GIANT)) &&
                             (GET_CUR_FORM_BTN_ITEM(i) != ITEM_PICTOGRAPH_BOX)) {
 
-                            if ((gSaveContext.buttonStatus[i] == BTN_ENABLED)) {
+                            if (gSaveContext.buttonStatus[i] == BTN_ENABLED) {
                                 restoreHudVisibility = true;
                                 gSaveContext.buttonStatus[i] = BTN_DISABLED;
                             }
@@ -1107,7 +1109,7 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
                               (GET_CUR_FORM_BTN_ITEM(i) <= ITEM_MASK_GIANT)) &&
                             (GET_CUR_FORM_BTN_ITEM(i) != ITEM_PICTOGRAPH_BOX)) {
 
-                            if ((gSaveContext.buttonStatus[i] == BTN_DISABLED)) {
+                            if (gSaveContext.buttonStatus[i] == BTN_DISABLED) {
                                 restoreHudVisibility = true;
                                 gSaveContext.buttonStatus[i] = BTN_ENABLED;
                             }
