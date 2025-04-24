@@ -74,7 +74,7 @@ add_custom_command(TARGET Zelda64Recompiled POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/temp_assets
 
     # Copy controller database
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/Resources/
 
     # Set RPATH
     COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" $<TARGET_BUNDLE_DIR:Zelda64Recompiled>/Contents/MacOS/Zelda64Recompiled

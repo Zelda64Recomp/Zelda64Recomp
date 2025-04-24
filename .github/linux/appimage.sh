@@ -20,7 +20,7 @@ chmod a+x linuxdeploy*
 mkdir -p AppDir/usr/bin
 cp Zelda64Recompiled AppDir/usr/bin/
 cp -r assets/ AppDir/usr/bin/
-cp gamecontrollerdb.txt AppDir/usr/bin/
+cp recompcontrollerdb.txt AppDir/usr/bin/
 cp icons/512.png AppDir/Zelda64Recompiled.png
 cp .github/linux/Zelda64Recompiled.desktop AppDir/
 
