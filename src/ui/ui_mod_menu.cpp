@@ -235,10 +235,10 @@ void ModMenu::open_mods_folder() {
     std::wstring path_wstr = mods_directory.wstring();
     ShellExecuteW(NULL, L"open", path_wstr.c_str(), NULL, NULL, SW_SHOWDEFAULT);
 #elif defined(__linux__)
-    std::string command = "xdg-open " + mods_directory.string() + " &";
+    std::string command = "xdg-open \"" + mods_directory.string() + "\" &";
     std::system(command.c_str());
 #elif defined(__APPLE__)
-    std::string command = "open " + mods_directory.string();
+    std::string command = "open \"" + mods_directory.string() + "\"";
     std::system(command.c_str());
 #else
     static_assert(false, "Not implemented for this platform.");
