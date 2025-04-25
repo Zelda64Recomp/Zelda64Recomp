@@ -92,9 +92,6 @@ typedef enum {
         "\t.popsection\n");                   \
     extern u8 identifier[]
 
-void draw_dpad(PlayState* play);
-void draw_dpad_icons(PlayState* play);
-
 void View_ApplyInterpolate(View* view, s32 mask, bool reset_interpolation_state);
 
 void set_camera_skipped(bool skipped);
