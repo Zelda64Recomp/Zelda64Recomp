@@ -29,6 +29,10 @@ namespace recompui {
         set_border_color(Color{ 242, 242, 242, 255 });
         set_border_bottom_width(1.0f);
         set_padding_bottom(6.0f);
+        set_focusable(true);
+        set_nav_auto(NavDirection::Up);
+        set_nav_auto(NavDirection::Down);
+        set_tab_index_auto();
     }
 
     void TextInput::set_text(std::string_view text) {
