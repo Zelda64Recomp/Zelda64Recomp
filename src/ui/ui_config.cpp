@@ -464,7 +464,7 @@ public:
     }
     void load_document() override {
 		config_context = recompui::create_context(zelda64::get_asset_path("config_menu.rml"));
-        recompui::update_mod_list();
+        recompui::update_mod_list(false);
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "apply_options",

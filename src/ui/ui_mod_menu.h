@@ -73,11 +73,11 @@ class ModMenu : public Element {
 public:
     ModMenu(Element *parent);
     virtual ~ModMenu();
-    void set_mods_dirty() { mods_dirty = true; }
+    void set_mods_dirty(bool scan_mods) { mods_dirty = true; mod_scan_queued = scan_mods; }
 protected:
     std::string_view get_type_name() override { return "ModMenu"; }
 private:
-    void refresh_mods();
+    void refresh_mods(bool scan_mods);
     void open_mods_folder();
     void open_install_dialog();
     void mod_toggled(bool enabled);
@@ -113,6 +113,7 @@ private:
     std::unordered_set<std::string> loaded_thumbnails;
     std::string game_mod_id;
     bool mods_dirty = false;
+    bool mod_scan_queued = false;
 
     ConfigSubMenu *config_sub_menu;
 };

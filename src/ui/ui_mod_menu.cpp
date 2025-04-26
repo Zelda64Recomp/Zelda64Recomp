@@ -246,12 +246,14 @@ void ModEntrySpacer::set_target_height(float target_height, bool animate_to_targ
 
 // ModMenu
 
-void ModMenu::refresh_mods() {
+void ModMenu::refresh_mods(bool scan_mods) {
     for (const std::string &thumbnail : loaded_thumbnails) {
         recompui::release_image(thumbnail);
     }
 
-    recomp::mods::scan_mods();
+    if (scan_mods) {
+        recomp::mods::scan_mods();
+    }
     mod_details = recomp::mods::get_all_mod_details(game_mod_id);
     create_mod_list();
 }
@@ -606,8 +608,9 @@ void ModMenu::create_mod_list() {
 void ModMenu::process_event(const Event &e) {
     if (e.type == EventType::Update) {
         if (mods_dirty) {
-            refresh_mods();
+            refresh_mods(mod_scan_queued);
             mods_dirty = false;
+            mod_scan_queued = false;
         }
         if (ultramodern::is_game_started()) {
             install_mods_button->set_enabled(false);
@@ -686,7 +689,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             footer_spacer->set_flex(1.0f, 0.0f);
 
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
-            refresh_button->add_pressed_callback([this](){ refresh_mods(); });
+            refresh_button->add_pressed_callback([this](){ refresh_mods(true); });
             refresh_button->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
@@ -721,12 +724,12 @@ ModMenu::~ModMenu() {
 
 recompui::ModMenu* mod_menu;
 
-void update_mod_list() {
+void update_mod_list(bool scan_mods) {
     if (mod_menu) {
         recompui::ContextId ui_context = recompui::get_config_context_id();
         bool opened = ui_context.open_if_not_already();
 
-        mod_menu->set_mods_dirty();
+        mod_menu->set_mods_dirty(scan_mods);
         mod_menu->queue_update();
 
         if (opened) {

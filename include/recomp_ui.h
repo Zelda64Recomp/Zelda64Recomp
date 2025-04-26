@@ -111,7 +111,7 @@ namespace recompui {
     );
     void close_prompt();
     bool is_prompt_open();
-    void update_mod_list();
+    void update_mod_list(bool scan_mods = true);
     void process_game_started();
 
     void apply_color_hack();
