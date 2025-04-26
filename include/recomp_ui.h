@@ -69,7 +69,8 @@ namespace recompui {
     };
 
     void set_config_tab(ConfigTab tab);
-    Rml::ElementTabSet* get_config_tab();
+    Rml::ElementTabSet* get_config_tabset();
+    Rml::Element* get_mod_tab();
 
     enum class ButtonVariant {
         Primary,

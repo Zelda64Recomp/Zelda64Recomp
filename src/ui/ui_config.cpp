@@ -464,6 +464,7 @@ public:
     }
     void load_document() override {
 		config_context = recompui::create_context(zelda64::get_asset_path("config_menu.rml"));
+        recompui::update_mod_list();
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "apply_options",
@@ -542,25 +543,6 @@ public:
             [](const std::string& param, Rml::Event& event) {
                 zelda64::set_time(debug_context.set_time_day, debug_context.set_time_hour, debug_context.set_time_minute);
             });
-
-#if 0
-        class TabChangeListener : public Rml::EventListener {
-            void ProcessEvent(Rml::Event &event) override {
-                int new_tab_index = event.GetParameter("tab_index", 0);
-                if (new_tab_index == config_tab_to_index(recompui::ConfigTab::Mods)) {
-                    // Hook up this element to the mods menu's first list entry.
-                    recompui::get_config_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::None);
-                }
-                else {
-                    // Revert the navigation to auto.
-                    recompui::get_config_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::None);
-                }
-            }
-        };
-
-        static TabChangeListener tab_change_listener;
-        recompui::get_config_tab()->AddEventListener(Rml::EventId::Tabchange, &tab_change_listener);
-#endif
     }
 
     void bind_config_list_events(Rml::DataModelConstructor &constructor) {
@@ -996,11 +978,13 @@ void recompui::toggle_fullscreen() {
 }
 
 void recompui::set_config_tab(ConfigTab tab) {
-    get_config_tab()->SetActiveTab(config_tab_to_index(tab));
+    get_config_tabset()->SetActiveTab(config_tab_to_index(tab));
 }
 
-Rml::ElementTabSet* recompui::get_config_tab() {
+Rml::ElementTabSet* recompui::get_config_tabset() {
     ContextId config_context = recompui::get_config_context_id();
+
+    ContextId old_context = recompui::try_close_current_context();
 
     Rml::ElementDocument *doc = config_context.get_document();
     assert(doc != nullptr);
@@ -1011,5 +995,27 @@ Rml::ElementTabSet* recompui::get_config_tab() {
     Rml::ElementTabSet *tabset = rmlui_dynamic_cast<Rml::ElementTabSet *>(tabset_el);
     assert(tabset != nullptr);
 
+    if (old_context != ContextId::null()) {
+        old_context.open();
+    }
+
     return tabset;
+}
+
+Rml::Element* recompui::get_mod_tab() {
+    ContextId config_context = recompui::get_config_context_id();
+
+    ContextId old_context = recompui::try_close_current_context();
+
+    Rml::ElementDocument* doc = config_context.get_document();
+    assert(doc != nullptr);
+
+    Rml::Element* tab_el = doc->GetElementById("tab_mods");
+    assert(tab_el != nullptr);
+
+    if (old_context != ContextId::null()) {
+        old_context.open();
+    }
+
+    return tab_el;
 }

@@ -582,9 +582,11 @@ void ModMenu::create_mod_list() {
         mod_entry_buttons.front()->set_nav_manual(NavDirection::Up, mod_tab_id);
         mod_entry_buttons.back()->set_nav(NavDirection::Down, install_mods_button);
         install_mods_button->set_nav(NavDirection::Up, mod_entry_buttons.back());
+        recompui::get_mod_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Property{ "#" + mod_entry_buttons.front()->get_id(), Rml::Unit::STRING });
     }
     else {
         install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
+        recompui::get_mod_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
     }
 
     // Add one extra spacer at the bottom.
@@ -684,7 +686,7 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
             footer_spacer->set_flex(1.0f, 0.0f);
 
             refresh_button = context.create_element<Button>(footer_container, "Refresh", recompui::ButtonStyle::Primary);
-            refresh_button->add_pressed_callback([this](){ recomp::mods::scan_mods(); refresh_mods(); });
+            refresh_button->add_pressed_callback([this](){ refresh_mods(); });
             refresh_button->set_nav_manual(NavDirection::Up, mod_tab_id);
 
             mods_folder_button = context.create_element<Button>(footer_container, "Open Mods Folder", recompui::ButtonStyle::Primary);
@@ -698,9 +700,6 @@ ModMenu::ModMenu(Element *parent) : Element(parent) {
     mod_entry_floating_view->set_display(Display::None);
     mod_entry_floating_view->set_position(Position::Absolute);
     mod_entry_floating_view->set_selected(true);
-
-    recomp::mods::scan_mods();
-    refresh_mods();
 
     context.close();
 
