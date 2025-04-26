@@ -81,10 +81,21 @@ namespace recompui {
             }
             break;
         case EventType::Hover: 
-            set_style_enabled(hover_state, std::get<EventHover>(e.variant).active);
+            set_style_enabled(hover_state, std::get<EventHover>(e.variant).active && is_enabled());
             break;
         case EventType::Enable:
-            set_style_enabled(disabled_state, !std::get<EventEnable>(e.variant).active);
+            {
+                bool enable_active = std::get<EventEnable>(e.variant).active;
+                set_style_enabled(disabled_state, !enable_active);
+                if (enable_active) {
+                    set_cursor(Cursor::Pointer);
+                    set_focusable(true);
+                }
+                else {
+                    set_cursor(Cursor::None);
+                    set_focusable(false);
+                }
+            }
             break;
         case EventType::Focus:
             set_style_enabled(focus_state, std::get<EventFocus>(e.variant).active);

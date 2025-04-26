@@ -249,12 +249,12 @@ void Element::process_event(const Event &) {
 }
 
 void Element::enable_focus() {
-    set_property(Rml::PropertyId::TabIndex, Rml::Style::TabIndex::Auto);
-    set_property(Rml::PropertyId::Focus, Rml::Style::Focus::Auto);
-    set_property(Rml::PropertyId::NavUp, Rml::Style::Nav::Auto);
-    set_property(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
-    set_property(Rml::PropertyId::NavLeft, Rml::Style::Nav::Auto);
-    set_property(Rml::PropertyId::NavRight, Rml::Style::Nav::Auto);
+    set_tab_index_auto();
+    set_focusable(true);
+    set_nav_auto(NavDirection::Up);
+    set_nav_auto(NavDirection::Down);
+    set_nav_auto(NavDirection::Left);
+    set_nav_auto(NavDirection::Right);
 }
 
 void Element::clear_children() {

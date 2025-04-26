@@ -93,7 +93,7 @@ namespace recompui {
 
             break;
         case EventType::Hover: {
-            bool hover_active = std::get<EventHover>(e.variant).active;
+            bool hover_active = std::get<EventHover>(e.variant).active && is_enabled();
             set_style_enabled(hover_state, hover_active);
             floater->set_style_enabled(hover_state, hover_active);
             break;
@@ -107,6 +107,14 @@ namespace recompui {
             bool enable_active = std::get<EventEnable>(e.variant).active;
             set_style_enabled(disabled_state, !enable_active);
             floater->set_style_enabled(disabled_state, !enable_active);
+            if (enable_active) {
+                set_cursor(Cursor::Pointer);
+                set_focusable(true);
+            }
+            else {
+                set_cursor(Cursor::None);
+                set_focusable(false);
+            }
             break;
         }
         case EventType::Update: {

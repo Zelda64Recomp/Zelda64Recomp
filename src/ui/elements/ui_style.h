@@ -100,6 +100,7 @@ namespace recompui {
         void set_nav_manual(NavDirection dir, const std::string& target);
         void set_tab_index_auto();
         void set_tab_index_none();
+        void set_focusable(bool focusable);
         virtual bool is_element() { return false; }
         ResourceId get_resource_id() { return resource_id; }
     };

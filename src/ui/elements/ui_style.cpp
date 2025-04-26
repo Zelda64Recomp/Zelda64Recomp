@@ -429,7 +429,7 @@ namespace recompui {
     void Style::set_cursor(Cursor cursor) {
         switch (cursor) {
         case Cursor::None:
-            assert(false && "Unimplemented.");
+            set_property(Rml::PropertyId::Cursor, Rml::Property("", Rml::Unit::STRING));
             break;
         case Cursor::Pointer:
             set_property(Rml::PropertyId::Cursor, Rml::Property("pointer", Rml::Unit::STRING));
@@ -602,6 +602,10 @@ namespace recompui {
 
     void Style::set_tab_index_none() {
         set_property(Rml::PropertyId::TabIndex, Rml::Style::Nav::None);
+    }
+    
+    void Style::set_focusable(bool focusable) {
+        set_property(Rml::PropertyId::Focus, focusable ? Rml::Style::Focus::Auto : Rml::Style::Focus::None);
     }
 
 

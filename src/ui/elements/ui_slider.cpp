@@ -84,12 +84,17 @@ namespace recompui {
             }
             break;
         case EventType::Update:
-            if (circle_element->is_style_enabled(focus_state)) {
-                circle_element->set_background_color(recompui::get_pulse_color(750));
-                queue_update();
+            if (is_enabled()) {
+                if (circle_element->is_style_enabled(focus_state)) {
+                    circle_element->set_background_color(recompui::get_pulse_color(750));
+                    queue_update();
+                }
+                else {
+                    circle_element->set_background_color(Color{ 204, 204, 204, 255 });
+                }
             }
             else {
-                circle_element->set_background_color(Color{ 204, 204, 204, 255 });
+                circle_element->set_background_color(Color{ 102, 102, 102, 255 });
             }
             break;
         case EventType::Navigate:
@@ -102,14 +107,32 @@ namespace recompui {
                     do_step(true);
                 }
             }
+            break;
+        case EventType::Enable:
+            {
+                bool enable_active = std::get<EventEnable>(e.variant).active;
+                circle_element->set_enabled(enable_active);
+                if (enable_active) {
+                    set_cursor(Cursor::Pointer);
+                    set_focusable(true);
+                    circle_element->set_background_color(Color{ 204, 204, 204, 255 });
+                }
+                else {
+                    set_cursor(Cursor::None);
+                    set_focusable(false);
+                    circle_element->set_background_color(Color{ 102, 102, 102, 255 });
+                }
+            }
+            break;
         default:
             break;
         }
     }
 
-    Slider::Slider(Element *parent, SliderType type) : Element(parent, Events(EventType::Focus, EventType::Update, EventType::Navigate)) {
+    Slider::Slider(Element *parent, SliderType type) : Element(parent, Events(EventType::Focus, EventType::Update, EventType::Navigate, EventType::Enable)) {
         this->type = type;
 
+        set_cursor(Cursor::Pointer);
         set_display(Display::Flex);
         set_flex_direction(FlexDirection::Row);
         set_text_align(TextAlign::Left);
