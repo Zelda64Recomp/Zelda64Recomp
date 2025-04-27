@@ -1013,7 +1013,8 @@ RECOMP_PATCH void Interface_UpdateButtonsPart2(PlayState* play) {
                     }
                 } else if (GET_CUR_FORM_BTN_ITEM(i) == ITEM_MASK_FIERCE_DEITY) {
                     // Fierce Deity's Mask is equipped
-                    if ((play->sceneId != SCENE_MITURIN_BS) && (play->sceneId != SCENE_HAKUGIN_BS) &&
+                    // @recomp_use_export_var fd_anywhere: Allow the player to use the Fierce Deity's Mask anywhere if mods enable it.
+                    if (!fd_anywhere && (play->sceneId != SCENE_MITURIN_BS) && (play->sceneId != SCENE_HAKUGIN_BS) &&
                         (play->sceneId != SCENE_SEA_BS) && (play->sceneId != SCENE_INISIE_BS) &&
                         (play->sceneId != SCENE_LAST_BS)) {
                         if (gSaveContext.buttonStatus[i] != BTN_DISABLED) {
