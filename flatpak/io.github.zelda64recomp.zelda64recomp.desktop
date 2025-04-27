@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Zelda 64: Recompiled
+Exec=/app/bin/Zelda64Recompiled
+Type=Application
+Icon=io.github.zelda64recomp.zelda64recomp
+Categories=Game;
+Comment=Static recompilation of Majora's Mask (and soon Ocarina of Time) for PC.
+MimeType=x-scheme-handler/zelda64recomp

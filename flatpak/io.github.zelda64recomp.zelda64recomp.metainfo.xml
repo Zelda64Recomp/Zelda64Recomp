@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.zelda64recomp.zelda64recomp</id>
+  
+  <name>Zelda 64: Recompiled</name>
+  <summary>Static recompilation of Majora's Mask (and soon Ocarina of Time) for PC.</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  
+  <description>
+    <p>
+      Zelda 64: Recompiled is a project that uses N64: Recompiled to statically recompile Majora's Mask (and soon Ocarina of Time) into a native port with many new features and enhancements. This project uses RT64 as the rendering engine to provide some of these enhancements.
+
+      The original game is required to run this project.
+
+      https://github.com/Zelda64Recomp/Zelda64Recomp
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">io.github.zelda64recomp.zelda64recomp.desktop</launchable>
+</component>

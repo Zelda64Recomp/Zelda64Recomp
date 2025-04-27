@@ -1,0 +1,63 @@
+{
+  "id": "io.github.zelda64recomp.zelda64recomp",
+  "runtime": "org.freedesktop.Platform",
+  "runtime-version": "23.08",
+  "sdk": "org.freedesktop.Sdk",
+  "sdk-extensions" : [ "org.freedesktop.Sdk.Extension.llvm18" ],
+  "finish-args": [
+    "--share=network",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--socket=pulseaudio",
+    "--device=all",
+    "--filesystem=host",
+    "--filesystem=/media",
+    "--filesystem=/run/media",
+    "--filesystem=/mnt"
+  ],
+  "modules": [
+    {
+      "name": "Zelda64Recompiled",
+      "buildsystem": "simple",
+      "build-commands": [
+        "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -G Ninja -S lib/N64Recomp -B lib/N64Recomp/cmake-build",
+        "cmake --build lib/N64Recomp/cmake-build --config Release --target N64Recomp --parallel",
+        "cmake --build lib/N64Recomp/cmake-build --config Release --target RSPRecomp --parallel",
+        "cp lib/N64Recomp/cmake-build/N64Recomp N64Recomp",
+        "cp lib/N64Recomp/cmake-build/RSPRecomp RSPRecomp",
+        "./N64Recomp us.rev1.toml",
+        "./RSPRecomp aspMain.us.rev1.toml",
+        "./RSPRecomp njpgdspMain.us.rev1.toml",
+        "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -DPATCHES_C_COMPILER=clang -DPATCHES_LD=ld.lld -G Ninja -S . -B cmake-build",
+        "cmake --build cmake-build --config Release --target Zelda64Recompiled --parallel",
+        "rm -rf assets/scss",
+        "mkdir -p /app/bin",
+        "cp cmake-build/Zelda64Recompiled /app/bin/Zelda64Recompiled",
+        "cp recompcontrollerdb.txt /app/bin/recompcontrollerdb.txt",
+        "cp -R assets /app/bin/assets",
+        "install -Dm644 icons/512.png /app/share/icons/hicolor/512x512/apps/${FLATPAK_ID}.png",
+        "install -Dm644 flatpak/io.github.zelda64recomp.zelda64recomp.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml",
+        "install -Dm644 flatpak/io.github.zelda64recomp.zelda64recomp.desktop /app/share/applications/${FLATPAK_ID}.desktop"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/N64Recomp/N64Recomp.git",
+          "commit": "989a86b36912403cd323de884bf834f2605ea770",
+          "dest": "lib/N64Recomp"
+        },
+        {
+          "type": "dir",
+          "path": "../"
+        }
+      ],
+      "build-options": {
+        "append-path": "/usr/lib/sdk/llvm18/bin",
+        "prepend-ld-library-path": "/usr/lib/sdk/llvm18/lib",
+        "build-args": [
+          "--share=network"
+        ]
+      }
+    }
+  ]
+}

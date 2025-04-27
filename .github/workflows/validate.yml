@@ -34,7 +34,7 @@ jobs:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
-    name: ubuntu-18.04 (x64, ${{ matrix.type }})
+    name: ubuntu-18.04 (x64, ${{ matrix.type }}, Native, AppImage)
     steps:
       - name: Copy the Node20 binary
         run: |
@@ -113,7 +113,7 @@ jobs:
       matrix:
         type: [ Debug, Release ]
         os: [ ubuntu-22.04 ]
-    name: ${{ matrix.os }} (arm64, ${{ matrix.type }})
+    name: ${{ matrix.os }} (arm64, ${{ matrix.type }}, Native, AppImage)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -195,6 +195,56 @@ jobs:
         with:
           name: Zelda64Recompiled-AppImage-ARM64-${{ matrix.type }}
           path: Zelda64Recompiled-*.AppImage
+  build-linux-flatpak:
+    runs-on: ubuntu-latest
+    env:
+      FLATPAK_ID: io.github.zelda64recomp.zelda64recomp
+      FREEDESKTOP_VERSION: 23.08
+      LLVM_VERSION: 18
+    strategy:
+      matrix:
+        type: [ Debug, Release ]
+        os: [ ubuntu-latest ]
+    name: ${{ matrix.os }} (x64, ${{ matrix.type }}, Flatpak)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          submodules: recursive
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-z64re-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak-builder ccache lld
+
+      - name: Prepare Build
+        run: |-
+          git clone ${{ secrets.ZRE_REPO_WITH_PAT }}
+          ./zre/process.sh
+
+      - name: Prepare Flatpak
+        run: |
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install -y flathub org.freedesktop.Sdk//${{ env.FREEDESKTOP_VERSION }}
+          flatpak --user install -y flathub org.freedesktop.Sdk.Extension.llvm${{ env.LLVM_VERSION }}//${{ env.FREEDESKTOP_VERSION }}
+
+      - name: Build ZeldaRecomp
+        run: |-
+          export CCACHE_DIR=/tmp/ccache
+          git config --global protocol.file.allow always
+          make -C patches CC=clang LD=ld.lld
+          flatpak-builder --user --force-clean --install-deps-from=flathub --repo=repo --ccache builddir ./flatpak/${{ env.FLATPAK_ID }}.json
+          flatpak build-bundle repo ./${{ env.FLATPAK_ID }}.flatpak ${{ env.FLATPAK_ID }} --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zelda64Recompiled-Flatpak-X64-${{ matrix.type }}
+          path: ./${{ env.FLATPAK_ID }}.flatpak
   build-windows:
     runs-on: windows-latest
     strategy:

@@ -45,13 +45,20 @@ namespace zelda64 {
 
     // MARK: - Public API
 
-    std::filesystem::path get_asset_path(const char* asset) {
-        std::filesystem::path base_path = "";
+    std::filesystem::path get_program_path() {
 #if defined(__APPLE__)
-        base_path = get_bundle_resource_directory();
+        return get_bundle_resource_directory();
+#elif defined(__linux__)
+        std::error_code ec;
+        if (std::filesystem::exists("/.flatpak-info", ec)) {
+            return "/app/bin";
+        }
 #endif
+        return "";
+    }
 
-        return base_path / "assets" / asset;
+    std::filesystem::path get_asset_path(const char* asset) {
+        return get_program_path() / "assets" / asset;
     }
 
     void open_file_dialog(std::function<void(bool success, const std::filesystem::path& path)> callback) {
