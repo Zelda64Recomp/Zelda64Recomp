@@ -456,6 +456,10 @@ void Element::focus() {
     base->Focus();
 }
 
+void Element::blur() {
+    base->Blur();
+}
+
 void Element::queue_update() {
     ContextId cur_context = get_current_context();
 

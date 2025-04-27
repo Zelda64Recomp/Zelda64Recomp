@@ -11,6 +11,7 @@ namespace recompui {
         Style pulsing_style;
         std::function<void(uint32_t)> pressed_callback = nullptr;
         uint32_t index = 0;
+        bool focus_queued = false;
     protected:
         virtual void process_event(const Event &e) override;
         std::string_view get_type_name() override { return "LabelRadioOption"; }
@@ -18,6 +19,7 @@ namespace recompui {
         RadioOption(Element *parent, std::string_view name, uint32_t index);
         void set_pressed_callback(std::function<void(uint32_t)> callback);
         void set_selected_state(bool enable);
+        void queue_focus() { focus_queued = true; queue_update(); }
     };
 
     class Radio : public Container {
@@ -31,6 +33,7 @@ namespace recompui {
         void set_input_value(const ElementValue& val) override;
         ElementValue get_element_value() override { return get_index(); }
     protected:
+        virtual void process_event(const Event &e) override;
         std::string_view get_type_name() override { return "LabelRadio"; }
     public:
         Radio(Element *parent);
@@ -39,6 +42,13 @@ namespace recompui {
         void set_index(uint32_t index);
         uint32_t get_index() const;
         void add_index_changed_callback(std::function<void(uint32_t)> callback);
+        size_t num_options() const { return options.size(); }
+        RadioOption* get_option_element(size_t option_index) { return options[option_index]; }
+        RadioOption* get_current_option_element() { return options.empty() ? nullptr : options[index]; }
+        void set_nav_auto(NavDirection dir) override;
+        void set_nav_none(NavDirection dir) override;
+        void set_nav(NavDirection dir, Element* element) override;
+        void set_nav_manual(NavDirection dir, const std::string& target) override;
     };
 
 } // namespace recompui

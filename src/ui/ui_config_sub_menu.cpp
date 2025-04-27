@@ -172,6 +172,8 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
         description_label = context.create_element<Label>(body_container, "Description", LabelStyle::Small);
         description_label->set_min_width(800.0f);
     }
+
+    recompui::get_current_context().set_autofocus_element(back_button);
 }
 
 ConfigSubMenu::~ConfigSubMenu() {
@@ -193,6 +195,15 @@ void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view id,
     option->set_name(name);
     option->set_description(description);
     option->set_hover_callback([this](ConfigOptionElement *option, bool active){ option_hovered(option, active); });
+    if (config_option_elements.empty()) {
+        back_button->set_nav(NavDirection::Down, option->get_focus_element());
+        option->set_nav(NavDirection::Up, back_button);
+    }
+    else {
+        config_option_elements.back()->set_nav(NavDirection::Down, option->get_focus_element());
+        option->set_nav(NavDirection::Up, config_option_elements.back()->get_focus_element());
+    }
+
     config_option_elements.emplace_back(option);
 }
 

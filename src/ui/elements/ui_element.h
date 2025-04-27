@@ -89,6 +89,7 @@ public:
     float get_client_height();
     void enable_focus();
     void focus();
+    void blur();
     void queue_update();
     void register_callback(ContextId context, PTR(void) callback, PTR(void) userdata);
     uint32_t get_input_value_u32();

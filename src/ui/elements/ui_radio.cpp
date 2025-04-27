@@ -67,6 +67,10 @@ namespace recompui {
                 apply_styles();
                 queue_update();
             }
+            if (focus_queued) {
+                focus_queued = false;
+                focus();
+            }
             break;
         default:
             break;
@@ -102,9 +106,23 @@ namespace recompui {
         }, val);
     }
 
-    Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart) {
+    Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart, Events(EventType::Focus)) {
         set_gap(24.0f);
         set_align_items(AlignItems::FlexStart);
+        enable_focus();
+    }
+
+    void Radio::process_event(const Event &e) {
+        switch (e.type) {
+        case EventType::Focus:
+            if (!options.empty()) {
+                if (std::get<EventFocus>(e.variant).active) {
+                    blur();
+                    options[index]->queue_focus();
+                }
+            }
+            break;
+        }
     }
 
     Radio::~Radio() {
@@ -120,6 +138,11 @@ namespace recompui {
         if (options.size() == 1) {
             set_index_internal(0, true, false);
         }
+        // At least one other option already existed, so set up navigation.
+        else {
+            options[options.size() - 2]->set_nav(NavDirection::Right, options[options.size() - 1]);
+            options[options.size() - 1]->set_nav(NavDirection::Left, options[options.size() - 2]);
+        }
     }
 
     void Radio::set_index(uint32_t index) {
@@ -132,6 +155,86 @@ namespace recompui {
 
     void Radio::add_index_changed_callback(std::function<void(uint32_t)> callback) {
         index_changed_callbacks.emplace_back(callback);
+    }
+    
+    void Radio::set_nav_auto(NavDirection dir) {
+        Element::set_nav_auto(dir);
+        if (!options.empty()) {
+            switch (dir) {
+                case NavDirection::Up:
+                case NavDirection::Down:
+                    for (Element* e : options) {
+                        e->set_nav_auto(dir);
+                    }
+                    break;
+                case NavDirection::Left:
+                    options.front()->set_nav_auto(dir);
+                    break;
+                case NavDirection::Right:
+                    options.back()->set_nav_auto(dir);
+                    break;
+            }
+        }
+    }
+
+    void Radio::set_nav_none(NavDirection dir) {
+        Element::set_nav_none(dir);
+        if (!options.empty()) {
+            switch (dir) {
+                case NavDirection::Up:
+                case NavDirection::Down:
+                    for (Element* e : options) {
+                        e->set_nav_none(dir);
+                    }
+                    break;
+                case NavDirection::Left:
+                    options.front()->set_nav_none(dir);
+                    break;
+                case NavDirection::Right:
+                    options.back()->set_nav_none(dir);
+                    break;
+            }
+        }
+    }
+
+    void Radio::set_nav(NavDirection dir, Element* element) {
+        Element::set_nav(dir, element);
+        if (!options.empty()) {
+            switch (dir) {
+                case NavDirection::Up:
+                case NavDirection::Down:
+                    for (Element* e : options) {
+                        e->set_nav(dir, element);
+                    }
+                    break;
+                case NavDirection::Left:
+                    options.front()->set_nav(dir, element);
+                    break;
+                case NavDirection::Right:
+                    options.back()->set_nav(dir, element);
+                    break;
+            }
+        }
+    }
+
+    void Radio::set_nav_manual(NavDirection dir, const std::string& target) {
+        Element::set_nav_manual(dir, target);
+        if (!options.empty()) {
+            switch (dir) {
+                case NavDirection::Up:
+                case NavDirection::Down:
+                    for (Element* e : options) {
+                        e->set_nav_manual(dir, target);
+                    }
+                    break;
+                case NavDirection::Left:
+                    options.front()->set_nav_manual(dir, target);
+                    break;
+                case NavDirection::Right:
+                    options.back()->set_nav_manual(dir, target);
+                    break;
+            }
+        }
     }
 
 };
