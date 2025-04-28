@@ -71,6 +71,8 @@ namespace recompui {
     void set_config_tab(ConfigTab tab);
     Rml::ElementTabSet* get_config_tabset();
     Rml::Element* get_mod_tab();
+    void set_config_tabset_mod_nav();
+    void focus_mod_configure_button();
 
     enum class ButtonVariant {
         Primary,
@@ -131,6 +133,7 @@ namespace recompui {
     Rml::ElementPtr create_custom_element(Rml::Element* parent, std::string tag);
     Rml::ElementDocument* load_document(const std::filesystem::path& path);
     Rml::ElementDocument* create_empty_document();
+    Rml::Element* get_child_by_tag(Rml::Element* parent, const std::string& tag);
 
     void queue_image_from_bytes_rgba32(const std::string &src, const std::vector<char> &bytes, uint32_t width, uint32_t height);
     void queue_image_from_bytes_file(const std::string &src, const std::vector<char> &bytes);

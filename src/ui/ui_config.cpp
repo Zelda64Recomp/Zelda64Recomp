@@ -454,7 +454,45 @@ recompui::ContextId recompui::get_config_context_id() {
 	return config_context;
 }
 
+// Helper copied from RmlUi to get a named child.
+Rml::Element* recompui::get_child_by_tag(Rml::Element* parent, const std::string& tag)
+{
+	// Look for the existing child
+	for (int i = 0; i < parent->GetNumChildren(); i++)
+	{
+        Rml::Element* child = parent->GetChild(i);
+		if (child->GetTagName() == tag)
+			return child;
+	}
+
+    return nullptr;
+}
+
+class ConfigTabsetListener : public Rml::EventListener {
+    void ProcessEvent(Rml::Event& event) override {
+        if (event.GetId() == Rml::EventId::Tabchange) {
+            int tab_index = event.GetParameter<int>("tab_index", 0);
+            bool in_mod_tab = (tab_index == config_tab_to_index(recompui::ConfigTab::Mods));
+            if (in_mod_tab) {
+                recompui::set_config_tabset_mod_nav();
+            }
+            else {
+                Rml::ElementTabSet* tabset = recompui::get_config_tabset();
+                Rml::Element* tabs = recompui::get_child_by_tag(tabset, "tabs");
+                if (tabs != nullptr) {
+                    size_t num_children = tabs->GetNumChildren();
+                    for (size_t i = 0; i < num_children; i++) {
+                        tabs->GetChild(i)->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
+                    }
+                }
+            }
+        }
+    }
+};
+
 class ConfigMenu : public recompui::MenuController {
+private:
+    ConfigTabsetListener config_tabset_listener;
 public:
     ConfigMenu() {
 
@@ -465,6 +503,7 @@ public:
     void load_document() override {
 		config_context = recompui::create_context(zelda64::get_asset_path("config_menu.rml"));
         recompui::update_mod_list(false);
+        recompui::get_config_tabset()->AddEventListener(Rml::EventId::Tabchange, &config_tabset_listener);
     }
     void register_events(recompui::UiEventListenerInstancer& listener) override {
         recompui::register_event(listener, "apply_options",

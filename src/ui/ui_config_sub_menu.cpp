@@ -119,6 +119,7 @@ void ConfigSubMenu::back_button_pressed() {
 
     recompui::hide_context(sub_menu_context);
     recompui::show_context(config_context, "");
+    recompui::focus_mod_configure_button();
 }
 
 void ConfigSubMenu::option_hovered(ConfigOptionElement *option, bool active) {

@@ -584,12 +584,12 @@ void ModMenu::create_mod_list() {
         mod_entry_buttons.front()->set_nav_manual(NavDirection::Up, mod_tab_id);
         mod_entry_buttons.back()->set_nav(NavDirection::Down, install_mods_button);
         install_mods_button->set_nav(NavDirection::Up, mod_entry_buttons.back());
-        recompui::get_mod_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Property{ "#" + mod_entry_buttons.front()->get_id(), Rml::Unit::STRING });
     }
     else {
         install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
-        recompui::get_mod_tab()->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
     }
+
+    recompui::set_config_tabset_mod_nav();
 
     // Add one extra spacer at the bottom.
     ModEntrySpacer *spacer = context.create_element<ModEntrySpacer>(list_scroll_container);
@@ -748,6 +748,35 @@ void process_game_started() {
         if (opened) {
             ui_context.close();
         }
+    }
+}
+
+void set_config_tabset_mod_nav() {
+    if (mod_menu) {
+        Rml::ElementTabSet* tabset = recompui::get_config_tabset();
+        Rml::Element* tabs = recompui::get_child_by_tag(tabset, "tabs");
+        if (tabs != nullptr) {
+            size_t num_children = tabs->GetNumChildren();
+            Element* first_mod_entry = mod_menu->get_first_mod_entry();
+            if (first_mod_entry != nullptr) {
+                std::string id = "#" + first_mod_entry->get_id();
+                for (size_t i = 0; i < num_children; i++) {
+                    tabs->GetChild(i)->SetProperty(Rml::PropertyId::NavDown, Rml::Property{ id, Rml::Unit::STRING });
+                }
+            }
+            else {
+                for (size_t i = 0; i < num_children; i++) {
+                    tabs->GetChild(i)->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
+                }
+            }
+        }
+    }
+}
+
+void focus_mod_configure_button() {
+    Element* configure_button = mod_menu->get_mod_configure_button();
+    if (configure_button) {
+        configure_button->focus();
     }
 }
 

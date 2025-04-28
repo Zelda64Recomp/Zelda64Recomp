@@ -74,6 +74,8 @@ public:
     ModMenu(Element *parent);
     virtual ~ModMenu();
     void set_mods_dirty(bool scan_mods) { mods_dirty = true; mod_scan_queued = scan_mods; }
+    Element* get_first_mod_entry() { return !mod_entry_buttons.empty() ? mod_entry_buttons[0] : nullptr; }
+    Element* get_mod_configure_button() { return mod_details_panel != nullptr ? mod_details_panel->get_configure_button() : nullptr; }
 protected:
     std::string_view get_type_name() override { return "ModMenu"; }
 private:
