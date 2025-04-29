@@ -23,8 +23,8 @@ RECOMP_PATCH void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
                 sramCtx->status = 4;
             }
         }
-    } else if (sramCtx->status == 4) {
-        // @recomp Patched to check status instead of using a hardcoded wait.
+    } else if (OSTIME_TO_TIMER(osGetTime() - sramCtx->startWriteOsTime) >= SECONDS_TO_TIMER_PRECISE(0, 25)) {
+        // @recomp Patched to wait a much shorter amount of time.
         sramCtx->status = 0;
     }
 }
@@ -49,8 +49,8 @@ RECOMP_PATCH void Sram_UpdateWriteToFlashOwlSave(SramContext* sramCtx) {
                 sramCtx->status = 4;
             }
         }
-    } else if (sramCtx->status == 4) {
-        // @recomp Patched to check status instead of using a hardcoded wait.
+    } else if (OSTIME_TO_TIMER(osGetTime() - sramCtx->startWriteOsTime) >= SECONDS_TO_TIMER_PRECISE(0, 25)) {
+        // @recomp Patched to wait a much shorter amount of time.
         sramCtx->status = 0;
         bzero(sramCtx->saveBuf, SAVE_BUFFER_SIZE);
         gSaveContext.save.isOwlSave = false;
