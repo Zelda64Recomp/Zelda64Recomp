@@ -633,6 +633,16 @@ RECOMP_PATCH void Interface_Draw(PlayState* play) {
         Interface_SetOrthoView(interfaceCtx);
 
         Interface_DrawMinigameIcons(play);
+
+        // @recomp If the moon crash timer is running, center align timers and shift down.
+        bool moon_crash_timer_running = gSaveContext.timerStates[TIMER_ID_MOON_CRASH] != TIMER_STATE_OFF;
+        if (moon_crash_timer_running) {
+            // @recomp Use normal alignment and shift down for clock
+            gEXSetRectAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, G_EX_ORIGIN_NONE, 0, margin_reduction * 4, 0, margin_reduction * 4);
+            gEXSetViewportAlign(OVERLAY_DISP++, G_EX_ORIGIN_NONE, 0, margin_reduction * 4);
+            Interface_SetOrthoView(interfaceCtx);
+        }
+
         Interface_DrawTimers(play);
         
         // @recomp Restore normal alignment and shift down for minigame countdown or clock
