@@ -1656,6 +1656,7 @@ scrollbarhorizontal sliderbar {
   flex-direction: row;
   justify-content: space-between;
   width: 268dp;
+  min-width: 1dp;
   height: 128dp;
   margin-right: 10dp;
 }
