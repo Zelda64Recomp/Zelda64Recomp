@@ -342,6 +342,8 @@ $stick-size: 200;
     flex-direction: row;
     justify-content: space-between;
     width: space(268);
+    // WORKAROUND FIX: prevents RMLui assert error
+    min-width: 1dp;
     height: space(128);
     margin-right: space(10);
 }
