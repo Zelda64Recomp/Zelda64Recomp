@@ -11,7 +11,7 @@ void Sleep_Msec(u32 ms);
 extern u16 D_801F6AF0;
 extern u8 D_801F6AF2;
 
-// @recomp Patched to not wait a hardcoded amount of time for the save to complete.
+// @recomp Patched to wait a much shorter amount of time for the save to complete.
 RECOMP_PATCH void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
     if (sramCtx->status == 2) {
         if (SysFlashrom_IsBusy() != 0) {          // if task running
@@ -29,7 +29,7 @@ RECOMP_PATCH void Sram_UpdateWriteToFlashDefault(SramContext* sramCtx) {
     }
 }
 
-// @recomp Patched to not wait a hardcoded amount of time for the save to complete.
+// @recomp Patched to wait a much shorter amount of time for the save to complete.
 RECOMP_PATCH void Sram_UpdateWriteToFlashOwlSave(SramContext* sramCtx) {
     if (sramCtx->status == 7) {
         if (SysFlashrom_IsBusy() != 0) {          // Is task running
