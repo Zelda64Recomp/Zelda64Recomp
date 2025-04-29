@@ -170,7 +170,7 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
             config_scroll_container = context.create_element<ScrollContainer>(config_container, ScrollDirection::Vertical);
         }
 
-        description_label = context.create_element<Label>(body_container, "Description", LabelStyle::Small);
+        description_label = context.create_element<Label>(body_container, "", LabelStyle::Small);
         description_label->set_min_width(800.0f);
     }
 
