@@ -585,6 +585,15 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
     while (recompui::try_deque_event(cur_event)) {
         bool context_capturing_input = recompui::is_context_capturing_input();
         bool context_capturing_mouse = recompui::is_context_capturing_mouse();
+
+        // Handle up button events even when input is disabled to avoid missing them during binding.
+        if (cur_event.type == SDL_EventType::SDL_CONTROLLERBUTTONUP) {
+            int sdl_key = cont_button_to_key(cur_event.cbutton);
+            if (sdl_key == latest_controller_key_pressed) {
+                latest_controller_key_pressed = SDLK_UNKNOWN;
+            }
+        }
+
         if (!recomp::all_input_disabled()) {
             bool is_mouse_input = false;
             // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
@@ -628,13 +637,6 @@ void draw_hook(RT64::RenderCommandList* command_list, RT64::RenderFramebuffer* s
                 }
                 non_mouse_interacted = true;
                 cont_interacted = true;
-                break;
-            }
-            case SDL_EventType::SDL_CONTROLLERBUTTONUP: {
-                int sdl_key = cont_button_to_key(cur_event.cbutton);
-                if (sdl_key == latest_controller_key_pressed) {
-                    latest_controller_key_pressed = SDLK_UNKNOWN;
-                }
                 break;
             }
             case SDL_EventType::SDL_KEYDOWN:

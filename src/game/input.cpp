@@ -287,6 +287,10 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
     case SDL_EventType::SDL_DROPCOMPLETE:
         recompui::drop_files(DropState.files_dropped);
         break;
+    case SDL_EventType::SDL_CONTROLLERBUTTONUP:
+        // Always queue button up events to avoid missing them during binding.
+        recompui::queue_event(*event);
+        break;
     default:
         queue_if_enabled(event);
         break;
