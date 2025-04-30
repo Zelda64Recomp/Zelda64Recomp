@@ -25,7 +25,7 @@ namespace recompui {
         }
     }
 
-    void Slider::bar_clicked(float x, float) {
+    void Slider::bar_pressed(float x, float) {
         update_value_from_mouse(x);
     }
 
@@ -151,7 +151,7 @@ namespace recompui {
 
         slider_element = context.create_element<Clickable>(this, true);
         slider_element->set_flex(1.0f, 0.0f);
-        slider_element->add_pressed_callback([this](float x, float y){ bar_clicked(x, y); focus(); });
+        slider_element->add_pressed_callback([this](float x, float y){ bar_pressed(x, y); focus(); });
         slider_element->add_dragged_callback([this](float x, float y, recompui::DragPhase phase){ bar_dragged(x, y, phase); focus(); });
 
         {
@@ -160,7 +160,7 @@ namespace recompui {
             bar_element->set_height(2.0f);
             bar_element->set_margin_top(8.0f);
             bar_element->set_background_color(Color{ 255, 255, 255, 50 });
-            bar_element->add_pressed_callback([this](float x, float y){ bar_clicked(x, y); focus(); });
+            bar_element->add_pressed_callback([this](float x, float y){ bar_pressed(x, y); focus(); });
             bar_element->add_dragged_callback([this](float x, float y, recompui::DragPhase phase){ bar_dragged(x, y, phase); focus(); });
             
             circle_element = context.create_element<Clickable>(bar_element, true);

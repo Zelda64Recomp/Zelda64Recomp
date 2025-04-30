@@ -11,7 +11,6 @@ namespace recompui {
         Style pulsing_style;
         std::function<void(uint32_t)> pressed_callback = nullptr;
         uint32_t index = 0;
-        bool focus_queued = false;
     protected:
         virtual void process_event(const Event &e) override;
         std::string_view get_type_name() override { return "LabelRadioOption"; }
@@ -19,7 +18,6 @@ namespace recompui {
         RadioOption(Element *parent, std::string_view name, uint32_t index);
         void set_pressed_callback(std::function<void(uint32_t)> callback);
         void set_selected_state(bool enable);
-        void queue_focus() { focus_queued = true; queue_update(); }
     };
 
     class Radio : public Container {
@@ -27,6 +25,7 @@ namespace recompui {
         std::vector<RadioOption *> options;
         uint32_t index = 0;
         std::vector<std::function<void(uint32_t)>> index_changed_callbacks;
+        bool child_focus_queued = false;
 
         void set_index_internal(uint32_t index, bool setup, bool trigger_callbacks);
         void option_selected(uint32_t index);
@@ -35,6 +34,7 @@ namespace recompui {
     protected:
         virtual void process_event(const Event &e) override;
         std::string_view get_type_name() override { return "LabelRadio"; }
+        void queue_child_focus() { child_focus_queued = true; queue_update(); }
     public:
         Radio(Element *parent);
         virtual ~Radio();

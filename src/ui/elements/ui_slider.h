@@ -25,7 +25,7 @@ namespace recompui {
         std::vector<std::function<void(double)>> value_changed_callbacks;
 
         void set_value_internal(double v, bool setup, bool trigger_callbacks);
-        void bar_clicked(float x, float y);
+        void bar_pressed(float x, float y);
         void bar_dragged(float x, float y, DragPhase phase);
         void circle_dragged(float x, float y, DragPhase phase);
         void update_value_from_mouse(float x);

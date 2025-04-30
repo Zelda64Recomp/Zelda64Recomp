@@ -2,7 +2,7 @@
 
 namespace recompui {
 
-    Clickable::Clickable(Element *parent, bool draggable) : Element(parent, Events(EventType::Click, EventType::Hover, EventType::Enable, draggable ? EventType::Drag : EventType::None)) {
+    Clickable::Clickable(Element *parent, bool draggable) : Element(parent, Events(EventType::Click, EventType::MouseButton, EventType::Hover, EventType::Enable, draggable ? EventType::Drag : EventType::None)) {
         set_cursor(Cursor::Pointer);
         if (draggable) {
             set_drag(Drag::Drag);
@@ -14,8 +14,19 @@ namespace recompui {
         case EventType::Click: {
             if (is_enabled()) {
                 const EventClick &click = std::get<EventClick>(e.variant);
-                for (const auto &function : pressed_callbacks) {
+                for (const auto &function : clicked_callbacks) {
                     function(click.x, click.y);
+                }
+                break;
+            }
+        }
+        case EventType::MouseButton: {
+            if (is_enabled()) {
+                const EventMouseButton &mousebutton = std::get<EventMouseButton>(e.variant);
+                if (mousebutton.button == MouseButton::Left && mousebutton.pressed) {
+                    for (const auto &function : pressed_callbacks) {
+                        function(mousebutton.x, mousebutton.y);
+                    }
                 }
                 break;
             }
@@ -49,6 +60,10 @@ namespace recompui {
         default:
             break;
         }
+    }
+
+    void Clickable::add_clicked_callback(std::function<void(float, float)> callback) {
+        clicked_callbacks.emplace_back(callback);
     }
 
     void Clickable::add_pressed_callback(std::function<void(float, float)> callback) {

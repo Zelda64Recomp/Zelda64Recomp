@@ -33,6 +33,7 @@ namespace recompui {
         Text,
         Update,
         Navigate,
+        MouseButton,
         Count
     };
 
@@ -48,6 +49,13 @@ namespace recompui {
         Right,
         Down,
         Left
+    };
+
+    enum class MouseButton {
+        Left,
+        Right,
+        Middle,
+        Count
     };
 
     template <typename Enum, typename = std::enable_if_t<std::is_enum_v<Enum>>>
@@ -91,7 +99,14 @@ namespace recompui {
         NavDirection direction;
     };
 
-    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText, EventNavigate, std::monostate>;
+    struct EventMouseButton {
+        float x;
+        float y;
+        MouseButton button;
+        bool pressed;
+    };
+
+    using EventVariant = std::variant<EventClick, EventFocus, EventHover, EventEnable, EventDrag, EventText, EventNavigate, EventMouseButton, std::monostate>;
 
     struct Event {
         EventType type;
@@ -151,6 +166,13 @@ namespace recompui {
             Event e;
             e.type = EventType::Navigate;
             e.variant = EventNavigate{ direction };
+            return e;
+        }
+
+        static Event mousebutton_event(float x, float y, MouseButton button, bool pressed) {
+            Event e;
+            e.type = EventType::MouseButton;
+            e.variant = EventMouseButton{ x, y, button, pressed };
             return e;
         }
     };

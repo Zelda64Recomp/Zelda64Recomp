@@ -6,7 +6,7 @@ namespace recompui {
 
     // RadioOption
 
-    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable, EventType::Update), "label", true) {
+    RadioOption::RadioOption(Element *parent, std::string_view name, uint32_t index) : Element(parent, Events(EventType::MouseButton, EventType::Click, EventType::Focus, EventType::Hover, EventType::Enable, EventType::Update), "label", true) {
         this->index = index;
 
         enable_focus();
@@ -43,6 +43,14 @@ namespace recompui {
 
     void RadioOption::process_event(const Event &e) {
         switch (e.type) {
+        case EventType::MouseButton:
+            {
+                const EventMouseButton &mousebutton = std::get<EventMouseButton>(e.variant);
+                if (mousebutton.button == MouseButton::Left && mousebutton.pressed) {
+                    pressed_callback(index);
+                }
+            }
+            break;
         case EventType::Click:
             pressed_callback(index);
             break;
@@ -66,10 +74,6 @@ namespace recompui {
                 pulsing_style.set_color(recompui::get_pulse_color(750));
                 apply_styles();
                 queue_update();
-            }
-            if (focus_queued) {
-                focus_queued = false;
-                focus();
             }
             break;
         default:
@@ -106,7 +110,7 @@ namespace recompui {
         }, val);
     }
 
-    Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart, Events(EventType::Focus)) {
+    Radio::Radio(Element *parent) : Container(parent, FlexDirection::Row, JustifyContent::FlexStart, Events(EventType::Focus, EventType::Update)) {
         set_gap(24.0f);
         set_align_items(AlignItems::FlexStart);
         enable_focus();
@@ -118,10 +122,15 @@ namespace recompui {
             if (!options.empty()) {
                 if (std::get<EventFocus>(e.variant).active) {
                     blur();
-                    options[index]->queue_focus();
+                    queue_child_focus();
                 }
             }
             break;
+        case EventType::Update:
+            if (child_focus_queued) {
+                child_focus_queued = false;
+                options[index]->focus();
+            }
         }
     }
 
@@ -131,7 +140,7 @@ namespace recompui {
 
     void Radio::add_option(std::string_view name) {
         RadioOption *option = get_current_context().create_element<RadioOption>(this, name, uint32_t(options.size()));
-        option->set_pressed_callback([this](uint32_t index){ option_selected(index); });
+        option->set_pressed_callback([this](uint32_t index){ options[index]->focus(); option_selected(index); });
         options.emplace_back(option);
 
         // The first option was added, select it.
