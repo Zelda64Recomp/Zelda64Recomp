@@ -172,6 +172,8 @@ ConfigSubMenu::ConfigSubMenu(Element *parent) : Element(parent) {
 
         description_label = context.create_element<Label>(body_container, "", LabelStyle::Small);
         description_label->set_min_width(800.0f);
+        description_label->set_padding_left(16.0f);
+        description_label->set_padding_right(16.0f);
     }
 
     recompui::get_current_context().set_autofocus_element(back_button);
