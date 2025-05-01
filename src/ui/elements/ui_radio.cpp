@@ -37,6 +37,10 @@ namespace recompui {
         pressed_callback = callback;
     }
 
+    void RadioOption::set_focus_callback(std::function<void(bool)> callback) {
+        focus_callback = callback;
+    }
+
     void RadioOption::set_selected_state(bool enable) {
         set_style_enabled(checked_state, enable);
     }
@@ -66,6 +70,9 @@ namespace recompui {
                 set_style_enabled(focus_state, active);
                 if (active) {
                     queue_update();
+                }
+                if (focus_callback != nullptr) {
+                    focus_callback(active);
                 }
             }
             break;
@@ -124,6 +131,9 @@ namespace recompui {
                     blur();
                     queue_child_focus();
                 }
+                if (focus_callback != nullptr) {
+                    focus_callback(std::get<EventFocus>(e.variant).active);
+                }
             }
             break;
         case EventType::Update:
@@ -141,6 +151,11 @@ namespace recompui {
     void Radio::add_option(std::string_view name) {
         RadioOption *option = get_current_context().create_element<RadioOption>(this, name, uint32_t(options.size()));
         option->set_pressed_callback([this](uint32_t index){ options[index]->focus(); option_selected(index); });
+        option->set_focus_callback([this](bool active) {
+            if (focus_callback != nullptr) {
+                focus_callback(active);
+            }
+        });
         options.emplace_back(option);
 
         // The first option was added, select it.
@@ -164,6 +179,10 @@ namespace recompui {
 
     void Radio::add_index_changed_callback(std::function<void(uint32_t)> callback) {
         index_changed_callbacks.emplace_back(callback);
+    }
+
+    void Radio::set_focus_callback(std::function<void(bool)> callback) {
+        focus_callback = callback;
     }
     
     void Radio::set_nav_auto(NavDirection dir) {

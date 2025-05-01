@@ -16,12 +16,19 @@ namespace recompui {
 
             break;
         }
+        case EventType::Focus: {
+            const EventFocus &event = std::get<EventFocus>(e.variant);
+            if (focus_callback != nullptr) {
+                focus_callback(event.active);
+            }
+            break;
+        }
         default:
             break;
         }
     }
     
-    TextInput::TextInput(Element *parent, bool text_visible) : Element(parent, Events(EventType::Text), "input") {
+    TextInput::TextInput(Element *parent, bool text_visible) : Element(parent, Events(EventType::Text, EventType::Focus), "input") {
         if (!text_visible) {
             set_attribute("type", "password");
         }
@@ -48,4 +55,7 @@ namespace recompui {
         text_changed_callbacks.emplace_back(callback);
     }
 
+    void TextInput::set_focus_callback(std::function<void(bool)> callback) {
+        focus_callback = callback;
+    }
 };
