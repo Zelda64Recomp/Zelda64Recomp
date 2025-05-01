@@ -20,6 +20,7 @@ protected:
     std::string name;
     std::string description;
     std::function<void(ConfigOptionElement *, bool)> hover_callback = nullptr;
+    std::function<void(const std::string &, bool)> focus_callback = nullptr;
 
     virtual void process_event(const Event &e) override;
     std::string_view get_type_name() override { return "ConfigOptionElement"; }
@@ -30,6 +31,7 @@ public:
     void set_name(std::string_view name);
     void set_description(std::string_view description);
     void set_hover_callback(std::function<void(ConfigOptionElement *, bool)> callback);
+    void set_focus_callback(std::function<void(const std::string &, bool)> callback);
     const std::string &get_description() const;
     void set_nav_auto(NavDirection dir) override { get_focus_element()->set_nav_auto(dir); }
     void set_nav_none(NavDirection dir) override { get_focus_element()->set_nav_none(dir); }
@@ -84,10 +86,10 @@ private:
     Container *config_container = nullptr;
     ScrollContainer *config_scroll_container = nullptr;
     std::vector<ConfigOptionElement *> config_option_elements;
-    std::unordered_set<ConfigOptionElement *> hover_option_elements;
+    ConfigOptionElement * description_option_element = nullptr;
 
     void back_button_pressed();
-    void option_hovered(ConfigOptionElement *option, bool active);
+    void set_description_option_element(ConfigOptionElement *option, bool active);
     void add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description);
 protected:
     std::string_view get_type_name() override { return "ConfigSubMenu"; }

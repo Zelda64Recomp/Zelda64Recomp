@@ -10,6 +10,7 @@ namespace recompui {
         Style checked_style;
         Style pulsing_style;
         std::function<void(uint32_t)> pressed_callback = nullptr;
+        std::function<void(bool)> focus_callback = nullptr;
         uint32_t index = 0;
     protected:
         virtual void process_event(const Event &e) override;
@@ -17,6 +18,7 @@ namespace recompui {
     public:
         RadioOption(Element *parent, std::string_view name, uint32_t index);
         void set_pressed_callback(std::function<void(uint32_t)> callback);
+        void set_focus_callback(std::function<void(bool)> callback);
         void set_selected_state(bool enable);
     };
 
@@ -25,6 +27,7 @@ namespace recompui {
         std::vector<RadioOption *> options;
         uint32_t index = 0;
         std::vector<std::function<void(uint32_t)>> index_changed_callbacks;
+        std::function<void(bool)> focus_callback = nullptr;
         bool child_focus_queued = false;
 
         void set_index_internal(uint32_t index, bool setup, bool trigger_callbacks);
@@ -42,6 +45,7 @@ namespace recompui {
         void set_index(uint32_t index);
         uint32_t get_index() const;
         void add_index_changed_callback(std::function<void(uint32_t)> callback);
+        void set_focus_callback(std::function<void(bool)> callback);
         size_t num_options() const { return options.size(); }
         RadioOption* get_option_element(size_t option_index) { return options[option_index]; }
         RadioOption* get_current_option_element() { return options.empty() ? nullptr : options[index]; }

@@ -16,6 +16,13 @@ namespace recompui {
 
             break;
         }
+        case EventType::Focus: {
+            const EventFocus &event = std::get<EventFocus>(e.variant);
+            if (focus_callback != nullptr) {
+                focus_callback(event.active);
+            }
+            break;
+        }
         default:
             break;
         }
@@ -48,4 +55,7 @@ namespace recompui {
         text_changed_callbacks.emplace_back(callback);
     }
 
+    void TextInput::set_focus_callback(std::function<void(bool)> callback) {
+        focus_callback = callback;
+    }
 };

@@ -13,6 +13,9 @@ namespace recompui {
 void ConfigOptionElement::process_event(const Event &e) {
     switch (e.type) {
     case EventType::Hover:
+        if (hover_callback == nullptr) {
+            break;
+        }
         hover_callback(this, std::get<EventHover>(e.variant).active);
         break;
     case EventType::Update:
@@ -53,6 +56,10 @@ void ConfigOptionElement::set_hover_callback(std::function<void(ConfigOptionElem
     hover_callback = callback;
 }
 
+void ConfigOptionElement::set_focus_callback(std::function<void(const std::string &, bool)> callback) {
+    focus_callback = callback;
+}
+
 const std::string &ConfigOptionElement::get_description() const {
     return description;
 }
@@ -73,6 +80,9 @@ ConfigOptionSlider::ConfigOptionSlider(Element *parent, double value, double min
     slider->set_step_value(step_value);
     slider->set_value(value);
     slider->add_value_changed_callback([this](double v){ slider_value_changed(v); });
+    slider->set_focus_callback([this](bool active) {
+        focus_callback(option_id, active);
+    });
 }
 
 // ConfigOptionTextInput
@@ -88,6 +98,9 @@ ConfigOptionTextInput::ConfigOptionTextInput(Element *parent, std::string_view v
     text_input->set_max_width(400.0f);
     text_input->set_text(value);
     text_input->add_text_changed_callback([this](const std::string &text){ text_changed(text); });
+    text_input->set_focus_callback([this](bool active) {
+        focus_callback(option_id, active);
+    });
 }
 
 // ConfigOptionRadio
@@ -100,6 +113,9 @@ ConfigOptionRadio::ConfigOptionRadio(Element *parent, uint32_t value, const std:
     this->callback = callback;
 
     radio = get_current_context().create_element<Radio>(this);
+    radio->set_focus_callback([this](bool active) {
+        focus_callback(option_id, active);
+    });
     radio->add_index_changed_callback([this](uint32_t index){ index_changed(index); });
     for (std::string_view option : options) {
         radio->add_option(option);
@@ -122,19 +138,23 @@ void ConfigSubMenu::back_button_pressed() {
     recompui::focus_mod_configure_button();
 }
 
-void ConfigSubMenu::option_hovered(ConfigOptionElement *option, bool active) {
-    if (active) {
-        hover_option_elements.emplace(option);
-    }
-    else {
-        hover_option_elements.erase(option);
+void ConfigSubMenu::set_description_option_element(ConfigOptionElement *option, bool active) {
+    if (description_option_element != nullptr && description_option_element != option) {
+        return;
     }
 
-    if (hover_option_elements.empty()) {
+    if (active) {
+        description_option_element = option;
+    }
+    else {
+        description_option_element = nullptr;
+    }
+
+    if (description_option_element == nullptr) {
         description_label->set_text("");
     }
     else {
-        description_label->set_text((*hover_option_elements.begin())->get_description());
+        description_label->set_text(description_option_element->get_description());
     }
 }
 
@@ -190,14 +210,15 @@ void ConfigSubMenu::enter(std::string_view title) {
 void ConfigSubMenu::clear_options() {
     config_scroll_container->clear_children();
     config_option_elements.clear();
-    hover_option_elements.clear();
+    description_option_element = nullptr;
 }
 
 void ConfigSubMenu::add_option(ConfigOptionElement *option, std::string_view id, std::string_view name, std::string_view description) {
     option->set_option_id(id);
     option->set_name(name);
     option->set_description(description);
-    option->set_hover_callback([this](ConfigOptionElement *option, bool active){ option_hovered(option, active); });
+    option->set_hover_callback([this](ConfigOptionElement *option, bool active){ set_description_option_element(option, active); });
+    option->set_focus_callback([this, option](const std::string &id, bool active) { set_description_option_element(option, active); });
     if (config_option_elements.empty()) {
         back_button->set_nav(NavDirection::Down, option->get_focus_element());
         option->set_nav(NavDirection::Up, back_button);

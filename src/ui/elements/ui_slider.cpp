@@ -81,6 +81,9 @@ namespace recompui {
                 if (active) {
                     queue_update();
                 }
+                if (focus_callback != nullptr) {
+                    focus_callback(active);
+                }
             }
             break;
         case EventType::Update:
@@ -217,6 +220,10 @@ namespace recompui {
 
     void Slider::add_value_changed_callback(std::function<void(double)> callback) {
         value_changed_callbacks.emplace_back(callback);
+    }
+
+    void Slider::set_focus_callback(std::function<void(bool)> callback) {
+        focus_callback = callback;
     }
 
     void Slider::do_step(bool increment) {
