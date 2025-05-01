@@ -139,14 +139,10 @@ void ConfigSubMenu::back_button_pressed() {
 }
 
 void ConfigSubMenu::set_description_option_element(ConfigOptionElement *option, bool active) {
-    if (description_option_element != nullptr && description_option_element != option) {
-        return;
-    }
-
     if (active) {
         description_option_element = option;
     }
-    else {
+    else if (description_option_element == option) {
         description_option_element = nullptr;
     }
 
