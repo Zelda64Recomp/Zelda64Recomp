@@ -37,7 +37,7 @@ namespace recompui {
         Element* autofocus_element = nullptr;
         std::vector<Element*> loose_elements;
         std::unordered_set<ResourceId> to_update;
-        std::vector<std::pair<ResourceId, std::string>> to_set_text;     
+        std::vector<std::tuple<Element*, ResourceId, std::string>> to_set_text;     
         bool captures_input = true;
         bool captures_mouse = true;
         Context(Rml::ElementDocument* document) : document(document), root_element(document) {}
@@ -417,20 +417,38 @@ void recompui::ContextId::process_updates() {
         static_cast<Element*>(cur_resource->get())->handle_event(update_event);
     }
 
-    std::vector<std::pair<ResourceId, std::string>> to_set_text = std::move(opened_context->to_set_text);
+    std::vector<std::tuple<Element*, ResourceId, std::string>> to_set_text = std::move(opened_context->to_set_text);
 
     // Delete the Rml elements that are pending deletion.
     for (auto cur_text_update : to_set_text) {
-        resource_slotmap::key cur_key{ cur_text_update.first.slot_id };
-        std::unique_ptr<Style>* cur_resource = opened_context->resources.get(cur_key);
+        Element* element_ptr = std::get<0>(cur_text_update);
+        ResourceId resource = std::get<1>(cur_text_update);
+        std::string& text = std::get<2>(cur_text_update);
 
-        // Make sure the resource exists before setting its text, as it may have been deleted.
-        if (cur_resource == nullptr) {
-            continue;
+        // If the resource ID is valid, prefer that as we can quickly validate if the resource still exists.
+        if (resource != ResourceId::null()) {
+            resource_slotmap::key cur_key{ resource.slot_id };
+            std::unique_ptr<Style>* cur_resource = opened_context->resources.get(cur_key);
+
+            // Make sure the resource exists before setting its text, as it may have been deleted.
+            if (cur_resource == nullptr) {
+                continue;
+            }
+
+            // Perform the text update.
+            static_cast<Element*>(cur_resource->get())->base->SetInnerRML(text);
         }
-
-        // Perform the text update.
-        static_cast<Element*>(cur_resource->get())->base->SetInnerRML(cur_text_update.second);
+        // Otherwise we use the element pointer, but we need to validate that it still exists before doing so.
+        else {
+            // Scan the current resources to find the target element.
+            for (const std::unique_ptr<Style>& cur_e : opened_context->resources) {
+                if (cur_e.get() == element_ptr) {
+                    element_ptr->base->SetInnerRML(text);
+                    // We can stop after finding the element.
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -539,7 +557,7 @@ void recompui::ContextId::queue_element_update(ResourceId element) {
     opened_context->to_update.emplace(element);
 }
 
-void recompui::ContextId::queue_set_text(ResourceId resource, std::string&& text) {
+void recompui::ContextId::queue_set_text(Element* element, std::string&& text) {
     // Ensure a context is currently opened by this thread.
     if (opened_context_id == ContextId::null()) {
         context_error(*this, ContextErrorType::SetTextElementWithoutContext);
@@ -550,7 +568,7 @@ void recompui::ContextId::queue_set_text(ResourceId resource, std::string&& text
         context_error(*this, ContextErrorType::SetTextElementInWrongContext);
     }
 
-    opened_context->to_set_text.emplace_back(std::make_pair(resource, std::move(text)));
+    opened_context->to_set_text.emplace_back(std::make_tuple(element, element->resource_id, std::move(text)));
 }
 
 recompui::Style* recompui::ContextId::create_style() {

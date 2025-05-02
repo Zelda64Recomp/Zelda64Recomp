@@ -31,7 +31,7 @@ namespace recompui {
 
         void add_loose_element(Element* element);
         void queue_element_update(ResourceId element);
-        void queue_set_text(ResourceId resource, std::string&& text);
+        void queue_set_text(Element* element, std::string&& text);
 
         Style* create_style();
 

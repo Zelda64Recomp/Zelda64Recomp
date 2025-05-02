@@ -377,17 +377,12 @@ std::string escape_rml(std::string_view string)
 
 void Element::set_text(std::string_view text) {
     if (can_set_text) {
-        if (base->GetNumChildren() != 0) {
-            // Queue the text update. If it's applied immediately, it might happen
-            // while the document is being updated or rendered. This can cause a crash
-            // due to the child elements being deleted while the document is being updated.
-            // Queueing them defers it to the update thread, which prevents that issue.
-            // Escape the string into Rml to prevent element injection.
-            get_current_context().queue_set_text(resource_id, escape_rml(text));
-        }
-        else {
-            base->SetInnerRML(escape_rml(text));
-        }
+        // Queue the text update. If it's applied immediately, it might happen
+        // while the document is being updated or rendered. This can cause a crash
+        // due to the child elements being deleted while the document is being updated.
+        // Queueing them defers it to the update thread, which prevents that issue.
+        // Escape the string into Rml to prevent element injection.
+        get_current_context().queue_set_text(this, escape_rml(text));
     }
     else {
         assert(false && "Attempted to set text of an element that cannot have its text set.");
