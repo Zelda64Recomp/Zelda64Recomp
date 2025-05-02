@@ -25,6 +25,7 @@ class Element : public Style, public Rml::EventListener {
     friend class ContextId; // To allow ContextId to call the handle_event method directly.
 private:
     Rml::Element *base = nullptr;
+    Rml::ElementText *text_element = nullptr;
     Rml::ElementPtr base_owning = {};
     uint32_t events_enabled = 0;
     std::vector<Style *> styles;

@@ -355,30 +355,16 @@ bool Element::is_enabled() const {
     return enabled && !disabled_from_parent;
 }
 
-// Adapted from RmlUi's `EncodeRml`.
-std::string escape_rml(std::string_view string)
-{
-	std::string result;
-	result.reserve(string.size());
-	for (char c : string)
-	{
-		switch (c)
-		{
-		case '<': result += "&lt;"; break;
-		case '>': result += "&gt;"; break;
-		case '&': result += "&amp;"; break;
-		case '"': result += "&quot;"; break;
-        case '\n': result += "<br/>"; break;
-		default: result += c; break;
-		}
-	}
-	return result;
-}
-
 void Element::set_text(std::string_view text) {
     if (can_set_text) {
-        // Escape the string into Rml to prevent element injection.
-        base->SetInnerRML(escape_rml(text));
+        if (text_element == nullptr) {
+            Rml::ElementPtr text_element_owning = get_current_context().get_document()->CreateTextNode(std::string{text});
+            text_element = rmlui_static_cast<Rml::ElementText*>(text_element_owning.get());
+            base->AppendChild(std::move(text_element_owning));
+        }
+        else {
+            text_element->SetText(std::string{text});
+        }
     }
     else {
         assert(false && "Attempted to set text of an element that cannot have its text set.");
