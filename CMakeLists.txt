@@ -25,6 +25,10 @@ if (APPLE)
     enable_language(OBJC OBJCXX)
 endif()
 
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    option(RECOMP_FLATPAK "Configure the build for Flatpak compatibility." OFF)
+endif()
+
 # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
@@ -40,6 +44,10 @@ endif()
 set(RT64_STATIC TRUE)
 set(RT64_SDL_WINDOW_VULKAN TRUE)
 add_compile_definitions(HLSL_CPU)
+
+if (RECOMP_FLATPAK)
+    add_compile_definitions(RECOMP_FLATPAK)
+endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
