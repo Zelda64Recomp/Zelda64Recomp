@@ -601,13 +601,15 @@ int main(int argc, char** argv) {
     // Force wasapi on Windows, as there seems to be some issue with sample queueing with directsound currently.
     SDL_setenv("SDL_AUDIODRIVER", "wasapi", true);
 #endif
-    
+
+#if 0
 #if defined(__linux__) && defined(RECOMP_FLATPAK)
     // When using Flatpak, applications tend to launch from the home directory by default.
     // Mods might use the current working directory to store the data, so we switch it to a directory
     // with persistent data storage and write permissions under Flatpak to ensure it works.
     std::error_code ec;
     std::filesystem::current_path("/var/data", ec);
+#endif
 #endif
 
     // Initialize SDL audio and set the output frequency.
