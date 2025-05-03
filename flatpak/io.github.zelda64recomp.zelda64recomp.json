@@ -28,7 +28,7 @@
         "./N64Recomp us.rev1.toml",
         "./RSPRecomp aspMain.us.rev1.toml",
         "./RSPRecomp njpgdspMain.us.rev1.toml",
-        "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -DPATCHES_C_COMPILER=clang -DPATCHES_LD=ld.lld -DRECOMP_FLATPAK -G Ninja -S . -B cmake-build",
+        "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -DPATCHES_C_COMPILER=clang -DPATCHES_LD=ld.lld -DRECOMP_FLATPAK=ON -G Ninja -S . -B cmake-build",
         "cmake --build cmake-build --config Release --target Zelda64Recompiled --parallel",
         "rm -rf assets/scss",
         "mkdir -p /app/bin",
