@@ -48,7 +48,7 @@ namespace zelda64 {
     std::filesystem::path get_program_path() {
 #if defined(__APPLE__)
         return get_bundle_resource_directory();
-#elif defined(__linux__) && defined(ZELDA64RECOMP_FLATPAK)
+#elif defined(__linux__) && defined(RECOMP_FLATPAK)
         return "/app/bin";
 #else
         return "";
