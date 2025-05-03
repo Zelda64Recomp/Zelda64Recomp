@@ -48,13 +48,11 @@ namespace zelda64 {
     std::filesystem::path get_program_path() {
 #if defined(__APPLE__)
         return get_bundle_resource_directory();
-#elif defined(__linux__)
-        std::error_code ec;
-        if (std::filesystem::exists("/.flatpak-info", ec)) {
-            return "/app/bin";
-        }
-#endif
+#elif defined(__linux__) && defined(ZELDA64RECOMP_FLATPAK)
+        return "/app/bin";
+#else
         return "";
+#endif
     }
 
     std::filesystem::path get_asset_path(const char* asset) {
