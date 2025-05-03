@@ -8,6 +8,18 @@ namespace recompui {
     static const std::u8string OldExtension = u8".old";
     static const std::u8string NewExtension = u8".new";
 
+    static bool is_dynamic_lib(const std::filesystem::path &file_path) {
+#if defined(_WIN32)
+        return file_path.extension() == ".dll";
+#elif defined(__linux__)
+        return file_path.extension() == ".so" || file_path.filename().string().find(".so.") != std::string::npos;
+#elif defined(__APPLE__)
+        return file_path.extension() == ".dylib";
+#else
+        static_assert(false, "Unimplemented for this platform.");
+#endif
+    }
+
     size_t zip_write_func(void *opaque, mz_uint64 offset, const void *bytes, size_t count) {
         std::ofstream &stream = *(std::ofstream *)(opaque);
         stream.seekp(offset, std::ios::beg);
@@ -187,15 +199,8 @@ namespace recompui {
                     first_nrm_iterator = std::prev(result.pending_installations.end());
                 }
             }
-#if defined(_WIN32)
-            else if (target_path.extension() == ".dll") {
-#elif defined(__linux__)
-            else if (target_path.extension() == ".so") {
-#elif defined(__APPLE__)
-            else if (target_path.extension() == ".dylib") {
-#else
-            static_assert(false, "Unimplemented for this platform."); {
-#endif
+            
+            if (is_dynamic_lib(target_path)) {
                 std::filesystem::path target_write_path = target_path.u8string() + NewExtension;
                 std::ofstream output_stream(target_write_path, std::ios::binary);
                 if (!output_stream.is_open()) {
@@ -280,6 +285,13 @@ namespace recompui {
 
     void ModInstaller::start_mod_installation(const std::list<std::filesystem::path> &file_paths, std::function<void(std::filesystem::path, size_t, size_t)> progress_callback, Result &result) {
         result = Result();
+
+        for (const std::filesystem::path &path : file_paths) {
+            if (is_dynamic_lib(path)) {
+                result.error_messages.emplace_back("The provided mod(s) must be installed without extracting the ZIP file(s). Please install the mod ZIP file(s) directly.");
+                return;
+            }
+        }
 
         for (const std::filesystem::path &path : file_paths) {
             recomp::mods::ModOpenError open_error;
