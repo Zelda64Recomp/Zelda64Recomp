@@ -1,4 +1,4 @@
-version: '2.9.3'
+version: '2.10.6'
 prefix: '/opt/local'
 variants:
   select:
@@ -6,9 +6,11 @@ variants:
     - metal
   deselect: x11
 ports:
-  - name: clang-18
-  - name: llvm-18
+  - name: libiconv
+    select: universal
   - name: libsdl2
     select: universal
   - name: freetype
     select: universal
+  - name: clang-18
+  - name: llvm-18
