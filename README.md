@@ -1,5 +1,5 @@
 # Zelda 64: Recompiled
-Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp) to **statically recompile** Majora's Mask (and soon Ocarina of Time) into a native port with many new features and enhancements. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide some of these enhancements.
+Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp) to **statically recompile** Majora's Mask (and soon Ocarina of Time) into a native port with many new features, enhancements, and extensive mod support. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide graphical enhancements.
 
 ### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/latest).
 
@@ -27,6 +27,7 @@ _Special thanks to [Blaze](https://runblaze.dev) for their support of this proje
   * [Easy-to-Use Menus](#easy-to-use-menus)
   * [High Framerate Support](#high-framerate-support)
   * [Widescreen and Ultrawide Support](#widescreen-and-ultrawide-support)
+  * [Mod Support](#mod-support)
   * [Dual Analog Camera](#dual-analog-camera)
   * [Gyro Aim](#gyro-aim)
   * [Additional Control Options](#additional-control-options)
@@ -41,12 +42,13 @@ _Special thanks to [Blaze](https://runblaze.dev) for their support of this proje
 * [Libraries Used and Projects Referenced](#libraries-used-and-projects-referenced)
 
 ## System Requirements
-A GPU supporting Direct3D 12.0 (Shader Model 6) or Vulkan 1.2 is required to run this project. The oldest GPUs that should be supported for each vendor are:
+A GPU supporting Direct3D 12.0 (Shader Model 6), Vulkan 1.2, or Metal Argument Buffers Tier 2 support is required to run this project. The oldest GPUs that should be supported for each vendor are:
 * GeForce GT 630
 * Radeon HD 7750 (the one from 2012, not to be confused with the RX 7000 series) and newer
 * Intel HD 510 (Skylake)
+* A Mac with Apple Silicon or an Intel 7th Gen CPU with MacOS 13.0+
 
-A CPU supporting the AVX instruction set is also required (Intel Core 2000 series or AMD Bulldozer and newer).
+On x86-64 PCs, a CPU supporting the AVX instruction set is also required (Intel Core 2000 series or AMD Bulldozer and newer). ARM64 builds will work on any ARM64 CPU.
 
 If you have issues with crashes on startup, make sure your graphics drivers are fully up to date. 
 
@@ -71,6 +73,13 @@ Any aspect ratio is supported, with most effects modded to work correctly in wid
 
 **Note**: Some animation quirks can be seen at the edges of the screen in certain cutscenes when using very wide aspect ratios.
 
+#### Mod Support
+Install community made mods and texture packs! Mods can change any part of the game, including adding completely new features and content. You can install mods by simply dragging the mod files onto the game window before starting the game or by clicking the **Install Mods** button in the mod menu. Mods can be toggled in the mod menu, and some mods can be configured there as well.
+
+Many mods are available on the project's Thunderstore page: https://thunderstore.io/c/zelda-64-recompiled/. The Thunderstore mod manager/r2modman is not required or supported, so be sure to click the "Manual Download" button when downloading a mod instead of the "Install with Mod Manager" button.
+
+If you're interested in making mods for this project, check out [the mod template](https://github.com/Zelda64Recomp/MMRecompModTemplate) and [the modding documentation](https://hackmd.io/fMDiGEJ9TBSjomuZZOgzNg). If you're interested in making texture packs, check out [the RT64 documentation](https://github.com/rt64/rt64/blob/main/TEXTURE-PACKS.md).
+
 #### Dual Analog Camera
 Play with a dual analog control layout like later entries in the series! When this option is enabled, the right stick will control the camera. You can still have the C-Buttons mapped to the right stick if you so wish, so long as you also map them to other buttons on the controller. The right stick C-button inputs will be "silenced", except when you take out the ocarina, so you can still play the ocarina with the right stick.
 
@@ -92,16 +101,13 @@ This project has been optimized to have as little input lag as possible, making 
 Saving and loading files, going from place to place, and pausing all happen in the blink of an eye thanks to the game running natively on modern hardware.
 
 #### Linux and Steam Deck Support
-A Linux binary is available for playing on most up-to-date distros, including on the Steam Deck.
+A Linux binary as well as a Flatpak is available for playing on most up-to-date distros, including on the Steam Deck.
 
 To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the Zelda64Recompiled executable file and select "Add to Steam". From there, you can return to Gaming mode and configure the controls as needed. See the [Steam Deck gyro aim FAQ section](#how-do-i-set-up-gyro-aiming-on-steam-deck) for more detailed instructions.
 
 ## Planned Features
 * Ocarina of Time support
-* Mod support and Randomizer
-* Texture Packs
-* Model Replacements
-* Ray Tracing (via RT64)
+* Ray Tracing and Higher Quality Model Replacements (via RT64)
 * Multi-language support with support for loading custom translations
 
 ## FAQ
@@ -125,13 +131,14 @@ You'll probably also want to change the default behavior so that you don't need 
 - macOS: `~/Library/Application Support/Zelda64Recompiled/saves`
 
 #### How do I choose a different ROM?
-**You don't.** This project is **only** a port of Majora's Mask (and Ocarina of Time in the future), and it will only accept one specific ROM: the US version of the N64 release of Majora's Mask. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.** 
+**You don't.** This project is **only** a port of Majora's Mask (and Ocarina of Time in the future), and it will only accept one specific ROM: the US version of the N64 release of Majora's Mask. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.**
 
-If you want to play a modded ROM or in another language, note that support for modding and other languages will be added to the project itself in the future and will not rely on you supplying a different ROM. 
+Instead, you can change the game by installing mods. See the [mod support](#mod-support) section for details.
+
+#### Does this project have a randomizer?
+Yes, there is a randomizer available as a mod for this project which can be found on the thunderstore page linked in [mod support](#mod-support).
 
 ## Known Issues
-* Intel GPUs on Linux may not currently work. If you have experience with Vulkan development on Linux, help here would be greatly appreciated!
-* The prebuilt Linux binary may not work correctly on some distributions of Linux. If you encounter such an issue, building the project locally yourself is recommended. A Flatpak or AppImage may be provided in the future to solve this issue. Adding the Linux version to Steam and setting "Steam Linux Runtime" as the compatibility tool or launching it via Gamescope may work around the issue. Alternatively, running the Windows version with Proton is known to work well and may also work around this issue.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
@@ -146,5 +153,3 @@ Building is not required to play this project, as prebuilt binaries (which do no
 * [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms to implement gyro aiming
 * [Majora's Mask Decompilation](https://github.com/zeldaret/mm) for headers and some function definitions, used for making patches or some enhancements
 * [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
-
-Special thanks to [thecozies](https://github.com/thecozies) for designing and helping implement the launcher and config menus!
