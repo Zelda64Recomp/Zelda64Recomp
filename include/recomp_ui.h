@@ -69,6 +69,7 @@ namespace recompui {
     };
 
     void set_config_tab(ConfigTab tab);
+    int config_tab_to_index(ConfigTab tab);
     Rml::ElementTabSet* get_config_tabset();
     Rml::Element* get_mod_tab();
     void set_config_tabset_mod_nav();

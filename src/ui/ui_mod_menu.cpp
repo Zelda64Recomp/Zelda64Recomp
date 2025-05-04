@@ -589,7 +589,10 @@ void ModMenu::create_mod_list() {
         install_mods_button->set_nav_manual(NavDirection::Up, mod_tab_id);
     }
 
-    recompui::set_config_tabset_mod_nav();
+    Rml::ElementTabSet* tabset = recompui::get_config_tabset();
+    if (tabset && tabset->GetActiveTab() == recompui::config_tab_to_index(ConfigTab::Mods)) {
+        recompui::set_config_tabset_mod_nav();
+    }       
 
     // Add one extra spacer at the bottom.
     ModEntrySpacer *spacer = context.create_element<ModEntrySpacer>(list_scroll_container);

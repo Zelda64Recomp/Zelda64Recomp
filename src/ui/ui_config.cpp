@@ -22,7 +22,7 @@ Rml::DataModelHandle sound_options_model_handle;
 // True if controller config menu is open, false if keyboard config menu is open, undefined otherwise
 bool configuring_controller = false;
 
-static int config_tab_to_index(recompui::ConfigTab tab) {
+int recompui::config_tab_to_index(recompui::ConfigTab tab) {
     switch (tab) {
     case recompui::ConfigTab::General:
         return 0;
@@ -472,7 +472,7 @@ class ConfigTabsetListener : public Rml::EventListener {
     void ProcessEvent(Rml::Event& event) override {
         if (event.GetId() == Rml::EventId::Tabchange) {
             int tab_index = event.GetParameter<int>("tab_index", 0);
-            bool in_mod_tab = (tab_index == config_tab_to_index(recompui::ConfigTab::Mods));
+            bool in_mod_tab = (tab_index == recompui::config_tab_to_index(recompui::ConfigTab::Mods));
             if (in_mod_tab) {
                 recompui::set_config_tabset_mod_nav();
             }
