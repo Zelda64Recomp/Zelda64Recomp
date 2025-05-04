@@ -341,7 +341,7 @@ jobs:
           path: |
             Zelda64Recompiled.pdb
   build-macos:
-    runs-on: macos-latest
+    runs-on: blaze/macos-14
     strategy:
       matrix:
         type: [ Debug, Release ]
