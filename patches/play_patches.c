@@ -34,6 +34,21 @@ RECOMP_DECLARE_EVENT(recomp_after_play_update(PlayState* play));
 
 void controls_play_update(PlayState* play) {
     gSaveContext.options.zTargetSetting = recomp_get_targeting_mode();
+    
+    Player* player = GET_PLAYER(play);
+    recomp_get_mouse_deltas(&mouse_input_handler.delta_x, &mouse_input_handler.delta_y);
+    mouse_input_handler.crouch_shielding = player->stateFlags1 & PLAYER_STATE1_400000;
+
+    if (mouse_input_handler.crouch_shielding) {
+        mouse_input_handler.shield_pos_x -= mouse_input_handler.delta_x * 10.0f;
+        mouse_input_handler.shield_pos_y -= mouse_input_handler.delta_y * 10.0f;
+        mouse_input_handler.shield_pos_x = CLAMP(mouse_input_handler.shield_pos_x, -MOUSE_SHIELD_CLAMP_X, MOUSE_SHIELD_CLAMP_X);
+        mouse_input_handler.shield_pos_y = CLAMP(mouse_input_handler.shield_pos_y, -MOUSE_SHIELD_CLAMP_Y, MOUSE_SHIELD_CLAMP_Y);
+    }
+    else {
+        mouse_input_handler.shield_pos_x = 0.0f;
+        mouse_input_handler.shield_pos_y = 0.0f;
+    }
 }
 
 // @recomp Patched to add hooks for various added functionality.
@@ -174,6 +189,11 @@ RECOMP_PATCH void Play_Init(GameState* thisx) {
 
     // @recomp_event recomp_on_play_init(PlayState* this): A new PlayState is being initialized.
     recomp_on_play_init(this);
+    mouse_input_handler.crouch_shielding = false;
+    mouse_input_handler.delta_x = 0.0f;
+    mouse_input_handler.delta_y = 0.0f;
+    mouse_input_handler.shield_pos_x = 0.0f;
+    mouse_input_handler.shield_pos_y = 0.0f;
 
     if ((gSaveContext.respawnFlag == -4) || (gSaveContext.respawnFlag == -0x63)) {
         if (CHECK_EVENTINF(EVENTINF_TRIGGER_DAYTELOP)) {
