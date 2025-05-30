@@ -1496,7 +1496,6 @@ RECOMP_PATCH void Player_Action_18(Player* this, PlayState* play) {
         if (inverted_x) {
             xStick = -xStick;
         }
-        recomp_printf("Shielding X=%f, Y=%f\n", xStick, yStick);
         var_a1 = (yStick * Math_CosS(temp_a0)) + (Math_SinS(temp_a0) * xStick);
         temp_ft5 = (xStick * Math_CosS(temp_a0)) - (Math_SinS(temp_a0) * yStick);
 

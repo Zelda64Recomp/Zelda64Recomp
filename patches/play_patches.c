@@ -36,8 +36,11 @@ void controls_play_update(PlayState* play) {
     gSaveContext.options.zTargetSetting = recomp_get_targeting_mode();
     
     Player* player = GET_PLAYER(play);
+    Camera* camera = GET_ACTIVE_CAM(play);
+    
     recomp_get_mouse_deltas(&mouse_input_handler.delta_x, &mouse_input_handler.delta_y);
-    mouse_input_handler.crouch_shielding = player->stateFlags1 & PLAYER_STATE1_400000;
+    //mouse_input_handler.crouch_shielding = player->stateFlags1 == PLAYER_STATE1_400000;
+    mouse_input_handler.crouch_shielding = ((player->stateFlags1 == PLAYER_STATE1_400000) && !(camera->mode == CAM_MODE_TARGET || camera->mode == CAM_MODE_FOLLOWTARGET));
 
     if (mouse_input_handler.crouch_shielding) {
         mouse_input_handler.shield_pos_x -= mouse_input_handler.delta_x * 10.0f;
