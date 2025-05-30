@@ -1,5 +1,6 @@
 #include <atomic>
 #include <mutex>
+#include <iostream>
 
 #include "ultramodern/ultramodern.hpp"
 #include "recomp.h"
@@ -27,6 +28,7 @@ static struct {
     const Uint8* keys = nullptr;
     SDL_Keymod keymod = SDL_Keymod::KMOD_NONE;
     int numkeys = 0;
+    unsigned int mouse_button_state;
     std::atomic_int32_t mouse_wheel_pos = 0;
     std::mutex cur_controllers_mutex;
     std::vector<SDL_GameController*> cur_controllers{};
@@ -334,7 +336,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_SPACE}
     },
     .b = {
-        {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_LSHIFT}
+        {.input_type = (uint32_t)InputType::Mouse, .input_id = 0}
     },
     .l = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_E}
@@ -467,6 +469,8 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
 };
 
 void recomp::poll_inputs() {
+    InputState.mouse_button_state = SDL_GetMouseState(NULL, NULL);
+
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
     InputState.keymod = SDL_GetModState();
 
@@ -654,6 +658,8 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
         // TODO adjustable threshold
         return controller_axis_state(field.input_id, true) >= axis_threshold;
     case InputType::Mouse:
+        //std::cout << "Mouse State: " << InputState.mouse_button_state << "\n";
+        return InputState.mouse_button_state & (1 << field.input_id);
         // TODO mouse support
         return false;
     case InputType::None:
