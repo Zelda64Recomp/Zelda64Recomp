@@ -132,6 +132,25 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             }
         }
         break;
+    case SDL_EventType::SDL_MOUSEBUTTONDOWN:
+    {
+        SDL_MouseButtonEvent* mouseevent = &event->button;
+
+        // Skip repeated events when not in the menu
+        if (!recompui::is_context_capturing_input()) {
+            break;
+        }
+
+        if (scanning_device != recomp::InputDevice::COUNT) {
+            if (scanning_device == recomp::InputDevice::Keyboard) {
+                set_scanned_input({ (uint32_t)InputType::Mouse, mouseevent->button - 1}); // subtract 1 because of the bit-shifting used to process SDL_GetMouseState
+            }
+        }
+        else {
+            queue_if_enabled(event);
+        }
+    }
+    break;
     case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
         {
             SDL_ControllerDeviceEvent* controller_event = &event->cdevice;
