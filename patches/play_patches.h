@@ -6,7 +6,7 @@
 #define MOUSE_SHIELD_CLAMP_X 7200.0f
 #define MOUSE_SHIELD_CLAMP_Y 10800.0f
 #define MOUSE_CAMERA_SCALE_X 0.04f
-#define MOUSE_CAMERA_SCALE_Y 0.04f
+#define MOUSE_CAMERA_SCALE_Y 0.08f // For some reason, the vertical sensitivity seemed less than the horizontal. This compensates.
 
 typedef struct {
     float delta_x;
