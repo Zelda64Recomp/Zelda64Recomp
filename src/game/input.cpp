@@ -28,7 +28,8 @@ static struct {
     const Uint8* keys = nullptr;
     SDL_Keymod keymod = SDL_Keymod::KMOD_NONE;
     int numkeys = 0;
-    unsigned int mouse_button_state;
+    std::atomic<unsigned int> mouse_button_state;
+    std::atomic<unsigned int> mouse_button_mask = ~0;
     std::atomic_int32_t mouse_wheel_pos = 0;
     std::mutex cur_controllers_mutex;
     std::vector<SDL_GameController*> cur_controllers{};
@@ -488,7 +489,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
 };
 
 void recomp::poll_inputs() {
-    InputState.mouse_button_state = SDL_GetMouseState(NULL, NULL);
+    InputState.mouse_button_state.store(SDL_GetMouseState(NULL, NULL));
 
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
     InputState.keymod = SDL_GetModState();
@@ -678,7 +679,7 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
         return controller_axis_state(field.input_id, true) >= axis_threshold;
     case InputType::Mouse:
         //std::cout << "Mouse State: " << InputState.mouse_button_state << "\n";
-        return InputState.mouse_button_state & (1 << field.input_id);
+        return (InputState.mouse_button_state.load() & InputState.mouse_button_mask.load()) & (1 << field.input_id);
         // TODO mouse support
         return false;
     case InputType::None:
@@ -706,6 +707,22 @@ void recomp::get_mouse_deltas(float* x, float* y) {
     float sensitivity = (float)recomp::get_mouse_sensitivity() / 100.0f;
     *x = cur_mouse_delta[0] * sensitivity;
     *y = cur_mouse_delta[1] * sensitivity;
+}
+
+int32_t recomp::get_mouse_wheel_pos() {
+    return InputState.mouse_wheel_pos.load();
+}
+
+uint32_t recomp::get_mouse_buttons() {
+    return InputState.mouse_button_state.load();
+}
+
+uint32_t recomp::get_mouse_button_mask() {
+    return InputState.mouse_button_mask.load();
+}
+
+void recomp::set_mouse_button_mask(unsigned int mask) {
+    return InputState.mouse_button_mask.store(mask);
 }
 
 void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {

@@ -38,8 +38,11 @@ void controls_play_update(PlayState* play) {
     Player* player = GET_PLAYER(play);
     Camera* camera = GET_ACTIVE_CAM(play);
     
+    // Looks like this function doesn't like to be called more than once per frame.
+    // We'll cache the results here for other stuff to use.
     recomp_get_mouse_deltas(&mouse_input_handler.delta_x, &mouse_input_handler.delta_y);
-    //mouse_input_handler.crouch_shielding = player->stateFlags1 == PLAYER_STATE1_400000;
+    recomp_printf("Mouse Wheel Pos: %i\n", recomp_get_mouse_wheel_pos());
+    // Best way I could come up with to reallow mouse movement when lockon shielding.
     mouse_input_handler.crouch_shielding = ((player->stateFlags1 == PLAYER_STATE1_400000) && !(camera->mode == CAM_MODE_TARGET || camera->mode == CAM_MODE_FOLLOWTARGET));
 
     if (mouse_input_handler.crouch_shielding) {
@@ -53,6 +56,31 @@ void controls_play_update(PlayState* play) {
         mouse_input_handler.shield_pos_y = 0.0f;
     }
 }
+ // @recomp mouse deltas export
+RECOMP_EXPORT void zelda64_get_mouse_deltas(float* x, float* y) {
+    *x = mouse_input_handler.delta_x;
+    *y = mouse_input_handler.delta_y;
+}
+
+RECOMP_EXPORT unsigned int zelda64_get_mouse_wheel_pos() {
+    return recomp_get_mouse_buttons();
+}
+
+// @recomp mouse deltas export
+RECOMP_EXPORT unsigned int zelda64_get_mouse_buttons() {
+    return recomp_get_mouse_buttons();
+}
+
+RECOMP_EXPORT unsigned int zelda64_get_mouse_button_mask() {
+    return recomp_get_mouse_button_mask();
+}
+
+RECOMP_EXPORT void zelda64_set_mouse_button_mask(unsigned int mask) {
+    recomp_set_mouse_button_mask(mask);
+}
+// The zelda64 prefix is temporary. I can't have the names conflict with the recomp API,
+// but those are the most fitting. A better solution is desired.
+
 
 // @recomp Patched to add hooks for various added functionality.
 RECOMP_PATCH void Play_Main(GameState* thisx) {

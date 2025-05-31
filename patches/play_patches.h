@@ -2,6 +2,7 @@
 #define __PLAY_PATCHES_H__
 
 #include "patches.h"
+#include "patch_helpers.h"
 
 #define MOUSE_SHIELD_CLAMP_X 7200.0f
 #define MOUSE_SHIELD_CLAMP_Y 10800.0f
@@ -27,4 +28,8 @@ void analog_cam_post_play_update(PlayState* play);
 void matrix_play_update(PlayState* play);
 void autosave_post_play_update(PlayState* play);
 
+DECLARE_FUNC(unsigned int, recomp_get_mouse_buttons, );
+DECLARE_FUNC(unsigned int, recomp_get_mouse_button_mask, );
+DECLARE_FUNC(void, recomp_set_mouse_button_mask, unsigned int);
+DECLARE_FUNC(unsigned int, recomp_get_mouse_wheel_pos, );
 #endif
