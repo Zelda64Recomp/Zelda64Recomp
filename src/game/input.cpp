@@ -678,10 +678,11 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
         // TODO adjustable threshold
         return controller_axis_state(field.input_id, true) >= axis_threshold;
     case InputType::Mouse:
-        //std::cout << "Mouse State: " << InputState.mouse_button_state << "\n";
+        if (recomp::game_input_disabled()) {
+            return false;
+        }
         return (InputState.mouse_button_state.load() & InputState.mouse_button_mask.load()) & (1 << field.input_id);
-        // TODO mouse support
-        return false;
+        
     case InputType::None:
         return false;
     }
@@ -710,10 +711,16 @@ void recomp::get_mouse_deltas(float* x, float* y) {
 }
 
 int32_t recomp::get_mouse_wheel_pos() {
+    if (recomp::game_input_disabled()) {
+        return 0;
+    }
     return InputState.mouse_wheel_pos.load();
 }
 
 uint32_t recomp::get_mouse_buttons() {
+    if (recomp::game_input_disabled()) {
+        return 0;
+    }
     return InputState.mouse_button_state.load();
 }
 
