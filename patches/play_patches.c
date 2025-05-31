@@ -41,7 +41,7 @@ void controls_play_update(PlayState* play) {
     // Looks like this function doesn't like to be called more than once per frame.
     // We'll cache the results here for other stuff to use.
     recomp_get_mouse_deltas(&mouse_input_handler.delta_x, &mouse_input_handler.delta_y);
-    recomp_printf("Mouse Wheel Pos: %i\n", recomp_get_mouse_wheel_pos());
+
     // Best way I could come up with to reallow mouse movement when lockon shielding.
     mouse_input_handler.crouch_shielding = ((player->stateFlags1 == PLAYER_STATE1_400000) && !(camera->mode == CAM_MODE_TARGET || camera->mode == CAM_MODE_FOLLOWTARGET));
 
