@@ -74,7 +74,7 @@ RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
 
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
-
+    // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
     recomp_on_autosave(play);
     // Transfer the scene flags into the cycle flags.
     Play_SaveCycleSceneFlags(&play->state);
@@ -102,7 +102,8 @@ RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2 + 1], gFlashOwlSaveNumPages[fileNum * 2 + 1]);
 
     gSaveContext.save.isOwlSave = false;
-
+    
+    // @recomp_event recomp_on_autosave(PlayState* play): Autosave finished.
     recomp_after_autosave(play);
 }
 
