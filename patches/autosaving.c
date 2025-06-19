@@ -70,7 +70,12 @@ void Sram_SyncWriteToFlash(SramContext* sramCtx, s32 curPage, s32 numPages);
 void recomp_reset_autosave_timer();
 void recomp_reset_autosave_timer_slow();
 
+RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
+RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
+
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
+    // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
+    recomp_on_autosave(play);
     // Transfer the scene flags into the cycle flags.
     Play_SaveCycleSceneFlags(&play->state);
     // Transfer the cycle flags into the save buffer. Logic copied from func_8014546C.
@@ -97,6 +102,9 @@ RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2 + 1], gFlashOwlSaveNumPages[fileNum * 2 + 1]);
 
     gSaveContext.save.isOwlSave = false;
+    
+    // @recomp_event recomp_on_autosave(PlayState* play): Autosave finished.
+    recomp_after_autosave(play);
 }
 
 bool loading_deletes_owl_save = true;
