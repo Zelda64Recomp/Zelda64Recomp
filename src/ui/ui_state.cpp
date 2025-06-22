@@ -900,6 +900,13 @@ void recompui::drop_files(const std::list<std::filesystem::path> &file_list) {
         return;
     }
 
+    recompui::set_config_tab(recompui::ConfigTab::Mods);
+    // If the config menu isn't open, open it in the mods tab.
+    if (!recompui::is_context_shown(recompui::get_config_context_id())) {
+        recompui::hide_all_contexts();
+        recompui::show_context(recompui::get_config_context_id(), "");
+    }
+
     recompui::open_notification("Installing Mods", "Please Wait");
     // TODO: Needs a progress callback and a prompt for every mod that needs to be confirmed to be overwritten.
     // TODO: Run this on a background thread and use the callbacks to advance the state instead of blocking.
