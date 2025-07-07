@@ -569,8 +569,18 @@ void recomputil_u32_slotmap_size(uint8_t* rdram, recomp_context* ctx) {
 // memory slotmap.
 
 void recomputil_create_memory_slotmap(uint8_t* rdram, recomp_context* ctx) {
-    (void)rdram;
-    _return(ctx, memory_slotmaps.create());
+    uint32_t element_size = _arg<0, uint32_t>(rdram, ctx);
+    
+    // Create the map.
+    uint32_t map_key = memory_slotmaps.create();
+
+    // Retrieve the map and set its element size to the provided value.
+    MemorySlotmap* map;
+    memory_slotmaps.get(map_key, &map);
+    map->second = element_size;
+
+    // Return the created map's key.
+    _return(ctx, map_key);
 }
 
 void recomputil_destroy_memory_slotmap(uint8_t* rdram, recomp_context* ctx) {
@@ -628,7 +638,7 @@ void recomputil_memory_slotmap_create(uint8_t* rdram, recomp_context* ctx) {
     // Store the allocated pointer.
     PTR(void)* value_ptr;
     map->first.get(key, &value_ptr);
-    MEM_W(0, *value_ptr) = addr;
+    *value_ptr = static_cast<PTR(void)>(addr);
 
     // Return the key.
     _return(ctx, key);
