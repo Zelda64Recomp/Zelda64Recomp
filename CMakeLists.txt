@@ -309,8 +309,6 @@ endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(SDL2 REQUIRED)
-    find_package(X11 REQUIRED)
-
     add_compile_definitions("RT64_SDL_WINDOW_VULKAN")
 
     # Generate icon_bytes.c from the app icon PNG.
@@ -324,14 +322,6 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     message(STATUS "SDL2_INCLUDE_DIRS = ${SDL2_INCLUDE_DIRS}")
 
     target_include_directories(Zelda64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
-
-    message(STATUS "X11_FOUND = ${X11_FOUND}")
-    message(STATUS "X11_Xrandr_FOUND = ${X11_Xrandr_FOUND}")
-    message(STATUS "X11_INCLUDE_DIR = ${X11_INCLUDE_DIR}")
-    message(STATUS "X11_LIBRARIES = ${X11_LIBRARIES}")
-
-    target_include_directories(Zelda64Recompiled PRIVATE ${X11_INCLUDE_DIR} ${X11_Xrandr_INCLUDE_PATH})
-    target_link_libraries(Zelda64Recompiled PRIVATE ${X11_LIBRARIES} ${X11_Xrandr_LIB})
 
     find_package(Freetype REQUIRED)
 
