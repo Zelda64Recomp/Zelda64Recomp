@@ -12,6 +12,7 @@
 #include "overlays/actors/ovl_En_Twig/z_en_twig.h"
 #include "overlays/actors/ovl_En_Honotrap/z_en_honotrap.h"
 #include "overlays/actors/ovl_En_Tanron1/z_en_tanron1.h"
+#include "overlays/actors/ovl_En_Kusa2/z_en_kusa2.h"
 
 // Decomp renames, TODO update decomp and remove these
 #define EnHonotrap_FlameGroup func_8092F878
@@ -1325,6 +1326,47 @@ RECOMP_PATCH void func_80BB5AAC(EnTanron1* this, PlayState* play) {
             gSPDisplayList(POLY_OPA_DISP++, ovl_En_Tanron1_DL_001900);
 
             // @recomp Pop matrix group
+            gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+        }
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+extern Gfx gKakeraLeafTipDL[];
+extern Gfx gKakeraLeafMiddleDL[];
+extern EnKusa2UnkBssStruct D_80A5F1C0;
+
+// Patched to tag the particles that spawn from Keaton grass.
+RECOMP_PATCH void func_80A5E6F0(Actor* thisx, PlayState* play) {
+    static Gfx* D_80A5EB68[] = {
+        gKakeraLeafTipDL,
+        gKakeraLeafMiddleDL,
+    };
+    EnKusa2* this = (EnKusa2*)thisx;
+    s32 i;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Opa(play->state.gfxCtx);
+
+    // @recomp Get the base transform ID for this actor.
+    u32 cur_transform_id = actor_transform_id(thisx);
+
+    for (i = 0; i < ARRAY_COUNT(D_80A5F1C0.unk_0480); i++) {
+        EnKusa2UnkBssSubStruct2* s = &D_80A5F1C0.unk_0480[i];
+
+        if (s->unk_2C > 0) {
+            Matrix_SetTranslateRotateYXZ(s->unk_04.x, s->unk_04.y, s->unk_04.z, &s->unk_20);
+            Matrix_Scale(s->unk_00, s->unk_00, s->unk_00, MTXMODE_APPLY);
+
+            // @recomp Create a matrix group for this particle.
+            gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, cur_transform_id + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+
+            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            gSPDisplayList(POLY_OPA_DISP++, D_80A5EB68[i & 1]);
+
+            // @recomp Pop the matrix group.
             gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
         }
     }
