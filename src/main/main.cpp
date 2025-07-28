@@ -18,6 +18,13 @@
 #else
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
+// Undefine x11 macros that get included by SDL_syswm.h.
+#undef None
+#undef Status
+#undef LockMask
+#undef ControlMask
+#undef Success
+#undef Always
 #endif
 
 #include "recomp_ui.h"
