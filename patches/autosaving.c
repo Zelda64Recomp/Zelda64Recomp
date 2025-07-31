@@ -31,7 +31,7 @@ RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
                 if (!Play_InCsMode(play) || ((msgCtx->msgMode != MSGMODE_NONE) && (msgCtx->currentTextId == 0xFF))) {
                     if ((play->unk_1887C < 2) && (gSaveContext.magicState != MAGIC_STATE_STEP_CAPACITY) &&
                         (gSaveContext.magicState != MAGIC_STATE_FILL)) {
-                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20)) {
+                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20) && !(CHECK_EVENTINF(EVENTINF_41))) {
                             if (!(play->actorCtx.flags & ACTORCTX_FLAG_TELESCOPE_ON) &&
                                 !(play->actorCtx.flags & ACTORCTX_FLAG_PICTO_BOX_ON)) {
                                 if (!play->actorCtx.isOverrideInputOn) {
@@ -74,6 +74,10 @@ RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
 
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
+    // Tell console we are autosaving for debugging
+    recomp_printf("Triggering auto save at %d \n", gSaveContext.save.time);
+    //recomp_printf("Loaded entrance: %d in scene: %d\n", autosave_entrance, scene_id);
+
     // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
     recomp_on_autosave(play);
     // Transfer the scene flags into the cycle flags.
