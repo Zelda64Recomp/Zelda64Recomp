@@ -185,3 +185,6 @@ RECOMP_PATCH void Player_DrawGameplay(PlayState* play, Player* this, s32 lod, Gf
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
+RECOMP_EXPORT u32 z64recomp_get_bowstring_transform_id() {
+    return BOWSTRING_TRANSFORM_ID;
+}
