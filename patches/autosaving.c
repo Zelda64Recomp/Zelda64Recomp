@@ -74,9 +74,6 @@ RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
 
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
-    // Tell console we are autosaving for debugging
-    recomp_printf("Triggering auto save at %d \n", gSaveContext.save.time);
-    //recomp_printf("Loaded entrance: %d in scene: %d\n", autosave_entrance, scene_id);
 
     // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
     recomp_on_autosave(play);
