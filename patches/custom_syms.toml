@@ -14,3 +14,13 @@ symbols = [
     { name = "FileSelect_Init_NORELOCATE", vram = 0x80813C98 },
     { name = "DayTelop_Init_NORELOCATE", vram = 0x80815820 },
 ]
+
+[[section]]
+name = "..ovl_En_Hg"
+rom = 0x01034170
+vram = 0x80BCF1D0
+size = 0x10E0
+
+symbols = [
+    { name = "sPamelasFatherAnimationInfo", vram = 0x80bd0008 },
+]
