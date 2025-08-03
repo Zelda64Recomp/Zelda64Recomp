@@ -1373,4 +1373,3 @@ RECOMP_PATCH void func_80A5E6F0(Actor* thisx, PlayState* play) {
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
-
