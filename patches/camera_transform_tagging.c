@@ -76,6 +76,17 @@ void camera_post_play_update(PlayState* play) {
             if (force_interpolation) {
                 force_camera_interpolation();
             }
+            // Dedicated section for workarounds where the heuristic fails to detect small camera teleports.
+            bool force_no_interpolation = false;
+
+            // Music Box House. The camera gets teleported by a very small amount when Link gets the Gibdo mask.
+            if (play->sceneId == SCENE_MUSICHOUSE && play->csCtx.scriptIndex == 2 && play->csCtx.curFrame == 525 && active_cam->setting == CAM_SET_FREE0) {
+                force_no_interpolation = true;
+            }
+
+            if (force_no_interpolation) {
+                force_camera_skip_interpolation();
+            }
         }
     }
 }

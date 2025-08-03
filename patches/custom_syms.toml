@@ -14,3 +14,33 @@ symbols = [
     { name = "FileSelect_Init_NORELOCATE", vram = 0x80813C98 },
     { name = "DayTelop_Init_NORELOCATE", vram = 0x80815820 },
 ]
+
+[[section]]
+name = "..ovl_En_Hg"
+rom = 0x01034170
+vram = 0x80BCF1D0
+size = 0x10E0
+
+symbols = [
+    { name = "sPamelasFatherGibdoAnimationInfo", vram = 0x80bd0008 },
+]
+
+[[section]]
+name = "..ovl_En_Hgo"
+rom = 0x01035250
+vram = 0x80BD02B0
+size = 0xF30
+
+symbols = [
+    { name = "sPamelasFatherHumanAnimationInfo", vram = 0x80BD0EA0 },
+]
+
+[[section]]
+name = "..ovl_En_Pamera"
+rom = 0x0103D250
+vram = 0x80BD82B0
+size = 0x2780
+
+symbols = [
+    { name = "sPamelaAnimationInfo", vram = 0x80BDA4B8 },
+]
