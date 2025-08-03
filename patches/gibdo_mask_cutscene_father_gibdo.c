@@ -24,6 +24,8 @@ typedef enum {
     /* 3 */ HG_CS_SONG_OF_HEALING
 } HgCsIndex;
 
+// @recomp Skip interpolation when the animations change during the cutscene, as the
+// animation changes are meant to happen at the same time as the camera cuts.
 void EnHg_HandleCutscene(EnHg* this, PlayState* play) {
     if (Cutscene_IsCueInChannel(play, CS_CMD_ACTOR_CUE_484)) {
         s32 cueChannel = Cutscene_GetCueChannel(play, CS_CMD_ACTOR_CUE_484);

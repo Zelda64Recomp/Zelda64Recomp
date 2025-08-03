@@ -2,6 +2,20 @@
 #include "transform_ids.h"
 #include "overlays/actors/ovl_En_Pamera/z_en_pamera.h"
 
+extern void EnPamera_Draw(Actor* thisx, PlayState* play);
+extern void func_80BD9E88(EnPamera* this);
+extern void func_80BD9EE0(EnPamera* this);
+extern void func_80BDA038(EnPamera* this);
+extern void func_80BDA0A0(EnPamera* this);
+extern void func_80BDA170(EnPamera* this);
+extern void func_80BDA288(EnPamera* this);
+extern void func_80BD994C(EnPamera* this, PlayState* play);
+extern void EnPamera_HandleDialogue(EnPamera* this, PlayState* play);
+extern void func_80BD9904(EnPamera* this);
+extern void func_80BD9E60(EnPamera* this);
+
+// @recomp Skip interpolation when the animations change during the cutscene, as the
+// animation changes are meant to happen at the same time as the camera cuts.
 RECOMP_PATCH s32 func_80BD9CB8(EnPamera* this, PlayState* play) {
     s32 cueChannel;
 
@@ -42,6 +56,7 @@ RECOMP_PATCH s32 func_80BD9CB8(EnPamera* this, PlayState* play) {
                 default:
                     break;
             }
+            actor_set_interpolation_skipped(&this->actor);
         }
         Cutscene_ActorTranslateAndYaw(&this->actor, play, cueChannel);
         this->setupFunc(this, play);

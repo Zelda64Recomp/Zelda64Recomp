@@ -18,6 +18,8 @@ extern void EnHgo_Draw(Actor* thisx, PlayState* play);
 extern void EnHgo_DoNothing(EnHgo* this, PlayState* play);
 extern void EnHgo_SetupInitCollision(EnHgo* this);
 
+// @recomp Skip interpolation when the animations change during the cutscene, as the
+// animation changes are meant to happen at the same time as the camera cuts.
 RECOMP_PATCH s32 EnHgo_HandleCsAction(EnHgo* this, PlayState* play) {
     s32 cueChannel;
 
