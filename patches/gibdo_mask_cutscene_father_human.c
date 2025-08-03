@@ -63,7 +63,6 @@ RECOMP_PATCH s32 EnHgo_HandleCsAction(EnHgo* this, PlayState* play) {
                     break;
             }
             actor_set_interpolation_skipped(&this->actor);
-            recomp_printf("Skipping\n");
         } else if (Animation_OnFrame(&this->skelAnime, this->skelAnime.endFrame)) {
             switch (this->animIndex) {
                 case HGO_ANIM_ASTONISHED:
