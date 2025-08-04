@@ -79,7 +79,7 @@ extern "C" void recomp_register_actor_extension(uint8_t* rdram, recomp_context* 
     }
 
     if (actor_data_sizes.size() <= actor_type) {
-        actor_data_sizes.resize(2 * actor_type);
+        actor_data_sizes.resize(actor_type + 1);
     }
 
     // Increase the actor type's extension data size by the provided size (rounded up to a multiple of 16).
