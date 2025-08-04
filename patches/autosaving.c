@@ -31,7 +31,8 @@ RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
                 if (!Play_InCsMode(play) || ((msgCtx->msgMode != MSGMODE_NONE) && (msgCtx->currentTextId == 0xFF))) {
                     if ((play->unk_1887C < 2) && (gSaveContext.magicState != MAGIC_STATE_STEP_CAPACITY) &&
                         (gSaveContext.magicState != MAGIC_STATE_FILL)) {
-                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20) && !(CHECK_EVENTINF(EVENTINF_41))) {
+                        // @recomp Check game state to prevent autosaving during invalid states (day progression, mid cutscene, mid minigame, etc)
+                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20) && !(gSaveContext.minigameStatus == MINIGAME_STATUS_ACTIVE)) {
                             if (!(play->actorCtx.flags & ACTORCTX_FLAG_TELESCOPE_ON) &&
                                 !(play->actorCtx.flags & ACTORCTX_FLAG_PICTO_BOX_ON)) {
                                 if (!play->actorCtx.isOverrideInputOn) {
