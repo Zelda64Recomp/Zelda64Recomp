@@ -19,6 +19,4 @@
 [submodule "Zelda64RecompSyms"]
 	path = Zelda64RecompSyms
 	url = https://github.com/Zelda64Recomp/Zelda64RecompSyms
-[submodule "lib/slot_map"]
-	path = lib/slot_map
-	url = https://github.com/SergeyMakeev/slot_map
+
