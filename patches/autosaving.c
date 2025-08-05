@@ -31,8 +31,7 @@ RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
                 if (!Play_InCsMode(play) || ((msgCtx->msgMode != MSGMODE_NONE) && (msgCtx->currentTextId == 0xFF))) {
                     if ((play->unk_1887C < 2) && (gSaveContext.magicState != MAGIC_STATE_STEP_CAPACITY) &&
                         (gSaveContext.magicState != MAGIC_STATE_FILL)) {
-                        // @recomp Check game state to prevent autosaving during invalid states (day progression, mid cutscene, mid minigame, etc)
-                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20) && !(gSaveContext.minigameStatus == MINIGAME_STATUS_ACTIVE)) {
+                        if (!CHECK_EVENTINF(EVENTINF_17) && !(player->stateFlags1 & PLAYER_STATE1_20)) {
                             if (!(play->actorCtx.flags & ACTORCTX_FLAG_TELESCOPE_ON) &&
                                 !(play->actorCtx.flags & ACTORCTX_FLAG_PICTO_BOX_ON)) {
                                 if (!play->actorCtx.isOverrideInputOn) {
@@ -411,7 +410,7 @@ void autosave_post_play_update(PlayState* play) {
 
         OSTime time_now = osGetTime();
 
-        // Check the following conditions:
+        // Check the following conditions for autsave safety:
         // * The UI is in a normal state.
         // * Time is passing.
         // * No message is on screen.
@@ -419,6 +418,10 @@ void autosave_post_play_update(PlayState* play) {
         // * No cutscene is running.
         // * The game is not in cutscene mode.
         // * The clock has not reached the final 3 hours.
+        // * The player is not in an active/inactive minigame (not all minigames use this flag, default is STATUS_END)
+        // * The player is not in a timed minigame in the first set (Shooting Gallery, Butler Race, Spirit House, etc)
+        // * The player is not in a timed minigame in the second set (Goron Race, Treasure Game, Beaver Bros, etc)
+        // * The player is not taking a boat cruise
         // * The player is allowed to pause.
         if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
             R_TIME_SPEED != 0 &&
@@ -428,6 +431,10 @@ void autosave_post_play_update(PlayState* play) {
             gSaveContext.save.cutsceneIndex < 0xFFF0 &&
             !Play_InCsMode(play) &&
             !reached_final_three_hours() &&
+            gSaveContext.minigameStatus == MINIGAME_STATUS_END &&
+            gSaveContext.timerStates[TIMER_ID_MINIGAME_1] == TIMER_STATE_OFF &&
+            gSaveContext.timerStates[TIMER_ID_MINIGAME_2] == TIMER_STATE_OFF &&
+            !(CHECK_EVENTINF(EVENTINF_41)) &&
             gCanPause
         ) {
             frames_since_autosave_ready++;
