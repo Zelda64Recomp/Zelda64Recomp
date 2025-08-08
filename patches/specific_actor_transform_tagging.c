@@ -13,6 +13,7 @@
 #include "overlays/actors/ovl_En_Honotrap/z_en_honotrap.h"
 #include "overlays/actors/ovl_En_Tanron1/z_en_tanron1.h"
 #include "overlays/actors/ovl_En_Kusa2/z_en_kusa2.h"
+#include "overlays/actors/ovl_Obj_Grass/z_obj_grass.h"
 
 // Decomp renames, TODO update decomp and remove these
 #define EnHonotrap_FlameGroup func_8092F878
@@ -1368,6 +1369,116 @@ RECOMP_PATCH void func_80A5E6F0(Actor* thisx, PlayState* play) {
 
             // @recomp Pop the matrix group.
             gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+        }
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+extern Gfx gObjGrass_D_809AA9F0[];
+extern Gfx gObjGrass_D_809AAA68[];
+extern Gfx gObjGrass_D_809AAAE0[];
+void ObjGrass_OverrideMatrixCurrent(MtxF* matrix);
+
+// @recomp Patched to set matrix groups for grass.
+RECOMP_PATCH void ObjGrass_DrawOpa(Actor* thisx, PlayState* play2) {
+    ObjGrass* this = (ObjGrass*)thisx;
+    PlayState* play = play2;
+    Lights* lights;
+    ObjGrassGroup* grassGroup;
+    s32 i;
+    s32 j;
+    Vec3s rot = { 0, 0, 0 };
+    ObjGrassElement* grassElem;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Opa(play->state.gfxCtx);
+
+    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+    gSPDisplayList(POLY_OPA_DISP++, gObjGrass_D_809AA9F0);
+    
+    // @recomp Extract this actor's ID.
+    u32 actor_id = actor_transform_id(thisx);
+
+    for (i = 0; i < this->activeGrassGroups; i++) {
+        grassGroup = &this->grassGroups[i];
+
+        if (grassGroup->flags & OBJ_GRASS_GROUP_DRAW) {
+            lights = LightContext_NewLights(&play->lightCtx, play->state.gfxCtx);
+            Lights_BindAll(lights, play->lightCtx.listHead, &grassGroup->homePos, play);
+            Lights_Draw(lights, play->state.gfxCtx);
+
+            for (j = 0; j < grassGroup->count; j++) {
+                grassElem = &grassGroup->elements[j];
+
+                if ((grassElem->flags & OBJ_GRASS_ELEM_DRAW) && (grassElem->alpha == 255)) {
+                    rot.y = grassElem->rotY;
+                    Matrix_SetTranslateRotateYXZ(grassElem->pos.x, grassElem->pos.y, grassElem->pos.z, &rot);
+                    Matrix_Scale(this->actor.scale.x, this->actor.scale.y, this->actor.scale.z, MTXMODE_APPLY);
+                    if (grassElem->flags & OBJ_GRASS_ELEM_ANIM) {
+                        ObjGrass_OverrideMatrixCurrent(&this->distortionMtx[j]);
+                    }
+
+                    // @recomp Push a matrix group.
+                    gEXMatrixGroupDecomposedNormal(POLY_OPA_DISP++, actor_id + i * OBJ_GRASS_GROUP_ELEM_COUNT_MAX + j, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+
+                    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
+                              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    gSPDisplayList(POLY_OPA_DISP++, gObjGrass_D_809AAAE0);
+
+                    // @recomp Pop the matrix group.
+                    gEXPopMatrixGroup(POLY_OPA_DISP++, G_MTX_MODELVIEW);
+                }
+            }
+        }
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+// @recomp Patched to set matrix groups for grass.
+RECOMP_PATCH void ObjGrass_DrawXlu(Actor* thisx, PlayState* play) {
+    ObjGrass* this = (ObjGrass*)thisx;
+    ObjGrassGroup* grassGroup;
+    ObjGrassElement* grassElem;
+    s32 i;
+    s32 j;
+    Vec3s rot = { 0, 0, 0 };
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL25_Xlu(play->state.gfxCtx);
+
+    gSPDisplayList(POLY_XLU_DISP++, gObjGrass_D_809AAA68);
+    
+    // @recomp Extract this actor's ID.
+    u32 actor_id = actor_transform_id(thisx);
+
+    for (i = 0; i < this->activeGrassGroups; i++) {
+        grassGroup = &this->grassGroups[i];
+
+        if (grassGroup->flags & OBJ_GRASS_GROUP_DRAW) {
+            for (j = 0; j < grassGroup->count; j++) {
+                grassElem = &grassGroup->elements[j];
+
+                if ((grassElem->flags & OBJ_GRASS_ELEM_DRAW) && (grassElem->alpha > 0) && (grassElem->alpha < 255)) {
+                    rot.y = grassElem->rotY;
+                    Matrix_SetTranslateRotateYXZ(grassElem->pos.x, grassElem->pos.y, grassElem->pos.z, &rot);
+                    Matrix_Scale(this->actor.scale.x, this->actor.scale.y, this->actor.scale.z, MTXMODE_APPLY);
+
+                    // @recomp Push a matrix group.
+                    gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, actor_id + i * OBJ_GRASS_GROUP_ELEM_COUNT_MAX + j, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_NONE);
+
+                    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
+                              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 255, grassElem->alpha);
+                    gSPDisplayList(POLY_XLU_DISP++, gObjGrass_D_809AAAE0);
+
+                    // @recomp Pop the matrix group.
+                    gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+                }
+            }
         }
     }
 
