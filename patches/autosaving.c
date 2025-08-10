@@ -629,6 +629,9 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     }
     // @recomp Handle autosaves.
     else if (gSaveContext.save.isOwlSave == SAVE_TYPE_AUTOSAVE) {
+        // Clear Rock Sirloin from being held, due to MM hardcoding its behavior
+        gSaveContext.unk_1014 = 0; 
+
         gSaveContext.save.entrance = spawn_entrance_from_autosave_entrance(gSaveContext.save.entrance);
 
         // Skip the turtle cutscene that happens when entering Great Bay Temple.
@@ -682,7 +685,6 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
         fileNum = gSaveContext.fileNum;
         func_80147314(sramCtx, fileNum);
     }
-    gSaveContext.unk_1014 = 0; // Don't load with the Rock Sirloin in hand.
 
     // @recomp Initialize the autosave state tracking.
     autosave_init();
