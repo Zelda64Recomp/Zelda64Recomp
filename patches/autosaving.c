@@ -410,7 +410,7 @@ void autosave_post_play_update(PlayState* play) {
 
         OSTime time_now = osGetTime();
 
-        // Check the following conditions for autsave safety:
+        // Check the following conditions for autosave safety:
         // * The UI is in a normal state.
         // * Time is passing.
         // * No message is on screen.
