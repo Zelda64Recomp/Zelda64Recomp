@@ -682,6 +682,7 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
         fileNum = gSaveContext.fileNum;
         func_80147314(sramCtx, fileNum);
     }
+    gSaveContext.unk_1014 = 0; // Don't load with the Rock Sirloin in hand.
 
     // @recomp Initialize the autosave state tracking.
     autosave_init();
