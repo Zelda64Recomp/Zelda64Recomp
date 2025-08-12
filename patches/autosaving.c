@@ -74,6 +74,7 @@ RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
 
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
+
     // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
     recomp_on_autosave(play);
     // Transfer the scene flags into the cycle flags.
@@ -409,7 +410,7 @@ void autosave_post_play_update(PlayState* play) {
 
         OSTime time_now = osGetTime();
 
-        // Check the following conditions:
+        // Check the following conditions for autosave safety:
         // * The UI is in a normal state.
         // * Time is passing.
         // * No message is on screen.
@@ -417,6 +418,10 @@ void autosave_post_play_update(PlayState* play) {
         // * No cutscene is running.
         // * The game is not in cutscene mode.
         // * The clock has not reached the final 3 hours.
+        // * The player is not in an active/inactive minigame (not all minigames use this flag, default is STATUS_END)
+        // * The player is not in a timed minigame in the first set (Shooting Gallery, Butler Race, Spirit House, etc)
+        // * The player is not in a timed minigame in the second set (Goron Race, Treasure Game, Beaver Bros, etc)
+        // * The player is not taking a boat cruise
         // * The player is allowed to pause.
         if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
             R_TIME_SPEED != 0 &&
@@ -426,6 +431,10 @@ void autosave_post_play_update(PlayState* play) {
             gSaveContext.save.cutsceneIndex < 0xFFF0 &&
             !Play_InCsMode(play) &&
             !reached_final_three_hours() &&
+            gSaveContext.minigameStatus == MINIGAME_STATUS_END &&
+            gSaveContext.timerStates[TIMER_ID_MINIGAME_1] == TIMER_STATE_OFF &&
+            gSaveContext.timerStates[TIMER_ID_MINIGAME_2] == TIMER_STATE_OFF &&
+            !(CHECK_EVENTINF(EVENTINF_41)) &&
             gCanPause
         ) {
             frames_since_autosave_ready++;
@@ -620,6 +629,9 @@ RECOMP_PATCH void Sram_OpenSave(FileSelectState* fileSelect, SramContext* sramCt
     }
     // @recomp Handle autosaves.
     else if (gSaveContext.save.isOwlSave == SAVE_TYPE_AUTOSAVE) {
+        // Clear Rock Sirloin from being held, due to MM hardcoding its behavior
+        gSaveContext.unk_1014 = 0; 
+
         gSaveContext.save.entrance = spawn_entrance_from_autosave_entrance(gSaveContext.save.entrance);
 
         // Skip the turtle cutscene that happens when entering Great Bay Temple.
