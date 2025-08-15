@@ -7,7 +7,8 @@
       "project": "CMakeLists.txt",
       "projectTarget": "Zelda64Recompiled.exe",
       "name": "Zelda64Recompiled.exe",
-      "currentDir": "${workspaceRoot}"
+      "currentDir": "${workspaceRoot}",
+      "args": ["--show-console"]
     }
   ]
 }

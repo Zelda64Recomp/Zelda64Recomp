@@ -50,6 +50,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <timeapi.h>
 #include "SDL_syswm.h"
 #endif
 
@@ -586,6 +587,10 @@ int main(int argc, char** argv) {
     }
 
 #ifdef _WIN32
+    // Set up high resolution timing period.
+    timeBeginPeriod(1);
+
+    // Process arguments.
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--show-console") == 0)
@@ -744,6 +749,11 @@ int main(int argc, char** argv) {
     if (preloaded) {
         release_preload(preload_context);
     }
+
+#ifdef _WIN32
+    // End high resolution timing period.
+    timeEndPeriod(1);
+#endif
 
     return EXIT_SUCCESS;
 }
