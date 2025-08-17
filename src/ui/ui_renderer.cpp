@@ -9,7 +9,6 @@
 #include <concurrentqueue.h>
 
 #include "rt64_render_hooks.h"
-#include "rt64_render_interface_builders.h"
 #include "rt64_texture_cache.h"
 
 #include "RmlUi/Core/RenderInterfaceCompatibility.h"
@@ -29,23 +28,23 @@
 
 #ifdef _WIN32
 #    define GET_SHADER_BLOB(name, format) \
-        ((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
-        (format) == RT64::RenderShaderFormat::DXIL ? name##BlobDXIL : nullptr)
+        ((format) == plume::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
+        (format) == plume::RenderShaderFormat::DXIL ? name##BlobDXIL : nullptr)
 #    define GET_SHADER_SIZE(name, format) \
-        ((format) == RT64::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
-        (format) == RT64::RenderShaderFormat::DXIL ? std::size(name##BlobDXIL) : 0)
+        ((format) == plume::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
+        (format) == plume::RenderShaderFormat::DXIL ? std::size(name##BlobDXIL) : 0)
 #elif defined(__APPLE__)
 #    define GET_SHADER_BLOB(name, format) \
-((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
-(format) == RT64::RenderShaderFormat::METAL ? name##BlobMSL : nullptr)
+((format) == plume::RenderShaderFormat::SPIRV ? name##BlobSPIRV : \
+(format) == plume::RenderShaderFormat::METAL ? name##BlobMSL : nullptr)
 #    define GET_SHADER_SIZE(name, format) \
-((format) == RT64::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
-(format) == RT64::RenderShaderFormat::METAL ? std::size(name##BlobMSL) : 0)
+((format) == plume::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : \
+(format) == plume::RenderShaderFormat::METAL ? std::size(name##BlobMSL) : 0)
 #else
 #    define GET_SHADER_BLOB(name, format) \
-        ((format) == RT64::RenderShaderFormat::SPIRV ? name##BlobSPIRV : nullptr)
+        ((format) == plume::RenderShaderFormat::SPIRV ? name##BlobSPIRV : nullptr)
 #    define GET_SHADER_SIZE(name, format) \
-        ((format) == RT64::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : 0)
+        ((format) == plume::RenderShaderFormat::SPIRV ? std::size(name##BlobSPIRV) : 0)
 #endif
 
 // TODO deduplicate from rt64_common.h
@@ -62,8 +61,8 @@ struct RmlPushConstants {
 };
 
 struct TextureHandle {
-    std::unique_ptr<RT64::RenderTexture> texture;
-    std::unique_ptr<RT64::RenderDescriptorSet> set;
+    std::unique_ptr<plume::RenderTexture> texture;
+    std::unique_ptr<plume::RenderDescriptorSet> set;
     bool transitioned = false;
 };
 
@@ -89,11 +88,11 @@ struct ImageFromBytes {
 namespace recompui {
 class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
     struct DynamicBuffer {
-        std::unique_ptr<RT64::RenderBuffer> buffer_{};
+        std::unique_ptr<plume::RenderBuffer> buffer_{};
         uint32_t size_ = 0;
         uint32_t bytes_used_ = 0;
         uint8_t* mapped_data_ = nullptr;
-        RT64::RenderBufferFlags flags_ = RT64::RenderBufferFlag::NONE;
+        plume::RenderBufferFlags flags_ = plume::RenderBufferFlag::NONE;
     };
 
     static constexpr uint32_t per_frame_descriptor_set = 0;
@@ -102,20 +101,20 @@ class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
     static constexpr uint32_t initial_upload_buffer_size = 1024 * 1024;
     static constexpr uint32_t initial_vertex_buffer_size = 512 * sizeof(Rml::Vertex);
     static constexpr uint32_t initial_index_buffer_size = 1024 * sizeof(int);
-    static constexpr RT64::RenderFormat RmlTextureFormat = RT64::RenderFormat::R8G8B8A8_UNORM;
-    static constexpr RT64::RenderFormat RmlTextureFormatBgra = RT64::RenderFormat::B8G8R8A8_UNORM;
-    static constexpr RT64::RenderFormat SwapChainFormat = RT64::RenderFormat::B8G8R8A8_UNORM;
+    static constexpr plume::RenderFormat RmlTextureFormat = plume::RenderFormat::R8G8B8A8_UNORM;
+    static constexpr plume::RenderFormat RmlTextureFormatBgra = plume::RenderFormat::B8G8R8A8_UNORM;
+    static constexpr plume::RenderFormat SwapChainFormat = plume::RenderFormat::B8G8R8A8_UNORM;
     static constexpr uint32_t RmlTextureFormatBytesPerPixel = RenderFormatSize(RmlTextureFormat);
     static_assert(RenderFormatSize(RmlTextureFormatBgra) == RmlTextureFormatBytesPerPixel);
-    RT64::RenderInterface* interface_;
-    RT64::RenderDevice* device_;
+    plume::RenderInterface* interface_;
+    plume::RenderDevice* device_;
     int scissor_x_ = 0;
     int scissor_y_ = 0;
     int scissor_width_ = 0;
     int scissor_height_ = 0;
     int window_width_ = 0;
     int window_height_ = 0;
-    RT64::RenderMultisampling multisampling_ = RT64::RenderMultisampling();
+    plume::RenderMultisampling multisampling_ = plume::RenderMultisampling();
     Rml::Matrix4f projection_mtx_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f transform_ = Rml::Matrix4f::Identity();
     Rml::Matrix4f mvp_ = Rml::Matrix4f::Identity();
@@ -124,46 +123,46 @@ class RmlRenderInterface_RT64_impl : public Rml::RenderInterfaceCompatibility {
     DynamicBuffer upload_buffer_;
     DynamicBuffer vertex_buffer_;
     DynamicBuffer index_buffer_;
-    std::unique_ptr<RT64::RenderSampler> nearestSampler_{};
-    std::unique_ptr<RT64::RenderSampler> linearSampler_{};
-    std::unique_ptr<RT64::RenderShader> vertex_shader_{};
-    std::unique_ptr<RT64::RenderShader> pixel_shader_{};
-    std::unique_ptr<RT64::RenderDescriptorSet> sampler_set_{};
-    std::unique_ptr<RT64::RenderDescriptorSetBuilder> texture_set_builder_{};
-    std::unique_ptr<RT64::RenderPipelineLayout> layout_{};
-    std::unique_ptr<RT64::RenderPipeline> pipeline_{};
-    std::unique_ptr<RT64::RenderPipeline> pipeline_ms_{};
-    std::unique_ptr<RT64::RenderTexture> screen_texture_ms_{};
-    std::unique_ptr<RT64::RenderTexture> screen_texture_{};
-    std::unique_ptr<RT64::RenderFramebuffer> screen_framebuffer_{};
-    std::unique_ptr<RT64::RenderDescriptorSet> screen_descriptor_set_{};
-    std::unique_ptr<RT64::RenderBuffer> screen_vertex_buffer_{};
-    std::unique_ptr<RT64::RenderCommandQueue> copy_command_queue_{};
-    std::unique_ptr<RT64::RenderCommandList> copy_command_list_{};
-    std::unique_ptr<RT64::RenderBuffer> copy_buffer_{};
-    std::unique_ptr<RT64::RenderCommandFence> copy_command_fence_;
+    std::unique_ptr<plume::RenderSampler> nearestSampler_{};
+    std::unique_ptr<plume::RenderSampler> linearSampler_{};
+    std::unique_ptr<plume::RenderShader> vertex_shader_{};
+    std::unique_ptr<plume::RenderShader> pixel_shader_{};
+    std::unique_ptr<plume::RenderDescriptorSet> sampler_set_{};
+    std::unique_ptr<plume::RenderDescriptorSetBuilder> texture_set_builder_{};
+    std::unique_ptr<plume::RenderPipelineLayout> layout_{};
+    std::unique_ptr<plume::RenderPipeline> pipeline_{};
+    std::unique_ptr<plume::RenderPipeline> pipeline_ms_{};
+    std::unique_ptr<plume::RenderTexture> screen_texture_ms_{};
+    std::unique_ptr<plume::RenderTexture> screen_texture_{};
+    std::unique_ptr<plume::RenderFramebuffer> screen_framebuffer_{};
+    std::unique_ptr<plume::RenderDescriptorSet> screen_descriptor_set_{};
+    std::unique_ptr<plume::RenderBuffer> screen_vertex_buffer_{};
+    std::unique_ptr<plume::RenderCommandQueue> copy_command_queue_{};
+    std::unique_ptr<plume::RenderCommandList> copy_command_list_{};
+    std::unique_ptr<plume::RenderBuffer> copy_buffer_{};
+    std::unique_ptr<plume::RenderCommandFence> copy_command_fence_;
     uint64_t copy_buffer_size_ = 0;
     uint64_t screen_vertex_buffer_size_ = 0;
     uint32_t gTexture_descriptor_index;
-    RT64::RenderInputSlot vertex_slot_{ 0, sizeof(Rml::Vertex) };
-    RT64::RenderCommandList* list_ = nullptr;
+    plume::RenderInputSlot vertex_slot_{ 0, sizeof(Rml::Vertex) };
+    plume::RenderCommandList* list_ = nullptr;
     bool scissor_enabled_ = false;
-    std::vector<std::unique_ptr<RT64::RenderBuffer>> stale_buffers_{};
+    std::vector<std::unique_ptr<plume::RenderBuffer>> stale_buffers_{};
     moodycamel::ConcurrentQueue<ImageFromBytes> image_from_bytes_queue;
     std::unordered_map<std::string, ImageFromBytes> image_from_bytes_map;
 public:
-    RmlRenderInterface_RT64_impl(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
+    RmlRenderInterface_RT64_impl(plume::RenderInterface* interface, plume::RenderDevice* device) {
         interface_ = interface;
         device_ = device;
 
         // Enable 4X MSAA if supported by the device.
-        const RT64::RenderSampleCounts desired_sample_count = RT64::RenderSampleCount::COUNT_8;
+        const plume::RenderSampleCounts desired_sample_count = plume::RenderSampleCount::COUNT_8;
         if (device_->getSampleCountsSupported(SwapChainFormat) & desired_sample_count) {
             multisampling_.sampleCount = desired_sample_count;
         }
 
-        vertex_buffer_.flags_ = RT64::RenderBufferFlag::VERTEX;
-        index_buffer_.flags_ = RT64::RenderBufferFlag::INDEX;
+        vertex_buffer_.flags_ = plume::RenderBufferFlag::VERTEX;
+        index_buffer_.flags_ = plume::RenderBufferFlag::INDEX;
 
         // Create the texture upload buffer, vertex buffer and index buffer
         resize_dynamic_buffer(upload_buffer_, initial_upload_buffer_size, false);
@@ -171,33 +170,33 @@ public:
         resize_dynamic_buffer(index_buffer_, initial_index_buffer_size, false);
 
         // Describe the vertex format
-        std::vector<RT64::RenderInputElement> vertex_elements{};
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "POSITION", 0, 0, RT64::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, position) });
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "COLOR", 0, 1, RT64::RenderFormat::R8G8B8A8_UNORM, 0, offsetof(Rml::Vertex, colour) });
-        vertex_elements.emplace_back(RT64::RenderInputElement{ "TEXCOORD", 0, 2, RT64::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, tex_coord) });
+        std::vector<plume::RenderInputElement> vertex_elements{};
+        vertex_elements.emplace_back(plume::RenderInputElement{ "POSITION", 0, 0, plume::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, position) });
+        vertex_elements.emplace_back(plume::RenderInputElement{ "COLOR", 0, 1, plume::RenderFormat::R8G8B8A8_UNORM, 0, offsetof(Rml::Vertex, colour) });
+        vertex_elements.emplace_back(plume::RenderInputElement{ "TEXCOORD", 0, 2, plume::RenderFormat::R32G32_FLOAT, 0, offsetof(Rml::Vertex, tex_coord) });
 
         // Create a nearest sampler and a linear sampler
-        RT64::RenderSamplerDesc samplerDesc;
-        samplerDesc.minFilter = RT64::RenderFilter::NEAREST;
-        samplerDesc.magFilter = RT64::RenderFilter::NEAREST;
-        samplerDesc.addressU = RT64::RenderTextureAddressMode::CLAMP;
-        samplerDesc.addressV = RT64::RenderTextureAddressMode::CLAMP;
-        samplerDesc.addressW = RT64::RenderTextureAddressMode::CLAMP;
+        plume::RenderSamplerDesc samplerDesc;
+        samplerDesc.minFilter = plume::RenderFilter::NEAREST;
+        samplerDesc.magFilter = plume::RenderFilter::NEAREST;
+        samplerDesc.addressU = plume::RenderTextureAddressMode::CLAMP;
+        samplerDesc.addressV = plume::RenderTextureAddressMode::CLAMP;
+        samplerDesc.addressW = plume::RenderTextureAddressMode::CLAMP;
         nearestSampler_ = device_->createSampler(samplerDesc);
 
-        samplerDesc.minFilter = RT64::RenderFilter::LINEAR;
-        samplerDesc.magFilter = RT64::RenderFilter::LINEAR;
+        samplerDesc.minFilter = plume::RenderFilter::LINEAR;
+        samplerDesc.magFilter = plume::RenderFilter::LINEAR;
         linearSampler_ = device_->createSampler(samplerDesc);
 
         // Create the shaders
-        RT64::RenderShaderFormat shaderFormat = interface_->getCapabilities().shaderFormat;
+        plume::RenderShaderFormat shaderFormat = interface_->getCapabilities().shaderFormat;
 
         vertex_shader_ = device_->createShader(GET_SHADER_BLOB(InterfaceVS, shaderFormat), GET_SHADER_SIZE(InterfaceVS, shaderFormat), "VSMain", shaderFormat);
         pixel_shader_ = device_->createShader(GET_SHADER_BLOB(InterfacePS, shaderFormat), GET_SHADER_SIZE(InterfacePS, shaderFormat), "PSMain", shaderFormat);
 
 
         // Create the descriptor set that contains the sampler
-        RT64::RenderDescriptorSetBuilder sampler_set_builder{};
+        plume::RenderDescriptorSetBuilder sampler_set_builder{};
         sampler_set_builder.begin();
         sampler_set_builder.addImmutableSampler(1, linearSampler_.get());
         sampler_set_builder.addConstantBuffer(3, 1); // Workaround D3D12 crash due to an empty RT64 descriptor set
@@ -205,15 +204,15 @@ public:
         sampler_set_ = sampler_set_builder.create(device_);
 
         // Create a builder for the descriptor sets that will contain textures
-        texture_set_builder_ = std::make_unique<RT64::RenderDescriptorSetBuilder>();
+        texture_set_builder_ = std::make_unique<plume::RenderDescriptorSetBuilder>();
         texture_set_builder_->begin();
         gTexture_descriptor_index = texture_set_builder_->addTexture(2);
         texture_set_builder_->end();
 
         // Create the pipeline layout
-        RT64::RenderPipelineLayoutBuilder layout_builder{};
+        plume::RenderPipelineLayoutBuilder layout_builder{};
         layout_builder.begin(false, true);
-        layout_builder.addPushConstant(0, 0, sizeof(RmlPushConstants), RT64::RenderShaderStageFlag::VERTEX);
+        layout_builder.addPushConstant(0, 0, sizeof(RmlPushConstants), plume::RenderShaderStageFlag::VERTEX);
         // Add the descriptor set for descriptors changed once per frame.
         layout_builder.addDescriptorSet(sampler_set_builder);
         // Add the descriptor set for descriptors changed once per draw.
@@ -222,29 +221,29 @@ public:
         layout_ = layout_builder.create(device_);
 
         // Create the pipeline description
-        RT64::RenderGraphicsPipelineDesc pipeline_desc{};
+        plume::RenderGraphicsPipelineDesc pipeline_desc{};
         // Set up alpha blending for non-premultiplied alpha. RmlUi recommends using premultiplied alpha normally,
         // but that would require preprocessing all input files, which would be difficult for user-provided content (such as mods).
         // This blending setup produces similar results as premultipled alpha but for normal assets as it multiplies during blending and
         // computes the output alpha value the same way that a premultipled alpha blender would.
-        pipeline_desc.renderTargetBlend[0] = RT64::RenderBlendDesc {
+        pipeline_desc.renderTargetBlend[0] = plume::RenderBlendDesc {
             .blendEnabled = true,
-            .srcBlend = RT64::RenderBlend::SRC_ALPHA,
-            .dstBlend = RT64::RenderBlend::INV_SRC_ALPHA,
-            .blendOp = RT64::RenderBlendOperation::ADD,
-            .srcBlendAlpha = RT64::RenderBlend::ONE,
-            .dstBlendAlpha = RT64::RenderBlend::INV_SRC_ALPHA,
-            .blendOpAlpha = RT64::RenderBlendOperation::ADD,
+            .srcBlend = plume::RenderBlend::SRC_ALPHA,
+            .dstBlend = plume::RenderBlend::INV_SRC_ALPHA,
+            .blendOp = plume::RenderBlendOperation::ADD,
+            .srcBlendAlpha = plume::RenderBlend::ONE,
+            .dstBlendAlpha = plume::RenderBlend::INV_SRC_ALPHA,
+            .blendOpAlpha = plume::RenderBlendOperation::ADD,
         };
         pipeline_desc.renderTargetFormat[0] = SwapChainFormat; // TODO: Use whatever format the swap chain was created with.
         pipeline_desc.renderTargetCount = 1;
-        pipeline_desc.cullMode = RT64::RenderCullMode::NONE;
+        pipeline_desc.cullMode = plume::RenderCullMode::NONE;
         pipeline_desc.inputSlots = &vertex_slot_;
         pipeline_desc.inputSlotsCount = 1;
         pipeline_desc.inputElements = vertex_elements.data();
         pipeline_desc.inputElementsCount = uint32_t(vertex_elements.size());
         pipeline_desc.pipelineLayout = layout_.get();
-        pipeline_desc.primitiveTopology = RT64::RenderPrimitiveTopology::TRIANGLE_LIST;
+        pipeline_desc.primitiveTopology = plume::RenderPrimitiveTopology::TRIANGLE_LIST;
         pipeline_desc.vertexShader = vertex_shader_.get();
         pipeline_desc.pixelShader = pixel_shader_.get();
 
@@ -255,12 +254,12 @@ public:
             pipeline_ms_ = device_->createGraphicsPipeline(pipeline_desc);
 
             // Create the descriptor set for the screen drawer.
-            RT64::RenderDescriptorRange screen_descriptor_range(RT64::RenderDescriptorRangeType::TEXTURE, 2, 1);
-            screen_descriptor_set_ = device_->createDescriptorSet(RT64::RenderDescriptorSetDesc(&screen_descriptor_range, 1));
+            plume::RenderDescriptorRange screen_descriptor_range(plume::RenderDescriptorRangeType::TEXTURE, 2, 1);
+            screen_descriptor_set_ = device_->createDescriptorSet(plume::RenderDescriptorSetDesc(&screen_descriptor_range, 1));
 
             // Create vertex buffer for the screen drawer (full-screen triangle).
             screen_vertex_buffer_size_ = sizeof(Rml::Vertex) * 3;
-            screen_vertex_buffer_ = device_->createBuffer(RT64::RenderBufferDesc::VertexBuffer(screen_vertex_buffer_size_, RT64::RenderHeapType::UPLOAD));
+            screen_vertex_buffer_ = device_->createBuffer(plume::RenderBufferDesc::VertexBuffer(screen_vertex_buffer_size_, plume::RenderHeapType::UPLOAD));
             Rml::Vertex *vertices = (Rml::Vertex *)(screen_vertex_buffer_->map());
             const Rml::ColourbPremultiplied white(255, 255, 255, 255);
             vertices[0] = Rml::Vertex{ Rml::Vector2f(-1.0f, 1.0f), white, Rml::Vector2f(0.0f, 0.0f) };
@@ -269,8 +268,8 @@ public:
             screen_vertex_buffer_->unmap();
         }
 
-        copy_command_queue_ = device->createCommandQueue(RT64::RenderCommandListType::COPY);
-        copy_command_list_ = copy_command_queue_->createCommandList(RT64::RenderCommandListType::COPY);
+        copy_command_queue_ = device->createCommandQueue(plume::RenderCommandListType::COPY);
+        copy_command_list_ = copy_command_queue_->createCommandList();
         copy_command_fence_ = device->createCommandFence();
     }
 
@@ -298,7 +297,7 @@ public:
         }
 
         // Create the new buffer, update the size and map it.
-        dynamic_buffer.buffer_ = device_->createBuffer(RT64::RenderBufferDesc::UploadBuffer(new_size, dynamic_buffer.flags_));
+        dynamic_buffer.buffer_ = device_->createBuffer(plume::RenderBufferDesc::UploadBuffer(new_size, dynamic_buffer.flags_));
         dynamic_buffer.size_ = new_size;
         dynamic_buffer.bytes_used_ = 0;
 
@@ -368,27 +367,27 @@ public:
         memcpy(vertex_buffer_.mapped_data_ + vertex_buffer_offset, vertices, vert_size_bytes);
         memcpy(index_buffer_.mapped_data_ + index_buffer_offset, indices, index_size_bytes);
 
-        list_->setViewports(RT64::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
+        list_->setViewports(plume::RenderViewport{ 0, 0, float(window_width_), float(window_height_) });
         if (scissor_enabled_) {
-            list_->setScissors(RT64::RenderRect{
+            list_->setScissors(plume::RenderRect{
                 scissor_x_,
                 scissor_y_,
                 (scissor_width_ + scissor_x_),
                 (scissor_height_ + scissor_y_) });
         }
         else {
-            list_->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
+            list_->setScissors(plume::RenderRect{ 0, 0, window_width_, window_height_ });
         }
 
-        RT64::RenderIndexBufferView index_view{index_buffer_.buffer_->at(index_buffer_offset), index_size_bytes, RT64::RenderFormat::R32_UINT};
+        plume::RenderIndexBufferView index_view{index_buffer_.buffer_->at(index_buffer_offset), index_size_bytes, plume::RenderFormat::R32_UINT};
         list_->setIndexBuffer(&index_view);
-        RT64::RenderVertexBufferView vertex_view{vertex_buffer_.buffer_->at(vertex_buffer_offset), vert_size_bytes};
+        plume::RenderVertexBufferView vertex_view{vertex_buffer_.buffer_->at(vertex_buffer_offset), vert_size_bytes};
         list_->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
 
         TextureHandle &texture_handle = textures_.at(texture);
         if (!texture_handle.transitioned) {
             // Prepare the texture for being read from a pixel shader.
-            list_->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(texture_handle.texture.get(), RT64::RenderTextureLayout::SHADER_READ));
+            list_->barriers(plume::RenderBarrierStage::GRAPHICS, plume::RenderTextureBarrier(texture_handle.texture.get(), plume::RenderTextureLayout::SHADER_READ));
             texture_handle.transitioned = true;
         }
 
@@ -428,7 +427,7 @@ public:
         }
         
         RT64::Texture* texture = nullptr;
-        std::unique_ptr<RT64::RenderBuffer> texture_buffer;
+        std::unique_ptr<plume::RenderBuffer> texture_buffer;
         ImageFromBytes& img = it->second;
         copy_command_list_->begin();
 
@@ -463,8 +462,8 @@ public:
         texture_dimensions.x = texture->width;
         texture_dimensions.y = texture->height;
 
-        std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(device_);
-        set->setTexture(gTexture_descriptor_index, texture->texture.get(), RT64::RenderTextureLayout::SHADER_READ);
+        std::unique_ptr<plume::RenderDescriptorSet> set = texture_set_builder_->create(device_);
+        set->setTexture(gTexture_descriptor_index, texture->texture.get(), plume::RenderTextureLayout::SHADER_READ);
         textures_.emplace(texture_handle, TextureHandle{ std::move(texture->texture), std::move(set), false });
         delete texture;
 
@@ -482,8 +481,8 @@ public:
     }
 
     bool create_texture(Rml::TextureHandle texture_handle, const Rml::byte* source, const Rml::Vector2i& source_dimensions, bool flip_y = false, bool bgra = false) {
-        std::unique_ptr<RT64::RenderTexture> texture =
-            device_->createTexture(RT64::RenderTextureDesc::Texture2D(source_dimensions.x, source_dimensions.y, 1, bgra ? RmlTextureFormatBgra : RmlTextureFormat));
+        std::unique_ptr<plume::RenderTexture> texture =
+            device_->createTexture(plume::RenderTextureDesc::Texture2D(source_dimensions.x, source_dimensions.y, 1, bgra ? RmlTextureFormatBgra : RmlTextureFormat));
 
         if (texture != nullptr) {
             uint32_t image_size_bytes = source_dimensions.x * source_dimensions.y * RmlTextureFormatBytesPerPixel;
@@ -500,7 +499,7 @@ public:
             // Allocate room in the upload buffer for the uploaded data.
             if (uploaded_size_bytes > copy_buffer_size_) {
                 copy_buffer_size_ = (uploaded_size_bytes * 3) / 2;
-                copy_buffer_ = device_->createBuffer(RT64::RenderBufferDesc::UploadBuffer(copy_buffer_size_));
+                copy_buffer_ = device_->createBuffer(plume::RenderBufferDesc::UploadBuffer(copy_buffer_size_));
             }
 
             // Copy the source data into the upload buffer.
@@ -535,12 +534,12 @@ public:
             copy_command_list_->begin();
 
             // Prepare the texture to be a destination for copying.
-            copy_command_list_->barriers(RT64::RenderBarrierStage::COPY, RT64::RenderTextureBarrier(texture.get(), RT64::RenderTextureLayout::COPY_DEST));
+            copy_command_list_->barriers(plume::RenderBarrierStage::COPY, plume::RenderTextureBarrier(texture.get(), plume::RenderTextureLayout::COPY_DEST));
             
             // Copy the upload buffer into the texture.
             copy_command_list_->copyTextureRegion(
-                RT64::RenderTextureCopyLocation::Subresource(texture.get()),
-                RT64::RenderTextureCopyLocation::PlacedFootprint(copy_buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width));
+                plume::RenderTextureCopyLocation::Subresource(texture.get()),
+                plume::RenderTextureCopyLocation::PlacedFootprint(copy_buffer_.get(), RmlTextureFormat, source_dimensions.x, source_dimensions.y, 1, row_width));
             
             // End the command list, execute it and wait.
             copy_command_list_->end();
@@ -548,9 +547,9 @@ public:
             copy_command_queue_->waitForCommandFence(copy_command_fence_.get());
 
             // Create a descriptor set with this texture in it.
-            std::unique_ptr<RT64::RenderDescriptorSet> set = texture_set_builder_->create(device_);
+            std::unique_ptr<plume::RenderDescriptorSet> set = texture_set_builder_->create(device_);
 
-            set->setTexture(gTexture_descriptor_index, texture.get(), RT64::RenderTextureLayout::SHADER_READ);
+            set->setTexture(gTexture_descriptor_index, texture.get(), plume::RenderTextureLayout::SHADER_READ);
 
             textures_.emplace(texture_handle, TextureHandle{ std::move(texture), std::move(set), false });
 
@@ -576,17 +575,17 @@ public:
         mvp_ = projection_mtx_ * transform_;
     }
 
-    void start(RT64::RenderCommandList* list, int image_width, int image_height) {
+    void start(plume::RenderCommandList* list, int image_width, int image_height) {
         list_ = list;
 
         if (multisampling_.sampleCount > 1) {
             if (window_width_ != image_width || window_height_ != image_height) {
                 screen_framebuffer_.reset();
-                screen_texture_ = device_->createTexture(RT64::RenderTextureDesc::ColorTarget(image_width, image_height, SwapChainFormat));
-                screen_texture_ms_ = device_->createTexture(RT64::RenderTextureDesc::ColorTarget(image_width, image_height, SwapChainFormat, multisampling_));
-                const RT64::RenderTexture *color_attachment = screen_texture_ms_.get();
-                screen_framebuffer_ = device_->createFramebuffer(RT64::RenderFramebufferDesc(&color_attachment, 1));
-                screen_descriptor_set_->setTexture(0, screen_texture_.get(), RT64::RenderTextureLayout::SHADER_READ);
+                screen_texture_ = device_->createTexture(plume::RenderTextureDesc::ColorTarget(image_width, image_height, SwapChainFormat));
+                screen_texture_ms_ = device_->createTexture(plume::RenderTextureDesc::ColorTarget(image_width, image_height, SwapChainFormat, multisampling_));
+                const plume::RenderTexture *color_attachment = screen_texture_ms_.get();
+                screen_framebuffer_ = device_->createFramebuffer(plume::RenderFramebufferDesc(&color_attachment, 1));
+                screen_descriptor_set_->setTexture(0, screen_texture_.get(), plume::RenderTextureLayout::SHADER_READ);
             }
 
             list_->setPipeline(pipeline_ms_.get());
@@ -616,30 +615,30 @@ public:
 
         // Set an internal texture as the render target if MSAA is enabled.
         if (multisampling_.sampleCount > 1) {
-            list->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(screen_texture_ms_.get(), RT64::RenderTextureLayout::COLOR_WRITE));
+            list->barriers(plume::RenderBarrierStage::GRAPHICS, plume::RenderTextureBarrier(screen_texture_ms_.get(), plume::RenderTextureLayout::COLOR_WRITE));
             list->setFramebuffer(screen_framebuffer_.get());
-            list->clearColor(0, RT64::RenderColor(0.0f, 0.0f, 0.0f, 0.0f));
+            list->clearColor(0, plume::RenderColor(0.0f, 0.0f, 0.0f, 0.0f));
         }
     }
 
-    void end(RT64::RenderCommandList* list, RT64::RenderFramebuffer* framebuffer) {
+    void end(plume::RenderCommandList* list, plume::RenderFramebuffer* framebuffer) {
         // Draw the texture were rendered the UI in to the swap chain framebuffer if MSAA is enabled.
         if (multisampling_.sampleCount > 1) {
-            RT64::RenderTextureBarrier before_resolve_barriers[] = {
-                RT64::RenderTextureBarrier(screen_texture_ms_.get(), RT64::RenderTextureLayout::RESOLVE_SOURCE),
-                RT64::RenderTextureBarrier(screen_texture_.get(), RT64::RenderTextureLayout::RESOLVE_DEST)
+            plume::RenderTextureBarrier before_resolve_barriers[] = {
+                plume::RenderTextureBarrier(screen_texture_ms_.get(), plume::RenderTextureLayout::RESOLVE_SOURCE),
+                plume::RenderTextureBarrier(screen_texture_.get(), plume::RenderTextureLayout::RESOLVE_DEST)
             };
 
-            list->barriers(RT64::RenderBarrierStage::COPY, before_resolve_barriers, uint32_t(std::size(before_resolve_barriers)));
+            list->barriers(plume::RenderBarrierStage::COPY, before_resolve_barriers, uint32_t(std::size(before_resolve_barriers)));
             list->resolveTexture(screen_texture_.get(), screen_texture_ms_.get());
-            list->barriers(RT64::RenderBarrierStage::GRAPHICS, RT64::RenderTextureBarrier(screen_texture_.get(), RT64::RenderTextureLayout::SHADER_READ));
+            list->barriers(plume::RenderBarrierStage::GRAPHICS, plume::RenderTextureBarrier(screen_texture_.get(), plume::RenderTextureLayout::SHADER_READ));
             list->setFramebuffer(framebuffer);
             list->setPipeline(pipeline_.get());
             list->setGraphicsPipelineLayout(layout_.get());
             list->setGraphicsDescriptorSet(sampler_set_.get(), 0);
             list->setGraphicsDescriptorSet(screen_descriptor_set_.get(), 1);
-            list->setScissors(RT64::RenderRect{ 0, 0, window_width_, window_height_ });
-            RT64::RenderVertexBufferView vertex_view(screen_vertex_buffer_.get(), screen_vertex_buffer_size_);
+            list->setScissors(plume::RenderRect{ 0, 0, window_width_, window_height_ });
+            plume::RenderVertexBufferView vertex_view(screen_vertex_buffer_.get(), screen_vertex_buffer_size_);
             list->setVertexBuffers(0, &vertex_view, 1, &vertex_slot_);
 
             RmlPushConstants constants{
@@ -685,7 +684,7 @@ void recompui::RmlRenderInterface_RT64::reset() {
     impl.reset();
 }
 
-void recompui::RmlRenderInterface_RT64::init(RT64::RenderInterface* interface, RT64::RenderDevice* device) {
+void recompui::RmlRenderInterface_RT64::init(plume::RenderInterface* interface, plume::RenderDevice* device) {
     impl = std::make_unique<RmlRenderInterface_RT64_impl>(interface, device);
 }
 
@@ -696,13 +695,13 @@ Rml::RenderInterface* recompui::RmlRenderInterface_RT64::get_rml_interface() {
     return nullptr;
 }
 
-void recompui::RmlRenderInterface_RT64::start(RT64::RenderCommandList* list, int image_width, int image_height) {
+void recompui::RmlRenderInterface_RT64::start(plume::RenderCommandList* list, int image_width, int image_height) {
     assert(static_cast<bool>(impl));
 
     impl->start(list, image_width, image_height);
 }
 
-void recompui::RmlRenderInterface_RT64::end(RT64::RenderCommandList* list, RT64::RenderFramebuffer* framebuffer) {
+void recompui::RmlRenderInterface_RT64::end(plume::RenderCommandList* list, plume::RenderFramebuffer* framebuffer) {
     assert(static_cast<bool>(impl));
 
     impl->end(list, framebuffer);

@@ -58,10 +58,10 @@ unsigned int DPC_TMEM_REG = 0;
 
 void dummy_check_interrupts() {}
 
-RT64::UserConfiguration::Antialiasing compute_max_supported_aa(RT64::RenderSampleCounts bits) {
-    if (bits & RT64::RenderSampleCount::Bits::COUNT_2) {
-        if (bits & RT64::RenderSampleCount::Bits::COUNT_4) {
-            if (bits & RT64::RenderSampleCount::Bits::COUNT_8) {
+RT64::UserConfiguration::Antialiasing compute_max_supported_aa(plume::RenderSampleCounts bits) {
+    if (bits & plume::RenderSampleCount::Bits::COUNT_2) {
+        if (bits & plume::RenderSampleCount::Bits::COUNT_4) {
+            if (bits & plume::RenderSampleCount::Bits::COUNT_8) {
                 return RT64::UserConfiguration::Antialiasing::MSAA8X;
             }
             return RT64::UserConfiguration::Antialiasing::MSAA4X;
@@ -302,9 +302,9 @@ zelda64::renderer::RT64Context::RT64Context(uint8_t* rdram, ultramodern::rendere
     // Check if the selected device actually supports MSAA sample positions and MSAA for for the formats that will be used
     // and downgrade the configuration accordingly.
     if (app->device->getCapabilities().sampleLocations) {
-        RT64::RenderSampleCounts color_sample_counts = app->device->getSampleCountsSupported(RT64::RenderFormat::R8G8B8A8_UNORM);
-        RT64::RenderSampleCounts depth_sample_counts = app->device->getSampleCountsSupported(RT64::RenderFormat::D32_FLOAT);
-        RT64::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
+        plume::RenderSampleCounts color_sample_counts = app->device->getSampleCountsSupported(plume::RenderFormat::R8G8B8A8_UNORM);
+        plume::RenderSampleCounts depth_sample_counts = app->device->getSampleCountsSupported(plume::RenderFormat::D32_FLOAT);
+        plume::RenderSampleCounts common_sample_counts = color_sample_counts & depth_sample_counts;
         device_max_msaa = compute_max_supported_aa(common_sample_counts);
         sample_positions_supported = true;
     }
