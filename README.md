@@ -3,6 +3,8 @@ Zelda 64: Recompiled is a project that uses [N64: Recompiled](https://github.com
 
 ### [Check out the latest release here](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases/latest).
 
+Join the [N64: Recompiled Community Discord](https://discord.gg/AWZThJ4dPf) to discuss this and other N64: Recompiled projects!
+
 ### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
 
 <div align="left" valign="middle">
