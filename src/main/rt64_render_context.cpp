@@ -467,13 +467,13 @@ void zelda64::renderer::enable_texture_pack(const recomp::mods::ModContext& cont
     texture_pack_action_queue.enqueue(TexturePackEnableAction{mod.manifest.mod_id});
 
     // Check for the texture pack enabled config option.
-    const recomp::mods::ConfigSchema& config_schema = context.get_mod_config_schema(mod.manifest.mod_id);
+    const recomp::config::ConfigSchema& config_schema = context.get_mod_config_schema(mod.manifest.mod_id);
     auto find_it = config_schema.options_by_id.find(zelda64::renderer::special_option_texture_pack_enabled);
     if (find_it != config_schema.options_by_id.end()) {
-        const recomp::mods::ConfigOption& config_option = config_schema.options[find_it->second];
+        const recomp::config::ConfigOption& config_option = config_schema.options[find_it->second];
 
         if (is_texture_pack_enable_config_option(config_option, false)) {
-            recomp::mods::ConfigValueVariant value_variant = context.get_mod_config_value(mod.manifest.mod_id, config_option.id);
+            recomp::config::ConfigValueVariant value_variant = context.get_mod_config_value(mod.manifest.mod_id, config_option.id);
             uint32_t value;
             if (uint32_t* value_ptr = std::get_if<uint32_t>(&value_variant)) {
                 value = *value_ptr;
@@ -507,16 +507,16 @@ void zelda64::renderer::secondary_disable_texture_pack(const std::string& mod_id
 
 // HD texture enable option. Must be an enum with two options.
 // The first option is treated as disabled and the second option is treated as enabled.
-bool zelda64::renderer::is_texture_pack_enable_config_option(const recomp::mods::ConfigOption& option, bool show_errors) {
+bool zelda64::renderer::is_texture_pack_enable_config_option(const recomp::config::ConfigOption& option, bool show_errors) {
     if (option.id == zelda64::renderer::special_option_texture_pack_enabled) {
-        if (option.type != recomp::mods::ConfigOptionType::Enum) {
+        if (option.type != recomp::config::ConfigOptionType::Enum) {
             if (show_errors) {
                 recompui::message_box(("Mod has the special config option id for enabling an HD texture pack (\"" + zelda64::renderer::special_option_texture_pack_enabled + "\"), but the config option is not an enum.").c_str());
             }
             return false;
         }
 
-        const recomp::mods::ConfigOptionEnum &option_enum = std::get<recomp::mods::ConfigOptionEnum>(option.variant);
+        const recomp::config::ConfigOptionEnum &option_enum = std::get<recomp::config::ConfigOptionEnum>(option.variant);
         if (option_enum.options.size() != 2) {
             if (show_errors) {
                 recompui::message_box(("Mod has the special config option id for enabling an HD texture pack (\"" + zelda64::renderer::special_option_texture_pack_enabled + "\"), but the config option doesn't have exactly 2 values.").c_str());

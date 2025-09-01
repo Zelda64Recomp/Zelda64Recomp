@@ -54,7 +54,7 @@ namespace zelda64 {
 
         // Texture pack enable option. Must be an enum with two options.
         // The first option is treated as disabled and the second option is treated as enabled.
-        bool is_texture_pack_enable_config_option(const recomp::mods::ConfigOption& option, bool show_errors);
+        bool is_texture_pack_enable_config_option(const recomp::config::ConfigOption& option, bool show_errors);
     }
 }
 
