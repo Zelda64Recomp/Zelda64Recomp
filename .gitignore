@@ -66,3 +66,7 @@ RSPRecomp
 .idea
 build-*
 cmake-build-*
+
+# devenv
+.devenv*
+devenv.lock

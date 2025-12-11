@@ -49,6 +49,11 @@ if (RECOMP_FLATPAK)
     add_compile_definitions(RECOMP_FLATPAK)
 endif()
 
+# Disable Apple Retina display support in plume (Zelda doesn't support retina yet)
+if (APPLE)
+    set(APPLE_RETINA_ENABLED OFF CACHE BOOL "" FORCE)
+endif()
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 # set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
