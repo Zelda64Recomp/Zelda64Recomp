@@ -252,14 +252,16 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
     // Calculate the number of stereo frames after resampling (for both stereo and surround paths)
     size_t resampled_stereo_frames = audio_convert.len_cvt / sizeof(float) / input_channels;
     size_t frames_after_discard = resampled_stereo_frames - discarded_output_frames;
-    float* stereo_samples = swap_buffer.data() + discarded_output_frames / 2;
+    // Offset matches stereo path: output_channels * discarded_output_frames / 2 = discarded_output_frames (when output_channels=2)
+    float* stereo_samples = swap_buffer.data() + input_channels * discarded_output_frames / 2;
 
     // Handle surround sound matrix decoding
     if (audio_channel_setting == audioMatrix51 && sound_matrix_decoder) {
         static int surround_frame_count = 0;
-        if (surround_frame_count < 3) {
-            printf("Audio: Processing surround frame %d (matrix decoding active, %zu stereo frames)\n", 
-                   ++surround_frame_count, frames_after_discard);
+        if (surround_frame_count < 5) {
+            printf("Audio: Processing surround frame %d: %zu stereo frames, offset=%u, resampled=%zu\n", 
+                   ++surround_frame_count, frames_after_discard, 
+                   input_channels * discarded_output_frames / 2, resampled_stereo_frames);
         }
         // Process stereo through the matrix decoder to get 5.1 surround
         auto [surround_samples, surround_sample_count] = sound_matrix_decoder->Process(stereo_samples, frames_after_discard);
@@ -333,7 +335,8 @@ size_t get_frames_remaining() {
 }
 
 void update_audio_converter() {
-    int ret = SDL_BuildAudioCVT(&audio_convert, AUDIO_F32, input_channels, sample_rate, AUDIO_F32, output_channels, output_sample_rate);
+    // Always convert to stereo - the SoundMatrixDecoder handles upmixing to surround if needed
+    int ret = SDL_BuildAudioCVT(&audio_convert, AUDIO_F32, input_channels, sample_rate, AUDIO_F32, input_channels, output_sample_rate);
 
     if (ret < 0) {
         printf("Error creating SDL audio converter: %s\n", SDL_GetError());
