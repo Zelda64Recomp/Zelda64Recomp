@@ -53,3 +53,5 @@ recomp_create_actor_data = 0x8F0000C8;
 recomp_destroy_actor_data = 0x8F0000CC;
 recomp_get_actor_data = 0x8F0000D0;
 recomp_get_actor_spawn_index = 0x8F0000D4;
+recomp_set_audio_channels = 0x8F0000D8;
+recomp_get_audio_channels = 0x8F0000DC;

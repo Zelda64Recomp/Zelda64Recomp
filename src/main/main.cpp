@@ -7,6 +7,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <cinttypes>
+#include <memory>
 
 #include "nfd.h"
 
@@ -44,6 +45,9 @@
 #include "../../patches/input.h"
 #include "../../patches/sound.h"
 #include "../../patches/misc_funcs.h"
+
+#include "audio_channels.h"
+#include "sound_matrix_decoder.h"
 
 #include "mods/mm_recomp_dpad_builtin.h"
 
@@ -188,6 +192,10 @@ static uint32_t output_sample_rate = 48000;
 constexpr uint32_t input_channels = 2;
 static uint32_t output_channels = 2;
 
+// Surround sound support
+static AudioChannelsSetting audio_channel_setting = audioStereo;
+static std::unique_ptr<SoundMatrixDecoder> sound_matrix_decoder;
+
 // Terminology: a frame is a collection of samples for each channel. e.g. 2 input samples is one input frame. This is unrelated to graphical frames.
 
 // Number of frames to duplicate for fixing interpolation at the start and end of a chunk.
@@ -241,25 +249,64 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         throw std::runtime_error("Error using SDL audio converter");
     }
 
-    uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
-    uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
-    float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
+    // Calculate the number of stereo frames after resampling (for both stereo and surround paths)
+    size_t resampled_stereo_frames = audio_convert.len_cvt / sizeof(float) / input_channels;
+    size_t frames_after_discard = resampled_stereo_frames - discarded_output_frames;
+    float* stereo_samples = swap_buffer.data() + discarded_output_frames / 2;
 
-    // Prevent audio latency from building up by skipping samples in incoming audio when too many samples are already queued.
-    // Skip samples based on how many microseconds of samples are queued already.
-    uint32_t skip_factor = cur_queued_microseconds / 100000;
-    if (skip_factor != 0) {
-        uint32_t skip_ratio = 1 << skip_factor;
-        num_bytes_to_queue /= skip_ratio;
-        for (size_t i = 0; i < num_bytes_to_queue / (output_channels * sizeof(swap_buffer[0])); i++) {
-            samples_to_queue[2 * i + 0] = samples_to_queue[2 * skip_ratio * i + 0];
-            samples_to_queue[2 * i + 1] = samples_to_queue[2 * skip_ratio * i + 1];
+    // Handle surround sound matrix decoding
+    if (audio_channel_setting == audioMatrix51 && sound_matrix_decoder) {
+        static int surround_frame_count = 0;
+        if (surround_frame_count < 3) {
+            printf("Audio: Processing surround frame %d (matrix decoding active, %zu stereo frames)\n", 
+                   ++surround_frame_count, frames_after_discard);
         }
-    }
+        // Process stereo through the matrix decoder to get 5.1 surround
+        auto [surround_samples, surround_sample_count] = sound_matrix_decoder->Process(stereo_samples, frames_after_discard);
+        
+        uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / (6 * sizeof(float)) * 1000000 / output_sample_rate;
+        uint32_t num_bytes_to_queue = surround_sample_count * sizeof(float);
 
-    // Queue the swapped audio data.
-    // Offset the data start by only half the discarded frame count as the other half of the discarded frames are at the end of the buffer.
-    SDL_QueueAudio(audio_device, samples_to_queue, num_bytes_to_queue);
+        // Prevent audio latency from building up by skipping frames
+        uint32_t skip_factor = cur_queued_microseconds / 100000;
+        if (skip_factor != 0) {
+            uint32_t skip_ratio = 1 << skip_factor;
+            size_t frames_to_queue = surround_sample_count / 6;
+            size_t new_frames = frames_to_queue / skip_ratio;
+            // Surround buffer is const, so we need to copy to a temp buffer for skipping
+            static std::vector<float> skip_buffer;
+            skip_buffer.resize(new_frames * 6);
+            for (size_t i = 0; i < new_frames; i++) {
+                for (size_t ch = 0; ch < 6; ch++) {
+                    skip_buffer[i * 6 + ch] = surround_samples[i * skip_ratio * 6 + ch];
+                }
+            }
+            SDL_QueueAudio(audio_device, skip_buffer.data(), new_frames * 6 * sizeof(float));
+        } else {
+            SDL_QueueAudio(audio_device, surround_samples, num_bytes_to_queue);
+        }
+    } else {
+        // Stereo path (original behavior)
+        uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
+        uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
+        float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
+
+        // Prevent audio latency from building up by skipping samples in incoming audio when too many samples are already queued.
+        // Skip samples based on how many microseconds of samples are queued already.
+        uint32_t skip_factor = cur_queued_microseconds / 100000;
+        if (skip_factor != 0) {
+            uint32_t skip_ratio = 1 << skip_factor;
+            num_bytes_to_queue /= skip_ratio;
+            for (size_t i = 0; i < num_bytes_to_queue / (output_channels * sizeof(swap_buffer[0])); i++) {
+                samples_to_queue[2 * i + 0] = samples_to_queue[2 * skip_ratio * i + 0];
+                samples_to_queue[2 * i + 1] = samples_to_queue[2 * skip_ratio * i + 1];
+            }
+        }
+
+        // Queue the swapped audio data.
+        // Offset the data start by only half the discarded frame count as the other half of the discarded frames are at the end of the buffer.
+        SDL_QueueAudio(audio_device, samples_to_queue, num_bytes_to_queue);
+    }
 }
 
 size_t get_frames_remaining() {
@@ -304,6 +351,26 @@ void set_frequency(uint32_t freq) {
 }
 
 void reset_audio(uint32_t output_freq) {
+    // Close existing audio device if open
+    if (audio_device != 0) {
+        SDL_PauseAudioDevice(audio_device, 1);
+        SDL_ClearQueuedAudio(audio_device);
+        SDL_CloseAudioDevice(audio_device);
+        audio_device = 0;
+    }
+
+    // Set output channels based on audio channel setting
+    switch (audio_channel_setting) {
+        case audioMatrix51:
+        case audioRaw51:
+            output_channels = 6;
+            break;
+        case audioStereo:
+        default:
+            output_channels = 2;
+            break;
+    }
+
     SDL_AudioSpec spec_desired{
         .freq = (int)output_freq,
         .format = AUDIO_F32,
@@ -316,7 +383,6 @@ void reset_audio(uint32_t output_freq) {
         .userdata = nullptr
     };
 
-
     audio_device = SDL_OpenAudioDevice(nullptr, false, &spec_desired, nullptr, 0);
     if (audio_device == 0) {
         exit_error("SDL error opening audio device: %s\n", SDL_GetError());
@@ -325,6 +391,37 @@ void reset_audio(uint32_t output_freq) {
 
     output_sample_rate = output_freq;
     update_audio_converter();
+    
+    printf("Audio initialized: %d channels, %d Hz (%s)\n", output_channels, output_freq, AudioChannelsSettingName(audio_channel_setting));
+}
+
+AudioChannelsSetting get_audio_channels() {
+    return audio_channel_setting;
+}
+
+void set_audio_channels(AudioChannelsSetting channels) {
+    if (audio_channel_setting == channels) {
+        return; // No change needed
+    }
+
+    printf("Changing audio channels from %s to %s\n", 
+           AudioChannelsSettingName(audio_channel_setting), 
+           AudioChannelsSettingName(channels));
+
+    audio_channel_setting = channels;
+
+    // Setup or teardown sound matrix decoder
+    if (channels == audioMatrix51) {
+        if (!sound_matrix_decoder) {
+            sound_matrix_decoder = std::make_unique<SoundMatrixDecoder>(output_sample_rate);
+        }
+    } else {
+        // When switching away from matrix mode, release the decoder
+        sound_matrix_decoder.reset();
+    }
+
+    // Reinitialize audio device with new channel count
+    reset_audio(output_sample_rate);
 }
 
 extern RspUcodeFunc njpgdspMain;
@@ -666,6 +763,8 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_targeting_mode);
     REGISTER_FUNC(recomp_get_bgm_volume);
     REGISTER_FUNC(recomp_get_low_health_beeps_enabled);
+    REGISTER_FUNC(recomp_set_audio_channels);
+    REGISTER_FUNC(recomp_get_audio_channels);
     REGISTER_FUNC(recomp_get_gyro_deltas);
     REGISTER_FUNC(recomp_get_mouse_deltas);
     REGISTER_FUNC(recomp_get_inverted_axes);

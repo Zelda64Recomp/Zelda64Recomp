@@ -52,7 +52,7 @@
                                     data-checked="low_health_beeps_enabled"
                                     value="1"
                                     id="lhb_on"
-                                    style="nav-up: #bgm_volume_input"
+                                    style="nav-up: #bgm_volume_input; nav-down: #surround_on;"
                                 />
                                 <label class="config-option__tab-label" for="lhb_on">On</label>
 
@@ -64,9 +64,38 @@
                                     data-checked="low_health_beeps_enabled"
                                     value="0"
                                     id="lhb_off"
-                                    style="nav-up: #bgm_volume_input"
+                                    style="nav-up: #bgm_volume_input; nav-down: #surround_on;"
                                 />
                                 <label class="config-option__tab-label" for="lhb_off">Off</label>
+                            </div>
+                        </div>
+
+                        <div class="config-option" data-event-mouseover="set_cur_config_index(3)">
+                            <label class="config-option__title">Surround Sound (5.1)</label>
+                            <div class="config-option__list">
+                                <input
+                                    type="radio"
+                                    data-event-blur="set_cur_config_index(-1)"
+                                    data-event-focus="set_cur_config_index(3)"
+                                    name="surround"
+                                    data-checked="surround_sound_enabled"
+                                    value="1"
+                                    id="surround_on"
+                                    style="nav-up: #lhb_on"
+                                />
+                                <label class="config-option__tab-label" for="surround_on">On</label>
+
+                                <input
+                                    type="radio"
+                                    data-event-blur="set_cur_config_index(-1)"
+                                    data-event-focus="set_cur_config_index(3)"
+                                    name="surround"
+                                    data-checked="surround_sound_enabled"
+                                    value="0"
+                                    id="surround_off"
+                                    style="nav-up: #lhb_on"
+                                />
+                                <label class="config-option__tab-label" for="surround_off">Off</label>
                             </div>
                         </div>
                 </div>
@@ -80,6 +109,9 @@
                     </p>
                     <p data-if="cur_config_index == 2">
                         Toggles whether or not the low-health beeping sound plays.
+                    </p>
+                    <p data-if="cur_config_index == 3">
+                        Enables 5.1 surround sound output using matrix decoding. Requires a surround sound system or virtual surround headphones.
                     </p>
                 </div>
             </div>

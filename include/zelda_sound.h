@@ -9,6 +9,8 @@ namespace zelda64 {
     int get_bgm_volume();
     void set_low_health_beeps_enabled(bool enabled);
     bool get_low_health_beeps_enabled();
+    void set_surround_sound_enabled(bool enabled);
+    bool get_surround_sound_enabled();
 }
 
 #endif

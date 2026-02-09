@@ -5,6 +5,13 @@
 void AudioSeq_ProcessSeqCmd(u32 cmd);
 void AudioThread_QueueCmd(u32 opArgs, void** data);
 
+// Audio channel settings (must match AudioChannelsSetting enum in native code)
+typedef enum {
+    AUDIO_CHANNELS_STEREO = 0,
+    AUDIO_CHANNELS_MATRIX_51 = 1,
+    AUDIO_CHANNELS_RAW_51 = 2
+} AudioChannelsSetting;
+
 // Direct audio command (skips the queueing system)
 #define SEQCMD_SET_SEQPLAYER_VOLUME_NOW(seqPlayerIndex, duration, volume)                          \
     AudioSeq_ProcessSeqCmd((SEQCMD_OP_SET_SEQPLAYER_VOLUME << 28) | ((u8)(seqPlayerIndex) << 24) | \
@@ -360,4 +367,40 @@ RECOMP_PATCH void LifeMeter_UpdateSizeAndBeep(PlayState* play) {
         }
     }
 }
+extern s8 sSoundMode;
 
+// @recomp Surround sound output is now controlled by the recomp's config menu
+// (Sound -> Surround Sound 5.1), not by the in-game audio setting.
+// This function still controls the game's internal sound processing mode.
+RECOMP_PATCH void Audio_SetFileSelectSettings(s8 audioSetting) {
+    s8 soundMode;
+
+    switch (audioSetting) {
+        case SAVE_AUDIO_STEREO:
+            soundMode = SOUNDMODE_STEREO;
+            sSoundMode = SOUNDMODE_STEREO;
+            break;
+
+        case SAVE_AUDIO_MONO:
+            soundMode = SOUNDMODE_MONO;
+            sSoundMode = SOUNDMODE_MONO;
+            break;
+
+        case SAVE_AUDIO_HEADSET:
+            soundMode = SOUNDMODE_HEADSET;
+            sSoundMode = SOUNDMODE_HEADSET;
+            break;
+
+        case SAVE_AUDIO_SURROUND:
+            soundMode = SOUNDMODE_SURROUND;
+            // @recomp Use external surround mode - the actual 5.1 output is handled
+            // by the matrix decoder when enabled in the recomp's config menu
+            sSoundMode = SOUNDMODE_SURROUND_EXTERNAL;
+            break;
+
+        default:
+            break;
+    }
+
+    SEQCMD_SET_SOUND_MODE(soundMode);
+}
