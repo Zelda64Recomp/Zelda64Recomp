@@ -196,3 +196,7 @@ extern "C" void recomp_set_audio_channels(uint8_t* rdram, recomp_context* ctx) {
 extern "C" void recomp_get_audio_channels(uint8_t* rdram, recomp_context* ctx) {
     _return(ctx, static_cast<s32>(get_audio_channels()));
 }
+
+extern "C" void recomp_get_enhanced_surround_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, zelda64::get_enhanced_surround_enabled() ? 1 : 0);
+}

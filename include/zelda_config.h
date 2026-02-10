@@ -103,6 +103,10 @@ namespace zelda64 {
         {zelda64::AudioMode::Surround, "Surround"}
     });
 
+    // Enhanced surround - adds pan-based rear channel separation
+    bool get_enhanced_surround_enabled();
+    void set_enhanced_surround_enabled(bool enabled);
+
     AudioMode get_audio_mode();
     void set_audio_mode(AudioMode mode);
 

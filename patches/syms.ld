@@ -55,3 +55,4 @@ recomp_get_actor_data = 0x8F0000D0;
 recomp_get_actor_spawn_index = 0x8F0000D4;
 recomp_set_audio_channels = 0x8F0000D8;
 recomp_get_audio_channels = 0x8F0000DC;
+recomp_get_enhanced_surround_enabled = 0x8F0000E0;

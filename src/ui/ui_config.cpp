@@ -366,11 +366,13 @@ struct SoundOptionsContext {
     std::atomic<int> bgm_volume;
     std::atomic<int> low_health_beeps_enabled; // RmlUi doesn't seem to like "true"/"false" strings for setting variants so an int is used here instead.
     zelda64::AudioMode audio_mode; // Audio output mode (Stereo, Mono, Headphones, Surround)
+    std::atomic<int> enhanced_surround_enabled; // Pan-based rear channel separation
     void reset() {
         bgm_volume = 100;
         main_volume = 100;
         low_health_beeps_enabled = (int)true;
         audio_mode = zelda64::AudioMode::Stereo;
+        enhanced_surround_enabled = (int)false;
     }
     SoundOptionsContext() {
         reset();
@@ -428,12 +430,23 @@ void zelda64::set_audio_mode(zelda64::AudioMode mode) {
     if (sound_options_model_handle) {
         sound_options_model_handle.DirtyVariable("audio_mode");
     }
-    // Update audio backend - only Surround mode uses 5.1 matrix decoding
+    // Update audio backend - Surround mode uses 5.1 matrix decoding
     set_audio_channels(mode == zelda64::AudioMode::Surround ? audioMatrix51 : audioStereo);
 }
 
 zelda64::AudioMode zelda64::get_audio_mode() {
     return sound_options_context.audio_mode;
+}
+
+void zelda64::set_enhanced_surround_enabled(bool enabled) {
+    sound_options_context.enhanced_surround_enabled.store((int)enabled);
+    if (sound_options_model_handle) {
+        sound_options_model_handle.DirtyVariable("enhanced_surround_enabled");
+    }
+}
+
+bool zelda64::get_enhanced_surround_enabled() {
+    return (bool)sound_options_context.enhanced_surround_enabled.load();
 }
 
 struct DebugContext {
@@ -959,6 +972,7 @@ public:
         bind_atomic(constructor, sound_options_model_handle, "main_volume", &sound_options_context.main_volume);
         bind_atomic(constructor, sound_options_model_handle, "bgm_volume", &sound_options_context.bgm_volume);
         bind_atomic(constructor, sound_options_model_handle, "low_health_beeps_enabled", &sound_options_context.low_health_beeps_enabled);
+        bind_atomic(constructor, sound_options_model_handle, "enhanced_surround_enabled", &sound_options_context.enhanced_surround_enabled);
         
         // Custom binding for audio mode that calls the setter to update audio channels
         constructor.BindFunc("audio_mode",

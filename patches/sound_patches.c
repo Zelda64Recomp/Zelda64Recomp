@@ -408,3 +408,96 @@ RECOMP_PATCH void Audio_SetFileSelectSettings(s8 audioSetting) {
 
     SEQCMD_SET_SOUND_MODE(soundMode);
 }
+
+// ============================================================================
+// Enhanced Surround Sound - Pan-based RL/RR steering
+// ============================================================================
+
+// DMEM address constants for audio synthesis (from synthesis.c)
+#define DMEM_SURROUND_TEMP 0x4B0
+#define DMEM_HAAS_TEMP 0x5B0
+#define DMEM_LEFT_CH 0x930
+#define DMEM_RIGHT_CH 0xAD0
+#define DMEM_WET_LEFT_CH 0xC70
+#define DMEM_WET_RIGHT_CH 0xE10
+
+// Forward declarations
+void AudioSynth_DMemMove(Acmd* cmd, s32 dmemIn, s32 dmemOut, size_t size);
+extern f32 gDefaultPanVolume[];
+
+// @recomp Patched to add enhanced surround with pan-based RL/RR channel steering
+// When enhanced surround is enabled, sounds panned left go more to Rear Left,
+// and sounds panned right go more to Rear Right, creating better spatial separation.
+RECOMP_PATCH Acmd* AudioSynth_ApplySurroundEffect(Acmd* cmd, NoteSampleState* sampleState, NoteSynthesisState* synthState,
+                                     s32 numSamplesPerUpdate, s32 haasDmem, s32 flags) {
+    s32 wetGain;
+    u16 dryGain;
+    s64 dmem = DMEM_SURROUND_TEMP;
+    f32 decayGain;
+
+    AudioSynth_DMemMove(cmd++, haasDmem, DMEM_HAAS_TEMP, numSamplesPerUpdate * SAMPLE_SIZE);
+    dryGain = synthState->surroundEffectGain;
+
+    if (flags == A_INIT) {
+        aClearBuffer(cmd++, dmem, sizeof(synthState->synthesisBuffers->surroundEffectState));
+        synthState->surroundEffectGain = 0;
+    } else {
+        aLoadBuffer(cmd++, synthState->synthesisBuffers->surroundEffectState, dmem,
+                    sizeof(synthState->synthesisBuffers->surroundEffectState));
+
+        // @recomp Check if enhanced surround is enabled for pan-based RL/RR steering
+        if (recomp_get_enhanced_surround_enabled()) {
+            // === Matrix surround encoding: steer surround to RL or RR based on pan ===
+            // Calculate pan position: 0.0 = full left, 0.5 = center, 1.0 = full right
+            f32 sumVol = sampleState->targetVolLeft + sampleState->targetVolRight;
+            f32 panPosition = 0.5f; // default: center (mono surround)
+            if (sumVol > 0.0f) {
+                panPosition = (f32)sampleState->targetVolRight / sumVol;
+            }
+
+            // The L/R balance determines RL vs RR steering:
+            // - L dominant (leftGain > rightGain): surround goes more to Rear Left
+            // - R dominant (rightGain > leftGain): surround goes more to Rear Right
+            // - Equal: mono surround to both
+            s16 leftGain = (s16)(dryGain * (1.0f - panPosition));
+            s16 rightGain = (s16)(dryGain * panPosition);
+
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, leftGain, dmem, DMEM_LEFT_CH);
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, (rightGain ^ 0xFFFF), dmem, DMEM_RIGHT_CH);
+
+            wetGain = (dryGain * synthState->curReverbVol) >> 7;
+            s16 wetLeftGain = (s16)(wetGain * (1.0f - panPosition));
+            s16 wetRightGain = (s16)(wetGain * panPosition);
+
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, wetLeftGain, dmem, DMEM_WET_LEFT_CH);
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, (wetRightGain ^ 0xFFFF), dmem, DMEM_WET_RIGHT_CH);
+            // === End matrix surround encoding ===
+        } else {
+            // Original behavior: mono surround to both channels
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, dryGain, dmem, DMEM_LEFT_CH);
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, (dryGain ^ 0xFFFF), dmem, DMEM_RIGHT_CH);
+
+            wetGain = (dryGain * synthState->curReverbVol) >> 7;
+
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, wetGain, dmem, DMEM_WET_LEFT_CH);
+            aMix(cmd++, (numSamplesPerUpdate * (s32)SAMPLE_SIZE) >> 4, (wetGain ^ 0xFFFF), dmem, DMEM_WET_RIGHT_CH);
+        }
+    }
+
+    aSaveBuffer(cmd++, DMEM_SURROUND_TEMP + (numSamplesPerUpdate * SAMPLE_SIZE),
+                synthState->synthesisBuffers->surroundEffectState,
+                sizeof(synthState->synthesisBuffers->surroundEffectState));
+
+    decayGain = (sampleState->targetVolLeft + sampleState->targetVolRight) * (1.0f / 0x2000);
+
+    if (decayGain > 1.0f) {
+        decayGain = 1.0f;
+    }
+
+    decayGain = decayGain * gDefaultPanVolume[127 - sampleState->surroundEffectIndex];
+    synthState->surroundEffectGain = ((decayGain * 0x7FFF) + synthState->surroundEffectGain) / 2;
+
+    AudioSynth_DMemMove(cmd++, DMEM_HAAS_TEMP, haasDmem, numSamplesPerUpdate * SAMPLE_SIZE);
+
+    return cmd;
+}
