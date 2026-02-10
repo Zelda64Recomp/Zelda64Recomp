@@ -460,7 +460,7 @@ bool save_sound_config(const std::filesystem::path& path) {
     config_json["main_volume"] = zelda64::get_main_volume();
     config_json["bgm_volume"] = zelda64::get_bgm_volume();
     config_json["low_health_beeps"] = zelda64::get_low_health_beeps_enabled();
-    config_json["surround_sound"] = zelda64::get_surround_sound_enabled();
+    config_json["audio_mode"] = zelda64::get_audio_mode();
 
     return save_json_with_backups(path, config_json);
 }
@@ -475,7 +475,7 @@ bool load_sound_config(const std::filesystem::path& path) {
     call_if_key_exists(zelda64::set_main_volume, config_json, "main_volume");
     call_if_key_exists(zelda64::set_bgm_volume, config_json, "bgm_volume");
     call_if_key_exists(zelda64::set_low_health_beeps_enabled, config_json, "low_health_beeps");
-    call_if_key_exists(zelda64::set_surround_sound_enabled, config_json, "surround_sound");
+    call_if_key_exists(zelda64::set_audio_mode, config_json, "audio_mode");
     return true;
 }
 

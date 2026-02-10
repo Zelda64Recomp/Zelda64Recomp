@@ -365,12 +365,12 @@ struct SoundOptionsContext {
     std::atomic<int> main_volume; // Option to control the volume of all sound
     std::atomic<int> bgm_volume;
     std::atomic<int> low_health_beeps_enabled; // RmlUi doesn't seem to like "true"/"false" strings for setting variants so an int is used here instead.
-    std::atomic<int> surround_sound_enabled; // Enable 5.1 surround sound matrix decoding
+    zelda64::AudioMode audio_mode; // Audio output mode (Stereo, Mono, Headphones, Surround)
     void reset() {
         bgm_volume = 100;
         main_volume = 100;
         low_health_beeps_enabled = (int)true;
-        surround_sound_enabled = (int)false;
+        audio_mode = zelda64::AudioMode::Stereo;
     }
     SoundOptionsContext() {
         reset();
@@ -422,18 +422,18 @@ bool zelda64::get_low_health_beeps_enabled() {
 // Forward declaration from main.cpp
 void set_audio_channels(AudioChannelsSetting channels);
 
-void zelda64::set_surround_sound_enabled(bool enabled) {
-    printf("UI: Setting surround sound to %s\n", enabled ? "enabled" : "disabled");
-    sound_options_context.surround_sound_enabled.store((int)enabled);
+void zelda64::set_audio_mode(zelda64::AudioMode mode) {
+    printf("UI: Setting audio mode to %d\n", (int)mode);
+    sound_options_context.audio_mode = mode;
     if (sound_options_model_handle) {
-        sound_options_model_handle.DirtyVariable("surround_sound_enabled");
+        sound_options_model_handle.DirtyVariable("audio_mode");
     }
-    // Update audio backend
-    set_audio_channels(enabled ? audioMatrix51 : audioStereo);
+    // Update audio backend - only Surround mode uses 5.1 matrix decoding
+    set_audio_channels(mode == zelda64::AudioMode::Surround ? audioMatrix51 : audioStereo);
 }
 
-bool zelda64::get_surround_sound_enabled() {
-    return (bool)sound_options_context.surround_sound_enabled.load();
+zelda64::AudioMode zelda64::get_audio_mode() {
+    return sound_options_context.audio_mode;
 }
 
 struct DebugContext {
@@ -960,14 +960,15 @@ public:
         bind_atomic(constructor, sound_options_model_handle, "bgm_volume", &sound_options_context.bgm_volume);
         bind_atomic(constructor, sound_options_model_handle, "low_health_beeps_enabled", &sound_options_context.low_health_beeps_enabled);
         
-        // Custom binding for surround sound that calls the setter to update audio channels
-        constructor.BindFunc("surround_sound_enabled",
-            [](Rml::Variant& out) {
-                out = sound_options_context.surround_sound_enabled.load();
-            },
+        // Custom binding for audio mode that calls the setter to update audio channels
+        constructor.BindFunc("audio_mode",
+            [](Rml::Variant& out) { get_option(sound_options_context.audio_mode, out); },
             [](const Rml::Variant& in) {
-                bool enabled = in.Get<int>() != 0;
-                zelda64::set_surround_sound_enabled(enabled);
+                zelda64::AudioMode mode = zelda64::AudioMode::OptionCount;
+                from_json(in.Get<std::string>(), mode);
+                if (mode != zelda64::AudioMode::OptionCount) {
+                    zelda64::set_audio_mode(mode);
+                }
             }
         );
     }

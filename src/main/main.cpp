@@ -257,12 +257,6 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
 
     // Handle surround sound matrix decoding
     if (audio_channel_setting == audioMatrix51 && sound_matrix_decoder) {
-        static int surround_frame_count = 0;
-        if (surround_frame_count < 5) {
-            printf("Audio: Processing surround frame %d: %zu stereo frames, offset=%u, resampled=%zu\n", 
-                   ++surround_frame_count, frames_after_discard, 
-                   input_channels * discarded_output_frames / 2, resampled_stereo_frames);
-        }
         // Process stereo through the matrix decoder to get 5.1 surround
         auto [surround_samples, surround_sample_count] = sound_matrix_decoder->Process(stereo_samples, frames_after_discard);
         

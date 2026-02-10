@@ -369,9 +369,7 @@ RECOMP_PATCH void LifeMeter_UpdateSizeAndBeep(PlayState* play) {
 }
 extern s8 sSoundMode;
 
-// @recomp Surround sound output is now controlled by the recomp's config menu
-// (Sound -> Surround Sound 5.1), not by the in-game audio setting.
-// This function still controls the game's internal sound processing mode.
+// @recomp Patched to sync audio channels with the game's audio setting
 RECOMP_PATCH void Audio_SetFileSelectSettings(s8 audioSetting) {
     s8 soundMode;
 
@@ -379,23 +377,29 @@ RECOMP_PATCH void Audio_SetFileSelectSettings(s8 audioSetting) {
         case SAVE_AUDIO_STEREO:
             soundMode = SOUNDMODE_STEREO;
             sSoundMode = SOUNDMODE_STEREO;
+            // @recomp Sync audio output to stereo
+            recomp_set_audio_channels(AUDIO_CHANNELS_STEREO);
             break;
 
         case SAVE_AUDIO_MONO:
             soundMode = SOUNDMODE_MONO;
             sSoundMode = SOUNDMODE_MONO;
+            // @recomp Sync audio output to stereo (mono is handled by the game's audio engine)
+            recomp_set_audio_channels(AUDIO_CHANNELS_STEREO);
             break;
 
         case SAVE_AUDIO_HEADSET:
             soundMode = SOUNDMODE_HEADSET;
             sSoundMode = SOUNDMODE_HEADSET;
+            // @recomp Sync audio output to stereo (headset mode is handled by the game's audio engine)
+            recomp_set_audio_channels(AUDIO_CHANNELS_STEREO);
             break;
 
         case SAVE_AUDIO_SURROUND:
             soundMode = SOUNDMODE_SURROUND;
-            // @recomp Use external surround mode - the actual 5.1 output is handled
-            // by the matrix decoder when enabled in the recomp's config menu
             sSoundMode = SOUNDMODE_SURROUND_EXTERNAL;
+            // @recomp Enable 5.1 matrix surround output when game's surround option is selected
+            recomp_set_audio_channels(AUDIO_CHANNELS_MATRIX_51);
             break;
 
         default:

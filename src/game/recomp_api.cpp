@@ -183,11 +183,11 @@ extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_contex
     recomp::set_right_analog_suppressed(suppressed);
 }
 
-// Surround sound support
+// Surround sound support - called by the game when audio settings change
 extern "C" void recomp_set_audio_channels(uint8_t* rdram, recomp_context* ctx) {
     s32 channels = _arg<0, s32>(rdram, ctx);
     
-    // Validate input
+    // Validate input and update the audio backend
     if (channels >= 0 && channels < audioMax) {
         set_audio_channels(static_cast<AudioChannelsSetting>(channels));
     }
