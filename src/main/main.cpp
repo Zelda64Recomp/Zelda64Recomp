@@ -359,7 +359,6 @@ void reset_audio(uint32_t output_freq) {
     // Set output channels based on audio channel setting
     switch (audio_channel_setting) {
         case audioMatrix51:
-        case audioRaw51:
             output_channels = 6;
             break;
         case audioStereo:
