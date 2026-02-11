@@ -57,7 +57,7 @@
 						<panel class="config" data-model="graphics_model">
 							<template src="config-menu__graphics" />
 						</panel>
-						<tab class="tab" id="tab_sound">
+						<tab class="tab" id="tab_sound" style="nav-down: #main_volume_input">
 							<div>Sound</div>
 							<div class="tab__indicator"></div>
 						</tab>

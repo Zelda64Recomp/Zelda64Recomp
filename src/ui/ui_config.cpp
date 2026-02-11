@@ -515,7 +515,9 @@ class ConfigTabsetListener : public Rml::EventListener {
                 if (tabs != nullptr) {
                     size_t num_children = tabs->GetNumChildren();
                     for (size_t i = 0; i < num_children; i++) {
-                        tabs->GetChild(i)->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
+                        if (!tabs->GetChild(i)->GetLocalProperty(Rml::PropertyId::NavDown)) {
+                            tabs->GetChild(i)->SetProperty(Rml::PropertyId::NavDown, Rml::Style::Nav::Auto);
+                        }
                     }
                 }
             }
