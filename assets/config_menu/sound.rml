@@ -2,10 +2,10 @@
     <head>
     </head>
     <body>
-        <form class="config__form">
-            <div class="config__hz-wrapper">
+        <form class="config__form" id="conf-sound__form">
+            <div class="config__hz-wrapper" id="conf-sound__hz-wrapper">
                 <!-- Options -->
-                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)">
+                <div class="config__wrapper" data-event-mouseout="set_cur_config_index(-1)" id="conf-sound__wrapper">
                         <div class="config-option" data-event-mouseover="set_cur_config_index(0)">
                             <label class="config-option__title">Main Volume</label>
                             <div class="config-option__range-wrapper config-option__list">
@@ -52,7 +52,7 @@
                                     data-checked="low_health_beeps_enabled"
                                     value="1"
                                     id="lhb_on"
-                                    style="nav-up: #bgm_volume_input; nav-down: #surround_on;"
+                                    style="nav-up: #bgm_volume_input; nav-down: #audio_stereo"
                                 />
                                 <label class="config-option__tab-label" for="lhb_on">On</label>
 
@@ -64,7 +64,7 @@
                                     data-checked="low_health_beeps_enabled"
                                     value="0"
                                     id="lhb_off"
-                                    style="nav-up: #bgm_volume_input; nav-down: #surround_on;"
+                                    style="nav-up: #bgm_volume_input; nav-down: #audio_mono"
                                 />
                                 <label class="config-option__tab-label" for="lhb_off">Off</label>
                             </div>
@@ -81,7 +81,7 @@
                                     data-checked="audio_mode"
                                     value="Stereo"
                                     id="audio_stereo"
-                                    style="nav-up: #lhb_on"
+                                    style="nav-up: #lhb_on; nav-down: #enhanced_surround_on"
                                 />
                                 <label class="config-option__tab-label" for="audio_stereo">Stereo</label>
 
@@ -93,7 +93,7 @@
                                     data-checked="audio_mode"
                                     value="Mono"
                                     id="audio_mono"
-                                    style="nav-up: #lhb_on"
+                                    style="nav-up: #lhb_off; nav-down: #enhanced_surround_off"
                                 />
                                 <label class="config-option__tab-label" for="audio_mono">Mono</label>
 
@@ -105,7 +105,7 @@
                                     data-checked="audio_mode"
                                     value="Headphones"
                                     id="audio_headphones"
-                                    style="nav-up: #lhb_on"
+                                    style="nav-up: #lhb_off; nav-down: #enhanced_surround_off"
                                 />
                                 <label class="config-option__tab-label" for="audio_headphones">Headphones</label>
 
@@ -117,7 +117,7 @@
                                     data-checked="audio_mode"
                                     value="Surround"
                                     id="audio_surround"
-                                    style="nav-up: #lhb_on; nav-down: #enhanced_surround_on"
+                                    style="nav-up: #lhb_off; nav-down: #enhanced_surround_off"
                                 />
                                 <label class="config-option__tab-label" for="audio_surround">Surround</label>
                             </div>
@@ -134,7 +134,7 @@
                                     data-checked="enhanced_surround_enabled"
                                     value="1"
                                     id="enhanced_surround_on"
-                                    style="nav-up: #audio_surround"
+                                    style="nav-up: #audio_stereo"
                                 />
                                 <label class="config-option__tab-label" for="enhanced_surround_on">On</label>
 
@@ -146,7 +146,7 @@
                                     data-checked="enhanced_surround_enabled"
                                     value="0"
                                     id="enhanced_surround_off"
-                                    style="nav-up: #audio_surround"
+                                    style="nav-up: #audio_mono"
                                 />
                                 <label class="config-option__tab-label" for="enhanced_surround_off">Off</label>
                             </div>
@@ -174,4 +174,3 @@
         </form>
     </body>
 </template>
-    
