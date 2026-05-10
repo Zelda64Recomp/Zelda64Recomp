@@ -221,7 +221,7 @@ RECOMP_PATCH void View_Apply(View* view, s32 mask) {
 
         // @recomp Determine if interpolation should occur based on the new eye and at positions.
         if (!camera_ignore_tracking) {
-            interpolate_camera = should_interpolate_perspective(&view->eye, &view->at); 
+            interpolate_camera = should_interpolate_perspective(&view->eye, &view->at);
         }
     }
     camera_ignore_tracking = false;
