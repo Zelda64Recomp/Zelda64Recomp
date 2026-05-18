@@ -13,6 +13,11 @@
 #include "../patches/sound.h"
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
+#include "audio_channels.h"
+
+// Forward declarations for audio channel functions defined in main.cpp
+void set_audio_channels(AudioChannelsSetting channels);
+AudioChannelsSetting get_audio_channels();
 
 extern "C" void recomp_update_inputs(uint8_t* rdram, recomp_context* ctx) {
     recomp::poll_inputs();
@@ -176,4 +181,22 @@ extern "C" void recomp_set_right_analog_suppressed(uint8_t* rdram, recomp_contex
     s32 suppressed = _arg<0, s32>(rdram, ctx);
 
     recomp::set_right_analog_suppressed(suppressed);
+}
+
+// Surround sound support - called by the game when audio settings change
+extern "C" void recomp_set_audio_channels(uint8_t* rdram, recomp_context* ctx) {
+    s32 channels = _arg<0, s32>(rdram, ctx);
+    
+    // Validate input and update the audio backend
+    if (channels >= 0 && channels < audioMax) {
+        set_audio_channels(static_cast<AudioChannelsSetting>(channels));
+    }
+}
+
+extern "C" void recomp_get_audio_channels(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, static_cast<s32>(get_audio_channels()));
+}
+
+extern "C" void recomp_get_enhanced_surround_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, zelda64::get_enhanced_surround_enabled() ? 1 : 0);
 }
