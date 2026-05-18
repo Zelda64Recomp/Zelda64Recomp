@@ -53,3 +53,7 @@ recomp_create_actor_data = 0x8F0000C8;
 recomp_destroy_actor_data = 0x8F0000CC;
 recomp_get_actor_data = 0x8F0000D0;
 recomp_get_actor_spawn_index = 0x8F0000D4;
+recomp_get_mouse_buttons = 0x8F0000D8;
+recomp_get_mouse_button_mask = 0x8F0000DC;
+recomp_set_mouse_button_mask = 0x8F0000E0;
+recomp_get_mouse_wheel_pos = 0x8F0000E4;

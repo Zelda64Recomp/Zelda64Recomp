@@ -1,5 +1,6 @@
 #include <atomic>
 #include <mutex>
+#include <iostream>
 
 #include "ultramodern/ultramodern.hpp"
 #include "recomp.h"
@@ -27,6 +28,8 @@ static struct {
     const Uint8* keys = nullptr;
     SDL_Keymod keymod = SDL_Keymod::KMOD_NONE;
     int numkeys = 0;
+    std::atomic<unsigned int> mouse_button_state;
+    std::atomic<unsigned int> mouse_button_mask = ~0;
     std::atomic_int32_t mouse_wheel_pos = 0;
     std::mutex cur_controllers_mutex;
     std::vector<SDL_GameController*> cur_controllers{};
@@ -130,6 +133,25 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
             }
         }
         break;
+    case SDL_EventType::SDL_MOUSEBUTTONDOWN:
+    {
+        SDL_MouseButtonEvent* mouseevent = &event->button;
+
+        // Skip repeated events when not in the menu
+        if (!recompui::is_context_capturing_input()) {
+            break;
+        }
+
+        if (scanning_device != recomp::InputDevice::COUNT) {
+            if (scanning_device == recomp::InputDevice::Keyboard) {
+                set_scanned_input({ (uint32_t)InputType::Mouse, mouseevent->button - 1}); // subtract 1 because of the bit-shifting used to process SDL_GetMouseState
+            }
+        }
+        else {
+            queue_if_enabled(event);
+        }
+    }
+    break;
     case SDL_EventType::SDL_CONTROLLERDEVICEADDED:
         {
             SDL_ControllerDeviceEvent* controller_event = &event->cdevice;
@@ -334,7 +356,7 @@ const recomp::DefaultN64Mappings recomp::default_n64_keyboard_mappings = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_SPACE}
     },
     .b = {
-        {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_LSHIFT}
+        {.input_type = (uint32_t)InputType::Mouse, .input_id = 0}
     },
     .l = {
         {.input_type = (uint32_t)InputType::Keyboard, .input_id = SDL_SCANCODE_E}
@@ -467,6 +489,8 @@ const recomp::DefaultN64Mappings recomp::default_n64_controller_mappings = {
 };
 
 void recomp::poll_inputs() {
+    InputState.mouse_button_state.store(SDL_GetMouseState(NULL, NULL));
+
     InputState.keys = SDL_GetKeyboardState(&InputState.numkeys);
     InputState.keymod = SDL_GetModState();
 
@@ -654,8 +678,11 @@ bool recomp::get_input_digital(const recomp::InputField& field) {
         // TODO adjustable threshold
         return controller_axis_state(field.input_id, true) >= axis_threshold;
     case InputType::Mouse:
-        // TODO mouse support
-        return false;
+        if (recomp::game_input_disabled()) {
+            return false;
+        }
+        return (InputState.mouse_button_state.load() & InputState.mouse_button_mask.load()) & (1 << field.input_id);
+        
     case InputType::None:
         return false;
     }
@@ -681,6 +708,28 @@ void recomp::get_mouse_deltas(float* x, float* y) {
     float sensitivity = (float)recomp::get_mouse_sensitivity() / 100.0f;
     *x = cur_mouse_delta[0] * sensitivity;
     *y = cur_mouse_delta[1] * sensitivity;
+}
+
+int32_t recomp::get_mouse_wheel_pos() {
+    if (recomp::game_input_disabled()) {
+        return 0;
+    }
+    return InputState.mouse_wheel_pos.load();
+}
+
+uint32_t recomp::get_mouse_buttons() {
+    if (recomp::game_input_disabled()) {
+        return 0;
+    }
+    return InputState.mouse_button_state.load();
+}
+
+uint32_t recomp::get_mouse_button_mask() {
+    return InputState.mouse_button_mask.load();
+}
+
+void recomp::set_mouse_button_mask(unsigned int mask) {
+    return InputState.mouse_button_mask.store(mask);
 }
 
 void recomp::apply_joystick_deadzone(float x_in, float y_in, float* x_out, float* y_out) {

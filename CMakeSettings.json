@@ -31,8 +31,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "clang_cl_x64" ]
     }
   ]
 }

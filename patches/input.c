@@ -1,10 +1,13 @@
 #include "patches.h"
+#include "play_patches.h"
 #include "input.h"
 #include "z64snap.h"
 // Decomp rename, TODO update decomp and remove this
 #define AudioVoice_GetWord func_801A5100
 #include "z64voice.h"
 #include "audiothread_cmd.h"
+
+MouseInputHandler mouse_input_handler;
 
 RECOMP_DECLARE_EVENT(recomp_before_first_person_aiming_update_event(PlayState* play, Player* this, bool in_free_look, RecompAimingOverideMode* recomp_aiming_override_mode));
 RECOMP_DECLARE_EVENT(recomp_after_first_person_aiming_update_event(PlayState* play, Player* this, bool in_free_look));
@@ -102,12 +105,9 @@ RECOMP_PATCH s32 func_80847190(PlayState* play, Player* this, s32 arg2) {
 
         filtered_gyro_x = filtered_gyro_x * gyro_filter_factor + total_gyro_x * (1.0f - gyro_filter_factor);
         filtered_gyro_y = filtered_gyro_y * gyro_filter_factor + total_gyro_y * (1.0f - gyro_filter_factor);
-
-        float delta_mouse_x, delta_mouse_y;
-        recomp_get_mouse_deltas(&delta_mouse_x, &delta_mouse_y);
         
-        total_mouse_x += delta_mouse_x;
-        total_mouse_y += delta_mouse_y;
+        total_mouse_x += mouse_input_handler.delta_x;
+        total_mouse_y += mouse_input_handler.delta_y;
 
         // The gyro X-axis (tilt) corresponds to the camera X-axis (tilt).
         // The gyro Y-axis (left/right rotation) corresponds to the camera Y-axis (left/right rotation).
@@ -1473,10 +1473,13 @@ RECOMP_PATCH void Player_Action_18(Player* this, PlayState* play) {
             func_8082F164(this, BTN_R | BTN_B);
         }
     }
-
     if (this->av2.actionVar2 != 0) {
-        f32 yStick = sPlayerControlInput->rel.stick_y * 180;
-        f32 xStick = sPlayerControlInput->rel.stick_x * -120;
+        f32 yStick = sPlayerControlInput->rel.stick_y * 180 + mouse_input_handler.shield_pos_y;
+        f32 xStick = sPlayerControlInput->rel.stick_x * -120 + mouse_input_handler.shield_pos_x;
+        // Needed so analog input and mouse input don't double up.
+        xStick = CLAMP(xStick, -MOUSE_SHIELD_CLAMP_X, MOUSE_SHIELD_CLAMP_X);
+        yStick = CLAMP(yStick, -MOUSE_SHIELD_CLAMP_Y, MOUSE_SHIELD_CLAMP_Y);
+
         s16 temp_a0 = this->actor.shape.rot.y - Camera_GetInputDirYaw(GET_ACTIVE_CAM(play));
         s16 var_a1;
         s16 temp_ft5;
@@ -1493,7 +1496,6 @@ RECOMP_PATCH void Player_Action_18(Player* this, PlayState* play) {
         if (inverted_x) {
             xStick = -xStick;
         }
-
         var_a1 = (yStick * Math_CosS(temp_a0)) + (Math_SinS(temp_a0) * xStick);
         temp_ft5 = (xStick * Math_CosS(temp_a0)) - (Math_SinS(temp_a0) * yStick);
 
