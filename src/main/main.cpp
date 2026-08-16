@@ -609,6 +609,7 @@ void on_launcher_init(recompui::LauncherMenu *menu) {
     game_options_menu->add_default_options();
 
     recompui::Element *menu_container = menu->get_menu_container();
+    menu->remove_default_title();
     zelda64::launcher_animation_setup(menu);
 }
 
