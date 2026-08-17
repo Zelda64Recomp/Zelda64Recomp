@@ -1,7 +1,0 @@
-@use 'sass:math';
-
-// $page-margin: 32;
-$page-margin: 64;
-$base-height: 1080;
-$base-modal-height: $base-height - ($page-margin * 2);
-$base-modal-max-width: math.div($base-modal-height * 16, 9);

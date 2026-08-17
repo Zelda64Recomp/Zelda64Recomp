@@ -5,6 +5,11 @@
 #include <string>
 
 namespace zelda64 {
+    namespace debug {
+        inline const std::string tab_id = "debug";
+        inline const std::string tab_name = "Debug";
+    }
+
     struct SceneWarps {
         int index;
         std::string name;

@@ -1,9 +1,0 @@
-<template name="config-menu__mods">
-    <head>
-    </head>
-    <body>
-        <form class="config__form">
-            <recomp-mod-menu id="menu_mods" />
-        </form>
-    </body>
-</template>
