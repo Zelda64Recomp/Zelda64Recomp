@@ -1,6 +1,7 @@
 #include "recompui/recompui.h"
 #include "zelda_game.h"
 #include "zelda_launcher.h"
+#include "hlsl++.h"
 
 // UI Components
 namespace {
@@ -127,6 +128,7 @@ namespace {
         Element *root;
         Element *title_wrapper;
         Element *content_wrapper;
+        GameOptionsMenu *game_options_menu;
         SubtitleTitleButton *title_button;
         zelda64::Game game;
         std::string name;
@@ -197,6 +199,116 @@ namespace {
             }
         }
 
+        struct GameOptionExtraData {
+            Element *bullet = nullptr;
+            float anim_progress = 0;
+            float anim_goal = 0;
+        };
+
+        std::vector<GameOptionExtraData> game_option_data;
+
+        bool handle_game_option_event(int index, const Event& e) {
+            GameOption *option = game_options_menu->get_options()[index];
+            GameOptionExtraData &data = game_option_data[index];
+            switch (e.type) {
+            case EventType::Click:
+                break;
+            case EventType::Hover:
+            {
+                bool hovering = std::get<EventHover>(e.variant).active && option->is_enabled();
+                if (hovering) {
+                    data.anim_goal = 1.0f;
+                } else {
+                    data.anim_goal = 0.0f;
+                }
+                option->queue_update();
+                break;
+            }
+            case EventType::Enable:
+                break;
+            case EventType::Focus: {
+                bool active = std::get<EventFocus>(e.variant).active;
+                if (active) {
+                    data.anim_goal = 1.0f;
+                } else {
+                    data.anim_goal = 0.0f;
+                }
+                option->queue_update();
+                
+                break;
+            }
+            case EventType::Update:
+                if (data.anim_goal != data.anim_progress) {
+                    float sign = (data.anim_goal > data.anim_progress) ? 1.0f : -1.0f;
+                    float diff1 = fabsf(data.anim_goal - data.anim_progress);
+                    float change_rate = std::max(0.02f, diff1 * 0.08f);
+
+                    data.anim_progress += change_rate * sign;
+                    data.anim_progress = std::clamp(data.anim_progress, 0.0f, 1.0f);
+                    float diff = fabsf(data.anim_goal - data.anim_progress);
+                    if (diff < 0.01f) {
+                        data.anim_progress = data.anim_goal;
+                    }
+                    float smooth_val = hlslpp::smoothstep(hlslpp::float1(0.0f), 1.0f, data.anim_progress);
+                    data.bullet->set_opacity(smooth_val);
+                    data.bullet->set_translate_2D((1.0f - smooth_val) * (right ? 50.0f : -50.0f), -50.0f, Unit::Percent);
+                    int opa = static_cast<int>(40.0f * smooth_val);
+                    option->set_decorator_horizontal_gradient(
+                        theme::color::PrimaryL,
+                        theme::color::PrimaryL,
+                        right ? 0 : opa,
+                        right ? opa : 0
+                    );
+
+                    option->queue_update();
+                }
+                break;
+            default:
+                assert(false && "Unknown event type.");
+                break;
+            }
+
+            return false;
+        }
+
+        void style_game_options() {
+            std::vector<recompui::GameOption *> &options = game_options_menu->get_options();
+            auto context = get_current_context();
+
+            size_t num_options = options.size();
+            game_option_data.clear();
+            game_option_data.resize(num_options);
+
+            for (size_t i = 0; i < num_options; i++) {
+                options[i]->set_position(Position::Relative);
+                if (right) {
+                    options[i]->set_padding_right(44);
+                } else {
+                    options[i]->set_padding_left(44);
+                }
+                options[i]->set_background_color(theme::color::Transparent);
+                options[i]->hover_style.set_background_color(theme::color::Transparent);
+                options[i]->focus_style.set_background_color(theme::color::Transparent);
+                options[i]->set_decorator_horizontal_gradient(theme::color::PrimaryL, theme::color::PrimaryL, 0, 0);
+                options[i]->set_event_callback([this, i](const Event& e) {
+                    return handle_game_option_event(i, e);
+                });
+
+                game_option_data[i].bullet = context.create_element<Label>(options[i], "•", theme::Typography::LabelLG);
+                game_option_data[i].bullet->set_opacity(0);
+                game_option_data[i].bullet->set_position(Position::Absolute);
+                game_option_data[i].bullet->set_width(16);
+                game_option_data[i].bullet->set_top(50, Unit::Percent);
+                game_option_data[i].bullet->set_translate_2D(0, -50, Unit::Percent);
+
+                if (right) {
+                    game_option_data[i].bullet->set_right(16);
+                } else {
+                    game_option_data[i].bullet->set_left(16);
+                }
+            }
+        }
+
     public:
         GameHalf(zelda64::Game game, const std::string &name, bool right = false, bool soon = false) : game(game), name(name), right(right), soon(soon) {};
 
@@ -204,22 +316,24 @@ namespace {
             root = root_element;
             root->clear_children();
             style_vertical_split(); 
-            auto context = recompui::get_current_context();
+            auto context = get_current_context();
 
             add_title_wrapper();
             title_button = context.create_element<SubtitleTitleButton>(title_wrapper, name, right, soon);
             add_content_wrapper();
 
             const recomp::GameEntry &game_entry = zelda64::get_game_entry(game);
-            auto game_options_menu = context.create_element<GameOptionsMenu>(content_wrapper,
+            game_options_menu = context.create_element<GameOptionsMenu>(content_wrapper,
                 game_entry.game_id,
                 game_entry.mod_game_id,
                 game_entry.display_name,
                 game_entry.thumbnail_bytes,
-                right ? recompui::GameOptionsMenuLayout::Right : recompui::GameOptionsMenuLayout::Left
+                right ? GameOptionsMenuLayout::Right : GameOptionsMenuLayout::Left
             );
-            game_options_menu->set_as_navigation_container(recompui::NavigationType::Vertical);
+            game_options_menu->set_width(100, Unit::Percent);
+            game_options_menu->set_as_navigation_container(NavigationType::Vertical);
             game_options_menu->add_default_options();
+            style_game_options();
 
             title_button->set_exposed_contents(game_options_menu);
         }
