@@ -141,6 +141,7 @@ add_executable(Zelda64Recompiled)
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/launcher_animation.cpp
+    ${CMAKE_SOURCE_DIR}/src/main/launcher.cpp
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
     ${CMAKE_SOURCE_DIR}/src/main/support.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp

@@ -367,6 +367,20 @@ gpr get_entrypoint_address();
 // array of supported GameEntry objects
 std::vector<recomp::GameEntry> supported_games = {
     {
+        .rom_hash = 0x9C427099CC30D135ULL,
+        .internal_name = "THE LEGEND OF ZELDA",
+        .display_name = "Ocarina of Time",
+        .game_id = u8"oot.n64.us.1.0",
+        .mod_game_id = "oot",
+        .save_type = recomp::SaveType::Sram,
+        .thumbnail_bytes = std::span<const char>(icon_bytes),
+        .is_enabled = false,
+        .decompression_routine = zelda64::decompress_oot,
+        .has_compressed_code = true,
+        .entrypoint_address = get_entrypoint_address(),
+        .entrypoint = recomp_entrypoint,
+    },
+    {
         .rom_hash = 0xEF18B4A9E2386169ULL,
         .internal_name = "ZELDA MAJORA'S MASK",
         .display_name = "Majora's Mask",
@@ -381,6 +395,22 @@ std::vector<recomp::GameEntry> supported_games = {
         .entrypoint = recomp_entrypoint,
     },
 };
+
+const recomp::GameEntry &zelda64::get_game_entry(zelda64::Game game) {
+    return supported_games[game];
+}
+
+static zelda64::Game current_game = zelda64::default_game;
+
+zelda64::Game zelda64::get_current_game() {
+    return current_game;
+}
+
+zelda64::Game zelda64::swap_current_game() {
+    current_game = current_game == zelda64::Game::MM ? zelda64::Game::OoT : zelda64::Game::MM;
+    recompui::update_game_mod_id(supported_games[current_game].mod_game_id);
+    return current_game;
+}
 
 // TODO: move somewhere else
 namespace zelda64 {
@@ -598,21 +628,6 @@ void reorder_texture_pack(recomp::mods::ModContext&) {
     recompui::renderer::trigger_texture_pack_update();
 }
 
-void on_launcher_init(recompui::LauncherMenu *menu) {
-    auto game_options_menu = menu->init_game_options_menu(
-        supported_games[0].game_id,
-        supported_games[0].mod_game_id,
-        supported_games[0].display_name,
-        supported_games[0].thumbnail_bytes,
-        recompui::GameOptionsMenuLayout::Right
-    );
-    game_options_menu->add_default_options();
-
-    recompui::Element *menu_container = menu->get_menu_container();
-    menu->remove_default_title();
-    zelda64::launcher_animation_setup(menu);
-}
-
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
 int main(int argc, char** argv) {
@@ -737,8 +752,8 @@ int main(int argc, char** argv) {
 
     zelda64::init_config();
 
-    recompui::register_launcher_init_callback(on_launcher_init);
-    recompui::register_launcher_update_callback(zelda64::launcher_animation_update);
+    recompui::register_launcher_init_callback(zelda64::on_launcher_init);
+    // recompui::register_launcher_update_callback(zelda64::launcher_animation_update);
 
     recomp::rsp::callbacks_t rsp_callbacks{
         .get_rsp_microcode = get_rsp_microcode,
