@@ -32,7 +32,7 @@ Join the [N64: Recompiled Community Discord](https://discord.gg/AWZThJ4dPf) to d
 * [FAQ](#faq)
 * [Known Issues](#known-issues)
 * [Building](#building)
-* [Libraries Used and Projects Referenced](#libraries-used-and-projects-referenced)
+* [Libraries Used, Projects Referenced and Special Thanks](#libraries-used-projects-referenced-and-special-thanks)
 
 ## System Requirements
 A GPU supporting Direct3D 12.0 (Shader Model 6), Vulkan 1.2, or Metal Argument Buffers Tier 2 support is required to run this project. The oldest GPUs that should be supported for each vendor are:
