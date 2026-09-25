@@ -7,7 +7,7 @@
 #include "overlays/actors/ovl_Obj_Warpstone/z_obj_warpstone.h"
 #include "misc_funcs.h"
 
-#define SAVE_TYPE_AUTOSAVE 2 
+#define SAVE_TYPE_AUTOSAVE 2
 
 u8 gCanPause;
 s32 ShrinkWindow_Letterbox_GetSizeTarget(void);
@@ -23,7 +23,7 @@ RECOMP_PATCH void KaleidoSetup_Update(PlayState* play) {
     if (CHECK_BTN_ALL(input->cur.button, BTN_R)) {
         if (msgCtx && msgCtx) {}
     }
-    
+
     if ((pauseCtx->state == PAUSE_STATE_OFF) && (pauseCtx->debugEditor == DEBUG_EDITOR_NONE) &&
         (play->gameOverCtx.state == GAMEOVER_INACTIVE)) {
         if ((play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF)) {
@@ -73,10 +73,16 @@ void recomp_reset_autosave_timer_slow();
 RECOMP_DECLARE_EVENT(recomp_on_autosave(PlayState* play));
 RECOMP_DECLARE_EVENT(recomp_after_autosave(PlayState* play));
 
+s16 sGreatFairyEntranceMap[] = {
+    ENTRANCE(SOUTH_CLOCK_TOWN, 0), ENTRANCE(WOODFALL, 0), ENTRANCE(SNOWHEAD, 0), ENTRANCE(ZORA_CAPE, 0), ENTRANCE(IKANA_CANYON, 0),
+    ENTRANCE(SOUTH_CLOCK_TOWN, 0), ENTRANCE(WOODFALL, 0), ENTRANCE(SNOWHEAD, 0), ENTRANCE(ZORA_CAPE, 0), ENTRANCE(IKANA_CANYON, 0),
+};
+
 RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
 
     // @recomp_event recomp_on_autosave(PlayState* play): Autosave triggered.
     recomp_on_autosave(play);
+
     // Transfer the scene flags into the cycle flags.
     Play_SaveCycleSceneFlags(&play->state);
     // Transfer the cycle flags into the save buffer. Logic copied from func_8014546C.
@@ -88,6 +94,26 @@ RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
         gSaveContext.save.saveInfo.permanentSceneFlags[i].collectible = gSaveContext.cycleSceneFlags[i].collectible;
     }
 
+    s32 original_entrance = gSaveContext.save.entrance;
+    s32 entrance = original_entrance;
+    s32 scene_id = Entrance_GetSceneIdAbsolute(entrance);
+    // Map grottos/shrines to entrances to be used in different regions. Logic adapted from KaleidoScope_DrawWorldMap.
+    if (scene_id == SCENE_KAKUSIANA) {
+        if (play->roomCtx.curRoom.num == 5) {
+            entrance = ENTRANCE(GORON_VILLAGE_WINTER, 0);
+        } else if ((play->roomCtx.curRoom.num == 6) || (play->roomCtx.curRoom.num == 8) ||
+                    (play->roomCtx.curRoom.num == 12)) {
+            entrance = ENTRANCE(DEKU_PALACE, 0);
+        } else {
+            entrance = gSaveContext.respawn[RESPAWN_MODE_UNK_3].entrance;
+        }
+    }
+    // Map fairy fountains to entrances to be used in different regions.
+    if (scene_id == SCENE_YOUSEI_IZUMI) {
+        entrance = sGreatFairyEntranceMap[play->curSpawn];
+    }
+    gSaveContext.save.entrance = entrance;
+
     s32 fileNum = gSaveContext.fileNum;
 
     gSaveContext.save.isOwlSave = SAVE_TYPE_AUTOSAVE;
@@ -98,12 +124,13 @@ RECOMP_EXPORT void recomp_do_autosave(PlayState* play) {
     SramContext* sramCtx = &play->sramCtx;
     // Copy the saved parts of the global save context into the sram saving buffer.
     Lib_MemCpy(sramCtx->saveBuf, &gSaveContext, offsetof(SaveContext, fileNum));
-    // Synchronously save into the owl save slot and the backup owl save slot. 
+    // Synchronously save into the owl save slot and the backup owl save slot.
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2], gFlashOwlSaveNumPages[fileNum * 2]);
     Sram_SyncWriteToFlash(sramCtx, gFlashOwlSaveStartPages[fileNum * 2 + 1], gFlashOwlSaveNumPages[fileNum * 2 + 1]);
 
+    gSaveContext.save.entrance = original_entrance;
     gSaveContext.save.isOwlSave = false;
-    
+
     // @recomp_event recomp_on_autosave(PlayState* play): Autosave finished.
     recomp_after_autosave(play);
 }
@@ -352,7 +379,7 @@ void draw_autosave_icon(PlayState* play) {
             255, 255, 255, alpha, G_EX_ORIGIN_RIGHT);
         gEXForceUpscale2D(OVERLAY_DISP++, 0);
     }
-        
+
     if (recomp_autosave_debug_enabled() && autosave_was_ready) {
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 0, 0, 255);
         gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE);
@@ -425,7 +452,7 @@ void autosave_post_play_update(PlayState* play) {
         // * The player is allowed to pause.
         if (gSaveContext.hudVisibility == HUD_VISIBILITY_ALL &&
             R_TIME_SPEED != 0 &&
-            !Environment_IsTimeStopped() && 
+            !Environment_IsTimeStopped() &&
             play->msgCtx.msgMode == MSGMODE_NONE &&
             play->pauseCtx.state == PAUSE_STATE_OFF &&
             gSaveContext.save.cutsceneIndex < 0xFFF0 &&
@@ -457,7 +484,7 @@ void autosave_post_play_update(PlayState* play) {
         }
     }
     else {
-        // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on. 
+        // Update the last autosave time to the current time to prevent autosaving immediately if autosaves are turned back on.
         recomp_reset_autosave_timer();
     }
     gCanPause = false;
@@ -474,7 +501,7 @@ extern u16 D_801C6A58[];
 #define CHECK_NEWF(newf)                                                                                 \
     ((newf)[0] != 'Z' || (newf)[1] != 'E' || (newf)[2] != 'L' || (newf)[3] != 'D' || (newf)[4] != 'A' || \
      (newf)[5] != '3')
-     
+
 typedef struct {
     /* 0x00 */ s16 csId;
     /* 0x02 */ s16 length;
@@ -504,7 +531,7 @@ RECOMP_PATCH s16 CutsceneManager_FindEntranceCsId(void) {
             (sSceneCutsceneList[csId].scriptIndex < (play = sCutsceneMgr.play)->csCtx.scriptListCount) &&
             (sCutsceneMgr.play->curSpawn ==
              sCutsceneMgr.play->csCtx.scriptList[sSceneCutsceneList[csId].scriptIndex].spawn)) {
-            
+
             // @recomp Check if the entry cutscene should be skipped and do so.
             if (skip_entry_cutscene) {
                 skip_entry_cutscene = false;
@@ -524,13 +551,116 @@ RECOMP_PATCH s16 CutsceneManager_FindEntranceCsId(void) {
     return -1;
 }
 
+s32 sRegionToOwlWarpId[REGION_MAX] = {
+    OWL_WARP_GREAT_BAY_COAST,   // REGION_GREAT_BAY
+    OWL_WARP_ZORA_CAPE,         // REGION_ZORA_HALL
+    OWL_WARP_MILK_ROAD,         // REGION_ROMANI_RANCH
+    OWL_WARP_SOUTHERN_SWAMP,    // REGION_DEKU_PALACE
+    OWL_WARP_SOUTHERN_SWAMP,    // REGION_WOODFALL
+    OWL_WARP_NONE,              // REGION_CLOCK_TOWN
+    OWL_WARP_MOUNTAIN_VILLAGE,  // REGION_SNOWHEAD
+    OWL_WARP_IKANA_CANYON,      // REGION_IKANA_GRAVEYARD
+    OWL_WARP_IKANA_CANYON,      // REGION_IKANA_CANYON
+    OWL_WARP_MOUNTAIN_VILLAGE,  // REGION_GORON_VILLAGE
+    OWL_WARP_STONE_TOWER,       // REGION_STONE_TOWER
+};
+
+s32 sSecondaryOwlWarp[OWL_WARP_MAX - 1] = {
+    OWL_WARP_ZORA_CAPE,         // OWL_WARP_GREAT_BAY_COAST,
+    OWL_WARP_GREAT_BAY_COAST,   // OWL_WARP_ZORA_CAPE,
+    OWL_WARP_MOUNTAIN_VILLAGE,  // OWL_WARP_SNOWHEAD,
+    OWL_WARP_SNOWHEAD,          // OWL_WARP_MOUNTAIN_VILLAGE,
+    OWL_WARP_NONE,              // OWL_WARP_CLOCK_TOWN,
+    OWL_WARP_NONE,              // OWL_WARP_MILK_ROAD,
+    OWL_WARP_SOUTHERN_SWAMP,    // OWL_WARP_WOODFALL,
+    OWL_WARP_WOODFALL,          // OWL_WARP_SOUTHERN_SWAMP,
+    OWL_WARP_STONE_TOWER,       // OWL_WARP_IKANA_CANYON,
+    OWL_WARP_IKANA_CANYON,      // OWL_WARP_STONE_TOWER,
+};
+
+s32 get_closest_owl_statue(s16 sceneId) {
+    s32 n = 0;
+    s32 j = 0;
+
+    // Find the region that player is currently in.
+    // Loop over region (n) and regionIndex (j). Logic adapted from KaleidoScope_DrawWorldMap.
+    while (true) {
+        if (gSceneIdsPerRegion[n][j] == 0xFFFF) {
+            n++;
+            j = 0;
+            if (n == REGION_MAX) {
+                n = 0;
+
+                while (true) {
+                    if (gSceneIdsPerRegion[n][j] == 0xFFFF) {
+                        n++;
+                        if (n == REGION_MAX) {
+                            break;
+                        }
+                        j = 0;
+                        if (Entrance_GetSceneIdAbsolute(
+                                ((void)0, gSaveContext.respawn[RESPAWN_MODE_UNK_3].entrance)) ==
+                            gSceneIdsPerRegion[n][j]) {
+                            break;
+                        }
+                    }
+                    j++;
+                }
+                break;
+            }
+        }
+
+        if (sceneId == gSceneIdsPerRegion[n][j]) {
+            break;
+        }
+        j++;
+    }
+
+    if (n != REGION_MAX) {
+        // Map current region to the corresponding owl statue.
+        s32 owlWarpId = sRegionToOwlWarpId[n];
+        // Handle cases with two different warps in the same region.
+        if ((owlWarpId == OWL_WARP_MOUNTAIN_VILLAGE) &&
+            ((sceneId == SCENE_14YUKIDAMANOMITI) || (sceneId == SCENE_12HAKUGINMAE))) { // Path to Snowhead, Snowhead
+            owlWarpId = OWL_WARP_SNOWHEAD;
+        } else if ((owlWarpId == OWL_WARP_SOUTHERN_SWAMP) && (sceneId == SCENE_21MITURINMAE)) { // Woodfall
+            owlWarpId = OWL_WARP_WOODFALL;
+        }
+
+        // Check if desired owl statue is active.
+        for (j = 0; j < 2; j++) {
+            if (owlWarpId == OWL_WARP_NONE) {
+                break;
+            }
+
+            if ((gSaveContext.save.saveInfo.playerData.owlActivationFlags >> owlWarpId) & 1) {
+                // Get owl warp entrance.
+                s32 entrance = D_801C6A58[owlWarpId];
+                if ((entrance == ENTRANCE(SOUTHERN_SWAMP_POISONED, 10)) &&
+                    CHECK_WEEKEVENTREG(WEEKEVENTREG_CLEARED_WOODFALL_TEMPLE)) {
+                    entrance = ENTRANCE(SOUTHERN_SWAMP_CLEARED, 10);
+                } else if ((entrance == ENTRANCE(MOUNTAIN_VILLAGE_WINTER, 8)) &&
+                        CHECK_WEEKEVENTREG(WEEKEVENTREG_CLEARED_SNOWHEAD_TEMPLE)) {
+                    entrance = ENTRANCE(MOUNTAIN_VILLAGE_SPRING, 8);
+                }
+
+                return entrance;
+            } else {
+                owlWarpId = sSecondaryOwlWarp[owlWarpId];
+            }
+        }
+    }
+
+    return ENTRANCE(SOUTH_CLOCK_TOWN, 0);
+}
+
 s32 spawn_entrance_from_autosave_entrance(s16 autosave_entrance) {
     s32 scene_id = Entrance_GetSceneIdAbsolute(gSaveContext.save.entrance);
     recomp_printf("Loaded entrance: %d in scene: %d\n", autosave_entrance, scene_id);
 
     switch (scene_id) {
         default:
-            return ENTRANCE(SOUTH_CLOCK_TOWN, 0);
+            return get_closest_owl_statue(scene_id);
         case SCENE_MITURIN: // Woodfall Temple
         case SCENE_MITURIN_BS: // Odolwa's Lair
             return ENTRANCE(WOODFALL_TEMPLE, 0);
