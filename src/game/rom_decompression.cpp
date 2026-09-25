@@ -64,11 +64,17 @@ constexpr uint32_t byteswap(uint32_t val) {
 }
 #endif
 
-// Produces a decompressed MM rom. This is only needed because the game has compressed code.
+
+// Produces a decompressed rom. This is only needed because the game has compressed code.
 // For other recomps using this repo as an example, you can omit the decompression routine and
 // set the corresponding fields in the GameEntry if the game doesn't have compressed code,
 // even if it does have compressed data.
-std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_rom) {
+static std::vector<uint8_t> decompress(
+    std::span<const uint8_t> compressed_rom,
+    const std::u8string &header_code,
+    const size_t dma_data_rom_addr,
+    const size_t decompressed_size
+) {
     // Sanity check the rom size and header. These should already be correct from the runtime's check,
     // but it should prevent this file from accidentally being copied to another recomp.
     if (compressed_rom.size() != 0x2000000) {
@@ -76,7 +82,7 @@ std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_
         return {};
     }
 
-    if (compressed_rom[0x3B] != 'N' || compressed_rom[0x3C] != 'Z' || compressed_rom[0x3D] != 'S' || compressed_rom[0x3E] != 'E') {
+    if (compressed_rom[0x3B] != header_code[0] || compressed_rom[0x3C] != header_code[1] || compressed_rom[0x3D] != header_code[2] || compressed_rom[0x3E] != header_code[3]) {
         assert(false);
         return {};
     }
@@ -98,10 +104,8 @@ std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_
     DmaDataEntry cur_entry{};
     size_t cur_entry_index = 0;
 
-    constexpr size_t dma_data_rom_addr = 0x1A500;
-
     std::vector<uint8_t> ret{};
-    ret.resize(0x2F00000);
+    ret.resize(decompressed_size);
 
     size_t content_end = 0;
 
@@ -165,4 +169,12 @@ std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_
     std::fill(ret.begin() + content_end, ret.end(), 0xFF);
 
     return ret;
+}
+
+static std::vector<uint8_t> zelda64::decompress_mm(std::span<const uint8_t> compressed_rom) {
+    return decompress(compressed_rom, u8"NZSE", 0x1A500, 0x2F00000);
+}
+
+static std::vector<uint8_t> zelda64::decompress_oot(std::span<const uint8_t> compressed_rom) {
+    return decompress(compressed_rom, u8"CZLE", 0x7430, 0x347F000);
 }

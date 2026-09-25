@@ -5,7 +5,7 @@
 
 #include "slot_map.h"
 #include "recomp_data.h"
-#include "recomp_ui.h"
+#include "recompui/recompui.h"
 #include "librecomp/helpers.hpp"
 #include "librecomp/overlays.hpp"
 #include "librecomp/addresses.hpp"

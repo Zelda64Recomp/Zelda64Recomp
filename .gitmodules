@@ -1,22 +1,15 @@
-[submodule "lib/RmlUi"]
-	path = lib/RmlUi
-	url = https://github.com/mikke89/RmlUi/
 [submodule "lib/rt64"]
 	path = lib/rt64
 	url = https://github.com/rt64/rt64
-[submodule "lib/freetype-windows-binaries"]
-	path = lib/freetype-windows-binaries
-	url = https://github.com/ubawurinna/freetype-windows-binaries
 [submodule "lib/mm-decomp"]
 	path = lib/mm-decomp
 	url = https://github.com/zeldaret/mm
-[submodule "lib/lunasvg"]
-	path = lib/lunasvg
-	url = https://github.com/sammycage/lunasvg
 [submodule "lib/N64ModernRuntime"]
 	path = lib/N64ModernRuntime
 	url = https://github.com/N64Recomp/N64ModernRuntime.git
 [submodule "Zelda64RecompSyms"]
 	path = Zelda64RecompSyms
 	url = https://github.com/Zelda64Recomp/Zelda64RecompSyms
-
+[submodule "lib/RecompFrontend"]
+	path = lib/RecompFrontend
+	url = https://github.com/N64Recomp/RecompFrontend
