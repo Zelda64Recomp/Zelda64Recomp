@@ -9,9 +9,8 @@ Join the [N64: Recompiled Community Discord](https://discord.gg/AWZThJ4dPf) to d
 
 ### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
 
-### **The Zelda 64: Recompiled team has not, does not, and will not use generative AI tools in the development of this project for any purpose. As per the CONTRIBUTING.md file, contributions that use any GenAI tooling in any capacity are blanket banned. This also applies to the Ocarina of Time support that is being developed.**
- 
-*Special thanks to [Blaze](https://runblaze.dev) for their support of this project. They provide high-performance Linux (AMD64 & ARM64) and Apple Silicon macOS runners for GitHub Actions, greatly reducing our automated build times.*
+### No-AI stance
+**The Zelda 64: Recompiled team has not, does not, and will not use generative AI tools in the development of this project for any purpose. As per the CONTRIBUTING.md file, contributions that use any GenAI tooling in any capacity are blanket banned. This also applies to the Ocarina of Time support that is being developed.**
 
 ## Table of Contents
 * [System Requirements](#system-requirements)
@@ -141,7 +140,7 @@ Yes, if you place a file named `portable.txt` in the same folder as the executab
 ## Building
 Building is not required to play this project, as prebuilt binaries (which do not contain game assets) can be found in the [Releases](https://github.com/Mr-Wiseguy/Zelda64Recomp/releases) section. Instructions on how to build this project can be found in the [BUILDING.md](BUILDING.md) file.
 
-## Libraries Used and Projects Referenced
+## Libraries Used, Projects Referenced and Special Thanks
 * [RT64](https://github.com/rt64/rt64) for the project's rendering engine
 * [RmlUi](https://github.com/mikke89/RmlUi) for building the menus and launcher
 * [lunasvg](https://github.com/sammycage/lunasvg) for SVG rendering, used by RmlUi
@@ -150,3 +149,6 @@ Building is not required to play this project, as prebuilt binaries (which do no
 * [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms to implement gyro aiming
 * [Majora's Mask Decompilation](https://github.com/zeldaret/mm) for headers and some function definitions, used for making patches or some enhancements
 * [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
+
+*Special thanks to [Blaze](https://runblaze.dev) for their support of this project. They provide high-performance Linux (AMD64 & ARM64) and Apple Silicon macOS runners for GitHub Actions, greatly reducing our automated build times.*
+
