@@ -45,6 +45,24 @@ extern "C" void recomp_get_mouse_deltas(uint8_t* rdram, recomp_context* ctx) {
     recomp::get_mouse_deltas(x_out, y_out);
 }
 
+extern "C" void recomp_get_mouse_wheel_pos(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, recomp::get_mouse_wheel_pos());
+}
+
+extern "C" void recomp_get_mouse_buttons(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, recomp::get_mouse_buttons());
+}
+
+extern "C" void recomp_get_mouse_button_mask(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, recomp::get_mouse_button_mask());
+}
+
+extern "C" void recomp_set_mouse_button_mask(uint8_t* rdram, recomp_context* ctx) {
+    unsigned int out = _arg<0, unsigned int>(rdram, ctx);
+    recomp::set_mouse_button_mask(out);
+}
+
+
 extern "C" void recomp_powf(uint8_t* rdram, recomp_context* ctx) {
     float a = _arg<0, float>(rdram, ctx);
     float b = ctx->f14.fl; //_arg<1, float>(rdram, ctx);

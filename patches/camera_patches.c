@@ -28,6 +28,8 @@ float analog_camera_y_sensitivity = 500.0f;
 
 static const float analog_cam_threshold = 0.1f;
 
+float mouse_camera_sensitivity = 0.1f;
+
 RECOMP_EXPORT void recomp_set_camera_fixes(bool new_val) {
     camera_fixes = new_val;
 }
@@ -66,8 +68,12 @@ void update_analog_cam(Camera* c) {
     }
 
     // Enable analog cam if the right stick is held.
-    float input_x, input_y;
-    recomp_get_camera_inputs(&input_x, &input_y);
+    float analog_x, analog_y;
+
+    recomp_get_camera_inputs(&analog_x, &analog_y);
+
+    float input_x = analog_x + (mouse_input_handler.crouch_shielding ? 0.0f : mouse_input_handler.delta_x * MOUSE_CAMERA_SCALE_X);
+    float input_y = analog_y + (mouse_input_handler.crouch_shielding ? 0.0f : mouse_input_handler.delta_y * MOUSE_CAMERA_SCALE_Y);
 
     if (fabsf(input_x) >= analog_cam_threshold || fabsf(input_y) >= analog_cam_threshold) {
         analog_cam_active = true;

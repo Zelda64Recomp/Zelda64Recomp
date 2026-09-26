@@ -76,6 +76,10 @@ namespace recomp {
     bool get_input_digital(const std::span<const recomp::InputField> fields);
     void get_gyro_deltas(float* x, float* y);
     void get_mouse_deltas(float* x, float* y);
+    int32_t get_mouse_wheel_pos();
+    uint32_t get_mouse_buttons();
+    uint32_t get_mouse_button_mask();
+    void set_mouse_button_mask(uint32_t mask);
     void get_right_analog(float* x, float* y);
 
     enum class InputDevice {

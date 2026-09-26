@@ -14,7 +14,7 @@
 #elif defined(__linux__)
 #include <unistd.h>
 #include <pwd.h>
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) 
 #include "apple/rt64_apple.h"
 #endif
 
