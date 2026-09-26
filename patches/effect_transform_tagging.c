@@ -764,3 +764,139 @@ RECOMP_PATCH void Environment_DrawSunLensFlare(PlayState* play, EnvironmentConte
         CLOSE_DISPS();
     }
 }
+
+typedef struct {
+    /* 0x0 */ Color_RGBA8 inner;
+    /* 0x4 */ Color_RGBA8 outer;
+} TatlColor; // size = 0x8
+
+extern TatlColor sTatlColorList[];
+extern Gfx gZTargetLockOnTriangleDL[];
+extern Gfx gZTargetArrowDL[];
+
+extern void Target_SetLockOnPos(TargetContext* targetCtx, s32 index, f32 x, f32 y, f32 z);
+
+RECOMP_PATCH void Target_InitLockOn(TargetContext* targetCtx, ActorType type, PlayState* play) {
+    TatlColor* tatlColorEntry;
+    s32 i;
+    LockOnTriangleSet* triangleSet;
+
+    Math_Vec3f_Copy(&targetCtx->lockOnPos, &play->view.eye);
+    targetCtx->lockOnAlpha = 256;
+    tatlColorEntry = &sTatlColorList[type];
+    targetCtx->lockOnRadius = 500.0f;
+
+    triangleSet = targetCtx->lockOnTriangleSets;
+    for (i = 0; i < ARRAY_COUNT(targetCtx->lockOnTriangleSets); i++, triangleSet++) {
+        Target_SetLockOnPos(targetCtx, i, 0.0f, 0.0f, 0.0f);
+
+        triangleSet->color.r = tatlColorEntry->inner.r;
+        triangleSet->color.g = tatlColorEntry->inner.g;
+        triangleSet->color.b = tatlColorEntry->inner.b;
+    }
+}
+
+RECOMP_PATCH void Target_Draw(TargetContext* targetCtx, PlayState* play) {
+    Player* player = GET_PLAYER(play);
+    Actor* actor;
+
+    if (player->stateFlags1 & (PLAYER_STATE1_2 | PLAYER_STATE1_40 | PLAYER_STATE1_80 | PLAYER_STATE1_200 | PLAYER_STATE1_400 | PLAYER_STATE1_10000000 | PLAYER_STATE1_20000000)) {
+        return;
+    }
+
+    actor = targetCtx->lockOnActor;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    if (targetCtx->lockOnAlpha != 0) {
+        LockOnTriangleSet* entry;
+        s16 alpha = 255;
+        f32 projectdPosScale = 1.0f;
+        Vec3f projectedPos;
+        f32 invW;
+        f32 lockOnScaleX;
+
+        if (actor != NULL) {
+            Math_Vec3f_Copy(&targetCtx->lockOnPos, &actor->focus.pos);
+            projectdPosScale = (500.0f - targetCtx->lockOnRadius) / 420.0f;
+        } else {
+            targetCtx->lockOnAlpha -= 120;
+            if (targetCtx->lockOnAlpha < 0) {
+                targetCtx->lockOnAlpha = 0;
+            }
+            alpha = targetCtx->lockOnAlpha;
+        }
+
+        Actor_GetProjectedPos(play, &targetCtx->lockOnPos, &projectedPos, &invW);
+
+        projectedPos.x = ((SCREEN_WIDTH / 2) * (projectedPos.x * invW)) * projectdPosScale;
+        projectedPos.x = CLAMP(projectedPos.x, -SCREEN_WIDTH, SCREEN_WIDTH);
+
+        projectedPos.y = ((SCREEN_HEIGHT / 2) * (projectedPos.y * invW)) * projectdPosScale;
+        projectedPos.y = CLAMP(projectedPos.y, -SCREEN_HEIGHT, SCREEN_HEIGHT);
+
+        projectedPos.z *= projectdPosScale;
+
+        targetCtx->lockOnIndex--;
+        if (targetCtx->lockOnIndex < 0) {
+            targetCtx->lockOnIndex = ARRAY_COUNT(targetCtx->lockOnTriangleSets) - 1;
+        }
+
+        Target_SetLockOnPos(targetCtx, targetCtx->lockOnIndex, projectedPos.x, projectedPos.y, projectedPos.z);
+
+        if (!(player->stateFlags1 & PLAYER_STATE1_40) || (actor != player->lockOnActor)) {
+            OVERLAY_DISP = Gfx_SetupDL(OVERLAY_DISP, SETUPDL_57);
+            entry = &targetCtx->lockOnTriangleSets[targetCtx->lockOnIndex];
+
+            if (entry->radius < 500.0f) {
+                s32 triangleIndex;
+
+                if (entry->radius <= 120.0f) {
+                    lockOnScaleX = 0.15f;
+                } else {
+                    lockOnScaleX = ((entry->radius - 120.0f) * 0.001f) + 0.15f;
+                }
+
+                Matrix_Translate(entry->pos.x, entry->pos.y, 0.0f, MTXMODE_NEW);
+                Matrix_Scale(lockOnScaleX, 0.15f, 1.0f, MTXMODE_APPLY);
+
+                gDPSetPrimColor(OVERLAY_DISP++, 0, 0, entry->color.r, entry->color.g, entry->color.b, (u8)alpha);
+
+                Matrix_RotateZS(targetCtx->rotZTick * 0x200, MTXMODE_APPLY);
+
+                gEXMatrixGroupSimple(OVERLAY_DISP++, LOCK_ON_TRIANGLE_TRANSFORM_ID, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE,
+                    G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_INTERPOLATE, G_EX_ORDER_LINEAR, G_EX_EDIT_NONE);
+
+                for (triangleIndex = 0; triangleIndex < 4; triangleIndex++) {
+                    Matrix_RotateZS(0x10000 / 4, MTXMODE_APPLY);
+                    Matrix_Push();
+                    Matrix_Translate(entry->radius, entry->radius, 0.0f, MTXMODE_APPLY);
+                    gSPMatrix(OVERLAY_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_MODELVIEW | G_MTX_LOAD);
+                    gSPDisplayList(OVERLAY_DISP++, gZTargetLockOnTriangleDL);
+                    Matrix_Pop();
+                }
+
+                gEXPopMatrixGroup(OVERLAY_DISP++, G_MTX_MODELVIEW);
+            }
+        }
+    }
+
+    actor = targetCtx->arrowPointedActor;
+    if ((actor != NULL) && !(actor->flags & ACTOR_FLAG_CANT_LOCK_ON)) {
+        TatlColor* color = &sTatlColorList[actor->category];
+
+        POLY_XLU_DISP = Gfx_SetupDL(POLY_XLU_DISP, SETUPDL_7);
+
+        Matrix_Translate(actor->focus.pos.x, actor->focus.pos.y + (actor->targetArrowOffset * actor->scale.y) + 17.0f,
+                         actor->focus.pos.z, MTXMODE_NEW);
+        Matrix_RotateYS(play->gameplayFrames * 0xBB8, MTXMODE_APPLY);
+        Matrix_Scale((iREG(27) + 35) / 1000.0f, (iREG(28) + 60) / 1000.0f, (iREG(29) + 50) / 1000.0f,
+                     MTXMODE_APPLY);
+
+        gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, color->inner.r, color->inner.g, color->inner.b, 255);
+        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_MODELVIEW | G_MTX_LOAD);
+        gSPDisplayList(POLY_XLU_DISP++, gZTargetArrowDL);
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
