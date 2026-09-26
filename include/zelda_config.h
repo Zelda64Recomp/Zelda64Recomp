@@ -87,6 +87,29 @@ namespace zelda64 {
     AnalogCamMode get_analog_cam_mode();
     void set_analog_cam_mode(AnalogCamMode mode);
 
+    // Audio mode setting - mirrors the game's AudioOption enum
+    enum class AudioMode {
+        Stereo,
+        Mono,
+        Headphones,
+        Surround,
+        OptionCount
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(zelda64::AudioMode, {
+        {zelda64::AudioMode::Stereo, "Stereo"},
+        {zelda64::AudioMode::Mono, "Mono"},
+        {zelda64::AudioMode::Headphones, "Headphones"},
+        {zelda64::AudioMode::Surround, "Surround"}
+    });
+
+    // Enhanced surround - adds pan-based rear channel separation
+    bool get_enhanced_surround_enabled();
+    void set_enhanced_surround_enabled(bool enabled);
+
+    AudioMode get_audio_mode();
+    void set_audio_mode(AudioMode mode);
+
     void open_quit_game_prompt();
 };
 

@@ -1,6 +1,8 @@
 #ifndef __ZELDA_SOUND_H__
 #define __ZELDA_SOUND_H__
 
+#include "zelda_config.h"
+
 namespace zelda64 {
     void reset_sound_settings();
     void set_main_volume(int volume);
@@ -9,6 +11,8 @@ namespace zelda64 {
     int get_bgm_volume();
     void set_low_health_beeps_enabled(bool enabled);
     bool get_low_health_beeps_enabled();
+    AudioMode get_audio_mode();
+    void set_audio_mode(AudioMode mode);
 }
 
 #endif
