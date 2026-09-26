@@ -13,7 +13,8 @@
     "--filesystem=host",
     "--filesystem=/media",
     "--filesystem=/run/media",
-    "--filesystem=/mnt"
+    "--filesystem=/mnt",
+    "--filesystem=xdg-run/gamescope-0:ro"
   ],
   "modules": [
     {
