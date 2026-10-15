@@ -12,6 +12,8 @@ void ZeldaArena_Free(void* ptr);
 Actor* Actor_RemoveFromCategory(PlayState* play, ActorContext* actorCtx, Actor* actorToRemove);
 void Actor_FreeOverlay(ActorOverlay* entry);
 
+extern Gfx gLinkGoronGoronPunchEffectDL[];
+
 RECOMP_PATCH void Actor_CleanupContext(ActorContext* actorCtx, PlayState* play) {
     s32 i;
 
@@ -1443,3 +1445,69 @@ ActorExtensionId z64recomp_extend_actor_all(u32 size);
 void* z64recomp_get_extended_actor_data(Actor* actor, ActorExtensionId extension);
 u32 z64recomp_get_actor_spawn_index(Actor* actor);
 
+// @recomp Patched for goron Link's fire punch effect trail interpolation.
+RECOMP_PATCH void func_80127488(PlayState* play, Player* player, u8 alpha) {
+    OPEN_DISPS(play->state.gfxCtx);
+
+    // @recomp Patched to interpolate the main fire punch trail that the goron Link punch leaves.
+    gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, GORON_PUNCH_EFFECT_TRANSFORM_ID_START, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+
+    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gDPSetEnvColor(POLY_XLU_DISP++, 255, 0, 0, alpha);
+    gSPDisplayList(POLY_XLU_DISP++, gLinkGoronGoronPunchEffectDL);
+    // @recomp Pop matrix.
+    gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+
+    func_80122BA4(play, &player->unk_3D0, 3, alpha);
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
+// @recomp Copied from z_player_lib.c
+typedef struct {
+    /* 0x0 */ Color_RGB8 color;
+    /* 0x4 */ Gfx* dList;
+} struct_801BFDD0; // size = 0x8
+
+extern struct_801BFDD0 D_801BFDD0[];
+extern AnimatedMaterial object_link_goron_Matanimheader_013138[];
+
+// @recomp Patched for goron Link's fire punch effect trail interpolation.
+RECOMP_PATCH void func_80122D44(PlayState* play, struct_80122D44_arg1* arg1) {
+    struct_801BFDD0* temp_s3;
+    struct_80122D44_arg1_unk_04* phi_s2 = arg1->unk_04;
+    s32 phi_s6 = false;
+    s32 i;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    for (i = 0; i < ARRAY_COUNT(arg1->unk_04); i++) {
+        if ((phi_s2->alpha != 0) && (phi_s2->alpha != 255)) {
+            temp_s3 = &D_801BFDD0[phi_s2->unk_00 - 1];
+            Matrix_Put(&phi_s2->mf);
+
+            gDPPipeSync(POLY_XLU_DISP++);
+
+            if (!phi_s6 && phi_s2->unk_00 == 2) {
+                AnimatedMat_DrawXlu(play, Lib_SegmentedToVirtual(&object_link_goron_Matanimheader_013138));
+                phi_s6 = true;
+            }
+
+            Scene_SetRenderModeXlu(play, 1, 2);
+            gDPSetEnvColor(POLY_XLU_DISP++, temp_s3->color.r, temp_s3->color.g, temp_s3->color.b, phi_s2->alpha);
+
+            // @recomp Patched to interpolate the subsequent fire punch trail that the goron Link punch leaves.
+            gEXMatrixGroupDecomposedNormal(POLY_XLU_DISP++, GORON_PUNCH_EFFECT_TRANSFORM_ID_START + 1 + i, G_EX_PUSH, G_MTX_MODELVIEW, G_EX_EDIT_ALLOW);
+
+            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+
+            gSPDisplayList(POLY_XLU_DISP++, temp_s3->dList);
+            // @recomp Pop matrix.
+            gEXPopMatrixGroup(POLY_XLU_DISP++, G_MTX_MODELVIEW);
+        }
+
+        phi_s2++;
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
